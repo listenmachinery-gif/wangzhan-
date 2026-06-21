@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  background: #f5f5f7;
+  --brand-black: #0b0d10;
+  --brand-green: #76b900;
+  --brand-green-hover: #8ddb00;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #f5f5f7;
+  color: #1d1d1f;
+  font-family: Montserrat, DIN, Eurostile, Arial, sans-serif;
+}
+
+img {
+  max-width: 100%;
+}
+
+::selection {
+  background: #76b900;
+  color: #0b0d10;
+}
+
+.industrial-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+.metal-panel {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02)),
+    #111417;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.apple-link {
+  color: #76b900;
+  font-weight: 500;
+}
+
+.apple-link:hover {
+  color: #8ddb00;
+}
+
+.mobile-nav summary::-webkit-details-marker {
+  display: none;
+}
