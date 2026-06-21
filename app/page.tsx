@@ -53,20 +53,22 @@ export default function Home() {
   return (
     <main className="bg-[#f4f6f8] text-[#101214]">
       <section className="relative isolate min-h-[calc(100vh-4rem)] overflow-hidden bg-graphite-950 px-5 py-16 text-white sm:px-8 lg:py-24">
-        <div className="absolute inset-y-0 right-0 -z-20 w-full lg:w-[82vw]">
-          <Image
-            src="/products/hydraulic-press-brake-hero.png"
-            alt="ZYRON hydraulic press brake"
-            fill
-            priority
-            sizes="(min-width: 1024px) 82vw, 100vw"
-            className="object-contain object-right-bottom"
-          />
-        </div>
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black via-black/78 to-black/10 lg:via-black/58" />
-        <div className="absolute inset-y-0 left-0 -z-10 w-[54%] bg-black/36" />
+        <video
+          className="absolute inset-0 z-0 h-full w-full object-cover object-center"
+          src="/brand/zyron-hero-video.mp4"
+          poster="/products/hydraulic-press-brake-hero.png"
+          autoPlay
+          muted
+          loop
+          playsInline
+          controls
+          preload="metadata"
+          aria-label="ZYRON hydraulic press brake production video"
+        />
+        <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-r from-black via-black/78 to-black/18 lg:via-black/62" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-[54%] bg-black/34" />
 
-        <div className="mx-auto flex min-h-[calc(100vh-12rem)] max-w-[1440px] flex-col items-start justify-center">
+        <div className="relative z-20 mx-auto flex min-h-[calc(100vh-12rem)] max-w-[1440px] flex-col items-start justify-center">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-ignition">ZYRON Forming Series</p>
           <h1 className="mt-5 max-w-xl text-5xl font-semibold leading-[1.04] tracking-normal sm:text-6xl lg:text-7xl">
             Hydraulic Press Brake

@@ -32,9 +32,9 @@ function AdvantageItem({ item }: { item: string }) {
 
   return (
     <div className="border-b border-neutral-200 py-7">
-      <div className="flex items-start gap-5">
+      <div className="flex min-w-0 items-start gap-5">
         <span className="mt-2 h-4 w-4 shrink-0 bg-[#76B900]" />
-        <p className="text-base leading-8 text-neutral-600">
+        <p className="min-w-0 text-base leading-8 text-neutral-600">
           <strong className="font-semibold text-neutral-950">{title}</strong>
           {body ? <>: {body}</> : null}
         </p>
@@ -95,35 +95,34 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
     .slice(0, 3);
   const advantages = product.advantages ?? product.highlights;
   const technicalParameters = product.technicalParameters;
-  const usesTransparentProductImage = product.image.includes("/products/shearing/") || product.image.includes("/products/bending/");
 
   return (
     <main className="bg-[#f4f6f8] text-[#101214]">
-      <section className="bg-graphite-950 px-5 py-16 text-white sm:px-8 lg:py-20">
-        <div className="mx-auto max-w-7xl">
+      <section className="bg-graphite-950 px-4 py-12 text-white sm:px-8 lg:py-20">
+        <div className="mx-auto max-w-[1440px]">
           <Link href="/products" className="inline-flex items-center gap-2 text-sm text-zinc-300 transition hover:text-white">
             <ArrowLeft size={16} />
             Back to Products
           </Link>
 
-          <div className="mt-10 grid gap-10 lg:grid-cols-[1.06fr_0.94fr] lg:items-center">
-            <div className="relative aspect-[1.28] overflow-hidden rounded-md border border-white/10 bg-black">
+          <div className="mt-10 grid min-w-0 gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center xl:gap-12">
+            <div className="relative aspect-[1.25] min-w-0 overflow-hidden bg-graphite-950 sm:aspect-[1.36] lg:aspect-[1.16]">
               <Image
                 src={product.image}
                 alt={product.name}
                 fill
                 priority
-                sizes="(min-width: 1024px) 55vw, 100vw"
-                className={`${usesTransparentProductImage ? "object-contain p-6" : "object-cover"}`}
+                sizes="(min-width: 1280px) 58vw, (min-width: 1024px) 60vw, 100vw"
+                className="object-contain"
               />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-ignition">{product.categoryName}</p>
-              <h1 className="mt-5 text-4xl font-semibold leading-tight text-white sm:text-6xl">{product.name}</h1>
+              <h1 className="mt-5 break-words text-4xl font-semibold leading-tight text-white sm:text-6xl">{product.name}</h1>
               {product.performanceFeatures ? (
                 <div className="mt-6 border-l-2 border-ignition pl-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ignition">Performance and Features</p>
-                  <p className="mt-3 text-base leading-8 text-zinc-300">{product.performanceFeatures}</p>
+                  <p className="mt-3 min-w-0 text-base leading-8 text-zinc-300">{product.performanceFeatures}</p>
                 </div>
               ) : (
                 <p className="mt-6 text-base leading-8 text-zinc-300">{product.tagline}</p>
@@ -144,7 +143,7 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
       <section className="px-5 py-14 sm:px-8 lg:py-20">
         <div className="mx-auto max-w-7xl">
-          <div className="rounded-md bg-white p-8 shadow-sm">
+          <div className="rounded-md bg-white p-5 shadow-sm sm:p-8">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ignition">Advantages</p>
             <h2 className="mt-3 text-3xl font-semibold text-neutral-950">Built for efficient, repeatable cutting.</h2>
             <div className="mt-6 grid gap-x-12 md:grid-cols-2">
@@ -154,17 +153,17 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
             </div>
           </div>
 
-          <div className="mt-6 rounded-md bg-white p-8 shadow-sm">
+          <div className="mt-6 rounded-md bg-white p-5 shadow-sm sm:p-8">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ignition">
               {technicalParameters ? "Technical Parameters" : "Technical Specifications"}
             </p>
-            <div className="mt-6 overflow-hidden rounded-md border border-neutral-200">
+            <div className="mt-6 max-w-full overflow-x-auto rounded-md border border-neutral-200">
               {technicalParameters ? (
-                <table className="w-full table-fixed border-collapse text-left text-[11px] sm:text-xs lg:text-sm">
+                <table className="min-w-[760px] border-collapse text-left text-[10px] sm:w-full sm:table-fixed sm:text-xs lg:text-sm">
                   <thead>
                     <tr>
                       {technicalParameters.columns.map((column) => (
-                        <th key={column} className="bg-neutral-950 px-3 py-4 font-semibold leading-5 text-white [overflow-wrap:anywhere]">
+                        <th key={column} className="whitespace-nowrap bg-neutral-950 px-2 py-3 font-semibold leading-5 text-white sm:px-3 sm:py-4 sm:[overflow-wrap:anywhere]">
                           {column}
                         </th>
                       ))}
@@ -176,7 +175,7 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
                         {row.map((cell, cellIndex) => (
                           <td
                             key={`${row[0]}-${cellIndex}`}
-                            className={`${cellIndex === 0 ? "font-semibold text-neutral-950" : "text-neutral-600"} px-3 py-4 leading-5 [overflow-wrap:anywhere]`}
+                            className={`${cellIndex === 0 ? "font-semibold text-neutral-950" : "text-neutral-600"} whitespace-nowrap px-2 py-3 leading-5 sm:px-3 sm:py-4 sm:[overflow-wrap:anywhere]`}
                           >
                             {cell}
                           </td>
@@ -186,12 +185,12 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
                   </tbody>
                 </table>
               ) : (
-                <table className="w-full table-fixed border-collapse text-left text-sm">
+                <table className="min-w-[560px] border-collapse text-left text-xs sm:w-full sm:table-fixed sm:text-sm">
                   <tbody>
                     {product.specs.map((spec) => (
                       <tr key={spec.label} className="border-b border-neutral-200 last:border-0">
-                        <th className="w-1/3 bg-neutral-50 px-4 py-4 font-semibold text-neutral-950 [overflow-wrap:anywhere]">{spec.label}</th>
-                        <td className="px-4 py-4 text-neutral-600 [overflow-wrap:anywhere]">{spec.value}</td>
+                        <th className="w-1/3 whitespace-nowrap bg-neutral-50 px-3 py-3 font-semibold text-neutral-950 sm:px-4 sm:py-4 sm:[overflow-wrap:anywhere]">{spec.label}</th>
+                        <td className="whitespace-nowrap px-3 py-3 text-neutral-600 sm:px-4 sm:py-4 sm:[overflow-wrap:anywhere]">{spec.value}</td>
                       </tr>
                     ))}
                   </tbody>
