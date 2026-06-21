@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, Globe2, Menu } from "lucide-react";
+import { ArrowRight, ChevronDown, Globe2, Menu } from "lucide-react";
 import { productCategories, products } from "@/data/products";
 
 const machineGroups = [
@@ -79,16 +79,16 @@ const mobileMachineLinks = [
 
 const mobileLinks = [
   { label: "Home", href: "/" },
-  { label: "About", href: "/factory" },
-  { label: "Machine", href: "/products" },
-  { label: "News", href: "/news" },
-  { label: "Shop", href: "/products" },
+  { label: "Company", href: "/factory" },
+  { label: "Products", href: "/products" },
+  { label: "Support", href: "/contact" },
+  { label: "Showcase", href: "/cases" },
   { label: "Contact", href: "/contact" },
 ];
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0B0D10]">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0B0D10]/95 backdrop-blur-xl">
       <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-5 sm:px-8">
         <Link href="/" className="group flex items-center gap-3" aria-label="ZYRON Heavy Industry homepage">
           <Image
@@ -101,30 +101,40 @@ export function SiteHeader() {
           />
         </Link>
 
-        <nav className="hidden h-full items-center gap-7 xl:flex" aria-label="Primary navigation">
-          <NavItem href="/" label="Home" />
+        <nav className="hidden h-full items-center gap-9 xl:flex" aria-label="Primary navigation">
+          <NavItem href="/" label="HOME" />
 
-          <SimpleDropdown label="About" href="/factory" links={aboutLinks} />
+          <SimpleDropdown label="COMPANY" href="/factory" links={aboutLinks} />
 
           <div className="group flex h-full items-center">
-            <Link href="/products" className="inline-flex h-full items-center gap-1 text-sm font-semibold text-white transition hover:text-ignition">
-              Machine
+            <Link href="/products" className="inline-flex h-full items-center gap-1 text-xs font-semibold tracking-[0.08em] text-white transition hover:text-ignition">
+              PRODUCTS
               <ChevronDown size={15} />
             </Link>
             <MachineMegaMenu />
           </div>
 
-          <SimpleDropdown label="News" href="/news" links={newsLinks} />
-          <NavItem href="/products" label="Shop" />
-          <NavItem href="/contact" label="Contact" />
+          <SimpleDropdown label="SUPPORT" href="/contact" links={newsLinks} />
+          <NavItem href="/cases" label="SHOWCASE" />
+          <NavItem href="/contact" label="CONTACT" />
+        </nav>
 
+        <div className="hidden items-center gap-5 xl:flex">
+          <Link
+            href="/contact"
+            className="inline-flex h-10 items-center justify-center rounded-sm border border-white/40 px-5 text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:border-ignition hover:bg-ignition hover:text-white"
+          >
+            Quote Now
+          </Link>
           <div className="group relative flex h-full items-center">
-            <button className="inline-flex h-full items-center gap-1 text-sm font-semibold text-white transition hover:text-ignition" type="button">
-              <Globe2 size={15} />
-              English
-              <ChevronDown size={15} />
+            <button
+              className="grid h-10 w-10 place-items-center text-white transition hover:text-ignition"
+              type="button"
+              aria-label="Language and global support"
+            >
+              <Globe2 size={25} />
             </button>
-            <div className="pointer-events-none absolute left-1/2 top-full w-[180px] -translate-x-1/2 pt-0 opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
+            <div className="pointer-events-none absolute right-0 top-full w-[180px] pt-4 opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
               <div className="overflow-hidden rounded-b-sm border border-black/10 bg-white py-2 shadow-[0_22px_60px_rgba(15,23,42,0.22)]">
                 {languageLinks.map((item) => (
                   <Link key={item.label} href={item.href} className="block px-4 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-100 hover:text-ignition">
@@ -134,7 +144,7 @@ export function SiteHeader() {
               </div>
             </div>
           </div>
-        </nav>
+        </div>
 
         <details className="mobile-nav relative xl:hidden">
           <summary className="grid h-10 w-10 cursor-pointer list-none place-items-center text-white transition hover:text-ignition" aria-label="Open navigation">
@@ -158,6 +168,13 @@ export function SiteHeader() {
               ))}
             </div>
 
+            <Link
+              href="/contact"
+              className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-sm bg-ignition text-sm font-semibold text-white"
+            >
+              Quote Now
+            </Link>
+
             <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-ignition">Language</p>
             <div className="mt-3 grid gap-2">
               {languageLinks.map((item) => (
@@ -175,7 +192,7 @@ export function SiteHeader() {
 
 function NavItem({ href, label }: { href: string; label: string }) {
   return (
-    <Link href={href} className="inline-flex h-full items-center text-sm font-semibold text-white transition hover:text-ignition">
+    <Link href={href} className="inline-flex h-full items-center text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:text-ignition">
       {label}
     </Link>
   );
@@ -184,7 +201,7 @@ function NavItem({ href, label }: { href: string; label: string }) {
 function SimpleDropdown({ label, href, links }: { label: string; href: string; links: { label: string; href: string }[] }) {
   return (
     <div className="group relative flex h-full items-center">
-      <Link href={href} className="inline-flex h-full items-center gap-1 text-sm font-semibold text-white transition hover:text-ignition">
+      <Link href={href} className="inline-flex h-full items-center gap-1 text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:text-ignition">
         {label}
         <ChevronDown size={15} />
       </Link>
@@ -203,28 +220,39 @@ function SimpleDropdown({ label, href, links }: { label: string; href: string; l
 
 function MachineMegaMenu() {
   return (
-    <div className="pointer-events-none absolute left-1/2 top-full w-[1120px] -translate-x-1/2 pt-0 opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
-      <div className="grid grid-cols-[0.7fr_1.3fr] overflow-hidden rounded-b-sm border border-black/10 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.22)]">
-        <div className="bg-neutral-950 p-7 text-white">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ignition">Machine</p>
-          <h3 className="mt-4 text-3xl font-semibold leading-tight">Sheet metal machinery solutions.</h3>
-          <p className="mt-4 text-sm leading-6 text-zinc-300">
-            Explore cutting, forming, duct production, and recycling equipment by production workflow.
-          </p>
-          <Link href="/products" className="mt-7 inline-flex items-center text-sm font-semibold text-ignition transition hover:text-neon">
-            All Machines
-            <ChevronDown size={15} className="-rotate-90" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-4 gap-x-7 gap-y-8 p-7">
-          {machineGroups.map((group) => (
-            <div key={group.label}>
-              <Link href={group.href} className="text-sm font-semibold text-neutral-950 transition hover:text-ignition">
-                {group.label}
+    <div className="pointer-events-none fixed left-0 top-[72px] z-50 w-screen opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
+      <div className="border-y border-white/10 bg-[#0B0D10] shadow-[0_35px_90px_rgba(0,0,0,0.58)]">
+        <div className="mx-auto grid max-w-[1440px] grid-cols-[0.72fr_1.28fr] gap-8 px-8 py-9">
+          <div className="border-r border-white/10 pr-9 text-white">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ignition">Solutions by Process</p>
+            <h3 className="mt-4 max-w-sm text-4xl font-semibold leading-tight">Find the right machine for your production line.</h3>
+            <p className="mt-4 max-w-sm text-sm leading-7 text-zinc-400">
+              Start from cutting, bending, rolling, duct production, pressing, or recycling. Then select the matched
+              model, control system, tooling, and optional automation.
+            </p>
+            <div className="mt-8 flex gap-3">
+              <Link href="/products" className="inline-flex h-11 items-center justify-center rounded-sm bg-ignition px-5 text-sm font-semibold text-white transition hover:bg-neon">
+                All Products
               </Link>
-              <CategoryColumn categoryId={group.categoryId} compact hideHeading />
+              <Link href="/contact" className="inline-flex h-11 items-center justify-center rounded-sm border border-white/25 px-5 text-sm font-semibold text-white transition hover:border-ignition hover:text-ignition">
+                Ask an Engineer
+              </Link>
             </div>
-          ))}
+            <div className="mt-9 border-t border-white/10 pt-5 text-xs leading-6 text-zinc-500">
+              Quote support: material, thickness, working length, output, voltage, and destination country.
+            </div>
+          </div>
+          <div className="grid grid-cols-4 gap-x-7 gap-y-7">
+            {machineGroups.map((group) => (
+              <div key={group.label} className="min-w-0">
+                <Link href={group.href} className="group/category flex min-h-12 items-start justify-between gap-3 border-b border-white/10 pb-3 text-sm font-semibold leading-5 text-white transition hover:text-ignition">
+                  {group.label}
+                  <ArrowRight size={14} className="mt-1 shrink-0 opacity-60 transition group-hover/category:translate-x-1" />
+                </Link>
+                <CategoryColumn categoryId={group.categoryId} compact hideHeading />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -244,14 +272,14 @@ function CategoryColumn({ categoryId, compact = false, hideHeading = false }: { 
   return (
     <div className="mt-3">
       {hideHeading ? null : (
-        <Link href={`/products#${category.id}`} className="text-sm font-semibold text-neutral-950 hover:text-ignition">
+        <Link href={`/products#${category.id}`} className="text-sm font-semibold text-white hover:text-ignition">
           {category.navLabel}
         </Link>
       )}
-      <p className="mt-2 text-xs leading-5 text-neutral-500">{category.summary}</p>
+      <p className="mt-2 text-xs leading-5 text-zinc-500">{category.summary}</p>
       <div className="mt-3 grid gap-2">
         {shownProducts.map((product) => (
-          <Link key={product.id} href={`/products/${product.id}`} className="text-xs leading-5 text-neutral-500 transition hover:text-neutral-950">
+          <Link key={product.id} href={`/products/${product.id}`} className="text-xs leading-5 text-zinc-400 transition hover:text-ignition">
             {product.name}
           </Link>
         ))}

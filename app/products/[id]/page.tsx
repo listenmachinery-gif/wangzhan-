@@ -95,37 +95,62 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
     .slice(0, 3);
   const advantages = product.advantages ?? product.highlights;
   const technicalParameters = product.technicalParameters;
+  const solutionMetrics = [
+    { value: `${product.applications.length}+`, label: "Application Scenarios" },
+    { value: `${product.options.length}+`, label: "Optional Configurations" },
+    { value: technicalParameters ? `${technicalParameters.rows.length}+` : `${product.specs.length}+`, label: "Specification Lines" },
+  ];
+  const solutionPath = [
+    {
+      title: "Workpiece Requirement",
+      text: "Share material, thickness, working length, finished part type, and expected daily output.",
+    },
+    {
+      title: "Machine Selection",
+      text: `${product.name} is reviewed against your process, accuracy, labor level, and factory layout.`,
+    },
+    {
+      title: "Configuration Match",
+      text: product.options.slice(0, 2).join(", ") || "Tooling, control, safety, and automation options are matched by application.",
+    },
+    {
+      title: "Quotation and Support",
+      text: "Receive model recommendation, quotation, delivery plan, installation guidance, and spare parts support.",
+    },
+  ];
 
   return (
-    <main className="bg-[#f4f6f8] text-[#101214]">
-      <section className="bg-graphite-950 px-4 py-12 text-white sm:px-8 lg:py-20">
+    <main className="overflow-x-hidden bg-[#f4f6f8] text-[#101214]">
+      <section className="relative isolate overflow-hidden bg-[#0B0D10] px-4 py-12 text-white sm:px-8 lg:py-20">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_18%_26%,rgba(118,185,0,0.16),transparent_28%),linear-gradient(135deg,#0B0D10_0%,#15191f_54%,#08090b_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 -z-10 h-60 bg-gradient-to-t from-black/70 to-transparent" />
         <div className="mx-auto max-w-[1440px]">
           <Link href="/products" className="inline-flex items-center gap-2 text-sm text-zinc-300 transition hover:text-white">
             <ArrowLeft size={16} />
             Back to Products
           </Link>
 
-          <div className="mt-10 grid min-w-0 gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center xl:gap-12">
-            <div className="relative aspect-[1.25] min-w-0 overflow-hidden bg-graphite-950 sm:aspect-[1.36] lg:aspect-[1.16]">
+          <div className="mt-10 grid min-w-0 gap-8 lg:grid-cols-[1.22fr_0.78fr] lg:items-center xl:gap-12">
+            <div className="relative aspect-[1.55] min-w-0 overflow-hidden sm:aspect-[1.32] lg:aspect-[1.08]">
               <Image
                 src={product.image}
                 alt={product.name}
                 fill
                 priority
                 sizes="(min-width: 1280px) 58vw, (min-width: 1024px) 60vw, 100vw"
-                className="object-contain"
+                className="object-contain p-3 sm:p-0"
               />
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-ignition">{product.categoryName}</p>
-              <h1 className="mt-5 break-words text-4xl font-semibold leading-tight text-white sm:text-6xl">{product.name}</h1>
+              <h1 className="mt-5 max-w-full break-words text-3xl font-semibold leading-tight text-white sm:text-6xl">{product.name}</h1>
               {product.performanceFeatures ? (
                 <div className="mt-6 border-l-2 border-ignition pl-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ignition">Performance and Features</p>
-                  <p className="mt-3 min-w-0 text-base leading-8 text-zinc-300">{product.performanceFeatures}</p>
+                  <p className="mt-3 min-w-0 text-sm leading-7 text-zinc-300 sm:text-base sm:leading-8">{product.performanceFeatures}</p>
                 </div>
               ) : (
-                <p className="mt-6 text-base leading-8 text-zinc-300">{product.tagline}</p>
+                <p className="mt-6 text-sm leading-7 text-zinc-300 sm:text-base sm:leading-8">{product.tagline}</p>
               )}
               {category && !product.performanceFeatures ? <p className="mt-4 text-sm leading-6 text-zinc-400">{category.description}</p> : null}
               <div className="mt-8 flex flex-wrap gap-3">
@@ -138,6 +163,43 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
               </div>
             </div>
           </div>
+
+          <div className="mt-12 grid gap-5 border-y border-white/15 py-7 sm:grid-cols-3">
+            {solutionMetrics.map((metric) => (
+              <div key={metric.label}>
+                <p className="text-4xl font-semibold tracking-normal text-white">{metric.value}</p>
+                <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-400">{metric.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white px-5 py-14 sm:px-8 lg:py-20">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.72fr_1.28fr]">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ignition">Solution Path</p>
+            <h2 className="mt-3 text-4xl font-semibold leading-tight text-neutral-950 sm:text-5xl">
+              From production need to matched configuration.
+            </h2>
+            <p className="mt-5 max-w-xl text-base leading-8 text-neutral-600">
+              This product page is structured to help buyers confirm fit, not only compare specifications.
+            </p>
+          </div>
+          <div className="grid gap-x-12 md:grid-cols-2">
+            {solutionPath.map((item, index) => (
+              <div key={item.title} className="border-b border-neutral-200 py-7">
+                <div className="flex items-start gap-5">
+                  <span className="mt-2 h-4 w-4 shrink-0 bg-[#76B900]" />
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ignition">0{index + 1}</p>
+                    <h3 className="mt-2 text-xl font-semibold leading-tight text-neutral-950">{item.title}</h3>
+                    <p className="mt-3 text-base leading-7 text-neutral-600">{item.text}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -145,7 +207,7 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
         <div className="mx-auto max-w-7xl">
           <div className="rounded-md bg-white p-5 shadow-sm sm:p-8">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ignition">Advantages</p>
-            <h2 className="mt-3 text-3xl font-semibold text-neutral-950">Built for efficient, repeatable cutting.</h2>
+            <h2 className="mt-3 text-3xl font-semibold text-neutral-950">Production advantages for this machine.</h2>
             <div className="mt-6 grid gap-x-12 md:grid-cols-2">
               {advantages.map((item) => (
                 <AdvantageItem key={item} item={item} />

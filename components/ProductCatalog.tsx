@@ -11,6 +11,10 @@ type ProductCatalogProps = {
   categories: ProductCategory[];
 };
 
+function usesProductCutout(image: string) {
+  return image.includes("/products/shearing/") || image.includes("/products/bending/");
+}
+
 export function ProductCatalog({ products, categories }: ProductCatalogProps) {
   const [activeCategory, setActiveCategory] = useState("all");
 
@@ -20,87 +24,136 @@ export function ProductCatalog({ products, categories }: ProductCatalogProps) {
   );
 
   return (
-    <section className="px-5 pb-16 sm:px-8">
-      <div className="mx-auto max-w-7xl overflow-x-auto">
-        <div className="flex min-w-max gap-3 py-1">
-          <button
-            type="button"
-            onClick={() => setActiveCategory("all")}
-            className={`h-10 rounded-sm px-5 text-sm font-semibold transition ${
-              activeCategory === "all"
-                ? "bg-ignition text-white"
-                : "bg-white text-neutral-700 shadow-sm hover:bg-neutral-100"
-            }`}
-          >
-            All Products
-          </button>
-          {categories.map((category) => (
+    <section className="bg-[#0B0D10] px-5 py-14 text-white sm:px-8 lg:py-24">
+      <div className="mx-auto max-w-[1440px]">
+        <div className="grid gap-8 lg:grid-cols-[0.76fr_1.24fr] lg:items-end">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-ignition">Product Solutions</p>
+            <h2 className="mt-4 text-4xl font-semibold leading-tight sm:text-6xl">Select machines by production workflow.</h2>
+          </div>
+          <div className="lg:justify-self-end">
+            <p className="max-w-3xl text-base leading-8 text-zinc-400">
+              Browse every ZYRON product family as a complete solution group. Each section links the manufacturing
+              process, suitable machine types, and quotation path.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-10 overflow-x-auto border-y border-white/10 py-4">
+          <div className="flex min-w-max gap-3">
             <button
-              key={category.id}
               type="button"
-              onClick={() => setActiveCategory(category.id)}
-              className={`h-10 rounded-sm px-5 text-sm font-semibold transition ${
-                activeCategory === category.id
+              onClick={() => setActiveCategory("all")}
+              className={`h-10 rounded-sm px-5 text-xs font-semibold uppercase tracking-[0.08em] transition ${
+                activeCategory === "all"
                   ? "bg-ignition text-white"
-                  : "bg-white text-neutral-700 shadow-sm hover:bg-neutral-100"
+                  : "border border-white/15 text-zinc-300 hover:border-ignition hover:text-white"
               }`}
             >
-              {category.navLabel}
+              All Solutions
             </button>
-          ))}
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                type="button"
+                onClick={() => setActiveCategory(category.id)}
+                className={`h-10 rounded-sm px-5 text-xs font-semibold uppercase tracking-[0.08em] transition ${
+                  activeCategory === category.id
+                    ? "bg-ignition text-white"
+                    : "border border-white/15 text-zinc-300 hover:border-ignition hover:text-white"
+                }`}
+              >
+                {category.navLabel}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div className="mx-auto mt-8 grid max-w-7xl gap-10">
-        {visibleCategories.map((category) => {
-          const categoryProducts = products.filter((product) => product.categoryId === category.id);
+        <div className="mt-12 grid gap-8">
+          {visibleCategories.map((category, index) => {
+            const categoryProducts = products.filter((product) => product.categoryId === category.id);
+            const featuredProduct = categoryProducts[0];
 
-          return (
-            <section key={category.id} id={category.id} className="scroll-mt-24">
-              <div className="mb-5 flex flex-col justify-between gap-4 border-b border-neutral-200 pb-5 lg:flex-row lg:items-end">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ignition">{category.capability}</p>
-                  <h2 className="mt-2 text-3xl font-semibold text-neutral-950 sm:text-4xl">{category.name}</h2>
-                  <p className="mt-3 max-w-3xl text-sm leading-6 text-neutral-600">{category.description}</p>
+            return (
+              <section
+                key={category.id}
+                id={category.id}
+                className="scroll-mt-24 overflow-hidden rounded-sm border border-white/10 bg-white/[0.035]"
+              >
+                <div className="grid gap-0 lg:grid-cols-2">
+                  <div className={`relative min-h-[380px] bg-gradient-to-b from-white/[0.07] to-transparent ${index % 2 ? "lg:order-2" : ""}`}>
+                    <Image
+                      src={category.image}
+                      alt={category.name}
+                      fill
+                      sizes="(min-width: 1024px) 50vw, 100vw"
+                      className={`${usesProductCutout(category.image) ? "object-contain p-8 sm:p-12" : "object-cover"} transition duration-700`}
+                    />
+                  </div>
+
+                  <div className={`flex min-h-[380px] flex-col justify-center p-7 sm:p-10 lg:p-12 ${index % 2 ? "lg:order-1" : ""}`}>
+                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-ignition">{category.capability}</p>
+                    <h3 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">{category.name}</h3>
+                    <p className="mt-5 text-base leading-8 text-zinc-400">{category.description}</p>
+                    <div className="mt-7 grid gap-3 sm:grid-cols-2">
+                      {categoryProducts.slice(0, 4).map((product) => (
+                        <Link
+                          key={product.id}
+                          href={`/products/${product.id}`}
+                          className="flex items-center gap-3 border-t border-white/10 pt-3 text-sm font-semibold text-zinc-200 transition hover:text-ignition"
+                        >
+                          <CheckCircle2 size={16} className="shrink-0 text-ignition" />
+                          {product.name}
+                        </Link>
+                      ))}
+                    </div>
+                    <div className="mt-8 flex flex-wrap gap-3">
+                      <Link
+                        href={featuredProduct ? `/products/${featuredProduct.id}` : `/products#${category.id}`}
+                        className="inline-flex h-11 items-center justify-center rounded-sm bg-ignition px-5 text-sm font-semibold text-white transition hover:bg-neon"
+                      >
+                        View Products
+                      </Link>
+                      <Link
+                        href="/contact"
+                        className="inline-flex h-11 items-center justify-center rounded-sm border border-white/25 px-5 text-sm font-semibold text-white transition hover:border-ignition hover:text-ignition"
+                      >
+                        Get Solution Advice
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-                <span className="text-sm font-semibold text-neutral-500">{categoryProducts.length} machine types</span>
-              </div>
 
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {categoryProducts.map((product) => (
-                  <Link key={product.id} href={`/products/${product.id}`} className="group overflow-hidden rounded-md bg-white shadow-sm">
-                    <div className="relative aspect-[1.32] overflow-hidden bg-neutral-100">
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
-                        className={`${product.image.includes("/products/shearing/") || product.image.includes("/products/bending/") ? "object-contain p-4" : "object-cover"} transition duration-700 group-hover:scale-105`}
-                      />
-                    </div>
-                    <div className="p-6">
-                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ignition">{product.categoryName}</p>
-                      <h3 className="mt-3 min-h-16 text-2xl font-semibold leading-tight text-neutral-950">{product.name}</h3>
-                      <p className="mt-3 min-h-20 text-sm leading-6 text-neutral-600">{product.tagline}</p>
-                      <div className="mt-5 grid gap-2">
-                        {product.highlights.slice(0, 2).map((item) => (
-                          <span key={item} className="flex items-center gap-2 text-sm text-neutral-600">
-                            <CheckCircle2 size={15} className="shrink-0 text-ignition" />
-                            {item}
-                          </span>
-                        ))}
+                <div className="grid border-t border-white/10 bg-black/20 md:grid-cols-2 xl:grid-cols-4">
+                  {categoryProducts.map((product) => (
+                    <Link
+                      key={product.id}
+                      href={`/products/${product.id}`}
+                      className="group border-b border-r border-white/10 p-5 transition hover:bg-white/[0.06] md:p-6"
+                    >
+                      <div className="relative mb-5 aspect-[1.28] overflow-hidden rounded-sm bg-white/[0.04]">
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
+                          className={`${usesProductCutout(product.image) ? "object-contain p-3" : "object-cover"} transition duration-700 group-hover:scale-105`}
+                        />
                       </div>
-                      <span className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-ignition">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ignition">{product.categoryName}</p>
+                      <h4 className="mt-3 text-xl font-semibold leading-tight text-white">{product.name}</h4>
+                      <p className="mt-3 text-sm leading-6 text-zinc-500">{product.tagline}</p>
+                      <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white">
                         Learn More
-                        <ArrowRight size={15} />
+                        <ArrowRight size={15} className="transition group-hover:translate-x-1" />
                       </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          );
-        })}
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
