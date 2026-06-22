@@ -10,6 +10,32 @@ type InquiryFormProps = {
 
 type SubmitState = "idle" | "sending" | "success" | "error";
 
+function getText(value: FormDataEntryValue | undefined) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function buildMailto(formData: FormData) {
+  const name = getText(formData.get("name") ?? undefined);
+  const email = getText(formData.get("email") ?? undefined);
+  const whatsapp = getText(formData.get("whatsapp") ?? undefined);
+  const productInterest = getText(formData.get("productInterest") ?? undefined);
+  const destinationCountry = getText(formData.get("destinationCountry") ?? undefined);
+  const requirement = getText(formData.get("requirement") ?? undefined);
+  const subject = `New ZYRON inquiry from ${name || "website visitor"}`;
+  const body = [
+    `Name: ${name}`,
+    `Email: ${email}`,
+    `WhatsApp / Phone: ${whatsapp || "-"}`,
+    `Product Interest: ${productInterest || "-"}`,
+    `Destination Country: ${destinationCountry || "-"}`,
+    "",
+    "Production Requirement:",
+    requirement,
+  ].join("\n");
+
+  return `mailto:info@zyroncnc.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
 export function InquiryForm({ productCategories }: InquiryFormProps) {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [message, setMessage] = useState("");
@@ -22,6 +48,7 @@ export function InquiryForm({ productCategories }: InquiryFormProps) {
     const form = event.currentTarget;
     const formData = new FormData(form);
     const payload = Object.fromEntries(formData.entries());
+    const fallbackMailto = buildMailto(formData);
 
     try {
       const response = await fetch("/api/inquiry", {
@@ -42,7 +69,10 @@ export function InquiryForm({ productCategories }: InquiryFormProps) {
       form.reset();
     } catch (error) {
       setSubmitState("error");
-      setMessage(error instanceof Error ? error.message : "Inquiry could not be sent.");
+      setMessage(
+        "Direct email delivery is being configured. Your email app has been opened with the inquiry details, or you can send them to info@zyroncnc.com.",
+      );
+      window.location.href = fallbackMailto;
     }
   }
 
