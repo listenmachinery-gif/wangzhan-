@@ -65,7 +65,7 @@ export default function Home() {
     <main className="bg-[#f4f6f8] text-[#101214]">
       <section className="relative isolate min-h-[calc(100vh-4rem)] overflow-hidden bg-graphite-950 px-5 py-16 text-white sm:px-8 lg:py-24">
         <video
-          className="absolute inset-0 z-0 h-full w-full object-cover object-center"
+          className="absolute inset-0 z-0 h-full w-full object-cover object-center brightness-[0.48] contrast-[1.06]"
           src="/brand/zyron-hero-video.mp4"
           poster="/products/hydraulic-press-brake-hero.png"
           autoPlay
@@ -76,9 +76,9 @@ export default function Home() {
           preload="metadata"
           aria-label="ZYRON hydraulic press brake production video"
         />
-        <div className="pointer-events-none absolute inset-0 z-10 bg-black/62" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-40 bg-gradient-to-b from-black/90 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[42vh] bg-gradient-to-t from-black/92 via-black/60 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 z-10 bg-black/72" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-44 bg-gradient-to-b from-black/95 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[46vh] bg-gradient-to-t from-black/96 via-black/70 to-transparent" />
 
         <div className="relative z-20 mx-auto flex min-h-[calc(100vh-12rem)] max-w-[1440px] flex-col items-center justify-center text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.32em] text-ignition">ZYRON Heavy Industry</p>

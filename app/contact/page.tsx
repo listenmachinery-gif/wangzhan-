@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Mail, MapPin, MessageCircle, Send } from "lucide-react";
+import { Mail, MapPin, MessageCircle } from "lucide-react";
+import { InquiryForm } from "@/components/InquiryForm";
 import { productCategories } from "@/data/products";
 
 export const metadata = {
@@ -11,9 +12,13 @@ export const metadata = {
 };
 
 const contactItems = [
-  { icon: Mail, title: "Email", value: "sales@zhuoyao-industry.com" },
-  { icon: MessageCircle, title: "WhatsApp", value: "+86 400 888 2026" },
-  { icon: MapPin, title: "Factory Location", value: "China Machinery Manufacturing Base" },
+  { icon: Mail, title: "Email", value: "info@zyroncnc.com" },
+  { icon: MessageCircle, title: "WhatsApp", value: "+8615655537083" },
+  {
+    icon: MapPin,
+    title: "Factory Location",
+    value: "Dongjiao Industrial Park, Bowang Town, Bowang District, Ma'anshan City, Anhui Province, China",
+  },
 ];
 
 export default function ContactPage() {
@@ -47,46 +52,7 @@ export default function ContactPage() {
             })}
           </div>
 
-          <form className="rounded-md bg-white p-7 shadow-sm lg:p-9">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ignition">Inquiry Form</p>
-            <h2 className="mt-3 text-3xl font-semibold text-neutral-950">Tell us what you need.</h2>
-            <div className="mt-7 grid gap-4 md:grid-cols-2">
-              <label className="grid gap-2 text-sm font-semibold text-neutral-700">
-                Name
-                <input className="h-11 rounded-sm border border-neutral-200 px-3 font-normal outline-none transition focus:border-ignition" placeholder="Your name" />
-              </label>
-              <label className="grid gap-2 text-sm font-semibold text-neutral-700">
-                Email
-                <input className="h-11 rounded-sm border border-neutral-200 px-3 font-normal outline-none transition focus:border-ignition" placeholder="name@company.com" />
-              </label>
-              <label className="grid gap-2 text-sm font-semibold text-neutral-700">
-                Product Interest
-                <select className="h-11 rounded-sm border border-neutral-200 px-3 font-normal outline-none transition focus:border-ignition">
-                  {productCategories.map((category) => (
-                    <option key={category.id}>{category.name}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="grid gap-2 text-sm font-semibold text-neutral-700">
-                Destination Country
-                <input className="h-11 rounded-sm border border-neutral-200 px-3 font-normal outline-none transition focus:border-ignition" placeholder="Country / region" />
-              </label>
-              <label className="grid gap-2 text-sm font-semibold text-neutral-700 md:col-span-2">
-                Production Requirement
-                <textarea
-                  className="min-h-32 rounded-sm border border-neutral-200 px-3 py-3 font-normal outline-none transition focus:border-ignition"
-                  placeholder="Material, thickness, working length, daily output, voltage, and any optional configuration."
-                />
-              </label>
-            </div>
-            <button
-              type="button"
-              className="mt-6 inline-flex items-center gap-2 rounded-sm bg-ignition px-5 py-3 text-sm font-semibold text-white transition hover:bg-neon"
-            >
-              Send Inquiry
-              <Send size={16} />
-            </button>
-          </form>
+          <InquiryForm productCategories={productCategories} />
         </div>
       </section>
 
