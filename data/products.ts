@@ -81,7 +81,7 @@ export const productCategories: ProductCategory[] = [
     summary: "Single table, exchange table, tube-sheet, and tube laser cutting machines.",
     description:
       "Fiber laser systems for high-speed plate cutting, tube cutting, mixed-material workshops, and automated production.",
-    image: "/products/detail-control-box.jpg",
+    image: "/products/home-categories/laser-cutting-machine.png",
     capability: "Laser cutting",
   },
   {
@@ -91,7 +91,7 @@ export const productCategories: ProductCategory[] = [
     summary: "Semi-automatic, fully automatic, hydraulic, and four-roller rolling machines.",
     description:
       "Plate rolling equipment for cylinders, cones, HVAC parts, pressure vessels, and general metal forming.",
-    image: "/products/detail-back-system.jpg",
+    image: "/products/home-categories/four-roll-hydraulic-plate-rolling-machine.png",
     capability: "Rolling and forming",
   },
   {
@@ -101,7 +101,7 @@ export const productCategories: ProductCategory[] = [
     summary: "Pneumatic, mechanical, hydraulic, and four-column press solutions.",
     description:
       "Press equipment for punching, forming, stamping, flattening, assembling, and workshop production support.",
-    image: "/products/detail-pressing.jpg",
+    image: "/products/home-categories/four-column-hydraulic-press.png",
     capability: "Pressing and punching",
   },
   {
@@ -111,7 +111,7 @@ export const productCategories: ProductCategory[] = [
     summary: "Beading, lock forming, TDF flange, seam closing, and angle flange lines.",
     description:
       "Machines for rectangular HVAC duct forming, reinforcement, flange making, seam closing, and modular production lines.",
-    image: "/products/detail-feeding-balls.jpg",
+    image: "/products/home-categories/rectangular-air-duct-production-line.png",
     capability: "HVAC rectangular duct",
   },
   {
@@ -121,7 +121,7 @@ export const productCategories: ProductCategory[] = [
     summary: "Round rolling, elbow forming, spiral duct, wiring, and seam closing machines.",
     description:
       "Round duct machinery for spiral duct manufacturing, elbow fabrication, ring rolling, and circular duct closing.",
-    image: "/products/detail-adjustment.jpg",
+    image: "/products/home-categories/spiral-air-duct-production-line.png",
     capability: "HVAC round duct",
   },
   {
@@ -131,7 +131,7 @@ export const productCategories: ProductCategory[] = [
     summary: "Crusher, single shaft shredder, and double shaft shredder equipment.",
     description:
       "Material size-reduction systems for recycling, scrap processing, waste handling, and production line recovery.",
-    image: "/products/detail-welded-body.jpg",
+    image: "/products/home-categories/dual-shaft-shredder.png",
     capability: "Size reduction",
   },
 ];

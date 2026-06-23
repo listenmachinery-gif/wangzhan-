@@ -12,7 +12,11 @@ type ProductCatalogProps = {
 };
 
 function usesProductCutout(image: string) {
-  return image.includes("/products/shearing/") || image.includes("/products/bending/");
+  return (
+    image.includes("/products/shearing/") ||
+    image.includes("/products/bending/") ||
+    image.includes("/products/home-categories/")
+  );
 }
 
 export function ProductCatalog({ products, categories }: ProductCatalogProps) {

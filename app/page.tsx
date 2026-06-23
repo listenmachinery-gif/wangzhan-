@@ -57,7 +57,11 @@ const solutionSteps = [
 ];
 
 function usesProductCutout(image: string) {
-  return image.includes("/products/shearing/") || image.includes("/products/bending/");
+  return (
+    image.includes("/products/shearing/") ||
+    image.includes("/products/bending/") ||
+    image.includes("/products/home-categories/")
+  );
 }
 
 export default function Home() {
@@ -116,14 +120,14 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
+      <section className="bg-white px-5 py-16 text-[#101214] sm:px-8 lg:py-24">
         <div className="mx-auto max-w-[1440px]">
           <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-ignition">Solutions</p>
-              <h2 className="mt-4 text-4xl font-semibold leading-tight sm:text-6xl">Choose by production process.</h2>
+              <h2 className="mt-4 text-4xl font-semibold leading-tight text-[#101214] sm:text-6xl">Choose by production process.</h2>
             </div>
-            <p className="max-w-3xl text-base leading-8 text-zinc-400 lg:justify-self-end">
+            <p className="max-w-3xl text-base leading-8 text-zinc-600 lg:justify-self-end">
               Instead of starting from a single machine name, ZYRON helps buyers define the full workflow: process,
               material, accuracy, labor level, optional automation, and service plan.
             </p>
@@ -134,10 +138,10 @@ export default function Home() {
               <Link
                 key={category.id}
                 href={`/products#${category.id}`}
-                className="group relative min-h-[520px] overflow-hidden rounded-sm border border-white/10 bg-white/[0.03] transition hover:border-ignition"
+                className="group relative min-h-[520px] overflow-hidden rounded-sm border border-zinc-200 bg-white shadow-[0_18px_55px_rgba(11,13,16,0.08)] transition hover:border-ignition hover:shadow-[0_24px_70px_rgba(11,13,16,0.12)]"
               >
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(118,185,0,0.14),transparent_34%)] opacity-0 transition group-hover:opacity-100" />
-                <div className="relative h-72 border-b border-white/10 bg-gradient-to-b from-white/[0.06] to-transparent">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(118,185,0,0.1),transparent_36%)] opacity-0 transition group-hover:opacity-100" />
+                <div className="relative h-72 border-b border-zinc-200 bg-[#f4f6f8]">
                   <Image
                     src={category.image}
                     alt={category.name}
@@ -148,9 +152,9 @@ export default function Home() {
                 </div>
                 <div className="relative p-6">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ignition">{category.capability}</p>
-                  <h3 className="mt-3 text-2xl font-semibold leading-tight text-white">{category.name}</h3>
-                  <p className="mt-4 text-sm leading-6 text-zinc-400">{category.summary}</p>
-                  <span className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-white">
+                  <h3 className="mt-3 text-2xl font-semibold leading-tight text-[#101214]">{category.name}</h3>
+                  <p className="mt-4 text-sm leading-6 text-zinc-600">{category.summary}</p>
+                  <span className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-[#101214]">
                     View Solution
                     <ArrowRight size={15} className="transition group-hover:translate-x-1" />
                   </span>
