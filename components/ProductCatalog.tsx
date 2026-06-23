@@ -19,6 +19,10 @@ function usesProductCutout(image: string) {
   );
 }
 
+function getCategoryHref(categoryId: string) {
+  return `/products/series/${categoryId}`;
+}
+
 export function ProductCatalog({ products, categories }: ProductCatalogProps) {
   const [activeCategory, setActiveCategory] = useState("all");
 
@@ -76,8 +80,6 @@ export function ProductCatalog({ products, categories }: ProductCatalogProps) {
         <div className="mt-12 grid gap-8">
           {visibleCategories.map((category, index) => {
             const categoryProducts = products.filter((product) => product.categoryId === category.id);
-            const featuredProduct = categoryProducts[0];
-
             return (
               <section
                 key={category.id}
@@ -113,10 +115,10 @@ export function ProductCatalog({ products, categories }: ProductCatalogProps) {
                     </div>
                     <div className="mt-8 flex flex-wrap gap-3">
                       <Link
-                        href={featuredProduct ? `/products/${featuredProduct.id}` : `/products#${category.id}`}
+                        href={getCategoryHref(category.id)}
                         className="inline-flex h-11 items-center justify-center rounded-sm bg-ignition px-5 text-sm font-semibold text-white transition hover:bg-neon"
                       >
-                        View Products
+                        View Series
                       </Link>
                       <Link
                         href="/contact"

@@ -405,3 +405,7 @@ export function getProductsByCategory(categoryId: string) {
 export function getCategoryById(categoryId: string) {
   return productCategories.find((category) => category.id === categoryId);
 }
+
+export function getCategoryHref(categoryId: string) {
+  return `/products/series/${categoryId}`;
+}

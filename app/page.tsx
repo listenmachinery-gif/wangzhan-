@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Factory, Headphones, PackageCheck, SlidersHorizontal, Wrench } from "lucide-react";
+import { ArrowRight, Factory, Headphones, PackageCheck, SlidersHorizontal, Wrench } from "lucide-react";
 import ExhibitionCarousel from "@/components/ExhibitionCarousel";
-import { productCategories } from "@/data/products";
+import { getCategoryHref, productCategories } from "@/data/products";
 
 export const metadata: Metadata = {
   title: "ZYRON Heavy Industry | Industrial Sheet Metal & Duct Machinery Manufacturer",
@@ -28,24 +28,26 @@ const certificateHighlights = [
   "Trademark Protection",
 ];
 
-const supportTiles = [
+const whyChooseTiles = [
   {
     icon: SlidersHorizontal,
-    title: "Machine Selection",
-    text: "Match model, working length, material thickness, control system, tooling, and optional automation.",
-    href: "/contact",
+    title: "Complete Product Range",
+    text: "Cutting, bending, rolling, pressing, duct forming, laser cutting, and shredding solutions from one supplier.",
   },
   {
     icon: Wrench,
-    title: "Engineering Support",
-    text: "Get configuration guidance for cutting, bending, duct production, pressing, rolling, and shredding workflows.",
-    href: "/contact",
+    title: "Configuration Guidance",
+    text: "Machines are matched around material, thickness, working length, output target, voltage, and workshop layout.",
   },
   {
-    icon: BookOpen,
-    title: "Buying Guides",
-    text: "Read practical guides for comparing shears, press brakes, duct machines, laser cutters, and shredders.",
-    href: "/news",
+    icon: PackageCheck,
+    title: "Factory Quality Control",
+    text: "Machine structure, assembly, testing, packing, and export preparation are managed under one production system.",
+  },
+  {
+    icon: Headphones,
+    title: "Global Service Support",
+    text: "Quotation, technical documents, operation guidance, spare parts, and after-sales support for overseas buyers.",
   },
 ];
 
@@ -76,7 +78,6 @@ export default function Home() {
           muted
           loop
           playsInline
-          controls
           preload="metadata"
           aria-label="ZYRON hydraulic press brake production video"
         />
@@ -120,14 +121,14 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-white px-5 py-16 text-[#101214] sm:px-8 lg:py-24">
+      <section className="bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
         <div className="mx-auto max-w-[1440px]">
           <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-ignition">Solutions</p>
-              <h2 className="mt-4 text-4xl font-semibold leading-tight text-[#101214] sm:text-6xl">Choose by production process.</h2>
+              <h2 className="mt-4 text-4xl font-semibold leading-tight text-white sm:text-6xl">Choose by production process.</h2>
             </div>
-            <p className="max-w-3xl text-base leading-8 text-zinc-600 lg:justify-self-end">
+            <p className="max-w-3xl text-base leading-8 text-zinc-400 lg:justify-self-end">
               Instead of starting from a single machine name, ZYRON helps buyers define the full workflow: process,
               material, accuracy, labor level, optional automation, and service plan.
             </p>
@@ -137,24 +138,24 @@ export default function Home() {
             {productCategories.map((category) => (
               <Link
                 key={category.id}
-                href={`/products#${category.id}`}
-                className="group relative min-h-[520px] overflow-hidden rounded-sm border border-zinc-200 bg-white shadow-[0_18px_55px_rgba(11,13,16,0.08)] transition hover:border-ignition hover:shadow-[0_24px_70px_rgba(11,13,16,0.12)]"
+                href={getCategoryHref(category.id)}
+                className="group relative min-h-[540px] overflow-hidden rounded-sm border border-white/10 bg-white/[0.03] transition hover:border-ignition"
               >
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(118,185,0,0.1),transparent_36%)] opacity-0 transition group-hover:opacity-100" />
-                <div className="relative h-72 border-b border-zinc-200 bg-[#f4f6f8]">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(118,185,0,0.14),transparent_34%)] opacity-0 transition group-hover:opacity-100" />
+                <div className="relative h-80 border-b border-white/10 bg-gradient-to-b from-white/[0.08] to-transparent">
                   <Image
                     src={category.image}
                     alt={category.name}
                     fill
                     sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
-                    className={`${usesProductCutout(category.image) ? "object-contain p-8" : "object-cover"} transition duration-700 group-hover:scale-105`}
+                    className={`${usesProductCutout(category.image) ? "object-contain p-2 sm:p-3" : "object-contain p-2 sm:p-3"} transition duration-700`}
                   />
                 </div>
                 <div className="relative p-6">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ignition">{category.capability}</p>
-                  <h3 className="mt-3 text-2xl font-semibold leading-tight text-[#101214]">{category.name}</h3>
-                  <p className="mt-4 text-sm leading-6 text-zinc-600">{category.summary}</p>
-                  <span className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-[#101214]">
+                  <h3 className="mt-3 text-2xl font-semibold leading-tight text-white">{category.name}</h3>
+                  <p className="mt-4 text-sm leading-6 text-zinc-400">{category.summary}</p>
+                  <span className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-white">
                     View Solution
                     <ArrowRight size={15} className="transition group-hover:translate-x-1" />
                   </span>
@@ -173,8 +174,10 @@ export default function Home() {
           sizes="100vw"
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/94 via-black/62 to-black/20" />
-        <div className="absolute inset-x-0 bottom-0 h-[44vh] bg-gradient-to-t from-black/96 via-black/58 to-transparent" />
+        <div className="absolute inset-0 bg-black/24" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/98 via-black/78 to-black/30" />
+        <div className="absolute inset-y-0 left-0 w-full bg-[linear-gradient(90deg,rgba(0,0,0,0.72)_0%,rgba(0,0,0,0.5)_42%,rgba(0,0,0,0.18)_78%,rgba(0,0,0,0.08)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-[52vh] bg-gradient-to-t from-black/98 via-black/68 to-transparent" />
 
         <div className="relative z-10 mx-auto grid min-h-screen max-w-[1440px] gap-10 py-16 sm:py-20 lg:grid-cols-[0.85fr_1.15fr] lg:items-end lg:py-24">
           <div className="max-w-2xl self-center lg:self-end">
@@ -240,30 +243,35 @@ export default function Home() {
         <div className="mx-auto max-w-[1440px]">
           <div className="grid gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-ignition">Support</p>
-              <h2 className="mt-4 text-4xl font-semibold leading-tight sm:text-6xl">From selection to operation.</h2>
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-ignition">Why Choose ZYRON</p>
+              <h2 className="mt-4 text-4xl font-semibold leading-tight sm:text-6xl">Built for buyers who need practical production answers.</h2>
             </div>
             <p className="max-w-3xl text-base leading-8 text-zinc-400">
-              The right machine is a complete operating plan. ZYRON supports model selection, optional configuration,
-              delivery preparation, installation guidance, and long-term spare parts planning.
+              ZYRON focuses on complete sheet metal workflows, not isolated machines. We help customers confirm the
+              right process, model, configuration, delivery plan, and support path before purchase.
             </p>
           </div>
 
-          <div className="mt-12 grid gap-4 md:grid-cols-3">
-            {supportTiles.map((tile) => {
+          <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {whyChooseTiles.map((tile) => {
               const Icon = tile.icon;
               return (
-                <Link key={tile.title} href={tile.href} className="rounded-sm border border-white/10 bg-white/[0.04] p-7 transition hover:border-ignition">
+                <div key={tile.title} className="rounded-sm border border-white/10 bg-white/[0.04] p-7 transition hover:border-ignition">
                   <Icon size={28} className="text-ignition" />
                   <h3 className="mt-5 text-2xl font-semibold">{tile.title}</h3>
                   <p className="mt-3 text-sm leading-6 text-zinc-400">{tile.text}</p>
-                  <span className="mt-7 inline-flex items-center gap-1 text-sm font-semibold text-white">
-                    Learn More
-                    <ArrowRight size={15} />
-                  </span>
-                </Link>
+                </div>
               );
             })}
+          </div>
+
+          <div className="mt-10 flex flex-wrap gap-3">
+            <Link href="/products" className="inline-flex h-11 items-center justify-center rounded-sm bg-ignition px-5 text-sm font-semibold text-white transition hover:bg-neon">
+              Explore Product Series
+            </Link>
+            <Link href="/contact" className="inline-flex h-11 items-center justify-center rounded-sm border border-white/25 px-5 text-sm font-semibold text-white transition hover:border-ignition hover:text-ignition">
+              Ask an Engineer
+            </Link>
           </div>
         </div>
       </section>

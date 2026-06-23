@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { productCategories } from "@/data/products";
+import { getCategoryHref, productCategories } from "@/data/products";
 
 const supportLinks = [
   { label: "Contact Support", href: "/contact" },
@@ -54,7 +54,7 @@ export function SiteFooter() {
             <p className="text-sm font-semibold text-white">Product Categories</p>
             <div className="mt-4 grid gap-3 text-sm text-zinc-400 sm:grid-cols-2">
               {productCategories.map((category) => (
-                <Link key={category.id} href={`/products#${category.id}`} className="transition hover:text-white">
+                <Link key={category.id} href={getCategoryHref(category.id)} className="transition hover:text-white">
                   {category.navLabel}
                 </Link>
               ))}

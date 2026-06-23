@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { products } from "@/data/products";
+import { getCategoryHref, productCategories, products } from "@/data/products";
 
 const siteUrl = "https://www.zyroncnc.com";
 
@@ -21,6 +21,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: route.changeFrequency,
       priority: route.priority,
+    })),
+    ...productCategories.map((category) => ({
+      url: `${siteUrl}${getCategoryHref(category.id)}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.85,
     })),
     ...products.map((product) => ({
       url: `${siteUrl}/products/${product.id}`,

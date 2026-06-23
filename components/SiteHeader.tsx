@@ -1,47 +1,47 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ChevronDown, Globe2, Menu } from "lucide-react";
-import { productCategories, products } from "@/data/products";
+import { getCategoryHref, productCategories, products } from "@/data/products";
 
 const machineGroups = [
   {
     label: "Shearing Machine Series",
-    href: "/products#shearing-machines",
+    href: getCategoryHref("shearing-machines"),
     categoryId: "shearing-machines",
   },
   {
     label: "Bending Machine Series",
-    href: "/products#bending-machines",
+    href: getCategoryHref("bending-machines"),
     categoryId: "bending-machines",
   },
   {
     label: "Laser Cutting Machine Series",
-    href: "/products#laser-cutting-machines",
+    href: getCategoryHref("laser-cutting-machines"),
     categoryId: "laser-cutting-machines",
   },
   {
     label: "Plate Rolling Machine Series",
-    href: "/products#plate-rolling-machines",
+    href: getCategoryHref("plate-rolling-machines"),
     categoryId: "plate-rolling-machines",
   },
   {
     label: "Press Machine Series",
-    href: "/products#press-machines",
+    href: getCategoryHref("press-machines"),
     categoryId: "press-machines",
   },
   {
     label: "Rectangular Duct Production Series",
-    href: "/products#rectangular-duct-production",
+    href: getCategoryHref("rectangular-duct-production"),
     categoryId: "rectangular-duct-production",
   },
   {
     label: "Round Duct Production Series",
-    href: "/products#round-duct-production",
+    href: getCategoryHref("round-duct-production"),
     categoryId: "round-duct-production",
   },
   {
     label: "Shredder Series",
-    href: "/products#shredders",
+    href: getCategoryHref("shredders"),
     categoryId: "shredders",
   },
 ];
@@ -73,7 +73,7 @@ const mobileMachineLinks = [
   { label: "All Machines", href: "/products" },
   ...productCategories.map((category) => ({
     label: category.navLabel,
-    href: `/products#${category.id}`,
+    href: getCategoryHref(category.id),
   })),
 ];
 
@@ -272,7 +272,7 @@ function CategoryColumn({ categoryId, compact = false, hideHeading = false }: { 
   return (
     <div className="mt-3">
       {hideHeading ? null : (
-        <Link href={`/products#${category.id}`} className="text-sm font-semibold text-white hover:text-ignition">
+        <Link href={getCategoryHref(category.id)} className="text-sm font-semibold text-white hover:text-ignition">
           {category.navLabel}
         </Link>
       )}
