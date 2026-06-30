@@ -58,6 +58,7 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
   return {
     title: `${product.name} | ZYRON Heavy Industry`,
     description: product.performanceFeatures ?? product.tagline,
+    keywords: [product.name, product.categoryName, ...(product.seoTerms ?? [])],
     alternates: {
       canonical: `/products/${product.id}`,
     },
@@ -142,7 +143,9 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
               />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-ignition">{product.categoryName}</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-ignition">
+                {product.parentName ?? product.categoryName}
+              </p>
               <h1 className="mt-5 max-w-full break-words text-3xl font-semibold leading-tight text-white sm:text-6xl">{product.name}</h1>
               {product.performanceFeatures ? (
                 <div className="mt-6 border-l-2 border-ignition pl-5">
@@ -321,7 +324,7 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
                       alt={related.name}
                       fill
                       sizes="(min-width: 768px) 33vw, 100vw"
-                      className={`${related.image.includes("/products/shearing/") || related.image.includes("/products/bending/") ? "object-contain p-4" : "object-cover"} transition duration-700 group-hover:scale-105`}
+                      className={`${related.image.includes("/products/catalog/") || related.image.includes("/products/shearing/") || related.image.includes("/products/bending/") ? "object-contain p-4" : "object-cover"} transition duration-700 group-hover:scale-105`}
                     />
                   </div>
                   <div className="p-5">

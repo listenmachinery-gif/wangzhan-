@@ -60,6 +60,7 @@ const solutionSteps = [
 
 function usesProductCutout(image: string) {
   return (
+    image.includes("/products/catalog/") ||
     image.includes("/products/shearing/") ||
     image.includes("/products/bending/") ||
     image.includes("/products/home-categories/")

@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
-import { getCategoryById, getCategoryHref, productCategories, products } from "@/data/products";
+import { getCategoryById, getCategoryDirectory, getCategoryHref, productCategories, products } from "@/data/products";
 
 type ProductSeriesPageProps = {
   params: Promise<{
@@ -15,7 +15,8 @@ function usesProductCutout(image: string) {
   return (
     image.includes("/products/shearing/") ||
     image.includes("/products/bending/") ||
-    image.includes("/products/home-categories/")
+    image.includes("/products/home-categories/") ||
+    image.includes("/products/catalog/")
   );
 }
 
@@ -66,6 +67,7 @@ export default async function ProductSeriesPage({ params }: ProductSeriesPagePro
   }
 
   const categoryProducts = products.filter((product) => product.categoryId === category.id);
+  const directory = getCategoryDirectory(category.id);
 
   return (
     <main className="bg-[#f4f6f8] text-[#101214]">
@@ -107,6 +109,43 @@ export default async function ProductSeriesPage({ params }: ProductSeriesPagePro
         </div>
       </section>
 
+      <section className="border-b border-neutral-200 bg-white px-5 py-12 sm:px-8 lg:py-16">
+        <div className="mx-auto max-w-[1440px]">
+          <div className="grid gap-8 lg:grid-cols-[0.68fr_1.32fr]">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-ignition">Series Directory</p>
+              <h2 className="mt-4 text-4xl font-semibold leading-tight text-neutral-950">Product hierarchy at a glance.</h2>
+              <p className="mt-5 max-w-lg text-base leading-8 text-neutral-600">
+                Direct machines and grouped variants follow the category structure used by ZYRON for quotations and product selection.
+              </p>
+            </div>
+            <div className="grid gap-x-10 gap-y-6 md:grid-cols-2 xl:grid-cols-3">
+              {directory.map((group) => (
+                <div key={group.id} id={group.id} className="scroll-mt-28 border-t border-neutral-200 pt-4">
+                  {group.isDirectProduct ? (
+                    <Link href={`/products/${group.products[0].id}`} className="group flex items-start justify-between gap-3 text-sm font-semibold leading-6 text-neutral-950 transition hover:text-ignition">
+                      {group.name}
+                      <ArrowRight size={15} className="mt-1 shrink-0 transition group-hover:translate-x-1" />
+                    </Link>
+                  ) : (
+                    <>
+                      <h3 className="text-sm font-semibold leading-6 text-neutral-950">{group.name}</h3>
+                      <div className="mt-3 grid gap-2 border-l-2 border-ignition pl-4">
+                        {group.products.map((product) => (
+                          <Link key={product.id} href={`/products/${product.id}`} className="text-xs leading-5 text-neutral-600 transition hover:text-ignition">
+                            {product.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="px-5 py-14 sm:px-8 lg:py-20">
         <div className="mx-auto max-w-[1440px]">
           <div className="grid gap-8 lg:grid-cols-[0.7fr_1.3fr] lg:items-end">
@@ -139,7 +178,9 @@ export default async function ProductSeriesPage({ params }: ProductSeriesPagePro
                   />
                 </div>
                 <div className="p-6">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ignition">{product.categoryName}</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ignition">
+                    {product.parentName ?? product.categoryName}
+                  </p>
                   <h3 className="mt-3 text-2xl font-semibold leading-tight text-neutral-950">{product.name}</h3>
                   <p className="mt-4 text-sm leading-6 text-neutral-600">{product.tagline}</p>
                   <div className="mt-6 grid gap-2">

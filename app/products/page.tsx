@@ -14,8 +14,8 @@ export const metadata = {
 };
 
 const heroStats = [
-  { value: "8", label: "Machine Series" },
-  { value: "40+", label: "Product Types" },
+  { value: String(productCategories.length), label: "Machine Series" },
+  { value: String(products.length), label: "Product Types" },
   { value: "60+", label: "Countries Served" },
 ];
 

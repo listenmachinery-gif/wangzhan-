@@ -13,10 +13,32 @@ type ProductCatalogProps = {
 
 function usesProductCutout(image: string) {
   return (
+    image.includes("/products/catalog/") ||
     image.includes("/products/shearing/") ||
     image.includes("/products/bending/") ||
     image.includes("/products/home-categories/")
   );
+}
+
+function getDirectory(categoryProducts: Product[]) {
+  const directory = new Map<string, { name: string; products: Product[]; isDirectProduct: boolean }>();
+
+  categoryProducts.forEach((product) => {
+    const key = product.parentName ?? product.id;
+    const current = directory.get(key);
+
+    if (current) {
+      current.products.push(product);
+    } else {
+      directory.set(key, {
+        name: product.parentName ?? product.name,
+        products: [product],
+        isDirectProduct: !product.parentName,
+      });
+    }
+  });
+
+  return Array.from(directory.values());
 }
 
 function getCategoryHref(categoryId: string) {
@@ -80,6 +102,7 @@ export function ProductCatalog({ products, categories }: ProductCatalogProps) {
         <div className="mt-12 grid gap-8">
           {visibleCategories.map((category, index) => {
             const categoryProducts = products.filter((product) => product.categoryId === category.id);
+            const directory = getDirectory(categoryProducts);
             return (
               <section
                 key={category.id}
@@ -101,17 +124,30 @@ export function ProductCatalog({ products, categories }: ProductCatalogProps) {
                     <p className="text-sm font-semibold uppercase tracking-[0.22em] text-ignition">{category.capability}</p>
                     <h3 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">{category.name}</h3>
                     <p className="mt-5 text-base leading-8 text-zinc-400">{category.description}</p>
-                    <div className="mt-7 grid gap-3 sm:grid-cols-2">
-                      {categoryProducts.slice(0, 4).map((product) => (
-                        <Link
-                          key={product.id}
-                          href={`/products/${product.id}`}
-                          className="flex items-center gap-3 border-t border-white/10 pt-3 text-sm font-semibold text-zinc-200 transition hover:text-ignition"
-                        >
-                          <CheckCircle2 size={16} className="shrink-0 text-ignition" />
-                          {product.name}
-                        </Link>
-                      ))}
+                    <div className="mt-7 grid max-h-60 gap-3 overflow-y-auto pr-2 sm:grid-cols-2">
+                      {directory.map((group) =>
+                        group.isDirectProduct ? (
+                          <Link
+                            key={group.name}
+                            href={`/products/${group.products[0].id}`}
+                            className="flex items-start gap-3 border-t border-white/10 pt-3 text-sm font-semibold leading-6 text-zinc-200 transition hover:text-ignition"
+                          >
+                            <CheckCircle2 size={16} className="mt-1 shrink-0 text-ignition" />
+                            {group.name}
+                          </Link>
+                        ) : (
+                          <div key={group.name} className="border-t border-white/10 pt-3">
+                            <p className="text-sm font-semibold leading-6 text-zinc-200">{group.name}</p>
+                            <div className="mt-2 grid gap-1 border-l border-white/10 pl-3">
+                              {group.products.map((product) => (
+                                <Link key={product.id} href={`/products/${product.id}`} className="text-xs leading-5 text-zinc-500 transition hover:text-ignition">
+                                  {product.name}
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        ),
+                      )}
                     </div>
                     <div className="mt-8 flex flex-wrap gap-3">
                       <Link
@@ -146,7 +182,9 @@ export function ProductCatalog({ products, categories }: ProductCatalogProps) {
                           className={`${usesProductCutout(product.image) ? "object-contain p-3" : "object-cover"} transition duration-700 group-hover:scale-105`}
                         />
                       </div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ignition">{product.categoryName}</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ignition">
+                        {product.parentName ?? product.categoryName}
+                      </p>
                       <h4 className="mt-3 text-xl font-semibold leading-tight text-white">{product.name}</h4>
                       <p className="mt-3 text-sm leading-6 text-zinc-500">{product.tagline}</p>
                       <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white">

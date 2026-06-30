@@ -1,50 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ChevronDown, Globe2, Menu } from "lucide-react";
-import { getCategoryHref, productCategories, products } from "@/data/products";
-
-const machineGroups = [
-  {
-    label: "Shearing Machine Series",
-    href: getCategoryHref("shearing-machines"),
-    categoryId: "shearing-machines",
-  },
-  {
-    label: "Bending Machine Series",
-    href: getCategoryHref("bending-machines"),
-    categoryId: "bending-machines",
-  },
-  {
-    label: "Laser Cutting Machine Series",
-    href: getCategoryHref("laser-cutting-machines"),
-    categoryId: "laser-cutting-machines",
-  },
-  {
-    label: "Plate Rolling Machine Series",
-    href: getCategoryHref("plate-rolling-machines"),
-    categoryId: "plate-rolling-machines",
-  },
-  {
-    label: "Press Machine Series",
-    href: getCategoryHref("press-machines"),
-    categoryId: "press-machines",
-  },
-  {
-    label: "Rectangular Duct Production Series",
-    href: getCategoryHref("rectangular-duct-production"),
-    categoryId: "rectangular-duct-production",
-  },
-  {
-    label: "Round Duct Production Series",
-    href: getCategoryHref("round-duct-production"),
-    categoryId: "round-duct-production",
-  },
-  {
-    label: "Shredder Series",
-    href: getCategoryHref("shredders"),
-    categoryId: "shredders",
-  },
-];
+import { getCategoryDirectory, getCategoryHref, productCategories } from "@/data/products";
 
 const aboutLinks = [
   { label: "About ZYRON", href: "/factory" },
@@ -67,14 +24,6 @@ const languageLinks = [
   { label: "Português", href: "/" },
   { label: "Русский", href: "/" },
   { label: "Español", href: "/" },
-];
-
-const mobileMachineLinks = [
-  { label: "All Machines", href: "/products" },
-  ...productCategories.map((category) => ({
-    label: category.navLabel,
-    href: getCategoryHref(category.id),
-  })),
 ];
 
 const mobileLinks = [
@@ -159,12 +108,38 @@ export function SiteHeader() {
               ))}
             </div>
 
-            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-ignition">Machine</p>
+            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-ignition">Product Directory</p>
             <div className="mt-3 grid gap-2">
-              {mobileMachineLinks.map((item) => (
-                <Link key={item.label} href={item.href} className="text-sm text-neutral-600">
-                  {item.label}
-                </Link>
+              {productCategories.map((category) => (
+                <details key={category.id} className="group/category border-b border-neutral-100 pb-2">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-2 text-sm font-semibold text-neutral-950">
+                    {category.navLabel}
+                    <ChevronDown size={15} className="shrink-0 transition group-open/category:rotate-180" />
+                  </summary>
+                  <div className="grid gap-3 pb-3 pl-3">
+                    <Link href={getCategoryHref(category.id)} className="text-xs font-semibold uppercase tracking-[0.12em] text-ignition">
+                      View complete series
+                    </Link>
+                    {getCategoryDirectory(category.id).map((group) =>
+                      group.isDirectProduct ? (
+                        <Link key={group.id} href={`/products/${group.products[0].id}`} className="text-sm leading-5 text-neutral-600">
+                          {group.name}
+                        </Link>
+                      ) : (
+                        <div key={group.id}>
+                          <p className="text-xs font-semibold text-neutral-900">{group.name}</p>
+                          <div className="mt-2 grid gap-2 border-l border-neutral-200 pl-3">
+                            {group.products.map((product) => (
+                              <Link key={product.id} href={`/products/${product.id}`} className="text-xs leading-5 text-neutral-600">
+                                {product.name}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </details>
               ))}
             </div>
 
@@ -221,36 +196,26 @@ function SimpleDropdown({ label, href, links }: { label: string; href: string; l
 function MachineMegaMenu() {
   return (
     <div className="pointer-events-none fixed left-0 top-[72px] z-50 w-screen opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
-      <div className="border-y border-white/10 bg-[#0B0D10] shadow-[0_35px_90px_rgba(0,0,0,0.58)]">
-        <div className="mx-auto grid max-w-[1440px] grid-cols-[0.72fr_1.28fr] gap-8 px-8 py-9">
-          <div className="border-r border-white/10 pr-9 text-white">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ignition">Solutions by Process</p>
-            <h3 className="mt-4 max-w-sm text-4xl font-semibold leading-tight">Find the right machine for your production line.</h3>
-            <p className="mt-4 max-w-sm text-sm leading-7 text-zinc-400">
-              Start from cutting, bending, rolling, duct production, pressing, or recycling. Then select the matched
-              model, control system, tooling, and optional automation.
-            </p>
-            <div className="mt-8 flex gap-3">
-              <Link href="/products" className="inline-flex h-11 items-center justify-center rounded-sm bg-ignition px-5 text-sm font-semibold text-white transition hover:bg-neon">
+      <div className="max-h-[calc(100vh-72px)] overflow-y-auto border-y border-white/10 bg-[#0B0D10] shadow-[0_35px_90px_rgba(0,0,0,0.58)]">
+        <div className="mx-auto max-w-[1440px] px-8 py-8">
+          <div className="flex items-end justify-between gap-10 border-b border-white/10 pb-6 text-white">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ignition">Complete Product Directory</p>
+              <h3 className="mt-3 text-3xl font-semibold leading-tight">Eight machine series. Fifty-three production solutions.</h3>
+            </div>
+            <div className="flex shrink-0 gap-3">
+              <Link href="/products" className="inline-flex h-10 items-center justify-center rounded-sm bg-ignition px-5 text-sm font-semibold text-white transition hover:bg-neon">
                 All Products
               </Link>
-              <Link href="/contact" className="inline-flex h-11 items-center justify-center rounded-sm border border-white/25 px-5 text-sm font-semibold text-white transition hover:border-ignition hover:text-ignition">
+              <Link href="/contact" className="inline-flex h-10 items-center justify-center rounded-sm border border-white/25 px-5 text-sm font-semibold text-white transition hover:border-ignition hover:text-ignition">
                 Ask an Engineer
               </Link>
             </div>
-            <div className="mt-9 border-t border-white/10 pt-5 text-xs leading-6 text-zinc-500">
-              Quote support: material, thickness, working length, output, voltage, and destination country.
-            </div>
           </div>
-          <div className="grid grid-cols-4 gap-x-7 gap-y-7">
-            {machineGroups.map((group) => (
-              <div key={group.label} className="min-w-0">
-                <Link href={group.href} className="group/category flex min-h-12 items-start justify-between gap-3 border-b border-white/10 pb-3 text-sm font-semibold leading-5 text-white transition hover:text-ignition">
-                  {group.label}
-                  <ArrowRight size={14} className="mt-1 shrink-0 opacity-60 transition group-hover/category:translate-x-1" />
-                </Link>
-                <CategoryColumn categoryId={group.categoryId} compact hideHeading />
-              </div>
+
+          <div className="grid gap-x-8 gap-y-9 py-8 md:grid-cols-2 xl:grid-cols-4">
+            {productCategories.map((category) => (
+              <CategoryColumn key={category.id} categoryId={category.id} />
             ))}
           </div>
         </div>
@@ -259,30 +224,48 @@ function MachineMegaMenu() {
   );
 }
 
-function CategoryColumn({ categoryId, compact = false, hideHeading = false }: { categoryId: string; compact?: boolean; hideHeading?: boolean }) {
+function CategoryColumn({ categoryId }: { categoryId: string }) {
   const category = productCategories.find((item) => item.id === categoryId);
 
   if (!category) {
     return null;
   }
 
-  const categoryProducts = products.filter((product) => product.categoryId === category.id);
-  const shownProducts = compact ? categoryProducts : categoryProducts.slice(0, 4);
+  const directory = getCategoryDirectory(category.id);
 
   return (
-    <div className="mt-3">
-      {hideHeading ? null : (
-        <Link href={getCategoryHref(category.id)} className="text-sm font-semibold text-white hover:text-ignition">
-          {category.navLabel}
-        </Link>
-      )}
-      <p className="mt-2 text-xs leading-5 text-zinc-500">{category.summary}</p>
-      <div className="mt-3 grid gap-2">
-        {shownProducts.map((product) => (
-          <Link key={product.id} href={`/products/${product.id}`} className="text-xs leading-5 text-zinc-400 transition hover:text-ignition">
-            {product.name}
-          </Link>
-        ))}
+    <div className="min-w-0">
+      <Link
+        href={getCategoryHref(category.id)}
+        className="group/category flex items-start justify-between gap-3 border-b border-white/15 pb-3 text-sm font-semibold leading-5 text-white transition hover:text-ignition"
+      >
+        {category.name}
+        <ArrowRight size={14} className="mt-1 shrink-0 opacity-60 transition group-hover/category:translate-x-1" />
+      </Link>
+      <div className="mt-4 grid gap-3">
+        {directory.map((group) =>
+          group.isDirectProduct ? (
+            <Link key={group.id} href={`/products/${group.products[0].id}`} className="text-xs leading-5 text-zinc-400 transition hover:text-ignition">
+              {group.name}
+            </Link>
+          ) : (
+            <div key={group.id}>
+              <Link
+                href={`${getCategoryHref(category.id)}#${group.id}`}
+                className="text-xs font-semibold leading-5 text-zinc-200 transition hover:text-ignition"
+              >
+                {group.name}
+              </Link>
+              <div className="mt-2 grid gap-1.5 border-l border-white/10 pl-3">
+                {group.products.map((product) => (
+                  <Link key={product.id} href={`/products/${product.id}`} className="text-[11px] leading-5 text-zinc-500 transition hover:text-ignition">
+                    {product.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ),
+        )}
       </div>
     </div>
   );
