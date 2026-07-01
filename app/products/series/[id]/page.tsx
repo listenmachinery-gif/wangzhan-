@@ -161,29 +161,29 @@ export default async function ProductSeriesPage({ params }: ProductSeriesPagePro
             </p>
           </div>
 
-          <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-12 grid gap-6">
             {categoryProducts.map((product) => (
-              <Link
+              <article
                 key={product.id}
-                href={`/products/${product.id}`}
-                className="group overflow-hidden rounded-sm border border-neutral-200 bg-white shadow-sm transition hover:border-ignition hover:shadow-[0_24px_70px_rgba(15,23,42,0.1)]"
+                data-series-product-card
+                className="group grid overflow-hidden rounded-sm border border-neutral-200 bg-white shadow-sm transition hover:border-ignition hover:shadow-[0_24px_70px_rgba(15,23,42,0.1)] lg:grid-cols-[minmax(360px,0.88fr)_minmax(0,1.12fr)]"
               >
-                <div className="relative aspect-[1.28] bg-[#f4f6f8]">
+                <div className="relative min-h-[300px] bg-[#eef1f3] sm:min-h-[360px] lg:min-h-[420px]">
                   <Image
                     src={product.image}
                     alt={product.name}
                     fill
-                    sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
-                    className={`${usesProductCutout(product.image) ? "object-contain p-4" : "object-cover"} transition duration-700 group-hover:scale-[1.03]`}
+                    sizes="(min-width: 1024px) 44vw, 100vw"
+                    className={`${usesProductCutout(product.image) ? "object-contain p-5 sm:p-8" : "object-cover"} transition duration-700 group-hover:scale-[1.025]`}
                   />
                 </div>
-                <div className="p-6">
+                <div className="flex min-w-0 flex-col justify-center p-6 sm:p-8 lg:p-10">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ignition">
                     {product.parentName ?? product.categoryName}
                   </p>
-                  <h3 className="mt-3 text-2xl font-semibold leading-tight text-neutral-950">{product.name}</h3>
-                  <p className="mt-4 text-sm leading-6 text-neutral-600">{product.tagline}</p>
-                  <div className="mt-6 grid gap-2">
+                  <h3 className="mt-3 text-2xl font-semibold leading-tight text-neutral-950 sm:text-3xl">{product.name}</h3>
+                  <p className="mt-4 max-w-3xl text-base leading-7 text-neutral-600">{product.tagline}</p>
+                  <div className="mt-7 grid gap-3 sm:grid-cols-2">
                     {product.highlights.slice(0, 3).map((item) => (
                       <span key={item} className="flex items-center gap-2 text-sm font-medium text-neutral-700">
                         <CheckCircle2 size={15} className="shrink-0 text-ignition" />
@@ -191,12 +191,23 @@ export default async function ProductSeriesPage({ params }: ProductSeriesPagePro
                       </span>
                     ))}
                   </div>
-                  <span className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-neutral-950">
-                    View Product Details
-                    <ArrowRight size={15} className="transition group-hover:translate-x-1" />
-                  </span>
+                  <div className="mt-8 flex flex-wrap gap-3">
+                    <Link
+                      href={`/products/${product.id}`}
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-sm bg-ignition px-5 text-sm font-semibold text-white transition hover:bg-neon"
+                    >
+                      View Details
+                      <ArrowRight size={15} />
+                    </Link>
+                    <Link
+                      href="/contact"
+                      className="inline-flex h-11 items-center justify-center rounded-sm border border-neutral-300 px-5 text-sm font-semibold text-neutral-950 transition hover:border-ignition hover:text-ignition"
+                    >
+                      Consult an Engineer
+                    </Link>
+                  </div>
                 </div>
-              </Link>
+              </article>
             ))}
           </div>
         </div>

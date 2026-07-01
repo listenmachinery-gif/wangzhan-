@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ChevronDown, Globe2, Menu } from "lucide-react";
+import { ChevronDown, ChevronRight, Globe2, Menu } from "lucide-react";
 import { getCategoryDirectory, getCategoryHref, productCategories } from "@/data/products";
 
 const aboutLinks = [
@@ -40,14 +40,16 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0B0D10]/95 backdrop-blur-xl">
       <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-5 sm:px-8">
         <Link href="/" className="group flex items-center gap-3" aria-label="ZYRON Heavy Industry homepage">
-          <Image
-            src="/brand/zyron-logo.png"
-            alt="ZYRON Heavy Industry"
-            width={178}
-            height={48}
-            priority
-            className="h-12 w-auto object-contain"
-          />
+          <span className="relative block h-12 w-[190px] overflow-hidden" aria-hidden="true">
+            <Image
+              src="/brand/zyron-header-logo-2026.png"
+              alt=""
+              fill
+              priority
+              sizes="190px"
+              className="object-cover object-center"
+            />
+          </span>
         </Link>
 
         <nav className="hidden h-full items-center gap-9 xl:flex" aria-label="Primary navigation">
@@ -55,7 +57,7 @@ export function SiteHeader() {
 
           <SimpleDropdown label="COMPANY" href="/factory" links={aboutLinks} />
 
-          <div className="group flex h-full items-center">
+          <div className="group relative flex h-full items-center">
             <Link href="/products" className="inline-flex h-full items-center gap-1 text-xs font-semibold tracking-[0.08em] text-white transition hover:text-ignition">
               PRODUCTS
               <ChevronDown size={15} />
@@ -195,36 +197,22 @@ function SimpleDropdown({ label, href, links }: { label: string; href: string; l
 
 function MachineMegaMenu() {
   return (
-    <div className="pointer-events-none fixed left-0 top-[72px] z-50 w-screen opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
-      <div className="max-h-[calc(100vh-72px)] overflow-y-auto border-y border-white/10 bg-[#0B0D10] shadow-[0_35px_90px_rgba(0,0,0,0.58)]">
-        <div className="mx-auto max-w-[1440px] px-8 py-8">
-          <div className="flex items-end justify-between gap-10 border-b border-white/10 pb-6 text-white">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ignition">Complete Product Directory</p>
-              <h3 className="mt-3 text-3xl font-semibold leading-tight">Eight machine series. Fifty-three production solutions.</h3>
-            </div>
-            <div className="flex shrink-0 gap-3">
-              <Link href="/products" className="inline-flex h-10 items-center justify-center rounded-sm bg-ignition px-5 text-sm font-semibold text-white transition hover:bg-neon">
-                All Products
-              </Link>
-              <Link href="/contact" className="inline-flex h-10 items-center justify-center rounded-sm border border-white/25 px-5 text-sm font-semibold text-white transition hover:border-ignition hover:text-ignition">
-                Ask an Engineer
-              </Link>
-            </div>
-          </div>
-
-          <div className="grid gap-x-8 gap-y-9 py-8 md:grid-cols-2 xl:grid-cols-4">
-            {productCategories.map((category) => (
-              <CategoryColumn key={category.id} categoryId={category.id} />
-            ))}
-          </div>
+    <div
+      data-product-cascade-menu
+      className="pointer-events-none absolute left-1/2 top-full z-50 w-[310px] -translate-x-1/2 opacity-0 transition duration-150 group-hover:pointer-events-auto group-hover:opacity-100"
+    >
+      <div className="border border-neutral-200 bg-white p-2 shadow-[0_28px_75px_rgba(15,23,42,0.22)]">
+        <div data-product-menu-level="1" className="grid">
+          {productCategories.map((category) => (
+            <CategoryCascadeItem key={category.id} categoryId={category.id} />
+          ))}
         </div>
       </div>
     </div>
   );
 }
 
-function CategoryColumn({ categoryId }: { categoryId: string }) {
+function CategoryCascadeItem({ categoryId }: { categoryId: string }) {
   const category = productCategories.find((item) => item.id === categoryId);
 
   if (!category) {
@@ -234,38 +222,55 @@ function CategoryColumn({ categoryId }: { categoryId: string }) {
   const directory = getCategoryDirectory(category.id);
 
   return (
-    <div className="min-w-0">
+    <div className="group/series relative">
       <Link
         href={getCategoryHref(category.id)}
-        className="group/category flex items-start justify-between gap-3 border-b border-white/15 pb-3 text-sm font-semibold leading-5 text-white transition hover:text-ignition"
+        data-product-series-item
+        className="flex min-h-12 items-center justify-between gap-4 px-4 py-3 text-sm font-semibold leading-5 text-neutral-900 transition hover:bg-neutral-100 hover:text-ignition"
       >
         {category.name}
-        <ArrowRight size={14} className="mt-1 shrink-0 opacity-60 transition group-hover/category:translate-x-1" />
+        <ChevronRight size={16} className="shrink-0 text-neutral-400" />
       </Link>
-      <div className="mt-4 grid gap-3">
-        {directory.map((group) =>
-          group.isDirectProduct ? (
-            <Link key={group.id} href={`/products/${group.products[0].id}`} className="text-xs leading-5 text-zinc-400 transition hover:text-ignition">
-              {group.name}
-            </Link>
-          ) : (
-            <div key={group.id}>
+
+      <div className="invisible absolute left-full top-[-9px] w-[320px] opacity-0 transition duration-150 group-hover/series:visible group-hover/series:opacity-100">
+        <div data-product-menu-level="2" className="border border-neutral-200 bg-white p-2 shadow-[0_28px_75px_rgba(15,23,42,0.2)]">
+          {directory.map((group) =>
+            group.isDirectProduct ? (
               <Link
-                href={`${getCategoryHref(category.id)}#${group.id}`}
-                className="text-xs font-semibold leading-5 text-zinc-200 transition hover:text-ignition"
+                key={group.id}
+                href={`/products/${group.products[0].id}`}
+                data-product-second-level
+                className="flex min-h-11 items-center px-4 py-2.5 text-sm font-medium leading-5 text-neutral-700 transition hover:bg-neutral-100 hover:text-ignition"
               >
                 {group.name}
               </Link>
-              <div className="mt-2 grid gap-1.5 border-l border-white/10 pl-3">
-                {group.products.map((product) => (
-                  <Link key={product.id} href={`/products/${product.id}`} className="text-[11px] leading-5 text-zinc-500 transition hover:text-ignition">
-                    {product.name}
-                  </Link>
-                ))}
+            ) : (
+              <div key={group.id} className="group/subcategory relative">
+                <Link
+                  href={`${getCategoryHref(category.id)}#${group.id}`}
+                  data-product-second-level
+                  className="flex min-h-11 items-center justify-between gap-4 px-4 py-2.5 text-sm font-semibold leading-5 text-neutral-900 transition hover:bg-neutral-100 hover:text-ignition"
+                >
+                  {group.name}
+                  <ChevronRight size={16} className="shrink-0 text-neutral-400" />
+                </Link>
+                <div className="invisible absolute left-full top-[-9px] w-[310px] opacity-0 transition duration-150 group-hover/subcategory:visible group-hover/subcategory:opacity-100">
+                  <div data-product-menu-level="3" className="border border-neutral-200 bg-white p-2 shadow-[0_28px_75px_rgba(15,23,42,0.2)]">
+                    {group.products.map((product) => (
+                      <Link
+                        key={product.id}
+                        href={`/products/${product.id}`}
+                        className="flex min-h-11 items-center px-4 py-2.5 text-sm leading-5 text-neutral-700 transition hover:bg-neutral-100 hover:text-ignition"
+                      >
+                        {product.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
-          ),
-        )}
+            ),
+          )}
+        </div>
       </div>
     </div>
   );

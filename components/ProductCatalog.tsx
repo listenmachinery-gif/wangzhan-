@@ -166,32 +166,53 @@ export function ProductCatalog({ products, categories }: ProductCatalogProps) {
                   </div>
                 </div>
 
-                <div className="grid border-t border-white/10 bg-black/20 md:grid-cols-2 xl:grid-cols-4">
+                <div className="grid gap-4 border-t border-white/10 bg-black/20 p-4 sm:p-6">
                   {categoryProducts.map((product) => (
-                    <Link
+                    <article
                       key={product.id}
-                      href={`/products/${product.id}`}
-                      className="group border-b border-r border-white/10 p-5 transition hover:bg-white/[0.06] md:p-6"
+                      data-catalog-product-card
+                      className="group grid overflow-hidden rounded-sm border border-white/10 bg-white/[0.035] transition hover:border-ignition hover:bg-white/[0.055] md:grid-cols-[minmax(260px,0.72fr)_minmax(0,1.28fr)]"
                     >
-                      <div className="relative mb-5 aspect-[1.28] overflow-hidden rounded-sm bg-white/[0.04]">
+                      <div className="relative min-h-[280px] overflow-hidden bg-white/[0.045] sm:min-h-[340px] md:min-h-[360px]">
                         <Image
                           src={product.image}
                           alt={product.name}
                           fill
-                          sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
-                          className={`${usesProductCutout(product.image) ? "object-contain p-3" : "object-cover"} transition duration-700 group-hover:scale-105`}
+                          sizes="(min-width: 768px) 38vw, 100vw"
+                          className={`${usesProductCutout(product.image) ? "object-contain p-5 sm:p-7" : "object-cover"} transition duration-700 group-hover:scale-[1.025]`}
                         />
                       </div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ignition">
-                        {product.parentName ?? product.categoryName}
-                      </p>
-                      <h4 className="mt-3 text-xl font-semibold leading-tight text-white">{product.name}</h4>
-                      <p className="mt-3 text-sm leading-6 text-zinc-500">{product.tagline}</p>
-                      <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white">
-                        Learn More
-                        <ArrowRight size={15} className="transition group-hover:translate-x-1" />
-                      </span>
-                    </Link>
+                      <div className="flex min-w-0 flex-col justify-center p-6 sm:p-8">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ignition">
+                          {product.parentName ?? product.categoryName}
+                        </p>
+                        <h4 className="mt-3 text-2xl font-semibold leading-tight text-white sm:text-3xl">{product.name}</h4>
+                        <p className="mt-4 max-w-3xl text-sm leading-7 text-zinc-400 sm:text-base">{product.tagline}</p>
+                        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                          {product.highlights.slice(0, 3).map((item) => (
+                            <span key={item} className="flex items-center gap-2 text-sm font-medium text-zinc-300">
+                              <CheckCircle2 size={15} className="shrink-0 text-ignition" />
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="mt-7 flex flex-wrap gap-3">
+                          <Link
+                            href={`/products/${product.id}`}
+                            className="inline-flex h-11 items-center justify-center gap-2 rounded-sm bg-ignition px-5 text-sm font-semibold text-white transition hover:bg-neon"
+                          >
+                            View Details
+                            <ArrowRight size={15} />
+                          </Link>
+                          <Link
+                            href="/contact"
+                            className="inline-flex h-11 items-center justify-center rounded-sm border border-white/25 px-5 text-sm font-semibold text-white transition hover:border-ignition hover:text-ignition"
+                          >
+                            Consult an Engineer
+                          </Link>
+                        </div>
+                      </div>
+                    </article>
                   ))}
                 </div>
               </section>
