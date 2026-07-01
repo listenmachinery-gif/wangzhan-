@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
+import FootShearSolutionPage from "@/components/FootShearSolutionPage";
 import { getCategoryById, products } from "@/data/products";
 
 type ProductDetailProps = {
@@ -55,6 +56,45 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
     return {};
   }
 
+  if (product.id === "foot-shear") {
+    const title = "Foot Operated Shearing Machine | Sheet Metal Foot Pedal Shear | ZYRON";
+    const description =
+      "Foot operated shearing machine for thin sheet metal cutting, HVAC duct workshops, roofing sheet processing and small batch fabrication. Get a practical cutting solution from ZYRON Heavy Industry.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "foot operated shearing machine",
+        "foot pedal shear",
+        "sheet metal cutting machine",
+        "manual sheet metal shear",
+        "thin sheet cutting solution",
+        "HVAC duct fabrication",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Foot operated shearing machine for sheet metal cutting",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
   return {
     title: `${product.name} | ZYRON Heavy Industry`,
     description: product.performanceFeatures ?? product.tagline,
@@ -88,6 +128,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   if (!product) {
     notFound();
+  }
+
+  if (product.id === "foot-shear") {
+    return <FootShearSolutionPage product={product} />;
   }
 
   const category = getCategoryById(product.categoryId);
