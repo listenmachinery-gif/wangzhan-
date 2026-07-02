@@ -136,8 +136,8 @@ async function inspectPage(page, viewportName) {
     await desktopPage.goto(`${baseUrl}/products/compact-electric-shearing-machine`, { waitUntil: "networkidle" });
     assert.equal(
       (await desktopPage.locator("h1").textContent()).trim(),
-      "Compact Electric Shearing Machine",
-      "A generic product page was unexpectedly replaced",
+      "Small Electric Shearing Machine for Fast Thin Sheet Cutting",
+      "Small Electric Shearing Machine solution page is missing",
     );
 
     console.log(JSON.stringify({ desktop, mobile }, null, 2));

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import FootShearSolutionPage from "@/components/FootShearSolutionPage";
+import SmallElectricShearSolutionPage from "@/components/SmallElectricShearSolutionPage";
 import { getCategoryById, products } from "@/data/products";
 
 type ProductDetailProps = {
@@ -95,6 +96,48 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
     };
   }
 
+  if (product.id === "compact-electric-shearing-machine") {
+    const title =
+      "Small Electric Shearing Machine | Compact Sheet Metal Cutting Solution | ZYRON";
+    const description =
+      "Small electric shearing machine for thin sheet metal cutting, HVAC duct fabrication, roofing sheet processing and small batch workshop production. Get a compact cutting solution from ZYRON Heavy Industry.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "small electric shearing machine",
+        "compact electric sheet metal shear",
+        "sheet metal cutting machine",
+        "electric shearing machine",
+        "thin sheet cutting solution",
+        "HVAC duct fabrication",
+        "galvanized sheet cutting",
+        "small workshop sheet metal cutting",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Small electric shearing machine for thin sheet metal cutting",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
   return {
     title: `${product.name} | ZYRON Heavy Industry`,
     description: product.performanceFeatures ?? product.tagline,
@@ -132,6 +175,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   if (product.id === "foot-shear") {
     return <FootShearSolutionPage product={product} />;
+  }
+
+  if (product.id === "compact-electric-shearing-machine") {
+    return <SmallElectricShearSolutionPage product={product} />;
   }
 
   const category = getCategoryById(product.categoryId);

@@ -1,4 +1,9 @@
+import type { ShearingSolutionContent } from "./shearing-solution-types";
+
 export const footShearPageContent = {
+  schemaName: "Foot Operated Shearing Machine",
+  schemaCategory: "Sheet Metal Cutting Machine",
+  imageAlt: "Foot operated shearing machine for sheet metal cutting",
   eyebrow: "Sheet Metal Cutting Solution",
   title: "Foot Operated Shearing Machine for Efficient Thin Sheet Cutting",
   intro:
@@ -8,6 +13,11 @@ export const footShearPageContent = {
     "Stable manual cutting",
     "Low maintenance cost",
   ],
+  heroModelSeries: "Q11 Series",
+  primaryCta: "Request a Quote",
+  secondaryCta: "Get Cutting Solution",
+  painEyebrow: "Common Thin Sheet Cutting Challenges",
+  painTitle: "What Cutting Problems Are You Trying to Solve?",
   painPoints: [
     {
       title: "Inconsistent manual cutting quality",
@@ -26,11 +36,15 @@ export const footShearPageContent = {
       text: "A straightforward mechanical structure reduces routine care and keeps daily operation accessible.",
     },
   ],
+  solutionEyebrow: "Practical Workshop Positioning",
+  solutionTitle: "A Practical Cutting Solution for Light-Gauge Sheet Metal",
   solutionParagraphs: [
     "This foot operated shearing machine is designed for customers who need clean, straight and repeatable cuts without using a hydraulic or motor-driven shear.",
     "It is suitable for thin sheet cutting, sample preparation, HVAC duct workshops, sign making, roofing sheet processing, electrical cabinet fabrication and general sheet metal work.",
     "It helps operators complete daily cutting tasks with a simple structure, easy operation and stable cutting performance.",
   ],
+  solutionFitEyebrow: "Solution Fit",
+  solutionFitTitle: "Designed for practical daily cutting.",
   solutionFit: [
     "Thin sheet cutting",
     "Small batch production",
@@ -38,6 +52,8 @@ export const footShearPageContent = {
     "Low energy requirement",
     "Easy operation",
   ],
+  processEyebrow: "From Sheet Positioning to Clean Cutting",
+  processTitle: "A Simple Five-Step Cutting Process",
   processSteps: [
     {
       title: "Position the sheet",
@@ -60,6 +76,8 @@ export const footShearPageContent = {
       text: "Remove the cut workpiece and repeat the setting for the next part or batch.",
     },
   ],
+  applicationsEyebrow: "Application Scenarios",
+  applicationsTitle: "Built for Everyday Sheet Metal Applications",
   applications: [
     {
       title: "HVAC duct fabrication",
@@ -82,6 +100,10 @@ export const footShearPageContent = {
       text: "Suitable for daily repair, prototype and small-batch cutting where simplicity matters most.",
     },
   ],
+  advantagesEyebrow: "Core Advantages",
+  advantagesTitle: "Why This Foot Shear Works for Your Production",
+  advantagesIntro:
+    "The machine focuses on the functions small workshops use every day: stable support, repeatable positioning and direct manual control.",
   advantages: [
     {
       title: "Foot pedal operation",
@@ -108,6 +130,8 @@ export const footShearPageContent = {
       text: "Fewer complex components make routine inspection and daily care easier.",
     },
   ],
+  structureEyebrow: "Machine Structure Overview",
+  structureTitle: "Understand the working structure at a glance.",
   structureParts: [
     "Foot pedal system",
     "Upper blade and cutting beam",
@@ -116,6 +140,16 @@ export const footShearPageContent = {
     "Front support table",
     "Heavy-duty frame",
   ],
+  technicalEyebrow: "Technical Specifications",
+  technicalTitle: "Original Q11 model parameters.",
+  technicalNote:
+    "Model selection should be confirmed according to material grade, sheet condition, cutting length and production requirements.",
+  splitTableHeaderUnits: false,
+  comparisonEyebrow: "Machine Selection Comparison",
+  comparisonTitle: "Choose the Right Shearing Solution",
+  comparisonIntro:
+    "Select the machine around your material, production volume and maintenance capability instead of choosing by price or size alone.",
+  comparisonHighlight: "foot",
   comparisonRows: [
     {
       label: "Best for",
@@ -154,6 +188,8 @@ export const footShearPageContent = {
       hydraulic: "Industrial sheet metal manufacturer",
     },
   ],
+  supportEyebrow: "Project Support",
+  supportTitle: "More Than a Machine, A Cutting Solution",
   supportItems: [
     {
       title: "Machine selection support",
@@ -172,6 +208,8 @@ export const footShearPageContent = {
       text: "Export packing, operation guidance and parts support are coordinated for international delivery.",
     },
   ],
+  faqEyebrow: "Buyer Questions",
+  faqTitle: "Frequently Asked Questions",
   faqs: [
     {
       question: "What materials can this foot operated shearing machine cut?",
@@ -204,4 +242,8 @@ export const footShearPageContent = {
         "Provide the material type, maximum thickness, largest sheet width and expected daily quantity. We will compare these requirements with the available models and recommend the right shearing solution.",
     },
   ],
-} as const;
+  ctaEyebrow: "Talk to a Shearing Specialist",
+  ctaTitle: "Need a Practical Sheet Metal Cutting Solution?",
+  ctaIntro:
+    "Tell us your material, thickness, cutting length and daily production needs. Our team will help recommend the right shearing machine for your workshop.",
+} as const satisfies ShearingSolutionContent;
