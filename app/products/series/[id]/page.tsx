@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: ProductSeriesPageProps): Prom
       url: getCategoryHref(category.id),
       images: [
         {
-          url: category.image,
+          url: category.heroImage,
           alt: category.name,
         },
       ],
@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: ProductSeriesPageProps): Prom
       card: "summary_large_image",
       title: `${category.name} | ZYRON Heavy Industry`,
       description: category.description,
-      images: [category.image],
+      images: [category.heroImage],
     },
   };
 }
@@ -71,20 +71,36 @@ export default async function ProductSeriesPage({ params }: ProductSeriesPagePro
 
   return (
     <main className="bg-[#f4f6f8] text-[#101214]">
-      <section className="relative isolate overflow-hidden bg-[#0B0D10] px-5 py-14 text-white sm:px-8 lg:py-20">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_16%_20%,rgba(118,185,0,0.2),transparent_30%),linear-gradient(135deg,#0B0D10_0%,#171b22_52%,#08090b_100%)]" />
-        <div className="absolute inset-x-0 bottom-0 -z-10 h-64 bg-gradient-to-t from-black/84 to-transparent" />
+      <section
+        data-series-hero
+        className="relative isolate min-h-[700px] overflow-hidden bg-[#0B0D10] px-5 py-14 text-white sm:px-8 lg:py-20"
+      >
+        <Image
+          src={category.heroImage}
+          alt={`${category.name} production process`}
+          fill
+          priority
+          sizes="100vw"
+          className="absolute inset-0 -z-30 object-cover object-center"
+        />
+        <div className="absolute inset-0 -z-20 bg-black/40" />
+        <div
+          data-series-hero-mask
+          className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(5,7,9,0.96)_0%,rgba(5,7,9,0.9)_32%,rgba(5,7,9,0.66)_58%,rgba(5,7,9,0.2)_100%)]"
+        />
+        <div className="absolute inset-x-0 top-0 -z-10 h-40 bg-gradient-to-b from-black/65 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 -z-10 h-64 bg-gradient-to-t from-black/82 to-transparent" />
         <div className="mx-auto max-w-[1440px]">
           <Link href="/products" className="inline-flex items-center gap-2 text-sm text-zinc-300 transition hover:text-white">
             <ArrowLeft size={16} />
             Back to All Products
           </Link>
 
-          <div className="mt-10 grid gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
+          <div className="mt-20 max-w-2xl lg:mt-28">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-ignition">{category.capability}</p>
-              <h1 className="mt-5 text-4xl font-semibold leading-tight sm:text-6xl">{category.name}</h1>
-              <p className="mt-6 max-w-3xl text-base leading-8 text-zinc-300">{category.description}</p>
+              <h1 className="mt-5 text-4xl font-semibold leading-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.85)] sm:text-6xl">{category.name}</h1>
+              <p className="mt-6 max-w-xl text-base leading-8 text-zinc-200 drop-shadow-[0_3px_16px_rgba(0,0,0,0.9)]">{category.description}</p>
               <div className="mt-9 flex flex-wrap gap-3">
                 <Link href="/contact" className="inline-flex h-11 items-center justify-center rounded-sm bg-ignition px-5 text-sm font-semibold text-white transition hover:bg-neon">
                   Get Series Advice
@@ -93,17 +109,6 @@ export default async function ProductSeriesPage({ params }: ProductSeriesPagePro
                   Compare All Series
                 </Link>
               </div>
-            </div>
-
-            <div className="relative min-h-[340px] overflow-hidden rounded-sm border border-white/10 bg-white/[0.04] sm:min-h-[440px]">
-              <Image
-                src={category.image}
-                alt={category.name}
-                fill
-                priority
-                sizes="(min-width: 1024px) 48vw, 100vw"
-                className={`${usesProductCutout(category.image) ? "object-contain p-4" : "object-cover"} drop-shadow-[0_22px_50px_rgba(0,0,0,0.36)]`}
-              />
             </div>
           </div>
         </div>

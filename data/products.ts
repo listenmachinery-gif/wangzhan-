@@ -13,6 +13,7 @@ export type ProductCategory = {
   summary: string;
   description: string;
   image: string;
+  heroImage: string;
   capability: string;
 };
 
@@ -70,6 +71,7 @@ export const productCategories: ProductCategory[] = [
     description:
       "A complete sheet metal cutting range for trimming, slitting, light workshop production, and heavy-duty plate processing.",
     image: "/products/catalog/hydraulic-guillotine-shear.png",
+    heroImage: "/products/series-heroes/shearing-machine-series.png",
     capability: "Sheet cutting and blanking",
   },
   {
@@ -80,6 +82,7 @@ export const productCategories: ProductCategory[] = [
     description:
       "Folding machines and press brakes for HVAC panels, cabinets, enclosures, structural parts, and precision sheet metal forming.",
     image: "/products/catalog/electro-hydraulic-servo-cnc-press-brake.png",
+    heroImage: "/products/series-heroes/bending-machine-series.png",
     capability: "Sheet forming and bending",
   },
   {
@@ -90,6 +93,7 @@ export const productCategories: ProductCategory[] = [
     description:
       "Fiber laser cutting platforms for high-speed plate processing, integrated sheet-and-tube work, and dedicated tube production.",
     image: "/products/catalog/exchange-table-fiber-laser-cutting-machine.png",
+    heroImage: "/products/series-heroes/fiber-laser-cutting-machine-series.png",
     capability: "Precision fiber laser cutting",
   },
   {
@@ -100,6 +104,7 @@ export const productCategories: ProductCategory[] = [
     description:
       "Plate rolling equipment for cylinders, arcs, cones, tanks, pressure-vessel parts, and general curved sheet production.",
     image: "/products/catalog/hydraulic-four-roll-plate-rolling-machine.png",
+    heroImage: "/products/series-heroes/plate-rolling-machine-series.png",
     capability: "Plate rolling and curved forming",
   },
   {
@@ -110,6 +115,7 @@ export const productCategories: ProductCategory[] = [
     description:
       "Press equipment for punching, stamping, forming, correction, assembly, and repeatable production operations.",
     image: "/products/catalog/four-column-hydraulic-press.png",
+    heroImage: "/products/series-heroes/press-machine-series.png",
     capability: "Punching, stamping, and pressing",
   },
   {
@@ -120,6 +126,7 @@ export const productCategories: ProductCategory[] = [
     description:
       "A complete equipment directory for rectangular HVAC duct preparation, forming, closing, corner assembly, and automated production.",
     image: "/products/catalog/u-shaped-auto-duct-production-line-5.png",
+    heroImage: "/products/series-heroes/rectangular-duct-production-machine-series.png",
     capability: "Rectangular HVAC duct production",
   },
   {
@@ -130,6 +137,7 @@ export const productCategories: ProductCategory[] = [
     description:
       "Round duct machinery for circular forming, elbow production, beading, flange-ring rolling, and continuous spiral duct manufacturing.",
     image: "/products/catalog/steel-strip-spiral-duct-production-line.png",
+    heroImage: "/products/series-heroes/round-duct-production-machine-series.png",
     capability: "Round and spiral duct production",
   },
   {
@@ -140,6 +148,7 @@ export const productCategories: ProductCategory[] = [
     description:
       "Material size-reduction systems for recycling, scrap recovery, production waste, and downstream separation lines.",
     image: "/products/catalog/dual-shaft-shredder.png",
+    heroImage: "/products/series-heroes/shredder-series.png",
     capability: "Recycling and size reduction",
   },
 ];

@@ -38,7 +38,11 @@ export default function ProductsPage() {
           sizes="100vw"
           className="absolute inset-0 -z-20 object-cover object-center"
         />
-        <div className="absolute inset-0 -z-10 bg-black/68" />
+        <div className="absolute inset-0 -z-10 bg-black/48" />
+        <div
+          data-products-hero-mask
+          className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.84)_0%,rgba(0,0,0,0.68)_42%,rgba(0,0,0,0.4)_74%,rgba(0,0,0,0.54)_100%)]"
+        />
         <div className="absolute inset-x-0 top-0 -z-10 h-44 bg-gradient-to-b from-black/92 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 -z-10 h-[46vh] bg-gradient-to-t from-black/94 via-black/62 to-transparent" />
 
