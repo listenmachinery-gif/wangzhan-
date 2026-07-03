@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
+import EnergySavingElectricShearSolutionPage from "@/components/EnergySavingElectricShearSolutionPage";
 import FootShearSolutionPage from "@/components/FootShearSolutionPage";
 import SmallElectricShearSolutionPage from "@/components/SmallElectricShearSolutionPage";
 import { getCategoryById, products } from "@/data/products";
@@ -138,6 +139,49 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
     };
   }
 
+  if (product.id === "energy-saving-electric-shearing-machine") {
+    const title =
+      "Energy-Saving Electric Shearing Machine | Thin Sheet Cutting Solution | ZYRON";
+    const description =
+      "Energy-saving electric shearing machine for thin sheet metal cutting, HVAC duct fabrication, galvanized sheet processing and daily workshop production. Get a lower-cost cutting solution from ZYRON Heavy Industry.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "energy-saving electric shearing machine",
+        "energy efficient sheet metal shear",
+        "electric shearing machine",
+        "sheet metal cutting machine",
+        "thin sheet cutting solution",
+        "galvanized sheet cutting",
+        "HVAC duct fabrication",
+        "low energy sheet metal cutting",
+        "workshop shearing solution",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Energy-saving electric shearing machine for thin sheet metal cutting",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
   return {
     title: `${product.name} | ZYRON Heavy Industry`,
     description: product.performanceFeatures ?? product.tagline,
@@ -179,6 +223,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   if (product.id === "compact-electric-shearing-machine") {
     return <SmallElectricShearSolutionPage product={product} />;
+  }
+
+  if (product.id === "energy-saving-electric-shearing-machine") {
+    return <EnergySavingElectricShearSolutionPage product={product} />;
   }
 
   const category = getCategoryById(product.categoryId);

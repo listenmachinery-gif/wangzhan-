@@ -27,6 +27,13 @@ export type ShearingWorkflow = {
   steps: readonly string[];
 };
 
+export type ShearingEnergyUse = {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  states: readonly ShearingSolutionItem[];
+};
+
 export type ShearingSolutionContent = {
   schemaName: string;
   schemaCategory: string;
@@ -48,6 +55,7 @@ export type ShearingSolutionContent = {
   solutionFitEyebrow: string;
   solutionFitTitle: string;
   solutionFit: readonly string[];
+  energyUse?: ShearingEnergyUse;
   processEyebrow: string;
   processTitle: string;
   processSteps: readonly ShearingSolutionItem[];
@@ -68,6 +76,7 @@ export type ShearingSolutionContent = {
   comparisonEyebrow: string;
   comparisonTitle: string;
   comparisonIntro: string;
+  comparisonElectricLabel?: string;
   comparisonHighlight: "foot" | "electric" | "hydraulic";
   comparisonRows: readonly ShearingComparisonRow[];
   workflow?: ShearingWorkflow;

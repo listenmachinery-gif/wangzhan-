@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
+  Activity,
   ArrowLeft,
   ArrowRight,
   Check,
@@ -9,6 +10,7 @@ import {
   Gauge,
   Layers3,
   PackageCheck,
+  Power,
   Ruler,
   ScanLine,
   Settings2,
@@ -16,6 +18,7 @@ import {
   Sparkles,
   TimerReset,
   Wrench,
+  Zap,
   ZapOff,
 } from "lucide-react";
 import type { Product } from "@/data/products";
@@ -28,8 +31,9 @@ type ShearingSolutionPageProps = {
 
 const painIcons = [ScanLine, TimerReset, ZapOff, Wrench];
 const applicationIcons = [Layers3, Ruler, Sparkles, Factory, Settings2, ScanLine];
-const advantageIcons = [Gauge, ShieldCheck, ScanLine, Ruler, Layers3, Wrench];
+const advantageIcons = [Gauge, ShieldCheck, ScanLine, Ruler, Layers3, Wrench, Power];
 const supportIcons = [Settings2, Ruler, Sparkles, PackageCheck];
+const energyUseIcons = [Power, Zap, Activity];
 
 const sectionLabelClass =
   "text-xs font-semibold uppercase tracking-[0.2em] text-[#76B900]";
@@ -49,6 +53,7 @@ function getStructurePart(part: ShearingSolutionContent["structureParts"][number
 export default function ShearingSolutionPage({ product, content }: ShearingSolutionPageProps) {
   const technicalParameters = product.technicalParameters;
   const workflow = content.workflow;
+  const energyUse = content.energyUse;
   const siteUrl = "https://www.zyroncnc.com";
   const productUrl = `${siteUrl}/products/${product.id}`;
   const productImageUrl = `${siteUrl}${product.image}`;
@@ -263,6 +268,43 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </div>
       </section>
 
+      {energyUse ? (
+        <section className="bg-white px-5 py-16 sm:px-8 lg:py-24">
+          <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.86fr_1.14fr] lg:items-center">
+            <div>
+              <p className={sectionLabelClass}>{energyUse.eyebrow}</p>
+              <h2 className="mt-4 max-w-3xl text-3xl font-semibold leading-tight text-neutral-950 sm:text-5xl">
+                {energyUse.title}
+              </h2>
+              <p className="mt-6 max-w-2xl text-base leading-8 text-neutral-600">
+                {energyUse.intro}
+              </p>
+            </div>
+            <div className="border border-neutral-200 bg-[#f3f5f6] p-6 sm:p-8">
+              <p className={sectionLabelClass}>Energy Use Logic</p>
+              <div className="mt-6 grid gap-px bg-neutral-200 md:grid-cols-3">
+                {energyUse.states.map((state, index) => {
+                  const Icon = energyUseIcons[index % energyUseIcons.length];
+
+                  return (
+                    <article key={state.title} className="min-h-52 bg-white p-6 transition-colors hover:bg-neutral-50">
+                      <div className="flex items-center justify-between gap-4">
+                        <Icon size={23} strokeWidth={1.7} className="text-[#76B900]" aria-hidden="true" />
+                        <span className="text-xs font-semibold text-neutral-400">0{index + 1}</span>
+                      </div>
+                      <h3 className="mt-8 text-lg font-semibold leading-snug text-neutral-950">
+                        {state.title}
+                      </h3>
+                      <p className="mt-3 text-sm leading-7 text-neutral-600">{state.text}</p>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <section className="bg-[#101316] px-5 py-16 text-white sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <p className={sectionLabelClass}>{content.processEyebrow}</p>
@@ -456,7 +498,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
                 <tr>
                   <th className="bg-[#111315] px-5 py-5 font-semibold text-white">Selection factor</th>
                   <th className={`${content.comparisonHighlight === "foot" ? "bg-[#76B900]" : "bg-[#111315]"} px-5 py-5 font-semibold text-white`}>Foot Operated Shear</th>
-                  <th className={`${content.comparisonHighlight === "electric" ? "bg-[#76B900]" : "bg-[#111315]"} px-5 py-5 font-semibold text-white`}>Small Electric Shearing Machine</th>
+                  <th className={`${content.comparisonHighlight === "electric" ? "bg-[#76B900]" : "bg-[#111315]"} px-5 py-5 font-semibold text-white`}>{content.comparisonElectricLabel ?? "Small Electric Shearing Machine"}</th>
                   <th className={`${content.comparisonHighlight === "hydraulic" ? "bg-[#76B900]" : "bg-[#111315]"} px-5 py-5 font-semibold text-white`}>Hydraulic Shearing Machine</th>
                 </tr>
               </thead>
