@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import EnergySavingElectricShearSolutionPage from "@/components/EnergySavingElectricShearSolutionPage";
 import FootShearSolutionPage from "@/components/FootShearSolutionPage";
+import HydraulicSwingBeamShearSolutionPage from "@/components/HydraulicSwingBeamShearSolutionPage";
 import SmallElectricShearSolutionPage from "@/components/SmallElectricShearSolutionPage";
 import { getCategoryById, products } from "@/data/products";
 
@@ -182,6 +183,47 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
     };
   }
 
+  if (product.id === "hydraulic-swing-beam-shear") {
+    const title =
+      "Hydraulic Swing Beam Shearing Machine | Sheet Metal Cutting Solution";
+    const description =
+      "Reliable hydraulic swing beam shearing machine for sheet metal cutting, suitable for carbon steel, stainless steel, galvanized sheet, aluminum and general fabrication workshops.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "hydraulic swing beam shearing machine",
+        "hydraulic sheet metal shear",
+        "sheet metal cutting machine",
+        "metal plate shearing solution",
+        "swing beam shear for fabrication workshop",
+        "CNC hydraulic shearing machine",
+        "hydraulic guillotine shear alternative",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Hydraulic swing beam shearing machine for sheet metal cutting",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
   return {
     title: `${product.name} | ZYRON Heavy Industry`,
     description: product.performanceFeatures ?? product.tagline,
@@ -227,6 +269,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   if (product.id === "energy-saving-electric-shearing-machine") {
     return <EnergySavingElectricShearSolutionPage product={product} />;
+  }
+
+  if (product.id === "hydraulic-swing-beam-shear") {
+    return <HydraulicSwingBeamShearSolutionPage product={product} />;
   }
 
   const category = getCategoryById(product.categoryId);

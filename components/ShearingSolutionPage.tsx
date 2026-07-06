@@ -54,6 +54,9 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
   const technicalParameters = product.technicalParameters;
   const workflow = content.workflow;
   const energyUse = content.energyUse;
+  const materials = content.materials;
+  const binaryComparison = content.binaryComparison;
+  const structureCallouts = content.structureCallouts;
   const siteUrl = "https://www.zyroncnc.com";
   const productUrl = `${siteUrl}/products/${product.id}`;
   const productImageUrl = `${siteUrl}${product.image}`;
@@ -309,7 +312,11 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         <div className="mx-auto max-w-7xl">
           <p className={sectionLabelClass}>{content.processEyebrow}</p>
           <h2 className="mt-4 text-3xl font-semibold sm:text-5xl">{content.processTitle}</h2>
-          <div className="mt-12 grid gap-px bg-white/10 lg:grid-cols-5">
+          <div
+            className={`mt-12 grid gap-px bg-white/10 ${
+              content.processSteps.length === 4 ? "lg:grid-cols-4" : "lg:grid-cols-5"
+            }`}
+          >
             {content.processSteps.map((step, index) => (
               <article key={step.title} className="relative min-h-60 bg-[#101316] p-6 transition-colors hover:bg-[#15191d]">
                 <p className="text-4xl font-semibold text-[#76B900]">0{index + 1}</p>
@@ -348,6 +355,40 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
           </div>
         </div>
       </section>
+
+      {materials ? (
+        <section className="border-t border-neutral-200 bg-[#f3f5f6] px-5 py-16 sm:px-8 lg:py-24">
+          <div className="mx-auto max-w-7xl">
+            <div className="grid gap-7 lg:grid-cols-[0.76fr_1.24fr] lg:items-end">
+              <div>
+                <p className={sectionLabelClass}>{materials.eyebrow}</p>
+                <h2 className="mt-4 max-w-3xl text-3xl font-semibold leading-tight text-neutral-950 sm:text-5xl">
+                  {materials.title}
+                </h2>
+              </div>
+              <p className="max-w-2xl text-sm leading-7 text-neutral-600 lg:justify-self-end">
+                {materials.note}
+              </p>
+            </div>
+            <div className="mt-10 grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-3">
+              {materials.items.map((item, index) => {
+                const Icon = applicationIcons[index % applicationIcons.length];
+
+                return (
+                  <article key={item.title} className="min-h-56 bg-white p-7 transition-colors hover:bg-neutral-50">
+                    <div className="flex items-center justify-between gap-4">
+                      <Icon size={23} strokeWidth={1.7} className="text-[#76B900]" aria-hidden="true" />
+                      <span className="text-xs font-semibold text-neutral-400">0{index + 1}</span>
+                    </div>
+                    <h3 className="mt-8 text-xl font-semibold text-neutral-950">{item.title}</h3>
+                    <p className="mt-3 text-sm leading-7 text-neutral-600">{item.text}</p>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
@@ -393,6 +434,17 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
                   sizes="(min-width: 1024px) 58vw, 100vw"
                   className="object-contain p-4 sm:p-8"
                 />
+                {structureCallouts?.map((callout, index) => (
+                  <span
+                    key={callout.label}
+                    data-structure-callout
+                    aria-label={`${index + 1}. ${callout.label}`}
+                    className="absolute z-10 hidden h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center border border-white/35 bg-[#76B900] text-xs font-semibold text-white shadow-[0_0_0_5px_rgba(11,13,16,0.62)] lg:flex"
+                    style={{ left: callout.left, top: callout.top }}
+                  >
+                    {index + 1}
+                  </span>
+                ))}
               </div>
             </div>
             <div className="divide-y divide-white/10 border-y border-white/10">
@@ -493,26 +545,53 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
           </p>
 
           <div className="mt-10 max-w-full overflow-x-auto border border-neutral-200 bg-white">
-            <table className="min-w-[940px] w-full border-collapse text-left text-sm">
-              <thead>
-                <tr>
-                  <th className="bg-[#111315] px-5 py-5 font-semibold text-white">Selection factor</th>
-                  <th className={`${content.comparisonHighlight === "foot" ? "bg-[#76B900]" : "bg-[#111315]"} px-5 py-5 font-semibold text-white`}>Foot Operated Shear</th>
-                  <th className={`${content.comparisonHighlight === "electric" ? "bg-[#76B900]" : "bg-[#111315]"} px-5 py-5 font-semibold text-white`}>{content.comparisonElectricLabel ?? "Small Electric Shearing Machine"}</th>
-                  <th className={`${content.comparisonHighlight === "hydraulic" ? "bg-[#76B900]" : "bg-[#111315]"} px-5 py-5 font-semibold text-white`}>Hydraulic Shearing Machine</th>
-                </tr>
-              </thead>
-              <tbody>
-                {content.comparisonRows.map((row) => (
-                  <tr key={row.label} className="border-b border-neutral-200 last:border-0">
-                    <th className="whitespace-nowrap bg-neutral-50 px-5 py-5 font-semibold text-neutral-950">{row.label}</th>
-                    <td className={`px-5 py-5 ${content.comparisonHighlight === "foot" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>{row.foot}</td>
-                    <td className={`px-5 py-5 ${content.comparisonHighlight === "electric" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>{row.electric}</td>
-                    <td className={`px-5 py-5 ${content.comparisonHighlight === "hydraulic" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>{row.hydraulic}</td>
+            {binaryComparison ? (
+              <table className="min-w-[860px] w-full border-collapse text-left text-sm">
+                <thead>
+                  <tr>
+                    <th className="bg-[#111315] px-5 py-5 font-semibold text-white">Selection factor</th>
+                    <th className="bg-[#76B900] px-5 py-5 font-semibold text-white">
+                      {binaryComparison.leftLabel}
+                    </th>
+                    <th className="bg-[#111315] px-5 py-5 font-semibold text-white">
+                      {binaryComparison.rightLabel}
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {binaryComparison.rows.map((row) => (
+                    <tr key={row.label} className="border-b border-neutral-200 last:border-0">
+                      <th className="whitespace-nowrap bg-neutral-50 px-5 py-5 font-semibold text-neutral-950">
+                        {row.label}
+                      </th>
+                      <td className="px-5 py-5 font-medium leading-7 text-neutral-900">{row.left}</td>
+                      <td className="px-5 py-5 leading-7 text-neutral-600">{row.right}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <table className="min-w-[940px] w-full border-collapse text-left text-sm">
+                <thead>
+                  <tr>
+                    <th className="bg-[#111315] px-5 py-5 font-semibold text-white">Selection factor</th>
+                    <th className={`${content.comparisonHighlight === "foot" ? "bg-[#76B900]" : "bg-[#111315]"} px-5 py-5 font-semibold text-white`}>Foot Operated Shear</th>
+                    <th className={`${content.comparisonHighlight === "electric" ? "bg-[#76B900]" : "bg-[#111315]"} px-5 py-5 font-semibold text-white`}>{content.comparisonElectricLabel ?? "Small Electric Shearing Machine"}</th>
+                    <th className={`${content.comparisonHighlight === "hydraulic" ? "bg-[#76B900]" : "bg-[#111315]"} px-5 py-5 font-semibold text-white`}>Hydraulic Shearing Machine</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {content.comparisonRows.map((row) => (
+                    <tr key={row.label} className="border-b border-neutral-200 last:border-0">
+                      <th className="whitespace-nowrap bg-neutral-50 px-5 py-5 font-semibold text-neutral-950">{row.label}</th>
+                      <td className={`px-5 py-5 ${content.comparisonHighlight === "foot" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>{row.foot}</td>
+                      <td className={`px-5 py-5 ${content.comparisonHighlight === "electric" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>{row.electric}</td>
+                      <td className={`px-5 py-5 ${content.comparisonHighlight === "hydraulic" ? "font-medium text-neutral-900" : "text-neutral-600"}`}>{row.hydraulic}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </section>
@@ -531,7 +610,11 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
                 {workflow.intro}
               </p>
             </div>
-            <div className="mt-12 grid gap-px bg-white/10 md:grid-cols-5">
+            <div
+              className={`mt-12 grid gap-px bg-white/10 ${
+                workflow.steps.length === 4 ? "md:grid-cols-4" : "md:grid-cols-5"
+              }`}
+            >
               {workflow.steps.map((step, index) => (
                 <div key={step} className="relative bg-[#101316] px-5 py-8 text-center">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#76B900]">
@@ -563,7 +646,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
             </div>
             <div className="grid gap-px bg-neutral-200 sm:grid-cols-2">
               {content.supportItems.map((item, index) => {
-                const Icon = supportIcons[index];
+                const Icon = supportIcons[index % supportIcons.length];
                 return (
                   <article key={item.title} className="bg-white p-7">
                     <Icon size={22} strokeWidth={1.7} className="text-[#76B900]" aria-hidden="true" />

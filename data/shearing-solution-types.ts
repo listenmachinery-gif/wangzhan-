@@ -34,6 +34,29 @@ export type ShearingEnergyUse = {
   states: readonly ShearingSolutionItem[];
 };
 
+export type ShearingMaterials = {
+  eyebrow: string;
+  title: string;
+  note: string;
+  items: readonly ShearingSolutionItem[];
+};
+
+export type ShearingBinaryComparison = {
+  leftLabel: string;
+  rightLabel: string;
+  rows: readonly {
+    label: string;
+    left: string;
+    right: string;
+  }[];
+};
+
+export type ShearingImageCallout = {
+  label: string;
+  left: string;
+  top: string;
+};
+
 export type ShearingSolutionContent = {
   schemaName: string;
   schemaCategory: string;
@@ -62,6 +85,7 @@ export type ShearingSolutionContent = {
   applicationsEyebrow: string;
   applicationsTitle: string;
   applications: readonly ShearingSolutionItem[];
+  materials?: ShearingMaterials;
   advantagesEyebrow: string;
   advantagesTitle: string;
   advantagesIntro: string;
@@ -69,6 +93,7 @@ export type ShearingSolutionContent = {
   structureEyebrow: string;
   structureTitle: string;
   structureParts: readonly (string | ShearingStructurePart)[];
+  structureCallouts?: readonly ShearingImageCallout[];
   technicalEyebrow: string;
   technicalTitle: string;
   technicalNote: string;
@@ -79,6 +104,7 @@ export type ShearingSolutionContent = {
   comparisonElectricLabel?: string;
   comparisonHighlight: "foot" | "electric" | "hydraulic";
   comparisonRows: readonly ShearingComparisonRow[];
+  binaryComparison?: ShearingBinaryComparison;
   workflow?: ShearingWorkflow;
   supportEyebrow: string;
   supportTitle: string;
