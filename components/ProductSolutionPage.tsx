@@ -148,8 +148,8 @@ export default function ProductSolutionPage({
             Back to {category.navLabel}
           </Link>
 
-          <div className="mt-10 grid min-w-0 gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:items-center xl:gap-16">
-            <div className="relative aspect-[1.42] min-w-0 overflow-hidden sm:aspect-[1.28] lg:aspect-[1.14]">
+          <div className="mt-10 grid min-w-0 gap-10 md:grid-cols-[1.08fr_0.92fr] md:items-center xl:gap-16">
+            <div className="relative aspect-[1.42] min-w-0 overflow-hidden sm:aspect-[1.28] md:aspect-[1.14]">
               <Image
                 src={product.image}
                 alt={`${product.name} for ${content.profile.applicationContext}`}
@@ -162,7 +162,7 @@ export default function ProductSolutionPage({
 
             <div className="min-w-0">
               <p className={sectionLabelClass}>{content.profile.eyebrow}</p>
-              <h1 className="mt-5 max-w-3xl break-words text-4xl font-semibold leading-[1.08] text-white sm:text-6xl">
+              <h1 className="mt-5 max-w-3xl break-words text-4xl font-semibold leading-[1.08] text-white sm:text-5xl lg:text-6xl">
                 {product.name}
               </h1>
               <p className="mt-6 max-w-2xl text-base leading-8 text-zinc-300 sm:text-lg">

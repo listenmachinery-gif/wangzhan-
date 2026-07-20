@@ -87,6 +87,17 @@ for (const section of requiredSections) {
   );
 }
 
+assert.match(
+  componentSource,
+  /md:grid-cols-\[1\.08fr_0\.92fr\]/,
+  "the solution hero must switch to two columns at tablet width",
+);
+assert.match(
+  componentSource,
+  /sm:text-5xl lg:text-6xl/,
+  "the solution hero title must use a restrained tablet type size",
+);
+
 assert.match(componentSource, /["']@type["']:\s*["']ProductModel["']/);
 assert.match(componentSource, /["']@type["']:\s*["']BreadcrumbList["']/);
 
