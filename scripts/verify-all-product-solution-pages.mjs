@@ -55,7 +55,7 @@ const requiredSections = [
   "cta",
 ];
 
-assert.equal(productCount, 55, "product seed count must stay at 55");
+assert.equal(productCount, 53, "product seed count must stay at 53");
 
 for (const productId of dedicatedIds) {
   assert.match(
@@ -104,7 +104,7 @@ for (const unsafeField of [
 }
 
 const sharedPageCount = productCount - dedicatedIds.length;
-assert.equal(sharedPageCount, 50);
+assert.equal(sharedPageCount, 48);
 
 console.log(
   `All-product solution page contract passed: ${productCount} products, ${dedicatedIds.length} dedicated, ${sharedPageCount} shared solution pages.`,

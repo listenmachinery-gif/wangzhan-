@@ -5,10 +5,12 @@ import { resolve } from "node:path";
 const root = process.cwd();
 const productsPath = resolve(root, "data/products.ts");
 const productPagePath = resolve(root, "app/products/[id]/page.tsx");
+const productSolutionPagePath = resolve(root, "components/ProductSolutionPage.tsx");
 const nextConfigPath = resolve(root, "next.config.ts");
 
 const productsSource = readFileSync(productsPath, "utf8");
 const productPageSource = readFileSync(productPagePath, "utf8");
+const productSolutionPageSource = readFileSync(productSolutionPagePath, "utf8");
 const nextConfigSource = readFileSync(nextConfigPath, "utf8");
 
 const productSeed = productsSource.match(
@@ -53,13 +55,18 @@ assert.match(
 );
 assert.match(
   productPageSource,
-  /technicalParameters\.columns\.map/,
-  "Product detail page must render technical-parameter columns",
+  /<ProductSolutionPage\s/,
+  "Product detail route must delegate generic products to ProductSolutionPage",
 );
 assert.match(
-  productPageSource,
+  productSolutionPageSource,
+  /technicalParameters\.columns\.map/,
+  "ProductSolutionPage must render technical-parameter columns",
+);
+assert.match(
+  productSolutionPageSource,
   /technicalParameters\.rows\.map/,
-  "Product detail page must render technical-parameter rows",
+  "ProductSolutionPage must render technical-parameter rows",
 );
 
 console.log("Slitting and Beading Machine parameter contract passed.");

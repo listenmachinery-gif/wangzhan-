@@ -39,11 +39,12 @@ const sectionLabelClass =
   "text-xs font-semibold uppercase tracking-[0.2em] text-[#76B900]";
 
 function splitColumnHeading(column: string) {
-  const match = column.match(/^(.*?)(\([^()]+\))$/);
+  const normalized = column.replace(/\s+/g, " ").trim();
+  const match = normalized.match(/^(.*?)(\([^()]+\))$/);
 
   return match
     ? { label: match[1].trim(), unit: match[2] }
-    : { label: column, unit: "" };
+    : { label: normalized, unit: "" };
 }
 
 function getStructurePart(part: ShearingSolutionContent["structureParts"][number]) {
@@ -230,7 +231,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
           </div>
           <div className="mt-10 grid gap-px bg-neutral-200 md:grid-cols-2 xl:grid-cols-4">
             {content.painPoints.map((item, index) => {
-              const Icon = painIcons[index];
+              const Icon = painIcons[index % painIcons.length];
               return (
                 <article key={item.title} className="group min-h-64 bg-white p-7 transition-colors hover:bg-neutral-50">
                   <Icon size={24} strokeWidth={1.7} className="text-[#76B900]" aria-hidden="true" />

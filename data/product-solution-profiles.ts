@@ -410,9 +410,6 @@ const splitStatement = (value: string): SolutionCard => {
   };
 };
 
-const sentenceCase = (value: string) =>
-  value.length > 0 ? `${value.charAt(0).toUpperCase()}${value.slice(1)}` : value;
-
 const safeOptionsForProduct = (product: Product) => {
   if (product.id !== "manual-sheet-metal-folding-machine") {
     return product.options;
@@ -436,7 +433,7 @@ export function buildProductSolutionViewModel(
   const advantageSource = product.advantages ?? product.highlights;
   const applications = product.applications.map((application) => ({
     title: application,
-    text: `${sentenceCase(application)} can use this machine for ${profile.applicationContext}, subject to the selected model and process requirement.`,
+    text: `This machine can support ${application.toLowerCase()} as part of ${profile.applicationContext}, subject to the selected model and process requirement.`,
   }));
   const configurations = safeOptionsForProduct(product).map((option) => ({
     title: option,

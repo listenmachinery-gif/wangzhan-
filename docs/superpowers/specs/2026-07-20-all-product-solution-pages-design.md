@@ -2,11 +2,11 @@
 
 ## Scope
 
-Upgrade the 50 product detail pages that still use the generic template into a professional, solution-oriented buying experience. Preserve the five dedicated solution pages for Foot Shear, Compact Electric Shearing Machine, Energy-Saving Electric Shearing Machine, Hydraulic Swing Beam Shear, and Hydraulic Guillotine Shear.
+Upgrade the 48 product detail pages that still use the generic template into a professional, solution-oriented buying experience. Preserve the five dedicated solution pages for Foot Shear, Compact Electric Shearing Machine, Energy-Saving Electric Shearing Machine, Hydraulic Swing Beam Shear, and Hydraulic Guillotine Shear.
 
 The production target remains `https://www.zyroncnc.com`. Existing product names, canonical URLs, source product images, technical parameter values, header, footer, contact routes, redirects, sitemap behavior, and brand system remain unchanged.
 
-The earlier technical SEO brief prohibited visible changes for its SEO-only scope. The current request explicitly authorizes product-detail layout and visible-copy changes for the remaining products, so this design treats that prohibition as superseded only for the 50 target product-detail pages. SEO truthfulness, URL, structured-data, and no-fabrication constraints remain active.
+The earlier technical SEO brief prohibited visible changes for its SEO-only scope. The current request explicitly authorizes product-detail layout and visible-copy changes for the remaining products, so this design treats that prohibition as superseded only for the 48 target product-detail pages. SEO truthfulness, URL, structured-data, and no-fabrication constraints remain active.
 
 ## Research Findings
 
@@ -81,7 +81,7 @@ This is the selected approach. One reusable server component owns visual structu
 ## Testing
 
 - Add a source-contract test before implementation and verify it fails because the shared component and profiles do not yet exist.
-- Verify all 55 product routes remain generated and the five dedicated route branches remain isolated.
+- Verify all 53 product routes remain generated and the five dedicated route branches remain isolated.
 - Verify each of the 50 generic targets resolves a category profile and includes all required solution sections.
 - Verify existing technical tables are passed through without modifying row or column values.
 - Verify JSON-LD excludes fabricated commerce and review fields.

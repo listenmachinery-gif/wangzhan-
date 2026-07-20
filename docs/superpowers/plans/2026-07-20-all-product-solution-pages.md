@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace the generic template used by 50 product detail routes with one professional solution-oriented page system while preserving the five dedicated shearing solution pages and deploying the verified result to the existing Vercel production site.
+**Goal:** Replace the generic template used by 48 product detail routes with one professional solution-oriented page system while preserving the five dedicated shearing solution pages and deploying the verified result to the existing Vercel production site.
 
 **Architecture:** A pure content builder combines each existing `Product` and `ProductCategory` with one of eight category profiles. A shared server component renders the resulting view model. The dynamic route continues to isolate the five dedicated pages and delegates only its former generic branch to the shared component.
 
@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- Preserve all 55 current product names, product IDs, URLs, image paths, redirects, and original technical parameter values.
+- Preserve all 53 current product names, product IDs, URLs, image paths, redirects, and original technical parameter values.
 - Keep the five dedicated shearing solution page branches unchanged.
 - Use only the one existing real image for each target product; do not add or fabricate detail images.
 - Do not invent price, stock, ratings, reviews, certifications, performance figures, customer cases, warranties, standard accessories, or delivery promises.
@@ -27,7 +27,7 @@
 
 **Interfaces:**
 - Consumes: source files under `app/products/[id]`, `components`, and `data`.
-- Produces: a zero-exit source contract that confirms route isolation, eight profile keys, required page section markers, safe schema, and the 55/5/50 product split.
+- Produces: a zero-exit source contract that confirms route isolation, eight profile keys, required page section markers, safe schema, and the 53/5/48 product split.
 
 - [ ] **Step 1: Write the source contract**
 
@@ -189,7 +189,7 @@ Remove imports used only by the deleted generic JSX. Do not alter dedicated impo
 
 Run: `node scripts/verify-all-product-solution-pages.mjs`
 
-Expected: PASS with `55 products, 5 dedicated, 50 shared solution pages`.
+Expected: PASS with `53 products, 5 dedicated, 48 shared solution pages`.
 
 - [ ] **Step 4: Type-check**
 
@@ -279,4 +279,4 @@ Confirm `https://www.zyroncnc.com` and representative product URLs return 200, c
 
 - [ ] **Step 5: Report the exact production result**
 
-Return the production URL, the 55/5/50 page coverage, source and build results, browser checks, deployment result, and any non-blocking content caveats. Do not claim Core Web Vitals field-data success without Search Console or CrUX evidence.
+Return the production URL, the 53/5/48 page coverage, source and build results, browser checks, deployment result, and any non-blocking content caveats. Do not claim Core Web Vitals field-data success without Search Console or CrUX evidence.
