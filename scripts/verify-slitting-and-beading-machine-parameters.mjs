@@ -1,0 +1,56 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+const root = process.cwd();
+const productsPath = resolve(root, "data/products.ts");
+const productPagePath = resolve(root, "app/products/[id]/page.tsx");
+
+const productsSource = readFileSync(productsPath, "utf8");
+const productPageSource = readFileSync(productPagePath, "utf8");
+
+const productSeed = productsSource.match(
+  /name:\s*"Slitting and Beading Machine"[\s\S]*?seoTerms:\s*\[[^\]]*"Reel Shear Beading Machine"[^\]]*\],[\s\S]*?\n\s*},/,
+);
+
+assert.ok(productSeed, "Slitting and Beading Machine product seed is missing");
+
+for (const value of [
+  "technicalParameters",
+  "Sheet Thickness (mm)",
+  "Shape",
+  "Power (kW)",
+  "Weight (kg)",
+  "Dimensions L × W × H (mm)",
+  "LQ-15",
+  "0.5–1.2",
+  "Beading / slitting profiles",
+  "1.5",
+  "260",
+  "1600 × 630 × 1120",
+]) {
+  assert.ok(productSeed[0].includes(value), `Missing Reel Shear parameter: ${value}`);
+}
+
+assert.match(
+  productsSource,
+  /technicalParameters\?:\s*TechnicalParameterTable/,
+  "ProductSeed must accept a dedicated technical-parameter table",
+);
+assert.match(
+  productsSource,
+  /technicalParameters:\s*seed\.technicalParameters\s*\?\?\s*detail\?\.technicalParameters/,
+  "Product mapping must prefer product-specific technical parameters",
+);
+assert.match(
+  productPageSource,
+  /technicalParameters\.columns\.map/,
+  "Product detail page must render technical-parameter columns",
+);
+assert.match(
+  productPageSource,
+  /technicalParameters\.rows\.map/,
+  "Product detail page must render technical-parameter rows",
+);
+
+console.log("Slitting and Beading Machine parameter contract passed.");

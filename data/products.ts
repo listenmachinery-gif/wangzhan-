@@ -53,6 +53,7 @@ type ProductSeed = {
   highlights?: string[];
   applications?: string[];
   options?: string[];
+  technicalParameters?: TechnicalParameterTable;
 };
 
 const slugify = (value: string) =>
@@ -260,6 +261,26 @@ const productSeeds: Record<string, ProductSeed[]> = {
       name: "Slitting and Beading Machine",
       tagline: "Combined straight slitting and edge beading for light sheet-metal preparation.",
       seoTerms: ["Roller Shear Beading Machine", "Reel Shear Beading Machine"],
+      technicalParameters: {
+        columns: [
+          "Model",
+          "Sheet Thickness (mm)",
+          "Shape",
+          "Power (kW)",
+          "Weight (kg)",
+          "Dimensions L × W × H (mm)",
+        ],
+        rows: [
+          [
+            "LQ-15",
+            "0.5–1.2",
+            "Beading / slitting profiles",
+            "1.5",
+            "260",
+            "1600 × 630 × 1120",
+          ],
+        ],
+      },
     },
     {
       name: "Compact Electric Shearing Machine",
@@ -601,7 +622,7 @@ export const products: Product[] = productCategories.flatMap((category) => {
       seoTerms: seed.seoTerms,
       performanceFeatures: detail?.performanceFeatures,
       advantages: detail?.advantages,
-      technicalParameters: detail?.technicalParameters,
+      technicalParameters: seed.technicalParameters ?? detail?.technicalParameters,
     };
   });
 });
