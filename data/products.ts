@@ -260,6 +260,7 @@ const productSeeds: Record<string, ProductSeed[]> = {
     {
       name: "Slitting and Beading Machine",
       tagline: "Combined straight slitting and edge beading for light sheet-metal preparation.",
+      legacyIds: ["reel-shear-beading-machine", "roller-shear-beading-machine"],
       seoTerms: ["Roller Shear Beading Machine", "Reel Shear Beading Machine"],
       technicalParameters: {
         columns: [

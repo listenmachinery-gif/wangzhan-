@@ -5,9 +5,11 @@ import { resolve } from "node:path";
 const root = process.cwd();
 const productsPath = resolve(root, "data/products.ts");
 const productPagePath = resolve(root, "app/products/[id]/page.tsx");
+const nextConfigPath = resolve(root, "next.config.ts");
 
 const productsSource = readFileSync(productsPath, "utf8");
 const productPageSource = readFileSync(productPagePath, "utf8");
+const nextConfigSource = readFileSync(nextConfigPath, "utf8");
 
 const productSeed = productsSource.match(
   /name:\s*"Slitting and Beading Machine"[\s\S]*?seoTerms:\s*\[[^\]]*"Reel Shear Beading Machine"[^\]]*\],[\s\S]*?\n\s*},/,
@@ -16,6 +18,7 @@ const productSeed = productsSource.match(
 assert.ok(productSeed, "Slitting and Beading Machine product seed is missing");
 
 for (const value of [
+  'legacyIds: ["reel-shear-beading-machine", "roller-shear-beading-machine"]',
   "technicalParameters",
   "Sheet Thickness (mm)",
   "Shape",
@@ -31,6 +34,12 @@ for (const value of [
 ]) {
   assert.ok(productSeed[0].includes(value), `Missing Reel Shear parameter: ${value}`);
 }
+
+assert.match(
+  nextConfigSource,
+  /\.\.\.legacyProductRedirects/,
+  "Next.js redirects must expose Reel and Roller product aliases",
+);
 
 assert.match(
   productsSource,
