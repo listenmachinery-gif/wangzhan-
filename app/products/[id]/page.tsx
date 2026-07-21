@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import ElectricFoldingMachineSolutionPage from "@/components/ElectricFoldingMachineSolutionPage";
 import EnergySavingElectricShearSolutionPage from "@/components/EnergySavingElectricShearSolutionPage";
 import FootShearSolutionPage from "@/components/FootShearSolutionPage";
 import HydraulicSwingBeamShearSolutionPage from "@/components/HydraulicSwingBeamShearSolutionPage";
@@ -26,6 +27,48 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
 
   if (!product) {
     return {};
+  }
+
+  if (product.id === "electric-sheet-metal-folding-machine") {
+    const title = "Electric Folding Machine | Sheet Metal Edge Bending Solution";
+    const description =
+      "Electric folding machine for thin sheet metal bending, edge folding, HVAC duct panel forming, roofing sheet metal and light fabrication workshops. Get a suitable electric sheet metal folding solution.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Electric Folding Machine",
+        "Electric Sheet Metal Folding Machine",
+        "Electric Sheet Metal Bender",
+        "Electric Sheet Metal Brake",
+        "Motorized Folding Machine",
+        "Sheet Metal Edge Bending Machine",
+        "HVAC Duct Folding Machine",
+        "Electric Duct Folding Machine",
+        "Sheet Metal Folding Solution",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Electric folding machine for sheet metal edge bending",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
   }
 
   if (product.id === "manual-sheet-metal-folding-machine") {
@@ -351,6 +394,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   if (!product) {
     notFound();
+  }
+
+  if (product.id === "electric-sheet-metal-folding-machine") {
+    return <ElectricFoldingMachineSolutionPage product={product} />;
   }
 
   if (product.id === "manual-sheet-metal-folding-machine") {
