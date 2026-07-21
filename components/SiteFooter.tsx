@@ -37,7 +37,7 @@ export function SiteFooter() {
             <div className="mt-5 grid gap-2 text-sm leading-6 text-zinc-400">
               <p>Email: info@zyroncnc.com</p>
               <p>WhatsApp: +8615655537083</p>
-              <p>Address: Dongjiao Industrial Park, Bowang Town, Bowang District, Ma'anshan City, Anhui Province, China</p>
+              <p>Address: Dongjiao Industrial Park, Bowang Town, Bowang District, Ma&apos;anshan City, Anhui Province, China</p>
             </div>
           </div>
           <Link

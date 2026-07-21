@@ -8,7 +8,6 @@ import {
   Factory,
   Gauge,
   Layers3,
-  PackageCheck,
   Settings2,
   ShieldCheck,
   Target,

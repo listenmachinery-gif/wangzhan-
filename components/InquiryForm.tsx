@@ -67,7 +67,7 @@ export function InquiryForm({ productCategories }: InquiryFormProps) {
       setSubmitState("success");
       setMessage(result.message || "Inquiry sent successfully. Our team will reply soon.");
       form.reset();
-    } catch (error) {
+    } catch {
       setSubmitState("error");
       setMessage(
         "Direct email delivery is being configured. Your email app has been opened with the inquiry details, or you can send them to info@zyroncnc.com.",
