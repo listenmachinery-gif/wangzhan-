@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ElectricFoldingMachineSolutionPage from "@/components/ElectricFoldingMachineSolutionPage";
+import ElectroHydraulicServoCncPressBrakeSolutionPage from "@/components/ElectroHydraulicServoCncPressBrakeSolutionPage";
 import EnergySavingElectricShearSolutionPage from "@/components/EnergySavingElectricShearSolutionPage";
 import FootShearSolutionPage from "@/components/FootShearSolutionPage";
 import HydraulicFoldingMachineSolutionPage from "@/components/HydraulicFoldingMachineSolutionPage";
@@ -30,6 +31,50 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
 
   if (!product) {
     return {};
+  }
+
+  if (product.id === "electro-hydraulic-servo-cnc-press-brake") {
+    const title =
+      "Electro-Hydraulic Servo CNC Press Brake | Precision Sheet Metal Bending Solution";
+    const description =
+      "Electro-hydraulic servo CNC press brake for high-precision sheet metal bending, cabinet manufacturing, stainless steel products and workshop fabrication. Get a suitable CNC bending solution based on your material, thickness, bending length and drawing.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Electro-Hydraulic Servo CNC Press Brake",
+        "Electro-Hydraulic CNC Press Brake",
+        "Servo Hydraulic CNC Press Brake",
+        "CNC Hydraulic Press Brake",
+        "CNC Press Brake Machine",
+        "Sheet Metal Bending Machine",
+        "Sheet Metal Bending Solution",
+        "Precision Sheet Metal Bending",
+        "CNC Sheet Metal Bending Machine",
+        "Hydraulic CNC Bending Machine",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Electro-hydraulic servo CNC press brake for precision sheet metal bending",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
   }
 
   if (product.id === "nc-hydraulic-press-brake") {
@@ -544,6 +589,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   if (product.id === "hydraulic-sheet-metal-folding-machine") {
     return <HydraulicFoldingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "electro-hydraulic-servo-cnc-press-brake") {
+    return <ElectroHydraulicServoCncPressBrakeSolutionPage product={product} />;
   }
 
   if (product.id === "nc-hydraulic-press-brake") {
