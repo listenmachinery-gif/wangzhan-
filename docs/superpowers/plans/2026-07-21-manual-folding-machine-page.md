@@ -84,7 +84,7 @@ Create focused types for `HeroContent`, `ProblemCard`, `SolutionCard`, `Applicat
 
 - [ ] **Step 2: Add the approved content**
 
-Populate the object with the brief's exact hero title, subtitle, description, CTA labels, four proof labels, five problems, three solution groups, eight applications, six materials, six process steps, verified advantages, seven comparison rows, nine equipment workflow links, nine selection questions, eight FAQs, and final CTA. Use these verified structure statements only:
+Populate the object with the brief's exact hero title, subtitle, description, CTA labels, four proof labels, five problems, three solution groups, eight applications, six materials, six process steps, verified advantages, seven comparison rows, the seven equipment workflow entries from the brief, separate related product links, nine selection questions, eight FAQs, and final CTA. Use these verified structure statements only:
 
 ```ts
 [
