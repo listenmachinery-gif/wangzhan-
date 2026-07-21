@@ -152,7 +152,7 @@ assert.match(
 );
 assert.match(componentSource, /max-w-full overflow-x-auto/, "Wide tables need local horizontal scrolling");
 assertContains(
-  componentSource,
+  contentSource,
   "Final specifications depend on sheet material, thickness, bending length, hydraulic configuration and selected machine structure.",
   "Technical qualification note is missing",
 );

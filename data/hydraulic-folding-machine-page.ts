@@ -159,6 +159,7 @@ export const hydraulicFoldingMachinePageContent = {
   ] satisfies HydraulicFoldingTextCard[],
   materialNote:
     "The suitable thickness depends on material strength, bending length, folding angle and machine configuration. Please confirm your material, thickness and bending requirement before quotation.",
+  hydraulicSystemTitle: "Hydraulic System for Stable Folding",
   hydraulicSystem: [
     {
       title: "Stronger, stable clamping",
@@ -181,6 +182,7 @@ export const hydraulicFoldingMachinePageContent = {
       text: "Before quotation, provide material, thickness, bending length, folding angle and daily production frequency.",
     },
   ] satisfies HydraulicFoldingTextCard[],
+  processTitle: "From Flat Sheet to Folded Panel",
   process: [
     { title: "Sheet Cutting", text: "Cut the sheet to the required size before folding." },
     { title: "Positioning", text: "Position the sheet by flange size, duct-panel size or folding line." },
