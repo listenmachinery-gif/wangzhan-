@@ -86,7 +86,6 @@ for (const value of [
   "Manual folding is tiring for repeated duct work",
   "HVAC Duct Fabrication",
   "Galvanized Sheet",
-  "Compressed Air Requirement",
   "Pneumatic Clamping",
   "Four-cylinder pneumatic structure",
   "Power source",
@@ -97,6 +96,12 @@ for (const value of [
 ]) {
   assertContains(contentSource, value, "Missing approved Pneumatic Folding Machine copy");
 }
+
+assertContains(
+  componentSource,
+  "Compressed Air Requirement",
+  "Compressed-air requirement heading is missing",
+);
 
 for (const section of [
   "hero",
