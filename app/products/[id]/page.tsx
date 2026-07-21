@@ -5,6 +5,7 @@ import FootShearSolutionPage from "@/components/FootShearSolutionPage";
 import HydraulicSwingBeamShearSolutionPage from "@/components/HydraulicSwingBeamShearSolutionPage";
 import HydraulicGuillotineShearSolutionPage from "@/components/HydraulicGuillotineShearSolutionPage";
 import ProductSolutionPage from "@/components/ProductSolutionPage";
+import ReelShearBeadingSolutionPage from "@/components/ReelShearBeadingSolutionPage";
 import SmallElectricShearSolutionPage from "@/components/SmallElectricShearSolutionPage";
 import { getCategoryById, products } from "@/data/products";
 
@@ -24,6 +25,48 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
 
   if (!product) {
     return {};
+  }
+
+  if (product.id === "reel-shear-beading-machine") {
+    const title =
+      "Reel Shear Beading Machine | Sheet Metal Cutting and Beading Solution";
+    const description =
+      "Compact reel shear beading machine for thin sheet metal cutting, plate opening and reinforcement beading. Suitable for HVAC duct fabrication, ventilation duct workshops and light sheet metal processing.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Reel Shear Beading Machine",
+        "Rolling Shear Beading Machine",
+        "Sheet Metal Beading and Cutting Machine",
+        "Duct Beading Machine",
+        "HVAC Duct Beading Machine",
+        "Sheet Metal Reinforcement Machine",
+        "Thin Sheet Cutting and Beading Machine",
+        "Duct Fabrication Machine",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Reel shear beading machine for sheet metal cutting and duct beading",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
   }
 
   if (product.id === "foot-shear") {
@@ -285,6 +328,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   if (product.id === "hydraulic-guillotine-shear") {
     return <HydraulicGuillotineShearSolutionPage product={product} />;
+  }
+
+  if (product.id === "reel-shear-beading-machine") {
+    return <ReelShearBeadingSolutionPage product={product} />;
   }
 
   const category = getCategoryById(product.categoryId);
