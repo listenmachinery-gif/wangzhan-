@@ -52,7 +52,7 @@ const applicationImages = [
   "/products/electric-folding-applications/general-sheet-metal-workshop.webp",
 ];
 
-const photoIds = [28914401, 30749458, 48895, 34766497, 33694019, 3677229, 34329584, 28852853];
+const photoIds = [28914401, 30749458, 8452865, 34766497, 33694019, 3677229, 11739091, 22863133];
 const electricCatalogImage = "/products/catalog/electric-sheet-metal-folding-machine.png";
 
 assert.equal(new Set(applicationImages).size, 8, "Application photos must be unique");

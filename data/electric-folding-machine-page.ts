@@ -159,7 +159,7 @@ export const electricFoldingMachinePageContent: ElectricFoldingMachinePageConten
       title: "Roofing sheet metal work",
       text: "Useful for suitable thin roofing sheet, flashing and trim parts that need folded edges.",
       image: "/products/electric-folding-applications/roofing-sheet-metal-work.webp",
-      alt: "Corrugated gray metal roofing sheets for sheet metal fabrication",
+      alt: "Installed corrugated metal roof beneath a blue sky",
     },
     {
       title: "Architectural sheet metal",
@@ -180,16 +180,16 @@ export const electricFoldingMachinePageContent: ElectricFoldingMachinePageConten
       alt: "Hands holding a finished sign for a fabrication project",
     },
     {
-      title: "Stainless steel light fabrication",
-      text: "Supports selected thin stainless steel work after material strength, thickness and bending length are confirmed.",
+      title: "Light metal fabrication",
+      text: "Supports selected thin metal work, including stainless steel after material strength, thickness and bending length are confirmed.",
       image: "/products/electric-folding-applications/stainless-steel-fabrication.webp",
-      alt: "Industrial worker grinding metal in a light fabrication workshop",
+      alt: "Worker wearing protective equipment during light metal fabrication",
     },
     {
       title: "General sheet metal workshop",
       text: "A practical powered folding step for mixed thin-sheet edge-forming work in a general workshop.",
       image: "/products/electric-folding-applications/general-sheet-metal-workshop.webp",
-      alt: "Metalworker welding sheet metal parts in a general fabrication workshop",
+      alt: "Metalworker wearing a welding helmet and protective clothing in a workshop",
     },
   ],
   materials: [
