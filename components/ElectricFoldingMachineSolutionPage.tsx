@@ -16,7 +16,9 @@ type ElectricFoldingMachineSolutionPageProps = {
   product: Product;
 };
 
-const sectionLabelClass =
+const lightSectionLabelClass =
+  "text-xs font-semibold uppercase tracking-[0.2em] text-[#4E7A00]";
+const darkSectionLabelClass =
   "text-xs font-semibold uppercase tracking-[0.2em] text-[#76B900]";
 
 const splitColumnHeading = (column: string) => {
@@ -44,7 +46,7 @@ function SectionIntro({
 }) {
   return (
     <div className="max-w-4xl">
-      <p className={sectionLabelClass}>{label}</p>
+      <p className={light ? darkSectionLabelClass : lightSectionLabelClass}>{label}</p>
       <h2
         className={`mt-4 text-3xl font-semibold leading-tight sm:text-5xl ${
           light ? "text-white" : "text-neutral-950"
@@ -230,7 +232,7 @@ export default function ElectricFoldingMachineSolutionPage({
               <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link
                   href="/contact"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#76B900] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#8ddb00] sm:w-auto"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#76B900] px-6 py-3.5 text-sm font-semibold text-[#111417] transition hover:bg-[#8ddb00] sm:w-auto"
                 >
                   {content.hero.primaryCta}
                   <ArrowRight size={16} aria-hidden="true" />
@@ -277,7 +279,7 @@ export default function ElectricFoldingMachineSolutionPage({
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-12 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
             <div>
-              <p className={sectionLabelClass}>Customer Challenges</p>
+              <p className={lightSectionLabelClass}>Customer Challenges</p>
               <h2 className="mt-4 text-3xl font-semibold leading-tight text-neutral-950 sm:text-5xl">
                 What Problems Can It Solve?
               </h2>
@@ -293,7 +295,7 @@ export default function ElectricFoldingMachineSolutionPage({
                     index % 2 === 1 ? "md:border-l" : "md:pl-0"
                   }`}
                 >
-                  <p className="text-sm font-semibold text-[#76B900]">
+                  <p className="text-sm font-semibold text-[#4E7A00]">
                     {String(index + 1).padStart(2, "0")}
                   </p>
                   <h3 className="mt-4 text-xl font-semibold leading-snug text-neutral-950">
@@ -436,7 +438,7 @@ export default function ElectricFoldingMachineSolutionPage({
             <div className="absolute left-16 right-16 top-6 hidden h-px bg-neutral-300 lg:block" />
             {content.process.map((step, index) => (
               <article key={step.title} className="relative border border-neutral-200 bg-white p-6 lg:border-0 lg:bg-transparent lg:px-4 lg:py-0">
-                <div className="relative z-10 flex h-12 w-12 items-center justify-center border border-neutral-300 bg-white text-sm font-semibold text-[#76B900] lg:mx-auto">
+                <div className="relative z-10 flex h-12 w-12 items-center justify-center border border-neutral-300 bg-white text-sm font-semibold text-[#4E7A00] lg:mx-auto">
                   {String(index + 1).padStart(2, "0")}
                 </div>
                 <h3 className="mt-5 text-lg font-semibold text-neutral-950 lg:text-center">
@@ -456,7 +458,7 @@ export default function ElectricFoldingMachineSolutionPage({
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-20">
           <FoldingDiagram />
           <div>
-            <p className={sectionLabelClass}>Verified Machine Value</p>
+            <p className={darkSectionLabelClass}>Verified Machine Value</p>
             <h2 className="mt-4 text-3xl font-semibold leading-tight text-white sm:text-5xl">
               Why Choose This Electric Folding Machine?
             </h2>
@@ -487,6 +489,9 @@ export default function ElectricFoldingMachineSolutionPage({
           />
           <div className="mt-12 max-w-full overflow-x-auto border border-neutral-200 bg-white shadow-[0_18px_55px_rgba(15,23,42,0.05)]">
             <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
+              <caption className="sr-only">
+                Comparison of manual, electric and hydraulic folding machines
+              </caption>
               <thead className="bg-[#111417] text-white">
                 <tr>
                   <th className="whitespace-nowrap px-5 py-5 font-semibold">Comparison Item</th>
@@ -498,7 +503,7 @@ export default function ElectricFoldingMachineSolutionPage({
               <tbody>
                 {content.comparison.map((row) => (
                   <tr key={row.item} className="border-t border-neutral-200 align-top">
-                    <th className="whitespace-nowrap px-5 py-5 font-semibold text-neutral-950">{row.item}</th>
+                    <th scope="row" className="whitespace-nowrap px-5 py-5 font-semibold text-neutral-950">{row.item}</th>
                     <td className="px-5 py-5 leading-7 text-neutral-600">{row.manual}</td>
                     <td className="px-5 py-5 leading-7 text-neutral-600">{row.electric}</td>
                     <td className="px-5 py-5 leading-7 text-neutral-600">{row.hydraulic}</td>
@@ -557,7 +562,7 @@ export default function ElectricFoldingMachineSolutionPage({
       <section data-section="selection" className="px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-20">
           <div>
-            <p className={sectionLabelClass}>Configuration Guide</p>
+            <p className={lightSectionLabelClass}>Configuration Guide</p>
             <h2 className="mt-4 text-3xl font-semibold leading-tight text-neutral-950 sm:text-5xl">
               How to Choose the Right Electric Folding Machine?
             </h2>
@@ -572,7 +577,7 @@ export default function ElectricFoldingMachineSolutionPage({
                     index % 2 === 1 ? "sm:border-l" : "sm:pl-0"
                   }`}
                 >
-                  <span className="font-semibold text-[#76B900]">
+                  <span className="font-semibold text-[#4E7A00]">
                     {String(index + 1).padStart(2, "0")}
                   </span>
                   <p className="text-sm font-medium leading-6 text-neutral-800">{question}</p>
@@ -590,7 +595,7 @@ export default function ElectricFoldingMachineSolutionPage({
             </p>
             <Link
               href="/contact"
-              className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#76B900] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#8ddb00]"
+              className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#76B900] px-5 py-3.5 text-sm font-semibold text-[#111417] transition hover:bg-[#8ddb00]"
             >
               {content.selectionCta.cta}
               <ArrowRight size={16} aria-hidden="true" />
@@ -615,6 +620,9 @@ export default function ElectricFoldingMachineSolutionPage({
           />
           <div className="mt-12 max-w-full overflow-x-auto border border-neutral-200 bg-white shadow-[0_18px_55px_rgba(15,23,42,0.05)]">
             <table className="w-full min-w-[1120px] border-collapse text-center text-sm">
+              <caption className="sr-only">
+                Electric folding machine technical parameters by DWS model
+              </caption>
               <thead className="bg-[#111417] text-white">
                 <tr>
                   {technicalParameters.columns.map((column) => {
@@ -628,7 +636,7 @@ export default function ElectricFoldingMachineSolutionPage({
                       >
                         {heading.label}
                         {heading.unit ? (
-                          <span className="mt-1 block text-center text-xs font-medium text-neutral-500">
+                          <span className="mt-1 block text-center text-xs font-medium text-zinc-300">
                             {heading.unit}
                           </span>
                         ) : null}
@@ -640,16 +648,24 @@ export default function ElectricFoldingMachineSolutionPage({
               <tbody>
                 {technicalParameters.rows.map((row) => (
                   <tr key={row.join("-")} className="border-t border-neutral-200 even:bg-neutral-50">
-                    {row.map((value, index) => (
-                      <td
-                        key={`${row[0]}-${technicalParameters.columns[index]}`}
-                        className={`whitespace-nowrap border-r border-neutral-200 px-5 py-5 last:border-r-0 ${
-                          index === 0 ? "font-semibold text-neutral-950" : "text-neutral-700"
-                        }`}
-                      >
-                        {value}
-                      </td>
-                    ))}
+                    {row.map((value, index) =>
+                      index === 0 ? (
+                        <th
+                          key={`${row[0]}-${technicalParameters.columns[index]}`}
+                          scope="row"
+                          className="whitespace-nowrap border-r border-neutral-200 px-5 py-5 font-semibold text-neutral-950 last:border-r-0"
+                        >
+                          {value}
+                        </th>
+                      ) : (
+                        <td
+                          key={`${row[0]}-${technicalParameters.columns[index]}`}
+                          className="whitespace-nowrap border-r border-neutral-200 px-5 py-5 text-neutral-700 last:border-r-0"
+                        >
+                          {value}
+                        </td>
+                      ),
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -667,7 +683,7 @@ export default function ElectricFoldingMachineSolutionPage({
       >
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.7fr_1.3fr] lg:gap-20">
           <div>
-            <p className={sectionLabelClass}>FAQ</p>
+            <p className={darkSectionLabelClass}>FAQ</p>
             <h2 className="mt-4 text-3xl font-semibold leading-tight text-white sm:text-5xl">
               Electric Folding Machine Questions
             </h2>
@@ -701,7 +717,7 @@ export default function ElectricFoldingMachineSolutionPage({
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(105deg,rgba(118,185,0,0.17),transparent_44%),radial-gradient(circle_at_90%_10%,rgba(255,255,255,0.07),transparent_30%)]" />
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
           <div className="max-w-4xl">
-            <p className={sectionLabelClass}>Next Step</p>
+            <p className={darkSectionLabelClass}>Next Step</p>
             <h2 className="mt-4 text-3xl font-semibold leading-tight text-white sm:text-5xl">
               {content.finalCta.title}
             </h2>
@@ -710,7 +726,7 @@ export default function ElectricFoldingMachineSolutionPage({
           <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
             <Link
               href="/contact"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#76B900] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#8ddb00] sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#76B900] px-6 py-3.5 text-sm font-semibold text-[#111417] transition hover:bg-[#8ddb00] sm:w-auto"
             >
               {content.finalCta.primaryCta}
               <ArrowRight size={16} aria-hidden="true" />

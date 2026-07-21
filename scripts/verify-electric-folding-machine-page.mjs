@@ -28,6 +28,27 @@ const assertContains = (source, value, label) => {
 const normalize = (source) => source.replace(/\s+/g, " ");
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const hashFile = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
+const srgbChannel = (value) => {
+  const channel = value / 255;
+  return channel <= 0.04045
+    ? channel / 12.92
+    : ((channel + 0.055) / 1.055) ** 2.4;
+};
+const relativeLuminance = (hex) => {
+  const channels = hex.match(/[\da-f]{2}/gi)?.map((channel) => Number.parseInt(channel, 16));
+  assert.equal(channels?.length, 3, `Invalid six-digit hex color: ${hex}`);
+  const [red, green, blue] = channels.map(srgbChannel);
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+};
+const contrastRatio = (foreground, background) => {
+  const lighter = Math.max(relativeLuminance(foreground), relativeLuminance(background));
+  const darker = Math.min(relativeLuminance(foreground), relativeLuminance(background));
+  return (lighter + 0.05) / (darker + 0.05);
+};
+const assertAccessibleContrast = (foreground, background, label) => {
+  const ratio = contrastRatio(foreground, background);
+  assert.ok(ratio >= 4.5, `${label} contrast is ${ratio.toFixed(2)}:1; expected at least 4.5:1`);
+};
 
 const rows = [
   ["DWS-1.5 x 1300", "1.5", "1300", "55", "2.2/0.75", "450", "1950 x 650 x 1550"],
@@ -237,6 +258,78 @@ assert.match(
   "Wide tables must scroll only inside their wrappers",
 );
 
+for (const [foreground, background, label] of [
+  ["#4E7A00", "#FFFFFF", "Light-surface green on white"],
+  ["#4E7A00", "#F4F6F8", "Light-surface green on light gray"],
+  ["#76B900", "#0B0D10", "Brand green on darkest surface"],
+  ["#76B900", "#111417", "Brand green on dark surface"],
+  ["#111417", "#76B900", "Primary CTA text"],
+  ["#111417", "#8DDB00", "Primary CTA hover text"],
+  ["#D4D4D8", "#111417", "Technical unit text"],
+]) {
+  assertAccessibleContrast(foreground, background, label);
+}
+assertContains(
+  componentSource,
+  'const lightSectionLabelClass =\n  "text-xs font-semibold uppercase tracking-[0.2em] text-[#4E7A00]"',
+  "Light-surface section labels must use the accessible green",
+);
+assertContains(
+  componentSource,
+  'const darkSectionLabelClass =\n  "text-xs font-semibold uppercase tracking-[0.2em] text-[#76B900]"',
+  "Dark-surface section labels must retain the brand green",
+);
+assert.match(
+  componentSource,
+  /light \? darkSectionLabelClass : lightSectionLabelClass/,
+  "SectionIntro must choose the section-label color for its surface",
+);
+assert.equal(
+  (componentSource.match(/text-sm font-semibold text-\[#4E7A00\]/g) ?? []).length,
+  2,
+  "Problem and process numeric accents must use accessible light-surface green",
+);
+assertContains(
+  componentSource,
+  'className="font-semibold text-[#4E7A00]"',
+  "Selection numeric accents must use accessible light-surface green",
+);
+assert.doesNotMatch(
+  componentSource,
+  /bg-\[#76B900\][^"\n]*text-white|text-white[^"\n]*bg-\[#76B900\]/,
+  "Primary green CTA text must not remain white",
+);
+assert.equal(
+  (componentSource.match(/bg-\[#76B900\][^"\n]*text-\[#111417\]/g) ?? []).length,
+  3,
+  "All three primary green CTAs must use dark text",
+);
+assertContains(
+  componentSource,
+  "block text-center text-xs font-medium text-zinc-300",
+  "Technical units on the dark header must use accessible neutral text",
+);
+assert.match(
+  componentSource,
+  /data-section="comparison"[\s\S]*?<table[^>]*>[\s\S]*?<caption className="sr-only">[\s\S]*?<\/caption>[\s\S]*?data-section="equipment"/,
+  "Comparison table must include an sr-only caption",
+);
+assert.match(
+  componentSource,
+  /content\.comparison\.map[\s\S]*?<th scope="row"[^>]*>\{row\.item\}<\/th>/,
+  "Comparison item cells must be scoped row headers",
+);
+assert.match(
+  componentSource,
+  /data-section="technical"[\s\S]*?<table[^>]*>[\s\S]*?<caption className="sr-only">[\s\S]*?<\/caption>/,
+  "Technical table must include an sr-only caption",
+);
+assert.match(
+  componentSource,
+  /technicalParameters\.rows\.map[\s\S]*?index === 0 \? \([\s\S]*?<th[\s\S]*?scope="row"[\s\S]*?\{value\}[\s\S]*?<\/th>[\s\S]*?\) : \([\s\S]*?<td/,
+  "Technical model cells must render as row headers and other values as data cells",
+);
+
 for (const schemaType of ["ProductModel", "BreadcrumbList", "FAQPage"]) {
   assertContains(componentSource, `"@type": "${schemaType}"`, `Missing ${schemaType} schema`);
 }
@@ -266,5 +359,24 @@ assertContains(
   "Electric folding machine for thin sheet metal bending, edge folding, HVAC duct panel forming, roofing sheet metal and light fabrication workshops. Get a suitable electric sheet metal folding solution.",
   "Approved metadata description is missing",
 );
+
+const electricMetadataBranch = routeSource.match(
+  /if \(product\.id === "electric-sheet-metal-folding-machine"\) \{([\s\S]*?)\n  \}\n\n  if \(product\.id === "manual-sheet-metal-folding-machine"\)/,
+)?.[1];
+assert.ok(electricMetadataBranch, "Electric Folding Machine metadata branch is missing");
+const keywordBlock = electricMetadataBranch.match(/keywords:\s*\[([\s\S]*?)\]/)?.[1];
+assert.ok(keywordBlock, "Electric Folding Machine metadata keywords are missing");
+const metadataKeywords = [...keywordBlock.matchAll(/"([^"]+)"/g)].map((match) => match[1]);
+assert.deepEqual(metadataKeywords, [
+  "Electric Folding Machine",
+  "Electric Sheet Metal Folding Machine",
+  "Electric Sheet Metal Bender",
+  "Electric Sheet Metal Brake",
+  "Motorized Folding Machine",
+  "Sheet Metal Edge Bending Machine",
+  "HVAC Duct Folding Machine",
+  "Electric Duct Folding Machine",
+  "Sheet Metal Folding Solution",
+], "Electric Folding Machine metadata must retain the exact nine approved keywords");
 
 console.log("Electric Folding Machine page contract passed.");
