@@ -6,6 +6,7 @@ import FootShearSolutionPage from "@/components/FootShearSolutionPage";
 import HydraulicSwingBeamShearSolutionPage from "@/components/HydraulicSwingBeamShearSolutionPage";
 import HydraulicGuillotineShearSolutionPage from "@/components/HydraulicGuillotineShearSolutionPage";
 import ManualFoldingMachineSolutionPage from "@/components/ManualFoldingMachineSolutionPage";
+import PneumaticFoldingMachineSolutionPage from "@/components/PneumaticFoldingMachineSolutionPage";
 import ProductSolutionPage from "@/components/ProductSolutionPage";
 import ReelShearBeadingSolutionPage from "@/components/ReelShearBeadingSolutionPage";
 import SmallElectricShearSolutionPage from "@/components/SmallElectricShearSolutionPage";
@@ -101,6 +102,50 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
           {
             url: product.image,
             alt: "Manual folding machine for sheet metal edge bending",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "pneumatic-sheet-metal-folding-machine") {
+    const title =
+      "Pneumatic Folding Machine | HVAC Duct Sheet Metal Folding Solution";
+    const description =
+      "Pneumatic folding machine for thin sheet metal bending, HVAC duct panel folding, galvanized sheet forming and rectangular air duct fabrication. Get a suitable air-driven folding solution.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Pneumatic Folding Machine",
+        "Pneumatic Sheet Metal Folding Machine",
+        "Pneumatic Sheet Metal Bender",
+        "Pneumatic Sheet Metal Brake",
+        "Pneumatic Duct Folding Machine",
+        "HVAC Duct Folding Machine",
+        "Pneumatic TDF Folding Machine",
+        "Sheet Metal Edge Bending Machine",
+        "Air Duct Folding Machine",
+        "Sheet Metal Folding Solution",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Pneumatic folding machine for HVAC duct sheet metal folding",
           },
         ],
       },
@@ -402,6 +447,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   if (product.id === "manual-sheet-metal-folding-machine") {
     return <ManualFoldingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "pneumatic-sheet-metal-folding-machine") {
+    return <PneumaticFoldingMachineSolutionPage product={product} />;
   }
 
   if (product.id === "foot-shear") {

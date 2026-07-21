@@ -63,7 +63,7 @@ const applicationImages = [
 ];
 ```
 
-Require the exact route metadata, one H1 using `content.hero.title`, hero alt, all fourteen section markers, every exact row in `data/bending-details.ts`, a `technicalHeadings` display map, `whitespace-nowrap`, centered block units, `max-w-full overflow-x-auto`, eight unique application paths, eight alt values, a source manifest containing IDs `30749458`, `10033425`, `5505867`, `36497859`, `11617523`, `33694032`, `5362681`, `29386093` and `https://www.pexels.com/license/`, plus `ProductModel`, `BreadcrumbList` and `FAQPage` without commercial/review schema fields.
+Require the exact route metadata, one H1 using `content.hero.title`, hero alt, all fourteen section markers, every exact row in `data/bending-details.ts`, a `technicalHeadings` display map, `whitespace-nowrap`, centered block units, `max-w-full overflow-x-auto`, eight unique application paths, eight alt values, a source manifest containing IDs `30749458`, `28914401`, `5505867`, `5845972`, `9242175`, `33694019`, `5362681`, `7788264` and `https://www.pexels.com/license/`, plus `ProductModel`, `BreadcrumbList` and `FAQPage` without commercial/review schema fields.
 
 - [ ] **Step 2: Run the contract and verify RED**
 
@@ -182,13 +182,13 @@ Use a bounded Node ESM command with the installed `sharp` package. Fetch `https:
 ```js
 const photos = [
   [30749458, "hvac-duct-panel-folding.webp"],
-  [10033425, "rectangular-air-duct-fabrication.webp"],
+  [28914401, "rectangular-air-duct-fabrication.webp"],
   [5505867, "ventilation-duct-workshop.webp"],
-  [36497859, "galvanized-sheet-folding.webp"],
-  [11617523, "light-sheet-metal-fabrication.webp"],
-  [33694032, "electrical-cabinet-enclosure.webp"],
+  [5845972, "galvanized-sheet-folding.webp"],
+  [9242175, "light-sheet-metal-fabrication.webp"],
+  [33694019, "electrical-cabinet-enclosure.webp"],
   [5362681, "stainless-steel-light-forming.webp"],
-  [29386093, "construction-sheet-metal-work.webp"],
+  [7788264, "construction-sheet-metal-work.webp"],
 ];
 ```
 
@@ -204,13 +204,13 @@ Record access date `2026-07-21`, the Pexels License, the general-application dis
 | File | Photographer | Source |
 | --- | --- | --- |
 | `hvac-duct-panel-folding.webp` | Jakub Zerdzicki | https://www.pexels.com/photo/industrial-interior-with-exposed-hvac-ductwork-30749458/ |
-| `rectangular-air-duct-fabrication.webp` | Fikri Bijey | https://www.pexels.com/photo/low-angle-shot-of-a-building-under-the-sky-10033425/ |
+| `rectangular-air-duct-fabrication.webp` | Roma captainbarduck | https://www.pexels.com/photo/industrial-ventilation-ducts-on-urban-wall-28914401/ |
 | `ventilation-duct-workshop.webp` | Mike van Schoonderwalt | https://www.pexels.com/photo/interior-of-an-unfinished-building-5505867/ |
-| `galvanized-sheet-folding.webp` | Rutvik Shimpi | https://www.pexels.com/photo/skilled-artisan-working-with-metal-sheets-36497859/ |
-| `light-sheet-metal-fabrication.webp` | Abdullah Asad | https://www.pexels.com/photo/a-man-using-a-grinder-on-metal-sheets-11617523/ |
-| `electrical-cabinet-enclosure.webp` | Bulat843 | https://www.pexels.com/photo/focused-technician-working-in-industrial-workshop-33694032/ |
+| `galvanized-sheet-folding.webp` | Tima Miroshnichenko | https://www.pexels.com/photo/man-in-safety-glasses-welding-a-metal-bar-5845972/ |
+| `light-sheet-metal-fabrication.webp` | Mikhail Nilov | https://www.pexels.com/photo/two-men-wearing-safety-glasses-9242175/ |
+| `electrical-cabinet-enclosure.webp` | Bulat843 | https://www.pexels.com/photo/technician-working-on-electrical-control-panel-33694019/ |
 | `stainless-steel-light-forming.webp` | Hassan yahia | https://www.pexels.com/photo/welder-working-in-protective-clothing-5362681/ |
-| `construction-sheet-metal-work.webp` | Critical Smith | https://www.pexels.com/photo/skilled-welder-working-with-sparks-flying-29386093/ |
+| `construction-sheet-metal-work.webp` | Hanna Payasnikava | https://www.pexels.com/photo/construction-worker-on-the-roof-7788264/ |
 ```
 
 - [ ] **Step 4: Verify binary properties and commit**
