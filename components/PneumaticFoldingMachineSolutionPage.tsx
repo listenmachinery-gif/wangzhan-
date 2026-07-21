@@ -160,7 +160,7 @@ export default function PneumaticFoldingMachineSolutionPage({
 
       <section
         data-section="hero"
-        className="relative isolate overflow-hidden bg-[#0B0D10] px-5 py-12 text-white sm:px-8 lg:py-20"
+        className="relative isolate overflow-hidden bg-[#0B0D10] px-5 py-12 text-white sm:px-8 lg:py-14 xl:py-16"
       >
         <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_78%_34%,rgba(118,185,0,0.13),transparent_30%),linear-gradient(135deg,#0B0D10_0%,#15191D_62%,#08090A_100%)]" />
         <div className="industrial-grid absolute inset-0 -z-10 opacity-25" />
@@ -173,19 +173,19 @@ export default function PneumaticFoldingMachineSolutionPage({
             Back to Bending Machines
           </Link>
 
-          <div className="mt-10 grid min-w-0 gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center xl:gap-20">
+          <div className="mt-8 grid min-w-0 gap-12 lg:grid-cols-[1.04fr_0.96fr] lg:items-center xl:gap-16">
             <div className="min-w-0">
-              <h1 className="max-w-3xl text-4xl font-semibold leading-[1.04] text-white sm:text-5xl lg:text-6xl xl:text-7xl">
+              <h1 className="max-w-3xl text-4xl font-semibold leading-[1.04] text-white sm:text-5xl lg:text-[3.25rem] xl:text-[3.7rem]">
                 {content.hero.title}
               </h1>
-              <p className="mt-6 max-w-2xl text-xl font-medium leading-8 text-zinc-100 sm:text-2xl sm:leading-9">
+              <p className="mt-5 max-w-2xl text-lg font-medium leading-8 text-zinc-100 sm:text-xl sm:leading-8">
                 {content.hero.subtitle}
               </p>
-              <p className="mt-6 max-w-2xl text-base leading-8 text-zinc-400">
+              <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-400">
                 {content.hero.description}
               </p>
 
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link
                   href="/contact"
                   className="inline-flex w-full items-center justify-center gap-2 rounded-sm bg-[#76B900] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#8ddb00] sm:w-auto"
@@ -201,7 +201,7 @@ export default function PneumaticFoldingMachineSolutionPage({
                 </Link>
               </div>
 
-              <div className="mt-10 grid gap-x-7 gap-y-4 border-t border-white/15 pt-7 sm:grid-cols-2">
+              <div className="mt-8 grid gap-x-7 gap-y-4 border-t border-white/15 pt-6 sm:grid-cols-2">
                 {content.hero.proofPoints.map((point) => (
                   <div
                     key={point}
@@ -325,6 +325,7 @@ export default function PneumaticFoldingMachineSolutionPage({
       </section>
 
       <section
+        id="applications"
         data-section="applications"
         className="bg-[#F4F6F8] px-5 py-16 sm:px-8 lg:py-24"
       >
@@ -693,6 +694,7 @@ export default function PneumaticFoldingMachineSolutionPage({
       </section>
 
       <section
+        id="technical"
         data-section="technical"
         className="bg-[#F4F6F8] px-5 py-16 sm:px-8 lg:py-24"
       >
@@ -752,6 +754,7 @@ export default function PneumaticFoldingMachineSolutionPage({
       </section>
 
       <section
+        id="faq"
         data-section="faq"
         className="bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24"
       >
