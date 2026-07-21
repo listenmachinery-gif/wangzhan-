@@ -80,7 +80,7 @@ assert.equal(
 
 const sourceManifest = readSource("public/products/hydraulic-folding-applications/SOURCES.md");
 assertContains(sourceManifest, "https://www.pexels.com/license/", "Pexels license source is missing");
-for (const photoId of [32032996, 15106927, 37704240, 9410735, 34526423, 29543207, 32845684, 33694015]) {
+for (const photoId of [32032996, 15106927, 37704240, 9410735, 34526423, 29543207, 32845684, 32407077]) {
   assertContains(sourceManifest, String(photoId), "Pexels photo source is missing");
   assert.ok(!existingManifests.includes(String(photoId)), `Photo ${photoId} must be new to this page`);
 }
