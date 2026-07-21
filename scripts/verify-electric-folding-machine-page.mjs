@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -25,6 +26,8 @@ const assertContains = (source, value, label) => {
 };
 
 const normalize = (source) => source.replace(/\s+/g, " ");
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const hashFile = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
 
 const rows = [
   ["DWS-1.5 x 1300", "1.5", "1300", "55", "2.2/0.75", "450", "1950 x 650 x 1550"],
@@ -50,6 +53,7 @@ const applicationImages = [
 ];
 
 const photoIds = [28914401, 30749458, 48895, 34766497, 33694019, 3677229, 34329584, 28852853];
+const electricCatalogImage = "/products/catalog/electric-sheet-metal-folding-machine.png";
 
 assert.equal(new Set(applicationImages).size, 8, "Application photos must be unique");
 assert.ok(manualContentSource, "Manual Folding Machine application mapping is missing");
@@ -94,10 +98,31 @@ const applicationAssetNames = readdirSync(
 ).filter((name) => name.endsWith(".webp"));
 assert.equal(applicationAssetNames.length, 8, "Exactly eight application WebP assets are required");
 
+const manualApplicationAssetNames = readdirSync(
+  resolve(root, "public/products/manual-folding-applications"),
+).filter((name) => name.endsWith(".webp"));
+assert.equal(manualApplicationAssetNames.length, 8, "Manual Folding Machine must retain eight application WebP assets");
+const manualApplicationHashes = new Set(
+  manualApplicationAssetNames.map((name) =>
+    hashFile(resolve(root, "public/products/manual-folding-applications", name)),
+  ),
+);
+for (const name of applicationAssetNames) {
+  assert.ok(
+    !manualApplicationHashes.has(hashFile(resolve(root, "public/products/electric-folding-applications", name))),
+    `Electric Folding Machine must not reuse Manual Folding Machine image bytes: ${name}`,
+  );
+}
+
 const sourceManifest = readSource("public/products/electric-folding-applications/SOURCES.md");
 assertContains(sourceManifest, "https://www.pexels.com/license/", "Pexels license source is missing");
-for (const photoId of photoIds) {
-  assertContains(sourceManifest, String(photoId), "Pexels photo source is missing");
+for (const [index, imagePath] of applicationImages.entries()) {
+  const name = imagePath.split("/").at(-1);
+  assert.match(
+    sourceManifest,
+    new RegExp(`\\|\\s*\\x60${escapeRegex(name)}\\x60\\s*\\|[^\\n]*${photoIds[index]}[^\\n]*\\|`),
+    `Electric application manifest must bind ${name} to Pexels photo ${photoIds[index]}`,
+  );
 }
 
 for (const value of [
@@ -107,13 +132,27 @@ for (const value of [
 ]) {
   assertContains(productsSource, value, "Missing electric folding product identity");
 }
-assertContains(
+const electricSeedMatch = productsSource.match(
+  /\{\s*name: "Electric Sheet Metal Folding Machine",([\s\S]*?)\n\s*\},/,
+);
+assert.ok(electricSeedMatch, "Electric Folding Machine product seed is missing");
+assert.doesNotMatch(
+  electricSeedMatch[1],
+  /\bimage\s*:/,
+  "Electric Folding Machine product seed must not override the catalog fallback image",
+);
+assert.match(
   productsSource,
-  "image: seed.image ?? `/products/catalog/${id}.png`",
-  "Catalog image resolution changed",
+  /const id = slugify\(seed\.name\);[\s\S]*?image: seed\.image \?\? `\/products\/catalog\/\$\{id\}\.png`/,
+  "Catalog image resolver must use the product-ID fallback path",
+);
+assert.equal(
+  `/products/catalog/${"electric-sheet-metal-folding-machine"}.png`,
+  electricCatalogImage,
+  "Electric Folding Machine catalog fallback path changed",
 );
 assert.ok(
-  existsSync(resolve(root, "public/products/catalog/electric-sheet-metal-folding-machine.png")),
+  existsSync(resolve(root, `public${electricCatalogImage}`)),
   "Existing Electric Folding Machine catalog image is missing",
 );
 
@@ -147,10 +186,10 @@ assert.deepEqual(packageJson.devDependencies, {
   typescript: "^5.7.2",
 }, "Development dependency set changed");
 
-assertContains(
+assert.match(
   contentSource,
-  'title: "Electric Folding Machine"',
-  "Approved Electric Folding Machine content title is missing",
+  /hero:\s*\{\s*title:\s*"Electric Folding Machine"/,
+  "Approved Electric Folding Machine title must be the hero title",
 );
 
 for (const section of sections) {
@@ -204,7 +243,7 @@ for (const schemaType of ["ProductModel", "BreadcrumbList", "FAQPage"]) {
 
 assert.doesNotMatch(
   `${contentSource}\n${componentSource}`,
-  /\b(?:price|pricing|offers?|availability|aggregateRating|ratings?|reviews?)\b|href\s*=\s*["']tel:|\btel:|wa\.me|whats?app|wechat|weixin|(?:qr[\s_-]?code|二维码)|\b\d+(?:\.\d+)?\s*%|\b(?:customer|client)\s+(?:case|project|installation|testimonial|success story)|\b(?:customer|client)-(?:case|project|installation)|\b(?:customer|client)\s+endors(?:ed|ement)|\b(?:endorsement|testimonial)s?\b/i,
+  /\b(?:price|pricing|offers?|availability|aggregateRating|ratings?|reviews?)\b|href\s*=\s*["'](?:tel:|mailto:)|\b(?:tel:|mailto:)|\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b|\b(?:\+?\d{1,3}[-.\s]?)?(?:\(?\d{2,4}\)?[-.\s]?){2,3}\d{3,4}\b|\b(?:address|street|road|avenue)\s*:|wa\.me|whats?app|wechat|weixin|(?:qr[\s_-]?code|二维码)|\b\d+(?:\.\d+)?\s*%|\btrusted\s+by\b|\bfactory\s+count\b|\b\d{2,}\+(?=\s|$)|\b(?:over|more than)\s+\d+\s+(?:factories|customers|clients|installations|countries|workers|employees)\b|\b\d+\s+(?:factories|customers|clients|installations|countries|workers|employees)\b|\b(?:customer|client)\s+(?:case|project|installation|testimonial|success story)|\b(?:customer|client)-(?:case|project|installation)|\b(?:customer|client)\s+endors(?:ed|ement)|\b(?:endorsement|testimonial)s?\b/i,
   "Electric Folding Machine content must not add commercial, contact, performance, or customer-claim content",
 );
 assert.match(
