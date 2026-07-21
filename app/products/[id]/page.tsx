@@ -7,6 +7,7 @@ import HydraulicFoldingMachineSolutionPage from "@/components/HydraulicFoldingMa
 import HydraulicSwingBeamShearSolutionPage from "@/components/HydraulicSwingBeamShearSolutionPage";
 import HydraulicGuillotineShearSolutionPage from "@/components/HydraulicGuillotineShearSolutionPage";
 import ManualFoldingMachineSolutionPage from "@/components/ManualFoldingMachineSolutionPage";
+import NcHydraulicPressBrakeSolutionPage from "@/components/NcHydraulicPressBrakeSolutionPage";
 import PneumaticFoldingMachineSolutionPage from "@/components/PneumaticFoldingMachineSolutionPage";
 import ProductSolutionPage from "@/components/ProductSolutionPage";
 import ReelShearBeadingSolutionPage from "@/components/ReelShearBeadingSolutionPage";
@@ -29,6 +30,49 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
 
   if (!product) {
     return {};
+  }
+
+  if (product.id === "nc-hydraulic-press-brake") {
+    const title = "NC Hydraulic Press Brake | Sheet Metal Bending Solution";
+    const description =
+      "NC hydraulic press brake for cost-effective sheet metal bending, metal fabrication, cabinet manufacturing and workshop production. Get a suitable hydraulic bending solution based on your material, thickness and bending length.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "NC Hydraulic Press Brake",
+        "NC Press Brake Machine",
+        "Hydraulic Press Brake",
+        "Sheet Metal Bending Machine",
+        "Metal Sheet Press Brake",
+        "Torsion Bar Press Brake",
+        "E21 Press Brake",
+        "Sheet Metal Bending Solution",
+        "Hydraulic Bending Machine",
+        "Steel Plate Bending Machine",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "NC hydraulic press brake for sheet metal bending",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
   }
 
   if (product.id === "electric-sheet-metal-folding-machine") {
@@ -500,6 +544,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   if (product.id === "hydraulic-sheet-metal-folding-machine") {
     return <HydraulicFoldingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "nc-hydraulic-press-brake") {
+    return <NcHydraulicPressBrakeSolutionPage product={product} />;
   }
 
   if (product.id === "foot-shear") {
