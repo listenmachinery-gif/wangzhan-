@@ -12,6 +12,11 @@ export type ManualFoldingTextCard = {
   text: string;
 };
 
+export type ManualFoldingApplication = ManualFoldingTextCard & {
+  image: string;
+  alt: string;
+};
+
 export type ManualFoldingSolution = {
   title: string;
   suitableFor: string;
@@ -47,7 +52,7 @@ export type ManualFoldingMachinePageContent = {
   hero: ManualFoldingHero;
   problems: ManualFoldingTextCard[];
   solutions: ManualFoldingSolution[];
-  applications: ManualFoldingTextCard[];
+  applications: ManualFoldingApplication[];
   materials: ManualFoldingTextCard[];
   materialNote: string;
   process: ManualFoldingProcessStep[];
@@ -128,34 +133,50 @@ export const manualFoldingMachinePageContent: ManualFoldingMachinePageContent = 
     {
       title: "HVAC duct panel folding",
       text: "Forms basic panel edges before rectangular duct joining and assembly operations.",
+      image: "/products/manual-folding-applications/hvac-duct-panel-folding.webp",
+      alt: "Installed rectangular HVAC ductwork made from folded sheet metal",
     },
     {
       title: "Roofing sheet metal work",
       text: "Supports edge bends and simple profiles for suitable thin roofing sheet and trim parts.",
+      image: "/products/manual-folding-applications/roofing-sheet-metal-work.webp",
+      alt: "Worker carrying out metal roofing fabrication on a building",
     },
     {
       title: "Architectural sheet metal",
       text: "Useful for small-batch flashing, edging and light architectural sheet-metal preparation.",
+      image: "/products/manual-folding-applications/architectural-sheet-metal.webp",
+      alt: "Modern architectural facade formed from reflective sheet metal panels",
     },
     {
       title: "Signage fabrication",
       text: "Handles straightforward edge folds for suitable sign panels, channels and light-gauge components.",
+      image: "/products/manual-folding-applications/signage-fabrication.webp",
+      alt: "Crafted metal panel being formed for decorative signage work",
     },
     {
       title: "Electrical cabinet and enclosure",
       text: "Supports basic thin-sheet flanges and enclosure parts when the selected model matches the workpiece.",
+      image: "/products/manual-folding-applications/electrical-cabinet-enclosure.webp",
+      alt: "Technician working inside an industrial electrical control enclosure",
     },
     {
       title: "Light sheet metal workshop",
       text: "A practical general-purpose folder for mixed, low-volume thin-sheet jobs.",
+      image: "/products/manual-folding-applications/light-sheet-metal-workshop.webp",
+      alt: "Metal fabrication team working across an industrial workshop floor",
     },
     {
       title: "Repair and maintenance workshop",
       text: "Suitable for one-off replacement panels, covers, edging and repair components.",
+      image: "/products/manual-folding-applications/repair-maintenance-workshop.webp",
+      alt: "Technician repairing a metal component at a workshop bench",
     },
     {
       title: "On-site sheet metal bending",
       text: "Provides manual forming where machine size, weight and the job-site layout allow safe placement.",
+      image: "/products/manual-folding-applications/on-site-sheet-metal-bending.webp",
+      alt: "Workers assembling metal components at an outdoor job site",
     },
   ],
   materials: [
