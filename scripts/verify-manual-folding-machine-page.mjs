@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
 const root = process.cwd();
@@ -20,6 +20,53 @@ assert.ok(componentSource, "Dedicated Manual Folding Machine component is missin
 const assertContains = (source, value, label) => {
   assert.ok(source.includes(value), `${label}: ${value}`);
 };
+
+const applicationImages = [
+  "/products/manual-folding-applications/hvac-duct-panel-folding.webp",
+  "/products/manual-folding-applications/roofing-sheet-metal-work.webp",
+  "/products/manual-folding-applications/architectural-sheet-metal.webp",
+  "/products/manual-folding-applications/signage-fabrication.webp",
+  "/products/manual-folding-applications/electrical-cabinet-enclosure.webp",
+  "/products/manual-folding-applications/light-sheet-metal-workshop.webp",
+  "/products/manual-folding-applications/repair-maintenance-workshop.webp",
+  "/products/manual-folding-applications/on-site-sheet-metal-bending.webp",
+];
+
+assert.equal(new Set(applicationImages).size, 8, "Application photos must be unique");
+
+for (const imagePath of applicationImages) {
+  assertContains(contentSource, `image: "${imagePath}"`, "Missing application photo mapping");
+  assert.ok(
+    existsSync(resolve(root, `public${imagePath}`)),
+    `Application photo file is missing: ${imagePath}`,
+  );
+}
+
+assert.equal(
+  (contentSource.match(/alt: "/g) ?? []).length,
+  8,
+  "Every application photo must have descriptive alt text",
+);
+
+const applicationAssetNames = readdirSync(
+  resolve(root, "public/products/manual-folding-applications"),
+).filter((name) => name.endsWith(".webp"));
+assert.equal(applicationAssetNames.length, 8, "Exactly eight application WebP assets are required");
+
+const sourceManifest = readSource("public/products/manual-folding-applications/SOURCES.md");
+assertContains(sourceManifest, "https://www.pexels.com/license/", "Pexels license source is missing");
+for (const photoId of [8297856, 9074493, 8368985, 15369831, 21812143, 15947586, 3855475, 31002308]) {
+  assertContains(sourceManifest, String(photoId), "Pexels photo source is missing");
+}
+
+assertContains(componentSource, "<Image", "Applications must render raster photos");
+assertContains(componentSource, "application.image", "Application image mapping is not rendered");
+assertContains(componentSource, "application.alt", "Application image alt text is not rendered");
+assert.doesNotMatch(
+  componentSource,
+  /function ApplicationSketch|line diagram/,
+  "Application line art must be removed",
+);
 
 for (const value of [
   'name: "Manual Sheet Metal Folding Machine"',
