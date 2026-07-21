@@ -6,7 +6,7 @@
 
 **Architecture:** Extend the existing application content records with `image` and `alt` fields so copy and imagery stay mapped in one source of truth. Store optimized WebP files and a source manifest under a dedicated public asset directory, then render them through Next.js `Image` inside the existing responsive card grid.
 
-**Tech Stack:** Next.js 15 App Router, React 19, TypeScript, Tailwind CSS, Node.js contract tests, Pexels source photography, macOS `sips` image conversion, Vercel production hosting.
+**Tech Stack:** Next.js 15 App Router, React 19, TypeScript, Tailwind CSS, Node.js contract tests, Pexels source photography, the project’s existing `sharp` image encoder, Vercel production hosting.
 
 ## Global Constraints
 
@@ -134,18 +134,7 @@ Download each Pexels CDN image at 1200 × 675 with `fit=crop` to `/tmp/manual-fo
 
 - [ ] **Step 2: Convert all eight photographs to local WebP assets**
 
-Create `public/products/manual-folding-applications/` and run `sips` for each approved source:
-
-```bash
-sips -s format webp -s formatOptions 76 /tmp/manual-folding-application-source-8297856.jpg --out public/products/manual-folding-applications/hvac-duct-panel-folding.webp
-sips -s format webp -s formatOptions 76 /tmp/manual-folding-application-source-9074493.jpg --out public/products/manual-folding-applications/roofing-sheet-metal-work.webp
-sips -s format webp -s formatOptions 76 /tmp/manual-folding-application-source-8368985.jpg --out public/products/manual-folding-applications/architectural-sheet-metal.webp
-sips -s format webp -s formatOptions 76 /tmp/manual-folding-application-source-15369831.jpg --out public/products/manual-folding-applications/signage-fabrication.webp
-sips -s format webp -s formatOptions 76 /tmp/manual-folding-application-source-21812143.jpg --out public/products/manual-folding-applications/electrical-cabinet-enclosure.webp
-sips -s format webp -s formatOptions 76 /tmp/manual-folding-application-source-15947586.jpg --out public/products/manual-folding-applications/light-sheet-metal-workshop.webp
-sips -s format webp -s formatOptions 76 /tmp/manual-folding-application-source-3855475.jpg --out public/products/manual-folding-applications/repair-maintenance-workshop.webp
-sips -s format webp -s formatOptions 76 /tmp/manual-folding-application-source-31002308.jpg --out public/products/manual-folding-applications/on-site-sheet-metal-bending.webp
-```
+Create `public/products/manual-folding-applications/` and use the `sharp` package already installed through Next.js. Convert each source with `.rotate()` for EXIF orientation and `.webp({ quality: 76 })`, writing to the exact filenames listed under **Files** above.
 
 Expected: eight 1200 × 675 WebP files, each below 300 KB.
 
