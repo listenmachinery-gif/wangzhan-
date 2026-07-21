@@ -160,19 +160,19 @@ export const pneumaticFoldingMachinePageContent: PneumaticFoldingMachinePageCont
       title: "Galvanized sheet folding",
       text: "A practical forming method for suitable galvanized thin sheet used in ducts and light enclosures.",
       image: "/products/pneumatic-folding-applications/galvanized-sheet-folding.webp",
-      alt: "Skilled metalworker handling sheet metal in a fabrication workshop",
+      alt: "Metalworker cutting a large sheet-metal panel in a fabrication workshop",
     },
     {
       title: "Light sheet metal fabrication",
       text: "Handles recurring edge folds and basic forms for suitable light-gauge workshop parts.",
       image: "/products/pneumatic-folding-applications/light-sheet-metal-fabrication.webp",
-      alt: "Fabricator working on metal sheets with a power tool in a workshop",
+      alt: "Two workshop trainees wearing safety glasses at a metal fabrication bench",
     },
     {
       title: "Electrical cabinet and enclosure",
       text: "Supports suitable thin-sheet flanges and enclosure parts after capacity and material review.",
       image: "/products/pneumatic-folding-applications/electrical-cabinet-enclosure.webp",
-      alt: "Technician completing precision work for industrial electrical equipment",
+      alt: "Technician working inside an industrial electrical control panel",
     },
     {
       title: "Stainless steel light forming",
@@ -184,7 +184,7 @@ export const pneumaticFoldingMachinePageContent: PneumaticFoldingMachinePageCont
       title: "Construction sheet metal work",
       text: "Useful for selected ventilation and architectural metal preparation where safe compressed-air operation is available.",
       image: "/products/pneumatic-folding-applications/construction-sheet-metal-work.webp",
-      alt: "Construction metalworker fabricating a sheet metal assembly outdoors",
+      alt: "Construction worker wearing safety equipment on a metal roof",
     },
   ],
   materials: [

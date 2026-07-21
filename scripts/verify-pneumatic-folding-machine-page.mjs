@@ -75,7 +75,7 @@ assert.equal(applicationAssetNames.length, 8, "Exactly eight pneumatic applicati
 
 const sourceManifest = readSource("public/products/pneumatic-folding-applications/SOURCES.md");
 assertContains(sourceManifest, "https://www.pexels.com/license/", "Pexels license source is missing");
-for (const photoId of [30749458, 10033425, 5505867, 36497859, 11617523, 33694032, 5362681, 29386093]) {
+for (const photoId of [30749458, 28914401, 5505867, 5845972, 9242175, 33694019, 5362681, 7788264]) {
   assertContains(sourceManifest, String(photoId), "Pexels photo source is missing");
   assert.ok(!manualManifest.includes(String(photoId)), `Photo ${photoId} must not repeat the Manual Folding Machine set`);
 }
