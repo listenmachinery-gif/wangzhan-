@@ -23,6 +23,7 @@ const productSeedSource = productSource.slice(
 const productCount = (productSeedSource.match(/^\s{6}name:/gm) ?? []).length;
 
 const dedicatedIds = [
+  "electric-sheet-metal-folding-machine",
   "foot-shear",
   "reel-shear-beading-machine",
   "manual-sheet-metal-folding-machine",
@@ -117,7 +118,7 @@ for (const unsafeField of [
 }
 
 const sharedPageCount = productCount - dedicatedIds.length;
-assert.equal(sharedPageCount, 46);
+assert.equal(sharedPageCount, 45);
 
 console.log(
   `All-product solution page contract passed: ${productCount} products, ${dedicatedIds.length} dedicated, ${sharedPageCount} shared solution pages.`,
