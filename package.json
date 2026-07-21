@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "verify:nc-press-brake": "node scripts/verify-nc-hydraulic-press-brake-page.mjs"
+    "verify:nc-press-brake": "node scripts/verify-nc-hydraulic-press-brake-page.mjs",
+    "verify:torsion-bar-press-brake": "node scripts/verify-torsion-bar-cnc-press-brake-page.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
