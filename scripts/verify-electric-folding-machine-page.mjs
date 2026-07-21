@@ -265,7 +265,7 @@ for (const [foreground, background, label] of [
   ["#76B900", "#111417", "Brand green on dark surface"],
   ["#111417", "#76B900", "Primary CTA text"],
   ["#111417", "#8DDB00", "Primary CTA hover text"],
-  ["#D4D4D8", "#111417", "Technical unit text"],
+  ["#D4D4D8", "#111417", "Dark-surface zinc-300 text"],
 ]) {
   assertAccessibleContrast(foreground, background, label);
 }
@@ -308,6 +308,21 @@ assertContains(
   componentSource,
   "block text-center text-xs font-medium text-zinc-300",
   "Technical units on the dark header must use accessible neutral text",
+);
+assertContains(
+  componentSource,
+  'className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-300"',
+  "Solution-card labels must use accessible dark-surface text",
+);
+assertContains(
+  componentSource,
+  'className="mt-7 grid grid-cols-2 gap-4 border-t border-white/10 pt-6 text-xs leading-5 text-zinc-300"',
+  "Selection-card footer labels must use accessible dark-surface text",
+);
+assert.doesNotMatch(
+  componentSource,
+  /text-zinc-500/,
+  "Electric Folding Machine must not use failing zinc-500 text on dark surfaces",
 );
 assert.match(
   componentSource,

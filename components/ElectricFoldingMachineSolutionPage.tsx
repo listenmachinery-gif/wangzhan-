@@ -344,7 +344,7 @@ export default function ElectricFoldingMachineSolutionPage({
                     ["Production value", solution.productionValue],
                   ].map(([label, value]) => (
                     <div key={label} className="border-t border-white/10 pt-4">
-                      <dt className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
+                      <dt className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-300">
                         {label}
                       </dt>
                       <dd className="mt-2 text-sm leading-7 text-zinc-300">{value}</dd>
@@ -600,7 +600,7 @@ export default function ElectricFoldingMachineSolutionPage({
               {content.selectionCta.cta}
               <ArrowRight size={16} aria-hidden="true" />
             </Link>
-            <div className="mt-7 grid grid-cols-2 gap-4 border-t border-white/10 pt-6 text-xs leading-5 text-zinc-500">
+            <div className="mt-7 grid grid-cols-2 gap-4 border-t border-white/10 pt-6 text-xs leading-5 text-zinc-300">
               <span>Workshop or job site</span>
               <span>Single machine or workflow</span>
             </div>
