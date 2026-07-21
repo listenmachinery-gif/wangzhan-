@@ -600,7 +600,7 @@ export default function ReelShearBeadingSolutionPage({
           <SectionIntro
             label="Technical Specifications"
             title="Verified Reel Shear Beading Machine parameters."
-            text="Final specifications depend on sheet material, thickness, working width and selected tooling."
+            text="Use the confirmed model data below as the starting point for workpiece and configuration review."
             light
           />
           <div className="mt-10 max-w-full overflow-x-auto border border-white/15 bg-[#111417]">
