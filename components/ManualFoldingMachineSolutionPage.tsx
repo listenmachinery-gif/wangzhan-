@@ -65,50 +65,6 @@ function SectionIntro({
   );
 }
 
-function ApplicationSketch({ index, title }: { index: number; title: string }) {
-  const variant = index % 4;
-
-  return (
-    <svg
-      viewBox="0 0 240 128"
-      role="img"
-      aria-label={`${title} line diagram`}
-      className="h-auto w-full text-[#76B900]"
-    >
-      <rect x="8" y="8" width="224" height="112" fill="#101316" stroke="#30363B" />
-      {variant === 0 ? (
-        <>
-          <path d="M42 86H198L172 42H68Z" fill="#181D21" stroke="#737C84" strokeWidth="2" />
-          <path d="M68 42L92 65H174" fill="none" stroke="currentColor" strokeWidth="3" />
-          <path d="M92 65V86" fill="none" stroke="#9CA3AA" strokeWidth="2" strokeDasharray="5 5" />
-        </>
-      ) : null}
-      {variant === 1 ? (
-        <>
-          <path d="M44 92V48H102V92M102 92V34H196V92" fill="none" stroke="#737C84" strokeWidth="2" />
-          <path d="M44 92H196" fill="none" stroke="currentColor" strokeWidth="3" />
-          <path d="M70 48V34M128 60H172M128 73H172" fill="none" stroke="#9CA3AA" strokeWidth="2" />
-        </>
-      ) : null}
-      {variant === 2 ? (
-        <>
-          <path d="M40 90L82 42H182L202 64V90Z" fill="#181D21" stroke="#737C84" strokeWidth="2" />
-          <path d="M82 42L106 64H202" fill="none" stroke="currentColor" strokeWidth="3" />
-          <path d="M106 64V90" fill="none" stroke="#9CA3AA" strokeWidth="2" />
-        </>
-      ) : null}
-      {variant === 3 ? (
-        <>
-          <path d="M48 38H190V92H48Z" fill="#181D21" stroke="#737C84" strokeWidth="2" />
-          <path d="M80 38V92M48 64H190" fill="none" stroke="#9CA3AA" strokeWidth="2" />
-          <path d="M80 64H190" fill="none" stroke="currentColor" strokeWidth="3" />
-          <circle cx="64" cy="51" r="5" fill="currentColor" />
-        </>
-      ) : null}
-    </svg>
-  );
-}
-
 function FoldingDiagram() {
   return (
     <div className="relative overflow-hidden border border-white/10 bg-[#111417] p-6 sm:p-10">
@@ -409,12 +365,21 @@ export default function ManualFoldingMachineSolutionPage({
             text="A focused supporting machine for thin-sheet edges, light forming and mixed workshop requirements."
           />
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {content.applications.map((application, index) => (
+            {content.applications.map((application) => (
               <article
                 key={application.title}
                 className="group border border-neutral-200 bg-white p-4 shadow-[0_15px_40px_rgba(15,23,42,0.04)] transition duration-200 hover:-translate-y-1 hover:border-[#76B900]/50"
               >
-                <ApplicationSketch index={index} title={application.title} />
+                <div className="relative aspect-video overflow-hidden bg-neutral-900">
+                  <Image
+                    src={application.image}
+                    alt={application.alt}
+                    fill
+                    sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                    className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+                </div>
                 <div className="px-2 pb-3 pt-5">
                   <h3 className="text-lg font-semibold leading-snug text-neutral-950">
                     {application.title}
