@@ -4,6 +4,7 @@ import EnergySavingElectricShearSolutionPage from "@/components/EnergySavingElec
 import FootShearSolutionPage from "@/components/FootShearSolutionPage";
 import HydraulicSwingBeamShearSolutionPage from "@/components/HydraulicSwingBeamShearSolutionPage";
 import HydraulicGuillotineShearSolutionPage from "@/components/HydraulicGuillotineShearSolutionPage";
+import ManualFoldingMachineSolutionPage from "@/components/ManualFoldingMachineSolutionPage";
 import ProductSolutionPage from "@/components/ProductSolutionPage";
 import ReelShearBeadingSolutionPage from "@/components/ReelShearBeadingSolutionPage";
 import SmallElectricShearSolutionPage from "@/components/SmallElectricShearSolutionPage";
@@ -25,6 +26,48 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
 
   if (!product) {
     return {};
+  }
+
+  if (product.id === "manual-sheet-metal-folding-machine") {
+    const title = "Manual Folding Machine | Sheet Metal Edge Bending Solution";
+    const description =
+      "Manual folding machine for thin sheet metal bending, edge folding, HVAC duct panel forming, roofing sheet metal and light fabrication workshops. Get a suitable manual sheet metal folding solution.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Manual Folding Machine",
+        "Manual Sheet Metal Folding Machine",
+        "Manual Sheet Metal Bender",
+        "Manual Sheet Metal Brake",
+        "Sheet Metal Hand Brake",
+        "Hand Operated Folding Machine",
+        "Manual Metal Folding Machine",
+        "HVAC Duct Folding Machine",
+        "Sheet Metal Edge Bending Machine",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Manual folding machine for sheet metal edge bending",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
   }
 
   if (product.id === "reel-shear-beading-machine") {
@@ -308,6 +351,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   if (!product) {
     notFound();
+  }
+
+  if (product.id === "manual-sheet-metal-folding-machine") {
+    return <ManualFoldingMachineSolutionPage product={product} />;
   }
 
   if (product.id === "foot-shear") {
