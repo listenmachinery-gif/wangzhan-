@@ -12,6 +12,7 @@ import PneumaticFoldingMachineSolutionPage from "@/components/PneumaticFoldingMa
 import ProductSolutionPage from "@/components/ProductSolutionPage";
 import ReelShearBeadingSolutionPage from "@/components/ReelShearBeadingSolutionPage";
 import SmallElectricShearSolutionPage from "@/components/SmallElectricShearSolutionPage";
+import TorsionBarCncPressBrakeSolutionPage from "@/components/TorsionBarCncPressBrakeSolutionPage";
 import { getCategoryById, products } from "@/data/products";
 
 type ProductDetailProps = {
@@ -63,6 +64,50 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
           {
             url: product.image,
             alt: "NC hydraulic press brake for sheet metal bending",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "torsion-bar-cnc-press-brake") {
+    const title =
+      "Torsion Bar CNC Press Brake | Cost-effective Sheet Metal Bending Solution";
+    const description =
+      "Torsion bar CNC press brake for cost-effective sheet metal bending, cabinet manufacturing, HVAC duct parts and workshop fabrication. Get a suitable CNC bending solution based on your material, thickness and bending length.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Torsion Bar CNC Press Brake",
+        "Torsion Bar Press Brake",
+        "CNC Torsion Bar Press Brake",
+        "Torsion Axis Press Brake",
+        "Hydraulic CNC Press Brake",
+        "Sheet Metal Bending Machine",
+        "Metal Sheet Press Brake",
+        "CNC Sheet Metal Bending Machine",
+        "Sheet Metal Bending Solution",
+        "Steel Plate Bending Machine",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Torsion bar CNC press brake for sheet metal bending",
           },
         ],
       },
@@ -548,6 +593,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   if (product.id === "nc-hydraulic-press-brake") {
     return <NcHydraulicPressBrakeSolutionPage product={product} />;
+  }
+
+  if (product.id === "torsion-bar-cnc-press-brake") {
+    return <TorsionBarCncPressBrakeSolutionPage product={product} />;
   }
 
   if (product.id === "foot-shear") {
