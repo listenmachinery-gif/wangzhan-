@@ -44,6 +44,7 @@ export type ProductDirectoryGroup = {
 
 type ProductSeed = {
   name: string;
+  image?: string;
   tagline: string;
   parentName?: string;
   detailKey?: string;
@@ -258,10 +259,19 @@ const productSeeds: Record<string, ProductSeed[]> = {
       seoTerms: ["Foot-Operated Sheet Metal Shear"],
     },
     {
-      name: "Slitting and Beading Machine",
-      tagline: "Combined straight slitting and edge beading for light sheet-metal preparation.",
-      legacyIds: ["reel-shear-beading-machine", "roller-shear-beading-machine"],
-      seoTerms: ["Roller Shear Beading Machine", "Reel Shear Beading Machine"],
+      name: "Reel Shear Beading Machine",
+      image: "/products/catalog/slitting-and-beading-machine.png",
+      tagline: "Compact cutting and beading solution for thin sheet metal and HVAC duct fabrication.",
+      legacyIds: ["slitting-and-beading-machine", "roller-shear-beading-machine"],
+      seoTerms: [
+        "Rolling Shear Beading Machine",
+        "Sheet Metal Beading and Cutting Machine",
+        "Duct Beading Machine",
+        "HVAC Duct Beading Machine",
+        "Sheet Metal Reinforcement Machine",
+        "Thin Sheet Cutting and Beading Machine",
+        "Duct Fabrication Machine",
+      ],
       technicalParameters: {
         columns: [
           "Model",
@@ -615,7 +625,7 @@ export const products: Product[] = productCategories.flatMap((category) => {
       categoryName: category.name,
       parentName: seed.parentName,
       tagline: seed.tagline,
-      image: `/products/catalog/${id}.png`,
+      image: seed.image ?? `/products/catalog/${id}.png`,
       specs: seed.specs ?? blueprint.specs,
       highlights: seed.highlights ?? blueprint.highlights,
       applications: seed.applications ?? blueprint.applications,
