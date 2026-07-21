@@ -260,7 +260,7 @@ export const electricFoldingMachinePageContent: ElectricFoldingMachinePageConten
       text: "A motor-assisted folding cycle is practical for repeated small-to-medium batch workshop production.",
     },
     {
-      title: "Compact structure for small and medium workshops",
+      title: "Relatively simple structure for small and medium workshops",
       text: "The electric folding machine has a relatively simple structure for conventional thin-sheet folding applications.",
     },
     {
@@ -433,7 +433,7 @@ export const electricFoldingMachinePageContent: ElectricFoldingMachinePageConten
     {
       question: "Can the machine be customized?",
       answer:
-        "Working length, voltage, folding structure, angle range and application can be reviewed for configuration matching. Final details are confirmed through the engineering proposal.",
+        "Available DWS models and bending lengths are matched to your voltage requirement, sheet material, thickness and application. Confirm the suitable configuration with our engineer.",
     },
   ],
   finalCta: {
