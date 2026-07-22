@@ -12,6 +12,7 @@ import NcHydraulicPressBrakeSolutionPage from "@/components/NcHydraulicPressBrak
 import PneumaticFoldingMachineSolutionPage from "@/components/PneumaticFoldingMachineSolutionPage";
 import ProductSolutionPage from "@/components/ProductSolutionPage";
 import ReelShearBeadingSolutionPage from "@/components/ReelShearBeadingSolutionPage";
+import SingleTableFiberLaserCuttingMachineSolutionPage from "@/components/SingleTableFiberLaserCuttingMachineSolutionPage";
 import SmallElectricShearSolutionPage from "@/components/SmallElectricShearSolutionPage";
 import TorsionBarCncPressBrakeSolutionPage from "@/components/TorsionBarCncPressBrakeSolutionPage";
 import { getCategoryById, products } from "@/data/products";
@@ -585,6 +586,50 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
     };
   }
 
+  if (product.id === "single-table-fiber-laser-cutting-machine") {
+    const title =
+      "Single-Table Fiber Laser Cutting Machine | Sheet Metal Cutting Solution";
+    const description =
+      "Single-table fiber laser cutting machine for cost-effective sheet metal cutting, metal fabrication, stainless steel products, cabinet manufacturing and workshop production. Get a suitable fiber laser cutting solution based on your material, thickness and sheet size.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Single-Table Fiber Laser Cutting Machine",
+        "Single Platform Fiber Laser Cutting Machine",
+        "Open Type Fiber Laser Cutting Machine",
+        "Sheet Metal Fiber Laser Cutting Machine",
+        "Metal Sheet Laser Cutting Machine",
+        "Fiber Laser Cutter for Metal Sheet",
+        "CNC Fiber Laser Cutting Machine",
+        "Sheet Metal Cutting Solution",
+        "Steel Plate Laser Cutting Machine",
+        "Stainless Steel Laser Cutting Machine",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Single-table fiber laser cutting machine for sheet metal cutting",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
   return {
     title: `${product.name} | ZYRON Heavy Industry`,
     description: product.performanceFeatures ?? product.tagline,
@@ -670,6 +715,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   if (product.id === "reel-shear-beading-machine") {
     return <ReelShearBeadingSolutionPage product={product} />;
+  }
+
+  if (product.id === "single-table-fiber-laser-cutting-machine") {
+    return <SingleTableFiberLaserCuttingMachineSolutionPage product={product} />;
   }
 
   const category = getCategoryById(product.categoryId);
