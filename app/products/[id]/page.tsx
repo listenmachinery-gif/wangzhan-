@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import ElectricFoldingMachineSolutionPage from "@/components/ElectricFoldingMachineSolutionPage";
 import ElectroHydraulicServoCncPressBrakeSolutionPage from "@/components/ElectroHydraulicServoCncPressBrakeSolutionPage";
 import EnergySavingElectricShearSolutionPage from "@/components/EnergySavingElectricShearSolutionPage";
+import ExchangeTableFiberLaserCuttingMachineSolutionPage from "@/components/ExchangeTableFiberLaserCuttingMachineSolutionPage";
 import FootShearSolutionPage from "@/components/FootShearSolutionPage";
 import HydraulicFoldingMachineSolutionPage from "@/components/HydraulicFoldingMachineSolutionPage";
 import HydraulicSwingBeamShearSolutionPage from "@/components/HydraulicSwingBeamShearSolutionPage";
@@ -32,6 +33,50 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
 
   if (!product) {
     return {};
+  }
+
+  if (product.id === "exchange-table-fiber-laser-cutting-machine") {
+    const title =
+      "Exchange-Table Fiber Laser Cutting Machine | High-efficiency Sheet Metal Cutting Solution";
+    const description =
+      "Exchange-table fiber laser cutting machine for high-efficiency sheet metal cutting, batch fabrication, stainless steel products, cabinet manufacturing and workshop production. Get a suitable fiber laser cutting solution based on your material, thickness and sheet size.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Exchange-Table Fiber Laser Cutting Machine",
+        "Exchange Platform Fiber Laser Cutting Machine",
+        "Dual Table Fiber Laser Cutting Machine",
+        "Shuttle Table Fiber Laser Cutting Machine",
+        "Fiber Laser Cutting Machine with Exchange Table",
+        "Sheet Metal Fiber Laser Cutting Machine",
+        "Metal Sheet Laser Cutting Machine",
+        "CNC Fiber Laser Cutting Machine",
+        "Sheet Metal Cutting Solution",
+        "High Efficiency Fiber Laser Cutter",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Exchange-table fiber laser cutting machine for sheet metal cutting",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
   }
 
   if (product.id === "electro-hydraulic-servo-cnc-press-brake") {
@@ -638,6 +683,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   if (product.id === "electro-hydraulic-servo-cnc-press-brake") {
     return <ElectroHydraulicServoCncPressBrakeSolutionPage product={product} />;
+  }
+
+  if (product.id === "exchange-table-fiber-laser-cutting-machine") {
+    return <ExchangeTableFiberLaserCuttingMachineSolutionPage product={product} />;
   }
 
   if (product.id === "nc-hydraulic-press-brake") {
