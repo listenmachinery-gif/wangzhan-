@@ -23,8 +23,9 @@ The concepts define layout, hierarchy, typography, color rhythm, table anatomy, 
 
 ## Source-of-Truth Rules
 
-- The current `Product` object remains authoritative for product name, image, tagline, category, original specs, highlights, applications, and options.
-- Existing product specs remain visible: fiber laser power selected by material and maximum cutting thickness; sheet-oriented cutting format; precision guide rails, rack drive, and servo control; and common CAD/CAM nesting and cutting workflows.
+- The current `Product` object remains authoritative for product name, image, tagline, and category. Category-level laser defaults are used only when they are compatible with this specific single-table sheet machine.
+- Applicable original product specs remain visible: fiber laser power selected by material and maximum cutting thickness; precision guide rails, rack drive, and servo control; and common CAD/CAM nesting and cutting workflows.
+- The category-level cutting-format, application, and option defaults also mention tube processing, exchange tables, and automatic loading. Those incompatible values must not be rendered as this product's parameters or features.
 - The repository has no product-specific numeric working area, power range, cutting thickness, accuracy, speed, overall dimensions, or weight for this machine. Those fields must display `Customizable / Please confirm with our sales engineer`.
 - Official Bodor and SENFENG single-platform product material may support cautious industry context and selection guidance. Competitor numeric values must not be presented as guaranteed ZYRON specifications or assigned to an invented ZYRON model.
 - The product image marking `ZY-4020` is visual evidence only; it is not sufficient to infer a complete model specification.
@@ -97,7 +98,7 @@ The technical table uses one product configuration row with the requested field 
 - Machine Weight
 - Application
 
-Verified qualitative values come from the current product/category data. All absent product-specific numeric values use the approved confirmation placeholder. Official competitor values may be recorded in source documentation for context but must not be copied into the ZYRON configuration row.
+Verified and applicable qualitative values come from the current product/category data. All absent product-specific numeric values use the approved confirmation placeholder. Cutting material and flat-sheet application values come from the approved product brief because the category defaults are broader than this machine. Official competitor values may be recorded in source documentation for context but must not be copied into the ZYRON configuration row.
 
 Column headings are parsed into a non-wrapping label line and, where applicable, a separate centered unit line. The table lives inside a local `overflow-x-auto` container so the document itself does not overflow on mobile.
 
@@ -145,7 +146,7 @@ The page remains a server component and adds no client-side JavaScript beyond ex
 
 ## Validation
 
-- Contract test proves dedicated route dispatch, 18 sections, nine unique real-image paths, one H1, requested SEO, schema types, original product-spec references, placeholder policy, header label/unit split, local table scrolling, and absence of price/QR/exchange-table claims.
+- Contract test proves dedicated route dispatch, 18 sections, nine unique real-image paths, one H1, requested SEO, schema types, applicable original product-spec references, placeholder policy, header label/unit split, local table scrolling, and absence of price/QR or single-table feature misclaims.
 - Targeted contract verification runs red before implementation and green afterward.
 - ESLint and the complete production build must pass.
 - Browser/IAB QA covers page identity, first meaningful render, framework-overlay absence, console health, desktop and 390 px mobile overflow, real application image count, broken images, table headers, local scrolling, CTA links, and one FAQ interaction.
