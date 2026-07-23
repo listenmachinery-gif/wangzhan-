@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import ElectricTwoRollPlateRollingMachineSolutionPage from "@/components/ElectricTwoRollPlateRollingMachineSolutionPage";
 import ElectricFoldingMachineSolutionPage from "@/components/ElectricFoldingMachineSolutionPage";
 import ElectroHydraulicServoCncPressBrakeSolutionPage from "@/components/ElectroHydraulicServoCncPressBrakeSolutionPage";
 import EnergySavingElectricShearSolutionPage from "@/components/EnergySavingElectricShearSolutionPage";
@@ -36,6 +37,50 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
 
   if (!product) {
     return {};
+  }
+
+  if (product.id === "electric-two-roll-plate-rolling-machine") {
+    const title =
+      "Electric Two-Roll Plate Rolling Machine | Thin Sheet Cylinder Rolling Solution";
+    const description =
+      "Electric two-roll plate rolling machine for thin sheet cylinder forming, HVAC parts, filter shells, exhaust covers, small tanks and metal round shells. Get a suitable sheet rolling solution based on your material, thickness and target diameter.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Electric Two-Roll Plate Rolling Machine",
+        "Electric 2-Roll Plate Rolling Machine",
+        "Two-Roll Plate Rolling Machine",
+        "2-Roll Plate Bending Machine",
+        "Two-Roller Sheet Rolling Machine",
+        "Electric Sheet Rolling Machine",
+        "Thin Sheet Plate Rolling Machine",
+        "Cylinder Rolling Machine",
+        "Sheet Metal Cylinder Forming Machine",
+        "Sheet Metal Rolling Solution",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Electric two-roll plate rolling machine for thin sheet cylinder forming",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
   }
 
   if (product.id === "fiber-tube-laser-cutting-machine") {
@@ -864,6 +909,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   if (product.id === "single-table-fiber-laser-cutting-machine") {
     return <SingleTableFiberLaserCuttingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "electric-two-roll-plate-rolling-machine") {
+    return <ElectricTwoRollPlateRollingMachineSolutionPage product={product} />;
   }
 
   if (product.id === "sheet-and-tube-fiber-laser-cutting-machine") {

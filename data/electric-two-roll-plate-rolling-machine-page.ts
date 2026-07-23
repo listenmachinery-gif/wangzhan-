@@ -117,10 +117,10 @@ export const electricTwoRollPlateRollingMachinePage = {
   hero: {
     title: "Electric Two-Roll Plate Rolling Machine",
     subtitle:
-      "A focused thin-sheet cylinder rolling solution for round shells, sleeves and small cylindrical parts.",
+      "Fast thin sheet rolling solution for cylinders, HVAC parts, small tanks and round metal shells.",
     description:
       "The electric two-roll plate rolling machine combines a rigid upper roll with an elastic lower roll to form compatible thin sheet into repeatable cylindrical parts. Share your material, thickness, width and target diameter so we can match a practical configuration.",
-    primaryCta: "Get a Rolling Solution",
+    primaryCta: "Get Thin Sheet Rolling Solution",
     secondaryCta: "Request Machine Configuration",
     values: [
       "Thin-Sheet Cylinder Forming",
