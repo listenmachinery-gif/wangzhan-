@@ -12,7 +12,8 @@
     "verify:exchange-table-laser": "node scripts/verify-exchange-table-fiber-laser-cutting-machine-page.mjs",
     "verify:single-table-laser": "node scripts/verify-single-table-fiber-laser-cutting-machine-page.mjs",
     "verify:sheet-and-tube-laser": "node scripts/verify-sheet-and-tube-fiber-laser-cutting-machine-page.mjs",
-    "verify:fiber-tube-laser": "node scripts/verify-fiber-tube-laser-cutting-machine-page.mjs"
+    "verify:fiber-tube-laser": "node scripts/verify-fiber-tube-laser-cutting-machine-page.mjs",
+    "verify:electric-two-roll-rolling": "node scripts/verify-electric-two-roll-plate-rolling-machine-page.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
