@@ -4,6 +4,7 @@ import ElectricFoldingMachineSolutionPage from "@/components/ElectricFoldingMach
 import ElectroHydraulicServoCncPressBrakeSolutionPage from "@/components/ElectroHydraulicServoCncPressBrakeSolutionPage";
 import EnergySavingElectricShearSolutionPage from "@/components/EnergySavingElectricShearSolutionPage";
 import ExchangeTableFiberLaserCuttingMachineSolutionPage from "@/components/ExchangeTableFiberLaserCuttingMachineSolutionPage";
+import FiberTubeLaserCuttingMachineSolutionPage from "@/components/FiberTubeLaserCuttingMachineSolutionPage";
 import FootShearSolutionPage from "@/components/FootShearSolutionPage";
 import HydraulicFoldingMachineSolutionPage from "@/components/HydraulicFoldingMachineSolutionPage";
 import HydraulicSwingBeamShearSolutionPage from "@/components/HydraulicSwingBeamShearSolutionPage";
@@ -34,6 +35,52 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
 
   if (!product) {
     return {};
+  }
+
+  if (product.id === "fiber-tube-laser-cutting-machine") {
+    const title =
+      "Fiber Tube Laser Cutting Machine | Metal Pipe Cutting Solution";
+    const description =
+      "Fiber tube laser cutting machine for round tube, square tube, rectangular tube, profile tube, metal furniture, fitness equipment, guardrail, frame structures and tube fabrication workshops. Get a suitable tube laser cutting solution based on your tube material, size and production needs.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Fiber Tube Laser Cutting Machine",
+        "Fiber Laser Tube Cutting Machine",
+        "CNC Tube Laser Cutting Machine",
+        "Metal Tube Laser Cutting Machine",
+        "Laser Tube Cutting Machine",
+        "Fiber Laser Pipe Cutting Machine",
+        "CNC Pipe Laser Cutter",
+        "Tube and Profile Laser Cutting Machine",
+        "Round Tube Laser Cutting Machine",
+        "Square Tube Laser Cutting Machine",
+        "Metal Pipe Cutting Solution",
+        "Tube Laser Cutting Solution",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Fiber tube laser cutting machine for metal pipe and profile cutting",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
   }
 
   if (product.id === "exchange-table-fiber-laser-cutting-machine") {
@@ -732,6 +779,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   if (product.id === "exchange-table-fiber-laser-cutting-machine") {
     return <ExchangeTableFiberLaserCuttingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "fiber-tube-laser-cutting-machine") {
+    return <FiberTubeLaserCuttingMachineSolutionPage product={product} />;
   }
 
   if (product.id === "nc-hydraulic-press-brake") {
