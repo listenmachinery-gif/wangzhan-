@@ -26,6 +26,26 @@ Rejected alternatives:
 - Application photography: real production or finished-product photographs in consistent 4:3 crops with descriptive alt text.
 - Diagrams: limited to simple HTML/CSS process and comparison structures; no fake photographic detail views and no line-art application substitutes.
 
+### Accepted Concept References
+
+- Upper page: `/Users/zhangmingwei/.codex/generated_images/019f84c8-b51f-7a61-a95b-63358ebfe906/call_7uP1RVSseCkK03PS7zvYoDU5.png`
+- Lower page: `/Users/zhangmingwei/.codex/generated_images/019f84c8-b51f-7a61-a95b-63358ebfe906/call_r0gf9d24RHIS8vYbnVdwLNRZ.png`
+
+These concepts lock the visual direction, spacing rhythm, section order, table anatomy, CTA hierarchy, photo framing, and sharp industrial component geometry. They do not authorize generated machine close-ups, invented capabilities, model codes, numeric parameters, footer copy, navigation changes, or claims that differ from this specification.
+
+### Extracted Design System
+
+- Page background: true near-black `#0B0D10`; raised bands alternate between `#12161A` and subtle neutral gradients into `#1B2024`.
+- Content width: align to the existing site `max-w-7xl` container and shared header/footer.
+- Hero: readable left column capped near 34rem; product image receives the wider right column and no color overlay; edge blending may occur behind the transparent image only.
+- Typography: H1 uses a compact 4xl-to-6xl responsive scale with negative tracking; H2 uses 3xl-to-5xl; body copy stays at 14–16px with 1.75–2.0 line height; labels use 12px uppercase text with restrained tracking.
+- Buttons: primary solid `#76B900`, secondary transparent with a cool-white border, both 48px minimum height and full-width on small screens.
+- Media: application photographs use 4:3 frames, cover crops, square corners, thin borders, and a restrained bottom caption region.
+- Tables: serious full-width grid with zinc borders, no rounded outer shell, dark header band, left-aligned body values, and centered multi-line headers.
+- Motion: 200ms border/color changes and a maximum 2px hover lift; no large transforms.
+- Icons: existing Lucide outline icons only where they clarify a process or control; 17–22px, consistent stroke weight, zinc or accent color, no decorative icon walls.
+- Mobile: 390px reference width, stacked hero, full-width CTAs, one-column photo/cards, compact section padding, and local horizontal table overflow.
+
 ## Information Architecture
 
 The page contains exactly 17 top-level sections:
