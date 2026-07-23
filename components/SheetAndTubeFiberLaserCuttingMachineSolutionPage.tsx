@@ -326,24 +326,24 @@ export default function SheetAndTubeFiberLaserCuttingMachineSolutionPage({
             <span className="text-zinc-300">{product.name}</span>
           </nav>
 
-          <div className="grid items-center gap-12 py-14 lg:min-h-[690px] lg:grid-cols-[0.86fr_1.14fr] lg:gap-8 lg:py-10">
+          <div className="grid items-center gap-12 py-14 lg:min-h-[540px] lg:grid-cols-[0.86fr_1.14fr] lg:gap-8 lg:py-4">
             <div className="relative z-10">
-              <h1 className="max-w-2xl text-4xl font-semibold leading-[1.02] tracking-[-0.045em] text-white sm:text-6xl xl:text-7xl">
+              <h1 className="max-w-2xl text-4xl font-semibold leading-[1.02] tracking-[-0.045em] text-white sm:text-5xl xl:text-6xl">
                 {page.hero.title}
               </h1>
-              <p className="mt-7 max-w-xl text-xl font-medium leading-8 text-zinc-200">
+              <p className="mt-6 max-w-xl text-lg font-medium leading-7 text-zinc-200">
                 {page.hero.subtitle}
               </p>
-              <p className="mt-5 max-w-xl text-base leading-8 text-zinc-400">
+              <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-400">
                 {page.hero.description}
               </p>
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row lg:[&>a]:px-4 lg:[&>a]:text-xs">
                 <PrimaryLink>{page.hero.primaryCta}</PrimaryLink>
                 <SecondaryLink>{page.hero.secondaryCta}</SecondaryLink>
               </div>
             </div>
 
-            <div className="relative min-h-[380px] sm:min-h-[500px] lg:min-h-[620px]">
+            <div className="relative min-h-[380px] sm:min-h-[500px] lg:min-h-[540px]">
               <div className="absolute inset-x-[8%] bottom-[12%] h-[24%] rounded-[50%] bg-black/60 blur-3xl" />
               <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_72%,rgba(11,13,16,0.65)_100%)]" />
               <Image
