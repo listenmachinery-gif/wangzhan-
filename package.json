@@ -10,7 +10,8 @@
     "verify:nc-press-brake": "node scripts/verify-nc-hydraulic-press-brake-page.mjs",
     "verify:torsion-bar-press-brake": "node scripts/verify-torsion-bar-cnc-press-brake-page.mjs",
     "verify:exchange-table-laser": "node scripts/verify-exchange-table-fiber-laser-cutting-machine-page.mjs",
-    "verify:single-table-laser": "node scripts/verify-single-table-fiber-laser-cutting-machine-page.mjs"
+    "verify:single-table-laser": "node scripts/verify-single-table-fiber-laser-cutting-machine-page.mjs",
+    "verify:sheet-and-tube-laser": "node scripts/verify-sheet-and-tube-fiber-laser-cutting-machine-page.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

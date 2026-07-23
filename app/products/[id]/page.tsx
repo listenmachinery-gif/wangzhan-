@@ -13,6 +13,7 @@ import NcHydraulicPressBrakeSolutionPage from "@/components/NcHydraulicPressBrak
 import PneumaticFoldingMachineSolutionPage from "@/components/PneumaticFoldingMachineSolutionPage";
 import ProductSolutionPage from "@/components/ProductSolutionPage";
 import ReelShearBeadingSolutionPage from "@/components/ReelShearBeadingSolutionPage";
+import SheetAndTubeFiberLaserCuttingMachineSolutionPage from "@/components/SheetAndTubeFiberLaserCuttingMachineSolutionPage";
 import SingleTableFiberLaserCuttingMachineSolutionPage from "@/components/SingleTableFiberLaserCuttingMachineSolutionPage";
 import SmallElectricShearSolutionPage from "@/components/SmallElectricShearSolutionPage";
 import TorsionBarCncPressBrakeSolutionPage from "@/components/TorsionBarCncPressBrakeSolutionPage";
@@ -68,6 +69,50 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
           {
             url: product.image,
             alt: "Exchange-table fiber laser cutting machine for sheet metal cutting",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "sheet-and-tube-fiber-laser-cutting-machine") {
+    const title =
+      "Sheet and Tube Fiber Laser Cutting Machine | Plate & Pipe Cutting Solution";
+    const description =
+      "Sheet and tube fiber laser cutting machine for metal sheet cutting, pipe cutting, furniture, fitness equipment, frame structures and fabrication workshops. Get a suitable plate and tube laser cutting solution based on your material, tube size and production needs.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Sheet and Tube Fiber Laser Cutting Machine",
+        "Plate and Tube Fiber Laser Cutting Machine",
+        "Sheet Tube Laser Cutting Machine",
+        "Plate Pipe Fiber Laser Cutting Machine",
+        "Dual-use Fiber Laser Cutting Machine",
+        "Sheet and Pipe Laser Cutter",
+        "Metal Sheet and Tube Laser Cutter",
+        "CNC Fiber Laser Cutting Machine",
+        "Sheet Metal and Tube Cutting Solution",
+        "Fiber Laser Cutter for Metal Sheet and Tube",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Sheet and tube fiber laser cutting machine for metal sheet and pipe cutting",
           },
         ],
       },
@@ -768,6 +813,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   if (product.id === "single-table-fiber-laser-cutting-machine") {
     return <SingleTableFiberLaserCuttingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "sheet-and-tube-fiber-laser-cutting-machine") {
+    return <SheetAndTubeFiberLaserCuttingMachineSolutionPage product={product} />;
   }
 
   const category = getCategoryById(product.categoryId);
