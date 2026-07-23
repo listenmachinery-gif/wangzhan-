@@ -435,7 +435,11 @@ export default function ElectricTwoRollPlateRollingMachineSolutionPage({
         </div>
       </section>
 
-      <section data-section="applications" className="px-5 py-24 sm:px-8 lg:px-12">
+      <section
+        id="applications"
+        data-section="applications"
+        className="scroll-mt-20 px-5 py-24 sm:px-8 lg:px-12"
+      >
         <div className="mx-auto max-w-[1320px]">
           <SectionIntro
             label="Real photography"

@@ -42,11 +42,11 @@ export const confirmationValue =
 
 export const applicationPhotos: readonly ApplicationPhoto[] = [
   {
-    title: "HVAC round duct parts",
-    text: "Representative round ventilation parts and transitions formed from thin galvanized or stainless sheet.",
+    title: "HVAC and ventilation fabrication",
+    text: "Representative ventilation systems show a real downstream industry for rolled thin-sheet sleeves, connectors and round duct parts.",
     image:
       "/products/electric-two-roll-plate-rolling-machine-applications/hvac-round-duct-parts.jpg",
-    alt: "Real HVAC round duct and ventilation parts",
+    alt: "Real HVAC duct and ventilation installation",
   },
   {
     title: "Ventilation sleeves",
