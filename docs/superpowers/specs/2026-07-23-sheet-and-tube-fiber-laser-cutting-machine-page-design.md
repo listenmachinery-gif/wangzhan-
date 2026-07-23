@@ -62,6 +62,27 @@ The dedicated page contains these primary sections in order:
 - Use the existing site type system and container widths with dark titanium, black-gray gradients, off-white text, light-gray secondary copy, and `#76B900` as the only accent color.
 - Use thin borders, subtle glass surfaces, restrained shadows, small hover lifts, and no exaggerated animation.
 
+## Visual Concept References and Implementation Inventory
+
+Two Image Gen concepts define the layout, section rhythm, typography hierarchy, color cadence, media framing, table anatomy, and component geometry:
+
+- Upper-page concept: `/Users/zhangmingwei/.codex/generated_images/019f84c8-b51f-7a61-a95b-63358ebfe906/exec-1ed32147-7171-4a82-828b-2f07d1b8c485.png`
+- Lower-page concept: `/Users/zhangmingwei/.codex/generated_images/019f84c8-b51f-7a61-a95b-63358ebfe906/exec-83f5ed50-914a-4d9a-a384-a87f0ec1ca9f.png`
+
+The concepts are visual references only. Their generated application imagery, generated machine-detail imagery, sample model codes, numeric values, labels, comparison judgments, claims, and copy that differs from the user brief are excluded from implementation.
+
+The extracted design system is:
+
+- Color lock: true near-black `#0B0D10`, titanium surfaces `#12161A` and `#1B2024`, true white headings, cool zinc-gray body copy, thin low-contrast borders, and `#76B900` as the only bright accent.
+- Typography: the existing site sans-serif stack; compact uppercase section labels; large tightly tracked headings; 14–16 px body text with generous line height; deliberate 13–14 px button and table typography.
+- Geometry: sharp corners or 2 px radii, strong horizontal bands, open editorial layouts, stable 4:3 photo frames, locally scrollable tables, and restrained cards only where content grouping requires them.
+- Hero media: the original transparent product image, unchanged and untinted, on a dark presentation field with an ambient shadow beneath it. No color overlay sits on the image.
+- Icon treatment: the existing Lucide outline family at a consistent 1.5–2 px visual weight; no filled or decorative icon containers unless required by a process step.
+- Motion: 200 ms border/color changes and a maximum 2 px hover lift, with reduced-motion support.
+- Responsive continuation: two-column desktop hero, stacked mobile hero, one-column mobile cards, full-width mobile CTA buttons, and table overflow contained within each section.
+
+The allowed above-the-fold copy is limited to the breadcrumb already supplied by the global page, the exact H1, exact subtitle, exact description, two exact CTA labels, and four exact value labels from the user brief. No eyebrow, badge, proof metric, certification, phone number, or new product claim may be added.
+
 ## Applications
 
 Render a responsive photo grid with eleven unique real-image files:
