@@ -274,7 +274,7 @@ export const sheetAndTubeFiberLaserCuttingMachinePage = {
     "Matches furniture, equipment frames, guardrails, fitness equipment and general fabrication products.",
   ],
   dualUseNote:
-    "It does not completely replace a dedicated tube laser. High-volume, complex-profile, long or large-diameter tube work may be better served by a dedicated tube laser cutting machine.",
+    "It is not a universal substitute for a dedicated tube laser. High-volume, complex-profile, long or large-diameter tube work may be better served by a dedicated tube laser cutting machine.",
   powerGuide: [
     {
       title: "Sheet thickness and tube wall",
