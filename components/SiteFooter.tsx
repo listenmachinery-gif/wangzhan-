@@ -11,7 +11,6 @@ const supportLinks = [
 
 const exploreLinks = [
   { label: "Applications", href: "/cases" },
-  { label: "Factory & Solutions", href: "/factory" },
   { label: "Insights", href: "/news" },
   { label: "About ZYRON", href: "/factory" },
 ];

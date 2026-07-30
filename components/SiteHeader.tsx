@@ -3,13 +3,6 @@ import Link from "next/link";
 import { ChevronDown, ChevronRight, Globe2, Menu } from "lucide-react";
 import { getCategoryDirectory, getCategoryHref, productCategories } from "@/data/products";
 
-const aboutLinks = [
-  { label: "About ZYRON", href: "/factory" },
-  { label: "Factory Showroom", href: "/factory" },
-  { label: "Certificates", href: "/#certificates" },
-  { label: "Customer Cases", href: "/cases" },
-];
-
 const newsLinks = [
   { label: "Company News", href: "/news" },
   { label: "Buying Guides", href: "/news" },
@@ -28,7 +21,7 @@ const languageLinks = [
 
 const mobileLinks = [
   { label: "Home", href: "/" },
-  { label: "Company", href: "/factory" },
+  { label: "About ZYRON", href: "/factory" },
   { label: "Products", href: "/products" },
   { label: "Support", href: "/contact" },
   { label: "Showcase", href: "/cases" },
@@ -55,7 +48,7 @@ export function SiteHeader() {
         <nav className="hidden h-full items-center gap-9 xl:flex" aria-label="Primary navigation">
           <NavItem href="/" label="HOME" />
 
-          <SimpleDropdown label="COMPANY" href="/factory" links={aboutLinks} />
+          <NavItem href="/factory" label="ABOUT ZYRON" />
 
           <div className="group relative flex h-full items-center">
             <Link href="/products" className="inline-flex h-full items-center gap-1 text-xs font-semibold tracking-[0.08em] text-white transition hover:text-ignition">
