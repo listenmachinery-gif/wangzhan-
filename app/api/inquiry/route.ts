@@ -5,11 +5,18 @@ export const runtime = "nodejs";
 
 type InquiryPayload = {
   name?: unknown;
+  company?: unknown;
   email?: unknown;
   whatsapp?: unknown;
   productInterest?: unknown;
   destinationCountry?: unknown;
+  country?: unknown;
+  material?: unknown;
+  thicknessRange?: unknown;
+  workingLength?: unknown;
+  targetOutput?: unknown;
   requirement?: unknown;
+  website?: unknown;
 };
 
 const recipientEmail = process.env.INQUIRY_TO_EMAIL || "info@zyroncnc.com";
@@ -60,11 +67,25 @@ export async function POST(request: Request) {
   }
 
   const name = cleanValue(payload.name);
+  const company = cleanValue(payload.company);
   const email = cleanValue(payload.email);
   const whatsapp = cleanValue(payload.whatsapp);
   const productInterest = cleanValue(payload.productInterest);
-  const destinationCountry = cleanValue(payload.destinationCountry);
+  const destinationCountry =
+    cleanValue(payload.country) || cleanValue(payload.destinationCountry);
+  const material = cleanValue(payload.material);
+  const thicknessRange = cleanValue(payload.thicknessRange);
+  const workingLength = cleanValue(payload.workingLength);
+  const targetOutput = cleanValue(payload.targetOutput);
   const requirement = cleanValue(payload.requirement);
+  const website = cleanValue(payload.website);
+
+  if (website) {
+    return NextResponse.json(
+      { message: "Thank you. Your inquiry has been received." },
+      { status: 400 },
+    );
+  }
 
   if (!name || !email || !requirement) {
     return NextResponse.json({ message: "Please provide name, email, and production requirement." }, { status: 400 });
@@ -83,10 +104,15 @@ export async function POST(request: Request) {
   const subject = `New ZYRON inquiry from ${name}`;
   const rows = [
     ["Name", name],
+    ["Company", company || "-"],
     ["Email", email],
     ["WhatsApp / Phone", whatsapp || "-"],
     ["Product Interest", productInterest || "-"],
     ["Destination Country", destinationCountry || "-"],
+    ["Material", material || "-"],
+    ["Thickness Range", thicknessRange || "-"],
+    ["Working Length", workingLength || "-"],
+    ["Target Output", targetOutput || "-"],
     ["Production Requirement", requirement],
   ];
   const htmlRows = rows

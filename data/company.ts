@@ -75,8 +75,8 @@ export const manufacturingCapabilities: CompanyCapability[] = [
       src: "/products/detail-body.jpg",
       title: "Machine Structure",
       description:
-        "A finished machine structure in the ZYRON workshop shows the scale and arrangement carried into assembly.",
-      alt: "Finished sheet metal machine structure inside the ZYRON workshop",
+        "A finished machine structure photographed in a workshop shows the scale and arrangement carried into assembly.",
+      alt: "Finished sheet metal machine structure photographed in a workshop",
       width: 4032,
       height: 3024,
     },
@@ -118,7 +118,7 @@ export const manufacturingCapabilities: CompanyCapability[] = [
       title: "Rear Drive Assembly",
       description:
         "Rear drive and transmission components installed on a completed machine provide a close view of mechanical assembly.",
-      alt: "Rear drive and transmission assembly on a ZYRON sheet metal machine",
+      alt: "Rear drive and transmission assembly on a sheet metal machine",
       width: 4032,
       height: 3024,
     },
@@ -132,7 +132,7 @@ export const manufacturingCapabilities: CompanyCapability[] = [
       title: "Electrical Cabinet Integration",
       description:
         "The open electrical cabinet shows installed control and power components ready for configuration-specific checks.",
-      alt: "Electrical cabinet components installed inside a ZYRON machine",
+      alt: "Electrical cabinet components installed inside a sheet metal machine",
       width: 4032,
       height: 3024,
     },
@@ -387,7 +387,7 @@ export const factoryGallery: CompanyMediaItem[] = [
     title: "Machine Structure",
     description:
       "A completed machine structure photographed inside the workshop.",
-    alt: "Completed sheet metal machine structure inside the ZYRON workshop",
+    alt: "Completed sheet metal machine structure photographed inside a workshop",
     width: 4032,
     height: 3024,
   },
@@ -405,7 +405,7 @@ export const factoryGallery: CompanyMediaItem[] = [
     title: "Mechanical Assembly",
     description:
       "Rear drive and transmission components installed on a machine.",
-    alt: "Rear drive components installed on a ZYRON sheet metal machine",
+    alt: "Rear drive components installed on a sheet metal machine",
     width: 4032,
     height: 3024,
   },
@@ -414,7 +414,7 @@ export const factoryGallery: CompanyMediaItem[] = [
     title: "Electrical Integration",
     description:
       "Installed power and control components inside the electrical cabinet.",
-    alt: "Installed electrical components inside a ZYRON machine cabinet",
+    alt: "Installed electrical components inside a sheet metal machine cabinet",
     width: 4032,
     height: 3024,
   },
@@ -423,7 +423,7 @@ export const factoryGallery: CompanyMediaItem[] = [
     title: "Control Cabinet Detail",
     description:
       "A close view of control cabinet wiring and component layout.",
-    alt: "Control cabinet wiring and component layout on a ZYRON machine",
+    alt: "Control cabinet wiring and component layout on a sheet metal machine",
     width: 4032,
     height: 3024,
   },
@@ -432,7 +432,7 @@ export const factoryGallery: CompanyMediaItem[] = [
     title: "Machine Adjustment",
     description:
       "Adjustment hardware and machine interfaces visible before final review.",
-    alt: "Adjustment components on a ZYRON sheet metal machine",
+    alt: "Adjustment components on a sheet metal machine",
     width: 4032,
     height: 3024,
   },
@@ -450,7 +450,7 @@ export const factoryGallery: CompanyMediaItem[] = [
     title: "Finished Machine",
     description:
       "A finished machine viewed from the operator side.",
-    alt: "Finished ZYRON machine viewed from the operator side",
+    alt: "Finished sheet metal machine viewed from the operator side",
     width: 4032,
     height: 3024,
   },
