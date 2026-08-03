@@ -2,16 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
-  Check,
   Mail,
   MapPin,
   MessageCircle,
 } from "lucide-react";
 import {
-  certificates,
   companyFaqs,
   companyIdentity,
-  factoryGallery,
   globalServices,
   packingProcess,
   serviceFlow,
@@ -20,7 +17,6 @@ import {
 import { productCategories } from "@/data/products";
 import { CompanyFaq } from "./CompanyFaq";
 import { CompanyInquiryForm } from "./CompanyInquiryForm";
-import { CompanyMediaDialog } from "./CompanyMediaDialog";
 
 const productOptions = productCategories.map((category) => ({
   value: category.id,
@@ -30,84 +26,6 @@ const productOptions = productCategories.map((category) => ({
 export function CompanySupportSections() {
   return (
     <>
-      <section
-        id="certificates"
-        data-company-section="certificates"
-        className="scroll-mt-24 bg-[#0B0D10] px-5 py-20 text-white sm:px-8 lg:py-28"
-      >
-        <div className="mx-auto grid max-w-[1320px] gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:gap-20">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#76B900]">
-              CERTIFICATES
-            </p>
-            <h2 className="mt-5 text-4xl font-semibold leading-[1.08] tracking-[-0.03em] sm:text-6xl">
-              Documents Supporting International Procurement
-            </h2>
-            <p className="mt-7 text-base leading-8 text-zinc-400">
-              Machine procurement requires more than product images. Company
-              qualification, quality-management documentation, machinery
-              compliance records, brand registration, technical documents, and
-              export-related information help buyers complete internal reviews
-              and purchasing procedures.
-            </p>
-            <ul className="mt-7 divide-y divide-white/10 border-y border-white/10">
-              {certificates.items.map((item) => (
-                <li key={item} className="flex gap-3 py-3.5 text-sm text-zinc-300">
-                  <Check
-                    size={16}
-                    className="mt-0.5 shrink-0 text-[#76B900]"
-                    aria-hidden="true"
-                  />
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <p className="mt-7 border-l-2 border-[#76B900] pl-5 text-sm leading-7 text-zinc-400">
-              Certification scope and applicable machine documentation should be
-              confirmed according to the selected product, model, configuration,
-              and destination market.
-            </p>
-          </div>
-          <CompanyMediaDialog items={[certificates.media]} variant="certificate" />
-        </div>
-      </section>
-
-      <section
-        id="factory-gallery"
-        data-company-section="factory-gallery"
-        className="scroll-mt-24 bg-[#111417] px-5 py-20 text-white sm:px-8 lg:py-28"
-      >
-        <div className="mx-auto max-w-[1320px]">
-          <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#76B900]">
-                FACTORY GALLERY
-              </p>
-              <h2 className="mt-5 text-4xl font-semibold leading-[1.08] tracking-[-0.03em] sm:text-6xl">
-                Real Images From ZYRON
-              </h2>
-            </div>
-            <div className="max-w-2xl text-base leading-8 text-zinc-400 lg:justify-self-end">
-              <p>
-                Existing factory, machine-detail, control-cabinet, adjustment, and
-                exhibition images provide visible context without substituting
-                competitor or AI-generated factory evidence.
-              </p>
-              <Link
-                href="/cases"
-                className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-white transition hover:text-[#8DDB00]"
-              >
-                View Customer Cases
-                <ArrowRight size={16} aria-hidden="true" />
-              </Link>
-            </div>
-          </div>
-          <div className="mt-10">
-            <CompanyMediaDialog items={factoryGallery} />
-          </div>
-        </div>
-      </section>
-
       <section
         data-company-section="packing"
         className="bg-[#F4F6F8] px-5 py-20 text-[#101214] sm:px-8 lg:py-28"

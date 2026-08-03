@@ -6,7 +6,6 @@ import { CompanyHero } from "./CompanyHero";
 import { CompanyOverview } from "./CompanyOverview";
 import { CompanySupportSections } from "./CompanySupportSections";
 import { EngineeringQualitySections } from "./EngineeringQualitySections";
-import { ManufacturingCapabilities } from "./ManufacturingCapabilities";
 import { ProductSystem } from "./ProductSystem";
 
 const organizationSchema = {
@@ -35,7 +34,7 @@ const webPageSchema = {
   "@type": "WebPage",
   name: "About ZYRON Heavy Industry",
   description:
-    "Explore ZYRON Heavy Industry’s factory, manufacturing process, quality control, product range, testing, export packing, certificates, and global machinery support.",
+    "Explore ZYRON Heavy Industry’s factory, product range, engineering support, quality control, export packing, and global machinery support.",
   url: `${companyIdentity.url}/factory`,
   inLanguage: "en",
   isPartOf: {
@@ -107,7 +106,6 @@ export function CompanyPage() {
       ))}
       <CompanyHero />
       <CompanyOverview />
-      <ManufacturingCapabilities />
       <ProductSystem />
       <EngineeringQualitySections />
       <CompanySupportSections />

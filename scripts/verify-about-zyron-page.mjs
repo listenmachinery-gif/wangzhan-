@@ -16,14 +16,11 @@ const page = read("components/company/CompanyPage.tsx");
 const companySources = [
   "CompanyHero.tsx",
   "CompanyOverview.tsx",
-  "ManufacturingCapabilities.tsx",
   "ProductSystem.tsx",
   "EngineeringQualitySections.tsx",
   "CompanySupportSections.tsx",
   "CompanyPage.tsx",
-  "CompanyMediaDialog.tsx",
   "CompanyFaq.tsx",
-  "TestingVideo.tsx",
   "CompanyInquiryForm.tsx",
 ]
   .map((file) => read(`components/company/${file}`))
@@ -68,7 +65,7 @@ assert.match(
 );
 assert.match(
   route,
-  /Explore ZYRON Heavy Industry’s factory, manufacturing process, quality control, product range, testing, export packing, certificates, and global machinery support\./,
+  /Explore ZYRON Heavy Industry’s factory, product range, engineering support, quality control, export packing, and global machinery support\./,
   "route must use the approved meta description",
 );
 assert.match(route, /canonical:\s*"\/factory"/);
@@ -89,14 +86,10 @@ const requiredSections = [
   "hero",
   "overview",
   "stats",
-  "manufacturing",
   "product-system",
   "engineering",
   "customization",
   "quality",
-  "testing",
-  "certificates",
-  "factory-gallery",
   "packing",
   "global-support",
   "why-zyron",
@@ -113,11 +106,32 @@ for (const section of requiredSections) {
 assert.equal(
   (companySources.match(/data-company-section="/g) ?? []).length,
   requiredSections.length,
-  "About page must render exactly 16 primary sections",
+  "About page must render exactly 12 primary sections",
 );
-assert.match(companySources, /id="manufacturing-capability"/);
+for (const removedSection of [
+  "manufacturing",
+  "testing",
+  "certificates",
+  "factory-gallery",
+]) {
+  assert.ok(
+    !companySources.includes(`data-company-section="${removedSection}"`),
+    `About page must not render data-company-section=${removedSection}`,
+  );
+}
+for (const removedComponent of [
+  "ManufacturingCapabilities.tsx",
+  "TestingVideo.tsx",
+  "CompanyMediaDialog.tsx",
+]) {
+  assert.ok(
+    !existsSync(resolve(root, `components/company/${removedComponent}`)),
+    `unused component must be removed: ${removedComponent}`,
+  );
+}
+assert.match(companySources, /id="product-system"/);
 assert.match(companySources, /scroll-mt-/);
-assert.match(companySources, /Explore Our Manufacturing/);
+assert.match(companySources, /Explore Product System/);
 assert.match(companySources, /Talk to an Engineer/);
 
 assert.match(
@@ -150,20 +164,13 @@ for (const categoryId of [
 
 const requiredMedia = [
   "/brand/factory-showcase.png",
-  "/brand/certificates-showcase.png",
-  "/products/detail-body.jpg",
-  "/products/detail-welded-body.jpg",
-  "/products/detail-rear-power.jpg",
-  "/products/detail-electric-inside.jpg",
-  "/products/detail-control-inside.jpg",
-  "/products/detail-adjustment.jpg",
   "/products/detail-front.jpg",
-  "/products/detail-positioning.jpg",
-  "/brand/exhibition/exhibition-booth-01.png",
-  "/brand/exhibition/exhibition-booth-06.png",
 ];
 for (const mediaPath of requiredMedia) {
-  assert.ok(data.includes(mediaPath), `missing real site media mapping: ${mediaPath}`);
+  assert.ok(
+    `${companySources}\n${data}`.includes(mediaPath),
+    `missing real site media mapping: ${mediaPath}`,
+  );
   assert.ok(
     existsSync(resolve(root, `public${mediaPath}`)),
     `mapped real site media must exist: ${mediaPath}`,
@@ -176,15 +183,10 @@ for (const schemaType of ["Organization", "WebPage", "BreadcrumbList", "FAQPage"
 }
 assert.doesNotMatch(page, /AggregateRating|offers|priceCurrency/);
 
-assert.match(companySources, /<dialog/);
-assert.match(companySources, /showModal\(\)/);
-assert.match(companySources, /Escape/);
-assert.match(companySources, /object-contain/);
+assert.doesNotMatch(companySources, /<dialog/);
+assert.doesNotMatch(companySources, /<video/);
 assert.match(companySources, /aria-expanded=/);
 assert.match(companySources, /aria-controls=/);
-assert.match(companySources, /<video/);
-assert.match(companySources, /controls/);
-assert.doesNotMatch(companySources, /autoPlay/);
 
 for (const field of [
   "company",

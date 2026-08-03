@@ -4,7 +4,7 @@ import { CompanyPage } from "@/components/company/CompanyPage";
 const title =
   "About ZYRON Heavy Industry | Sheet Metal Machinery Manufacturer";
 const description =
-  "Explore ZYRON Heavy Industry’s factory, manufacturing process, quality control, product range, testing, export packing, certificates, and global machinery support.";
+  "Explore ZYRON Heavy Industry’s factory, product range, engineering support, quality control, export packing, and global machinery support.";
 const image = "/brand/factory-showcase.png";
 
 export const metadata: Metadata = {

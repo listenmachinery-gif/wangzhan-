@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import {
@@ -6,9 +5,7 @@ import {
   engineeringInputs,
   engineeringProcess,
   qualityProcess,
-  testingChecks,
 } from "@/data/company";
-import { TestingVideo } from "./TestingVideo";
 
 export function EngineeringQualitySections() {
   return (
@@ -188,59 +185,6 @@ export function EngineeringQualitySections() {
         </div>
       </section>
 
-      <section
-        data-company-section="testing"
-        className="bg-white px-5 py-20 text-[#101214] sm:px-8 lg:py-28"
-      >
-        <div className="mx-auto max-w-[1320px]">
-          <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#4E7A00]">
-                TESTING BEFORE DELIVERY
-              </p>
-              <h2 className="mt-5 text-4xl font-semibold leading-[1.08] tracking-[-0.03em] sm:text-6xl">
-                Machines Are Checked Before They Leave the Factory
-              </h2>
-              <p className="mt-7 text-base leading-8 text-neutral-600">
-                Before shipment, the machine is prepared for a final operating
-                review based on its structure and configuration. The purpose is to
-                confirm that the main functions, movement, controls, configured
-                options, and supplied accessories are ready for delivery.
-              </p>
-              <ul className="mt-8 divide-y divide-neutral-200 border-y border-neutral-200">
-                {testingChecks.map((item) => (
-                  <li key={item} className="flex gap-3 py-3.5 text-sm leading-6 text-neutral-700">
-                    <Check
-                      size={16}
-                      className="mt-1 shrink-0 text-[#76B900]"
-                      aria-hidden="true"
-                    />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="lg:pt-8">
-              <TestingVideo />
-              <div className="relative mt-6 aspect-[4/3] overflow-hidden bg-[#F4F6F8]">
-                <Image
-                  src="/products/detail-adjustment.jpg"
-                  alt="Adjustment components reviewed on a sheet metal machine"
-                  fill
-                  loading="lazy"
-                  sizes="(min-width: 1024px) 50vw, 100vw"
-                  className="object-cover"
-                />
-              </div>
-              <p className="mt-5 text-sm leading-7 text-neutral-600">
-                Where project conditions allow, customers can request machine
-                photos, operating videos, sample-processing records, remote
-                inspection, or third-party inspection coordination before shipment.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
     </>
   );
 }

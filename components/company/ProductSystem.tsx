@@ -11,8 +11,9 @@ const categoryMap = new Map(
 export function ProductSystem() {
   return (
     <section
+      id="product-system"
       data-company-section="product-system"
-      className="bg-[#F4F6F8] px-5 py-20 text-[#101214] sm:px-8 lg:py-28"
+      className="scroll-mt-24 bg-[#F4F6F8] px-5 py-20 text-[#101214] sm:px-8 lg:py-28"
     >
       <div className="mx-auto max-w-[1320px]">
         <div className="max-w-4xl">

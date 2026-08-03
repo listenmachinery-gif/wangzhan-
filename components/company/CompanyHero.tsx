@@ -49,10 +49,10 @@ export function CompanyHero() {
               </p>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row lg:mt-7">
                 <Link
-                  href="#manufacturing-capability"
+                  href="#product-system"
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[2px] bg-[#76B900] px-6 py-3 text-sm font-semibold text-[#0B0D10] transition hover:bg-[#8DDB00] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#76B900]"
                 >
-                  Explore Our Manufacturing
+                  Explore Product System
                   <ArrowDownRight size={17} aria-hidden="true" />
                 </Link>
                 <Link
