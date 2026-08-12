@@ -703,21 +703,13 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
   }
 
   if (product.id === "foot-shear") {
-    const title = "Foot Operated Shearing Machine | Sheet Metal Foot Pedal Shear | ZYRON";
+    const title = "Foot Operated Shearing Machine for Sheet Metal | ZYRON";
     const description =
-      "Foot operated shearing machine for thin sheet metal cutting, HVAC duct workshops, roofing sheet processing and small batch fabrication. Get a practical cutting solution from ZYRON Heavy Industry.";
+      "Foot operated shearing machine for accurate cutting of mild steel, galvanized steel and suitable thin sheet. No electricity required; ideal for light fabrication.";
 
     return {
       title,
       description,
-      keywords: [
-        "foot operated shearing machine",
-        "foot pedal shear",
-        "sheet metal cutting machine",
-        "manual sheet metal shear",
-        "thin sheet cutting solution",
-        "HVAC duct fabrication",
-      ],
       alternates: {
         canonical: `/products/${product.id}`,
       },
