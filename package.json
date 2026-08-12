@@ -14,6 +14,7 @@
     "verify:sheet-and-tube-laser": "node scripts/verify-sheet-and-tube-fiber-laser-cutting-machine-page.mjs",
     "verify:fiber-tube-laser": "node scripts/verify-fiber-tube-laser-cutting-machine-page.mjs",
     "verify:electric-two-roll-rolling": "node scripts/verify-electric-two-roll-plate-rolling-machine-page.mjs",
+    "verify:semi-automatic-three-roll-rolling": "node scripts/verify-semi-automatic-three-roll-plate-rolling-machine-page.mjs",
     "verify:about-zyron": "node scripts/verify-about-zyron-page.mjs"
   },
   "dependencies": {
