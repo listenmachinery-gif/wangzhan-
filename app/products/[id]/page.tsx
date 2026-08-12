@@ -8,6 +8,7 @@ import ExchangeTableFiberLaserCuttingMachineSolutionPage from "@/components/Exch
 import FiberTubeLaserCuttingMachineSolutionPage from "@/components/FiberTubeLaserCuttingMachineSolutionPage";
 import FootShearSolutionPage from "@/components/FootShearSolutionPage";
 import FullyAutomaticThreeRollPlateRollingMachineSolutionPage from "@/components/FullyAutomaticThreeRollPlateRollingMachineSolutionPage";
+import HydraulicFourRollPlateRollingMachineSolutionPage from "@/components/HydraulicFourRollPlateRollingMachineSolutionPage";
 import HydraulicFoldingMachineSolutionPage from "@/components/HydraulicFoldingMachineSolutionPage";
 import HydraulicSwingBeamShearSolutionPage from "@/components/HydraulicSwingBeamShearSolutionPage";
 import HydraulicGuillotineShearSolutionPage from "@/components/HydraulicGuillotineShearSolutionPage";
@@ -164,6 +165,52 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
           {
             url: product.image,
             alt: "Fully automatic three-roll plate rolling machine for CNC cylinder and cone rolling",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "hydraulic-four-roll-plate-rolling-machine") {
+    const title =
+      "Hydraulic Four-Roll Plate Rolling Machine | Cylinder & Tank Shell Rolling Solution";
+    const description =
+      "Hydraulic four-roll plate rolling machine for plate pre-bending, cylinder forming, cone rolling, tank shells, pressure vessels, pipe sections and heavy fabrication workshops. Get a suitable hydraulic plate rolling solution based on your material, thickness and target diameter.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Hydraulic Four-Roll Plate Rolling Machine",
+        "Hydraulic 4-Roll Plate Rolling Machine",
+        "Four-Roll Plate Rolling Machine",
+        "4-Roll Plate Bending Machine",
+        "Hydraulic Plate Rolling Machine",
+        "Four-Roller Plate Bending Machine",
+        "Plate Rolling Machine for Tank Shell",
+        "Cylinder Rolling Machine",
+        "Cone Rolling Machine",
+        "Tank Shell Rolling Machine",
+        "Hydraulic Plate Bending Solution",
+        "Sheet Metal Cylinder Forming Machine",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Hydraulic four-roll plate rolling machine for cylinder and tank shell forming",
           },
         ],
       },
@@ -1014,6 +1061,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   if (product.id === "fully-automatic-three-roll-plate-rolling-machine") {
     return <FullyAutomaticThreeRollPlateRollingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "hydraulic-four-roll-plate-rolling-machine") {
+    return <HydraulicFourRollPlateRollingMachineSolutionPage product={product} />;
   }
 
   if (product.id === "sheet-and-tube-fiber-laser-cutting-machine") {
