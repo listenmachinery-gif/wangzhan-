@@ -57,18 +57,34 @@ export type ShearingImageCallout = {
   top: string;
 };
 
+export type ShearingEditorialSection = {
+  eyebrow: string;
+  title: string;
+  intro?: string;
+  paragraphs?: readonly string[];
+  items?: readonly ShearingSolutionItem[];
+};
+
+export type ShearingRelatedLink = {
+  label: string;
+  href: string;
+};
+
 export type ShearingSolutionContent = {
   schemaName: string;
   schemaCategory: string;
   imageAlt: string;
+  structureImageAlt?: string;
   eyebrow: string;
   title: string;
+  heroSubtitle?: string;
   intro: string;
   valuePoints: readonly string[];
   heroBadges?: readonly string[];
   heroModelSeries?: string;
   primaryCta: string;
   secondaryCta: string;
+  overview?: ShearingEditorialSection;
   painEyebrow: string;
   painTitle: string;
   painPoints: readonly ShearingSolutionItem[];
@@ -105,7 +121,14 @@ export type ShearingSolutionContent = {
   comparisonHighlight: "foot" | "electric" | "hydraulic";
   comparisonRows: readonly ShearingComparisonRow[];
   binaryComparison?: ShearingBinaryComparison;
+  energyComparison?: ShearingBinaryComparison & {
+    eyebrow: string;
+    title: string;
+    intro: string;
+  };
+  modelGuide?: ShearingEditorialSection;
   workflow?: ShearingWorkflow;
+  manufacturer?: ShearingEditorialSection;
   supportEyebrow: string;
   supportTitle: string;
   supportItems: readonly ShearingSolutionItem[];
@@ -116,4 +139,5 @@ export type ShearingSolutionContent = {
   ctaTitle: string;
   ctaIntro: string;
   requiredInfo?: readonly string[];
+  relatedLinks?: readonly ShearingRelatedLink[];
 };

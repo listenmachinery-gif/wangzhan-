@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import type { Product } from "@/data/products";
 import type { ShearingSolutionContent } from "@/data/shearing-solution-types";
+import { companyIdentity } from "@/data/company";
 
 type ShearingSolutionPageProps = {
   product: Product;
@@ -57,10 +58,14 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
   const energyUse = content.energyUse;
   const materials = content.materials;
   const binaryComparison = content.binaryComparison;
+  const energyComparison = content.energyComparison;
+  const modelGuide = content.modelGuide;
+  const manufacturer = content.manufacturer;
   const structureCallouts = content.structureCallouts;
   const siteUrl = "https://www.zyroncnc.com";
   const productUrl = `${siteUrl}/products/${product.id}`;
   const productImageUrl = `${siteUrl}${product.image}`;
+  const organizationId = `${siteUrl}/#organization`;
   const parameterRows = technicalParameters?.rows ?? [];
   const maxWidth = parameterRows.at(-1)?.[2] ?? "Model dependent";
   const thickness = parameterRows[0]?.[1] ?? "Model dependent";
@@ -68,6 +73,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
+    "@id": `${productUrl}#product`,
     name: content.schemaName,
     description: content.intro,
     image: [productImageUrl],
@@ -75,8 +81,45 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
       "@type": "Brand",
       name: "ZYRON Heavy Industry",
     },
+    manufacturer: {
+      "@id": organizationId,
+    },
     category: content.schemaCategory,
     url: productUrl,
+    ...(technicalParameters
+      ? {
+          hasVariant: technicalParameters.rows.map((row) => ({
+            "@type": "ProductModel",
+            name: `${row[0]} ${content.schemaName}`,
+            model: row[0],
+            isVariantOf: { "@id": `${productUrl}#product` },
+            additionalProperty: technicalParameters.columns.slice(1).map((column, index) => ({
+              "@type": "PropertyValue",
+              name: column,
+              value: row[index + 1] ?? "",
+            })),
+          })),
+        }
+      : {}),
+  };
+
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": organizationId,
+    name: companyIdentity.name,
+    alternateName: companyIdentity.alternateName,
+    url: companyIdentity.url,
+    logo: companyIdentity.logo,
+    email: companyIdentity.email,
+    telephone: companyIdentity.telephone,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: companyIdentity.addressParts.streetAddress,
+      addressLocality: companyIdentity.addressParts.addressLocality,
+      addressRegion: companyIdentity.addressParts.addressRegion,
+      addressCountry: companyIdentity.addressParts.addressCountry,
+    },
   };
 
   const breadcrumbSchema = {
@@ -118,7 +161,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
   };
 
   return (
-    <main className="overflow-x-hidden bg-[#f3f5f6] text-[#111315]">
+    <main data-shearing-solution-page className="overflow-x-hidden bg-[#f3f5f6] text-[#111315]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
@@ -131,8 +174,12 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
 
-      <section className="relative isolate overflow-hidden bg-[#0B0D10] px-5 pb-16 pt-8 text-white sm:px-8 lg:pb-24 lg:pt-12">
+      <section data-section="hero" className="relative isolate overflow-hidden bg-[#0B0D10] px-5 pb-16 pt-8 text-white sm:px-8 lg:pb-24 lg:pt-12">
         <div className="absolute inset-0 -z-20 bg-[linear-gradient(118deg,#0B0D10_0%,#12171a_48%,#070809_100%)]" />
         <div className="absolute inset-y-0 right-0 -z-10 w-2/3 bg-[radial-gradient(circle_at_62%_48%,rgba(118,185,0,0.16),transparent_48%)]" />
         <div className="mx-auto max-w-[1440px]">
@@ -150,6 +197,11 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
               <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-[1.08] text-white sm:text-5xl lg:text-6xl">
                 {content.title}
               </h1>
+              {content.heroSubtitle ? (
+                <p className="mt-5 max-w-2xl text-xl font-medium leading-8 text-zinc-200 sm:text-2xl">
+                  {content.heroSubtitle}
+                </p>
+              ) : null}
               <p className="mt-6 max-w-2xl text-base leading-8 text-zinc-300 sm:text-lg">
                 {content.intro}
               </p>
@@ -221,7 +273,27 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </div>
       </section>
 
-      <section className="bg-white px-5 py-16 sm:px-8 lg:py-24">
+      {content.overview ? (
+        <section data-section="overview" className="bg-white px-5 py-16 sm:px-8 lg:py-24">
+          <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
+            <div>
+              <p className={sectionLabelClass}>{content.overview.eyebrow}</p>
+              <h2 className="mt-4 text-3xl font-semibold leading-tight text-neutral-950 sm:text-5xl">
+                {content.overview.title}
+              </h2>
+            </div>
+            <div className="border-t-2 border-[#76B900] pt-7">
+              <div className="grid gap-5 text-base leading-8 text-neutral-600">
+                {content.overview.paragraphs?.map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section data-section="problems" className="bg-white px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-3xl">
             <p className={sectionLabelClass}>{content.painEyebrow}</p>
@@ -244,7 +316,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </div>
       </section>
 
-      <section className="px-5 py-16 sm:px-8 lg:py-24">
+      <section data-section="solution" className="px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
           <div>
             <p className={sectionLabelClass}>{content.solutionEyebrow}</p>
@@ -309,7 +381,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </section>
       ) : null}
 
-      <section className="bg-[#101316] px-5 py-16 text-white sm:px-8 lg:py-24">
+      <section data-section="process" className="bg-[#101316] px-5 py-16 text-white sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <p className={sectionLabelClass}>{content.processEyebrow}</p>
           <h2 className="mt-4 text-3xl font-semibold sm:text-5xl">{content.processTitle}</h2>
@@ -336,7 +408,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </div>
       </section>
 
-      <section className="bg-white px-5 py-16 sm:px-8 lg:py-24">
+      <section data-section="applications" className="bg-white px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <p className={sectionLabelClass}>{content.applicationsEyebrow}</p>
           <h2 className="mt-4 max-w-4xl text-3xl font-semibold leading-tight text-neutral-950 sm:text-5xl">
@@ -344,7 +416,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
           </h2>
           <div className={`mt-10 grid gap-4 md:grid-cols-2 ${content.applications.length === 5 ? "lg:grid-cols-5" : "lg:grid-cols-3"}`}>
             {content.applications.map((item, index) => {
-              const Icon = applicationIcons[index];
+              const Icon = applicationIcons[index % applicationIcons.length];
               return (
                 <article key={item.title} className="border border-neutral-200 p-6 transition hover:border-[#76B900] hover:shadow-lg">
                   <Icon size={23} strokeWidth={1.7} className="text-[#76B900]" aria-hidden="true" />
@@ -358,7 +430,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
       </section>
 
       {materials ? (
-        <section className="border-t border-neutral-200 bg-[#f3f5f6] px-5 py-16 sm:px-8 lg:py-24">
+        <section data-section="materials" className="border-t border-neutral-200 bg-[#f3f5f6] px-5 py-16 sm:px-8 lg:py-24">
           <div className="mx-auto max-w-7xl">
             <div className="grid gap-7 lg:grid-cols-[0.76fr_1.24fr] lg:items-end">
               <div>
@@ -391,7 +463,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </section>
       ) : null}
 
-      <section className="px-5 py-16 sm:px-8 lg:py-24">
+      <section data-section="advantages" className="px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-8 lg:grid-cols-[0.7fr_1.3fr]">
             <div>
@@ -419,7 +491,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </div>
       </section>
 
-      <section className="bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
+      <section data-section="structure" className="bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
             <div>
@@ -430,7 +502,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
               <div className="relative mt-9 aspect-[1.5] border border-white/10 bg-[#111519] p-5 sm:p-8">
                 <Image
                   src={product.image}
-                  alt={content.imageAlt}
+                  alt={content.structureImageAlt ?? content.imageAlt}
                   fill
                   sizes="(min-width: 1024px) 58vw, 100vw"
                   className="object-contain p-4 sm:p-8"
@@ -467,7 +539,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </div>
       </section>
 
-      <section className="bg-white px-5 py-16 sm:px-8 lg:py-24">
+      <section data-section="technical" className="bg-white px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-6 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
             <div>
@@ -535,7 +607,30 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </div>
       </section>
 
-      <section className="px-5 py-16 sm:px-8 lg:py-24">
+      {modelGuide ? (
+        <section data-section="model-guide" className="bg-[#101316] px-5 py-16 text-white sm:px-8 lg:py-24">
+          <div className="mx-auto max-w-7xl">
+            <p className={sectionLabelClass}>{modelGuide.eyebrow}</p>
+            <h2 className="mt-4 max-w-4xl text-3xl font-semibold leading-tight sm:text-5xl">
+              {modelGuide.title}
+            </h2>
+            {modelGuide.intro ? (
+              <p className="mt-6 max-w-3xl text-base leading-8 text-zinc-400">{modelGuide.intro}</p>
+            ) : null}
+            <div className="mt-10 grid gap-px bg-white/10 md:grid-cols-2">
+              {modelGuide.items?.map((item, index) => (
+                <article key={item.title} className="bg-[#111519] p-7 sm:p-9">
+                  <p className="text-sm font-semibold text-[#76B900]">{String(index + 1).padStart(2, "0")}</p>
+                  <h3 className="mt-6 text-xl font-semibold text-white">{item.title}</h3>
+                  <p className="mt-4 text-sm leading-7 text-zinc-400">{item.text}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section data-section="comparison" className="px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <p className={sectionLabelClass}>{content.comparisonEyebrow}</p>
           <h2 className="mt-4 text-3xl font-semibold leading-tight text-neutral-950 sm:text-5xl">
@@ -597,8 +692,40 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </div>
       </section>
 
+      {energyComparison ? (
+        <section data-section="energy-comparison" className="bg-white px-5 py-16 sm:px-8 lg:py-24">
+          <div className="mx-auto max-w-7xl">
+            <p className={sectionLabelClass}>{energyComparison.eyebrow}</p>
+            <h2 className="mt-4 max-w-4xl text-3xl font-semibold leading-tight text-neutral-950 sm:text-5xl">
+              {energyComparison.title}
+            </h2>
+            <p className="mt-5 max-w-3xl text-base leading-8 text-neutral-600">{energyComparison.intro}</p>
+            <div className="mt-10 max-w-full overflow-x-auto border border-neutral-200">
+              <table className="min-w-[860px] w-full border-collapse text-left text-sm">
+                <thead>
+                  <tr>
+                    <th className="bg-[#111315] px-5 py-5 font-semibold text-white">Selection factor</th>
+                    <th className="bg-[#76B900] px-5 py-5 font-semibold text-white">{energyComparison.leftLabel}</th>
+                    <th className="bg-[#111315] px-5 py-5 font-semibold text-white">{energyComparison.rightLabel}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {energyComparison.rows.map((row) => (
+                    <tr key={row.label} className="border-b border-neutral-200 last:border-0">
+                      <th className="whitespace-nowrap bg-neutral-50 px-5 py-5 font-semibold text-neutral-950">{row.label}</th>
+                      <td className="px-5 py-5 font-medium leading-7 text-neutral-900">{row.left}</td>
+                      <td className="px-5 py-5 leading-7 text-neutral-600">{row.right}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       {workflow ? (
-        <section className="bg-[#101316] px-5 py-16 text-white sm:px-8 lg:py-24">
+        <section data-section="workflow" className="bg-[#101316] px-5 py-16 text-white sm:px-8 lg:py-24">
           <div className="mx-auto max-w-7xl">
             <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
               <div>
@@ -636,17 +763,17 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </section>
       ) : null}
 
-      <section className="bg-white px-5 py-16 sm:px-8 lg:py-24">
+      <section data-section="manufacturer" className="bg-white px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr]">
             <div>
-              <p className={sectionLabelClass}>{content.supportEyebrow}</p>
+              <p className={sectionLabelClass}>{manufacturer?.eyebrow ?? content.supportEyebrow}</p>
               <h2 className="mt-4 text-3xl font-semibold leading-tight text-neutral-950 sm:text-5xl">
-                {content.supportTitle}
+                {manufacturer?.title ?? content.supportTitle}
               </h2>
             </div>
             <div className="grid gap-px bg-neutral-200 sm:grid-cols-2">
-              {content.supportItems.map((item, index) => {
+              {(manufacturer?.items ?? content.supportItems).map((item, index) => {
                 const Icon = supportIcons[index % supportIcons.length];
                 return (
                   <article key={item.title} className="bg-white p-7">
@@ -662,6 +789,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
       </section>
 
       <section
+        data-section="faq"
         data-shearing-solution-faq
         data-foot-shear-faq={product.id === "foot-shear" ? "" : undefined}
         className="px-5 py-16 sm:px-8 lg:py-24"
@@ -689,7 +817,26 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </div>
       </section>
 
-      <section className="bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
+      {content.relatedLinks ? (
+        <section data-section="related" className="bg-white px-5 py-16 sm:px-8 lg:py-20">
+          <div className="mx-auto max-w-7xl">
+            <p className={sectionLabelClass}>Related Sheet Metal Equipment</p>
+            <h2 className="mt-4 max-w-4xl text-3xl font-semibold leading-tight text-neutral-950 sm:text-5xl">
+              Connect cutting to the rest of the production workflow.
+            </h2>
+            <div className="mt-9 grid gap-px bg-neutral-200 sm:grid-cols-2 lg:grid-cols-3">
+              {content.relatedLinks.map((item) => (
+                <Link key={item.href} href={item.href} className="group flex min-h-24 items-center justify-between gap-4 bg-[#f3f5f6] px-6 py-5 text-base font-semibold text-neutral-950 transition hover:bg-neutral-950 hover:text-white">
+                  {item.label}
+                  <ArrowRight size={17} className="shrink-0 text-[#76B900] transition group-hover:translate-x-1" aria-hidden="true" />
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section data-section="cta" className="bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
         <div className={`mx-auto grid max-w-7xl gap-8 ${content.requiredInfo ? "lg:grid-cols-[1fr_0.62fr]" : "lg:grid-cols-[1fr_auto] lg:items-end"}`}>
           <div>
             <p className={sectionLabelClass}>{content.ctaEyebrow}</p>

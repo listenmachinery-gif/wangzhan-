@@ -19,7 +19,8 @@
     "verify:hydraulic-four-roll-rolling": "node scripts/verify-hydraulic-four-roll-plate-rolling-machine-page.mjs",
     "verify:about-zyron": "node scripts/verify-about-zyron-page.mjs",
     "verify:foot-shear-seo": "node scripts/verify-foot-shear-page.mjs",
-    "verify:reel-shear-seo": "node scripts/verify-slitting-and-beading-machine-parameters.mjs"
+    "verify:reel-shear-seo": "node scripts/verify-slitting-and-beading-machine-parameters.mjs",
+    "verify:small-electric-shear-seo": "node scripts/verify-small-electric-shear-page.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

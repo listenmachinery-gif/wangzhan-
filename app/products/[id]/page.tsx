@@ -723,24 +723,13 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
   }
 
   if (product.id === "compact-electric-shearing-machine") {
-    const title =
-      "Small Electric Shearing Machine | Compact Sheet Metal Cutting Solution | ZYRON";
+    const title = "Small Electric Shearing Machine for Sheet Metal | ZYRON";
     const description =
-      "Small electric shearing machine for thin sheet metal cutting, HVAC duct fabrication, roofing sheet processing and small batch workshop production. Get a compact cutting solution from ZYRON Heavy Industry.";
+      "Small electric shearing machine for thin sheet cutting in HVAC, roofing, sign making and light fabrication. Compact Q11G models offer multiple cutting widths.";
 
     return {
       title,
       description,
-      keywords: [
-        "small electric shearing machine",
-        "compact electric sheet metal shear",
-        "sheet metal cutting machine",
-        "electric shearing machine",
-        "thin sheet cutting solution",
-        "HVAC duct fabrication",
-        "galvanized sheet cutting",
-        "small workshop sheet metal cutting",
-      ],
       alternates: {
         canonical: `/products/${product.id}`,
       },
@@ -751,7 +740,7 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
         images: [
           {
             url: product.image,
-            alt: "Small electric shearing machine for thin sheet metal cutting",
+            alt: "small electric shearing machine for thin sheet metal cutting",
           },
         ],
       },
