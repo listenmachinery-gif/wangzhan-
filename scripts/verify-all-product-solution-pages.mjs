@@ -34,6 +34,7 @@ const dedicatedIds = [
   "hydraulic-swing-beam-shear",
   "hydraulic-guillotine-shear",
   "electro-hydraulic-servo-cnc-press-brake",
+  "semi-automatic-three-roll-plate-rolling-machine",
 ];
 
 const expectedProfileIds = [
@@ -121,8 +122,8 @@ for (const unsafeField of [
 }
 
 const sharedPageCount = productCount - dedicatedIds.length;
-assert.equal(dedicatedIds.length, 11);
-assert.equal(sharedPageCount, 42);
+assert.equal(dedicatedIds.length, 12);
+assert.equal(sharedPageCount, 41);
 
 console.log(
   `All-product solution page contract passed: ${productCount} products, ${dedicatedIds.length} dedicated, ${sharedPageCount} shared solution pages.`,

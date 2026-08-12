@@ -15,6 +15,7 @@ import NcHydraulicPressBrakeSolutionPage from "@/components/NcHydraulicPressBrak
 import PneumaticFoldingMachineSolutionPage from "@/components/PneumaticFoldingMachineSolutionPage";
 import ProductSolutionPage from "@/components/ProductSolutionPage";
 import ReelShearBeadingSolutionPage from "@/components/ReelShearBeadingSolutionPage";
+import SemiAutomaticThreeRollPlateRollingMachineSolutionPage from "@/components/SemiAutomaticThreeRollPlateRollingMachineSolutionPage";
 import SheetAndTubeFiberLaserCuttingMachineSolutionPage from "@/components/SheetAndTubeFiberLaserCuttingMachineSolutionPage";
 import SingleTableFiberLaserCuttingMachineSolutionPage from "@/components/SingleTableFiberLaserCuttingMachineSolutionPage";
 import SmallElectricShearSolutionPage from "@/components/SmallElectricShearSolutionPage";
@@ -71,6 +72,51 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
           {
             url: product.image,
             alt: "Electric two-roll plate rolling machine for thin sheet cylinder forming",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "semi-automatic-three-roll-plate-rolling-machine") {
+    const title =
+      "Semi-Automatic Three-Roll Plate Rolling Machine | Cylinder & Cone Rolling Solution";
+    const description =
+      "Semi-automatic three-roll plate rolling machine for cylinder forming, arc bending, cone rolling, tank shells, duct parts and metal fabrication workshops. Get a suitable plate rolling solution based on your material, thickness and target diameter.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Semi-Automatic Three-Roll Plate Rolling Machine",
+        "Semi-Automatic 3-Roll Plate Rolling Machine",
+        "Three-Roll Plate Rolling Machine",
+        "3-Roll Plate Bending Machine",
+        "Three-Roller Sheet Rolling Machine",
+        "Semi-Automatic Plate Bending Machine",
+        "Sheet Metal Rolling Machine",
+        "Cylinder Rolling Machine",
+        "Cone Rolling Machine",
+        "Sheet Metal Cylinder Forming Machine",
+        "Plate Rolling Solution",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Semi-automatic three-roll plate rolling machine for cylinder and cone forming",
           },
         ],
       },
@@ -913,6 +959,10 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
 
   if (product.id === "electric-two-roll-plate-rolling-machine") {
     return <ElectricTwoRollPlateRollingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "semi-automatic-three-roll-plate-rolling-machine") {
+    return <SemiAutomaticThreeRollPlateRollingMachineSolutionPage product={product} />;
   }
 
   if (product.id === "sheet-and-tube-fiber-laser-cutting-machine") {
