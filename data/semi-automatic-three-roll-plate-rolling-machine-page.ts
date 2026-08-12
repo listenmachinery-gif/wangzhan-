@@ -71,10 +71,10 @@ export const applicationPhotos: readonly ApplicationPhoto[] = [
     alt: "Real stacked cylindrical steel sections in an industrial warehouse",
   },
   {
-    title: "Small rolled components",
-    text: "Short round and rectangular metal pieces show the variety handled by general fabrication workflows after cutting and forming.",
-    image: "/products/semi-automatic-three-roll-plate-rolling-machine-applications/rolled-components.webp",
-    alt: "Real small rolled and formed metal components",
+    title: "Cone and tapered parts",
+    text: "Real conical silo roofs demonstrate tapered geometry that requires a compatible blank, attachment and controlled feeding method.",
+    image: "/products/semi-automatic-three-roll-plate-rolling-machine-applications/cone-parts.webp",
+    alt: "Real conical metal silo roofs and tapered industrial parts",
   },
   {
     title: "Machinery housings",
