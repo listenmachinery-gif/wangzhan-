@@ -3,337 +3,526 @@ import type { ShearingSolutionContent } from "./shearing-solution-types";
 export const energySavingElectricShearPageContent = {
   schemaName: "Energy-Saving Electric Shearing Machine",
   schemaCategory: "Energy-Efficient Electric Sheet Metal Shear",
-  imageAlt: "Energy-saving electric shearing machine for thin sheet metal cutting",
-  eyebrow: "Energy-Saving Sheet Metal Cutting Solution",
-  title: "Energy-Saving Electric Shearing Machine for Thin Sheet Cutting",
+  imageAlt: "energy-saving electric shearing machine for thin sheet metal cutting",
+  structureImageAlt: "Q11G energy-saving electric shearing machine structure",
+  eyebrow: "Energy-Efficient Sheet Metal Cutting",
+  title: "Energy-Saving Electric Shearing Machine",
+  heroSubtitle: "Energy-Efficient Electric Sheet Metal Shear for Daily Thin-Sheet Production",
   intro:
-    "A practical electric sheet metal shear designed for efficient thin sheet cutting, lower energy consumption, simple operation and daily workshop production.",
+    "A Q11G electric mechanical shearing machine for straight cutting of confirmed thin sheet. This energy-efficient sheet metal shear is designed to reduce unnecessary power consumption when not shearing and support low-noise, low-maintenance daily workshop production.",
   valuePoints: [
-    "Energy-saving operation",
-    "No power consumption when not shearing",
-    "Low noise and low maintenance",
-    "Ideal for thin sheet processing",
+    "Reduced unnecessary non-cutting power use",
+    "Published Q11G range from 2 to 6 mm",
+    "Low-noise electric mechanical drive",
+    "Daily batch sheet cutting",
   ],
-  heroBadges: ["Thin Sheet Cutting", "Energy-Saving Drive", "Workshop Production"],
+  heroBadges: ["Q11G Model Range", "Energy-Conscious Operation", "Thin-Sheet Cutting"],
   primaryCta: "Request a Quote",
-  secondaryCta: "Get Energy-Saving Cutting Solution",
-  painEyebrow: "Operating Cost Challenges",
-  painTitle: "What Production Problems Are You Trying to Reduce?",
+  secondaryCta: "Confirm a Q11G Model",
+  overview: {
+    eyebrow: "Product Overview",
+    title: "Energy-Saving Electric Shearing Machine Overview",
+    paragraphs: [
+      "The Energy Saving Electric Shearing Machine is a motorized sheet metal shear built around an all-steel welded frame and a guillotine-type lower-drive transmission. As a Thin Sheet Metal Shearing Machine, it uses an integrated motor, cycloidal pinwheel reducer, braking device and chain transmission to provide the cutting movement without a hydraulic power unit.",
+      "For buyers comparing an Electric Sheet Metal Shear, Electric Sheet Metal Shearing Machine or Electric Sheet Metal Cutting Machine, this page focuses on energy-efficient sheet metal cutting in regular workshop production. The source specification describes no power consumption when the machine is not shearing; in practical selection terms, this operating logic can reduce unnecessary power use between cuts. Actual energy use depends on model, motor power and cutting frequency.",
+      "The wider Q11G range distinguishes this machine from the compact product page. It is intended for confirmed thin-sheet applications where an energy-conscious sheet metal workshop values daily batch output, lower operating-cost potential and a simpler electric mechanical system.",
+    ],
+  },
+  painEyebrow: "Operating-Cost Review",
+  painTitle: "What Production Costs Can This Machine Reduce?",
   painPoints: [
     {
-      title: "High energy cost",
-      text: "Traditional cutting equipment may increase daily electricity costs, especially in workshops with frequent cutting tasks.",
+      title: "Unnecessary Non-Cutting Power Use",
+      text: "The operating concept reduces unnecessary power consumption between cutting actions instead of keeping a hydraulic power unit running continuously.",
     },
     {
-      title: "Idle power waste",
-      text: "Many workshops need a machine that does not consume unnecessary power when cutting is not required.",
+      title: "Oversized Equipment Cost",
+      text: "Suitable thin-sheet work may not require the purchase, floor-space demand or system complexity of a heavier hydraulic shear.",
     },
     {
-      title: "Noisy workshop environment",
-      text: "Lower noise operation helps create a more comfortable and practical sheet metal production environment.",
+      title: "Routine Maintenance Complexity",
+      text: "The electric mechanical transmission avoids a hydraulic circuit and supports a lower-maintenance electric shear configuration for suitable work.",
     },
     {
-      title: "Complex maintenance",
-      text: "A simpler electric mechanical structure can help reduce daily maintenance pressure for small and medium workshops.",
+      title: "Workshop Noise and Interruption",
+      text: "Lower-noise powered operation is useful where cutting is part of a shared daily sheet-metal production area.",
     },
   ],
-  solutionEyebrow: "Energy-Conscious Production Positioning",
-  solutionTitle: "A Lower-Cost Cutting Solution for Daily Thin Sheet Production",
+  solutionEyebrow: "Electric Mechanical Cutting Logic",
+  solutionTitle: "How Does the Energy-Saving Mechanism Work?",
   solutionParagraphs: [
-    "This energy-saving electric shearing machine is designed to help workshops control operating cost during daily thin sheet cutting while keeping the process straightforward and repeatable.",
-    "It is a practical fit for HVAC duct fabrication, galvanized sheet cutting, roofing sheet processing, electrical cabinet production and small-batch sheet metal work.",
-    "Compared with a large hydraulic shear, it is better suited to routine straight cutting where lower maintenance, lower unnecessary energy use and simple workshop operation matter more than heavy-plate capacity.",
+    "The motor and cycloidal pinwheel reducer are integrated with a braking device and chain transmission. When a cutting cycle is requested, the motor provides the mechanical shearing movement through the lower-drive system and the blade completes a straight cut.",
+    "After the cut, the machine returns to its non-cutting state. The source product description states that it consumes no power when not shearing; this page therefore makes no percentage-saving claim and evaluates energy benefit from cutting frequency, motor power and the time spent between cuts.",
+    "This operating pattern suits daily production where powered repeatability is required but a continuously operating hydraulic system is unnecessary for the confirmed material and capacity.",
   ],
-  solutionFitEyebrow: "Solution Fit",
-  solutionFitTitle: "Matched to daily energy-conscious cutting.",
+  solutionFitEyebrow: "Low-Noise Daily Workshop Operation",
+  solutionFitTitle: "Low-Noise Daily Workshop Operation",
   solutionFit: [
-    "Thin sheet straight cutting",
-    "Lower energy consumption",
-    "HVAC duct fabrication",
-    "Galvanized sheet processing",
-    "Small and medium workshops",
-    "Daily batch cutting",
-    "Simple operation and maintenance",
+    "Energy-saving sheet metal cutting",
+    "Energy-efficient sheet metal cutting",
+    "Reduced unnecessary power consumption",
+    "Daily batch sheet cutting",
+    "Galvanized sheet preparation",
+    "HVAC sheet metal shear applications",
+    "Low-maintenance electric shear operation",
   ],
   energyUse: {
-    eyebrow: "Daily Operating Cost Logic",
-    title: "Energy Saving Is Not Just a Feature — It Reduces Daily Operating Cost",
+    eyebrow: "Non-Cutting Power-Use Logic",
+    title: "Reduced Power Consumption During Non-Cutting Time",
     intro:
-      "The machine uses an electric mechanical shearing system in which power is mainly required during the cutting action. When the machine is not shearing, unnecessary power consumption can be reduced. Together with a simpler mechanical structure, this operating logic supports lower maintenance complexity and long-term cost control for workshops cutting thin sheets every day.",
+      "The sequence below explains the operating principle without assigning an unverified saving percentage. Actual energy use depends on the selected Q11G model, motor power, cutting frequency, material and production schedule.",
     states: [
       {
-        title: "Standby / Not Shearing",
-        text: "Reduced unnecessary power consumption",
+        title: "Standby / Not Cutting",
+        text: "The machine remains outside the active shearing stroke, reducing unnecessary power use between cuts.",
       },
       {
-        title: "Cutting Action",
-        text: "Power is used for shearing movement",
+        title: "Cutting Command",
+        text: "The operator starts a confirmed cutting cycle after positioning the sheet and setting the required length.",
       },
       {
-        title: "Daily Workshop Use",
-        text: "Helps control long-term operating cost",
+        title: "Motor Provides Shearing Movement",
+        text: "The integrated motor and mechanical transmission drive the guillotine-type cutting action.",
+      },
+      {
+        title: "Cut Completed",
+        text: "The upper and lower blade system completes the straight cut for the confirmed material and capacity.",
+      },
+      {
+        title: "Return to Non-Cutting State",
+        text: "After the stroke, the machine returns to the non-cutting condition until another cut is requested.",
       },
     ],
   },
-  processEyebrow: "Part of Your Production Flow",
-  processTitle: "From Sheet Positioning to Energy-Saving Cutting",
+  processEyebrow: "Daily Cutting Process",
+  processTitle: "From Sheet Confirmation to Repeat Batch Cutting",
   processSteps: [
     {
-      title: "Prepare the sheet",
-      text: "Place the sheet on the front support table.",
+      title: "Confirm material and capacity",
+      text: "Check material grade, tensile strength, thickness and required width against a confirmed machine model.",
     },
     {
-      title: "Set the cutting size",
-      text: "Adjust the back gauge according to the required cutting length.",
+      title: "Set the back gauge",
+      text: "Set the required blank length within the published 500 mm back-gauge travel.",
     },
     {
-      title: "Align the sheet",
-      text: "Position the material for straight and repeatable cutting.",
+      title: "Position and stabilize the sheet",
+      text: "Support the sheet and align it for a straight cutting cycle.",
     },
     {
-      title: "Start electric shearing",
-      text: "The electric drive completes the cutting action efficiently.",
+      title: "Complete the motorized cut",
+      text: "The electric drive and blade system complete the confirmed shearing movement.",
     },
     {
-      title: "Move to the next process",
-      text: "Cut sheets can continue to folding, lock forming, grooving, bending or duct assembly.",
+      title: "Continue the production flow",
+      text: "Move the blank to folding, lock forming, enclosure work or other confirmed downstream operations.",
     },
   ],
   applicationsEyebrow: "Application Scenarios",
-  applicationsTitle: "Built for Energy-Conscious Sheet Metal Workshops",
+  applicationsTitle: "Energy-Saving Electric Shear Applications",
   applications: [
     {
       title: "HVAC Duct Fabrication",
-      text: "Suitable for cutting galvanized sheets before folding, lock forming and duct assembly.",
+      text: "Use the electric sheet metal shear for HVAC duct fabrication to prepare confirmed galvanized blanks before folding, lock forming and duct assembly.",
     },
     {
       title: "Galvanized Sheet Processing",
-      text: "A practical solution for straight cutting of thin galvanized sheets in daily workshop production.",
+      text: "Cut compatible galvanized sheet into straight blanks while accounting for base-metal grade, coating, strength and thickness.",
     },
     {
       title: "Roofing Sheet Processing",
-      text: "Useful for cutting roofing and architectural sheet materials before forming or installation.",
+      text: "Prepare suitable roofing and architectural sheet blanks before profiling, folding, trimming or installation.",
     },
     {
-      title: "Electrical Cabinet Fabrication",
-      text: "Helps prepare thin sheet parts before bending and cabinet assembly.",
+      title: "Electrical Cabinet Manufacturing",
+      text: "Cut confirmed cabinet-panel blanks before punching, bending, joining and electrical enclosure assembly.",
     },
     {
-      title: "Small Batch Sheet Metal Production",
-      text: "Designed for workshops that need repeatable cutting without investing in oversized equipment.",
+      title: "Metal Enclosure Production",
+      text: "Support repeated straight blank preparation for housings, covers and light-gauge enclosure components.",
     },
     {
-      title: "General Metalworking Workshops",
-      text: "A simple and efficient machine for daily thin sheet cutting tasks.",
+      title: "Small and Medium Sheet Metal Workshops",
+      text: "Provide powered daily cutting where an energy-conscious electric system is preferred over heavier hydraulic equipment.",
+    },
+    {
+      title: "Daily Batch Sheet Cutting",
+      text: "Combine the motorized cycle and back gauge for repeated blank lengths in regular production batches.",
+    },
+    {
+      title: "General Metal Fabrication",
+      text: "Prepare confirmed mild-steel, aluminum, copper or other compatible thin-sheet blanks for downstream fabrication.",
     },
   ],
-  advantagesEyebrow: "Core Advantages",
-  advantagesTitle: "Why Choose an Energy-Saving Electric Shearing Machine?",
+  materials: {
+    eyebrow: "Material Confirmation",
+    title: "What Materials Can It Cut?",
+    note:
+      "Actual cutting capacity depends on material grade, tensile strength, sheet thickness and selected machine model. A published mild-steel thickness must not be treated as the same stainless-steel capacity.",
+    items: [
+      {
+        title: "Mild Steel",
+        text: "Confirm grade, strength, thickness and width against the selected Q11G row before ordering.",
+      },
+      {
+        title: "Galvanized Sheet",
+        text: "Confirm coating, base-metal properties, thickness and blank width for HVAC or general fabrication work.",
+      },
+      {
+        title: "Stainless Steel",
+        text: "Do not apply the published carbon-steel capacity automatically; submit stainless grade and tensile strength for approval.",
+      },
+      {
+        title: "Aluminum Sheet",
+        text: "Provide the alloy, temper, sheet thickness and required cutting width for model confirmation.",
+      },
+      {
+        title: "Copper Sheet",
+        text: "Confirm copper grade, condition and dimensions before the cutting configuration is approved.",
+      },
+      {
+        title: "Thin Metal Sheet",
+        text: "Other thin-sheet materials require an engineering review of strength, thickness, surface condition and cutting length.",
+      },
+    ],
+  },
+  advantagesEyebrow: "Operating and Machine Advantages",
+  advantagesTitle: "Why Choose an Energy-Efficient Shearing Machine?",
   advantagesIntro:
-    "The machine combines powered thin-sheet cutting with an operating logic and mechanical structure intended for practical daily cost control.",
+    "This Low Energy Electric Shearing Machine combines a practical motorized cutting cycle with a mechanical structure intended for routine thin-sheet production and manageable operating cost.",
   advantages: [
     {
-      title: "Energy-Saving Operation",
-      text: "Designed to reduce unnecessary power use during non-cutting time.",
+      title: "Reduced Non-Cutting Power Use",
+      text: "The source operating logic avoids unnecessary power consumption when the machine is not carrying out a cut.",
     },
     {
-      title: "Electric Mechanical Drive",
-      text: "Provides efficient cutting motion for daily thin sheet processing.",
+      title: "Electric Mechanical Shearing System",
+      text: "An integrated motor, reducer, brake and chain transmission provide the shearing movement without a hydraulic circuit.",
     },
     {
-      title: "Low Noise Workshop Use",
-      text: "Suitable for workshops that want a more practical and comfortable cutting environment.",
+      title: "Low-Noise Daily Workshop Operation",
+      text: "Lower-noise powered operation supports shared sheet-metal workshops and regular cutting tasks.",
     },
     {
-      title: "Simple Steel-Welded Structure",
-      text: "A rigid frame supports stable cutting and long-term workshop use.",
+      title: "All-Steel Welded Frame",
+      text: "The welded machine structure provides a rigid foundation for the lower-drive cutting system.",
     },
     {
-      title: "Adjustable Back Gauge",
-      text: "Helps operators repeat the same cutting length more efficiently.",
+      title: "500 mm Back-Gauge Travel",
+      text: "The published back-gauge travel supports repeat positioning for compatible daily batch dimensions.",
     },
     {
-      title: "High-Strength Blade System",
-      text: "Designed for clean and consistent straight cutting of thin sheet materials.",
+      title: "High-Alloy Tool-Steel Blades",
+      text: "The source specification identifies durable high-alloy tool-steel cutting edges for long-term use.",
     },
     {
-      title: "Low Maintenance Design",
-      text: "A simpler structure helps reduce complicated maintenance compared with more complex systems.",
+      title: "Low-Maintenance Electric Shear",
+      text: "The mechanical drive removes the hydraulic circuit from routine maintenance for this machine category.",
     },
   ],
-  structureEyebrow: "Machine Structure Overview",
-  structureTitle: "Understand the energy-saving cutting structure at a glance.",
+  structureEyebrow: "Machine Structure",
+  structureTitle: "Q11G Electric Shearing Machine Structure",
   structureParts: [
     {
-      title: "Electric drive system",
-      text: "Supplies powered movement for efficient daily shearing.",
+      title: "All-steel welded frame",
+      text: "Supports the machine body and guillotine-type lower-drive cutting structure.",
     },
     {
-      title: "Brake motor system",
-      text: "Supports controlled starts and stops during the cutting cycle.",
+      title: "Integrated motor and reducer",
+      text: "Combines the drive motor with a cycloidal pinwheel reducer for mechanical power transmission.",
+    },
+    {
+      title: "Built-in braking device",
+      text: "Supports controlled stopping within the mechanical cutting cycle.",
+    },
+    {
+      title: "Chain transmission",
+      text: "Transfers movement through the electric mechanical shearing system.",
     },
     {
       title: "Upper and lower blade system",
-      text: "Provides durable straight cutting for suitable thin sheet materials.",
-    },
-    {
-      title: "Front support table",
-      text: "Supports the sheet during positioning and cutting.",
+      text: "Uses high-alloy tool-steel cutting edges for confirmed straight-sheet applications.",
     },
     {
       title: "Adjustable back gauge",
-      text: "Helps repeat the required cutting length in daily batches.",
+      text: "Provides the published 500 mm positioning travel for repeated cutting lengths.",
     },
     {
-      title: "Hold-down structure",
-      text: "Helps stabilize the sheet before the blade completes the cut.",
-    },
-    {
-      title: "Steel-welded machine frame",
-      text: "Provides a rigid foundation for stable workshop operation.",
+      title: "Front support and hold-down area",
+      text: "Supports sheet positioning and stabilization before the cutting action.",
     },
   ],
-  technicalEyebrow: "Technical Specifications",
-  technicalTitle: "Original Q11G model parameters.",
+  technicalEyebrow: "Original Product Data",
+  technicalTitle: "Q11G Technical Specifications",
   technicalNote:
-    "Specifications may vary by model, material and customer requirements. Please contact us with your sheet thickness, material and cutting length.",
+    "The table reproduces the original project data without guessed corrections. NEEDS PRODUCT DATA VERIFICATION: Q11G-2 x 2000 and Q11G-2 x 2500 both show a published 3000 mm width, which does not match their model designations. Confirm these two rows before quotation or production selection. All material-specific capacity also requires confirmation.",
   splitTableHeaderUnits: true,
-  comparisonEyebrow: "Machine Selection Comparison",
-  comparisonTitle: "Choose the Right Cutting Solution for Your Workshop",
+  modelGuide: {
+    eyebrow: "Available Models and Selection",
+    title: "How to Choose the Right Q11G Model",
+    intro:
+      "Select from material grade and strength, maximum thickness, required cutting width, daily cutting frequency, motor power, voltage and destination. Never select only from the first thickness number in a model name.",
+    items: [
+      {
+        title: "2 mm Electric Shearing Machine Models",
+        text: "The source lists Q11G-2 x 2000 Electric Shearing Machine and Q11G-2 x 2500 Electric Shearing Machine. Both rows require width verification because each currently shows 3000 mm in the published width field.",
+      },
+      {
+        title: "3 mm Electric Shearing Machine Models",
+        text: "The source lists Q11G-3 x 1300 Electric Shearing Machine, Q11G-3 x 1500 Electric Shearing Machine, Q11G-3 x 1600 Electric Shearing Machine, Q11G-3 x 2000 Electric Shearing Machine and Q11G-3 x 2500 Electric Shearing Machine.",
+      },
+      {
+        title: "4 mm Electric Shearing Machine Models",
+        text: "The source lists Q11G-4 x 1300 Electric Shearing Machine, Q11G-4 x 1500 Electric Shearing Machine, Q11G-4 x 1600 Electric Shearing Machine, Q11G-4 x 2000 Electric Shearing Machine and Q11G-4 x 2500 Electric Shearing Machine.",
+      },
+      {
+        title: "6 mm Electric Shearing Machine Models",
+        text: "The source lists Q11G-6 x 1300 Electric Shearing Machine and Q11G-6 x 1600 Electric Shearing Machine. The 6 mm value must not be applied automatically to stainless steel or other higher-strength material.",
+      },
+    ],
+  },
+  comparisonEyebrow: "Electric Shear Selection",
+  comparisonTitle: "Energy-Saving Electric Shear vs Small Electric Shear",
   comparisonIntro:
-    "The right machine depends on material thickness, cutting frequency, available power, maintenance capability and production goals.",
+    "Both pages describe electric shearing machines, but each answers a different purchase priority. Use this page for energy-efficiency and daily-production intent; use the compact page for footprint and small-batch intent.",
   comparisonElectricLabel: "Energy-Saving Electric Shearing Machine",
   comparisonHighlight: "electric",
   comparisonRows: [
     {
-      label: "Best for",
-      foot: "Simple thin-sheet cutting with minimal investment",
-      electric: "Daily thin-sheet cutting with lower unnecessary energy use",
-      hydraulic: "Heavier plate and demanding production",
+      label: "Primary buying intent",
+      foot: "Manual intermittent cutting",
+      electric: "Reduced unnecessary power use and daily operating-cost control",
+      hydraulic: "Higher force and demanding production",
     },
     {
-      label: "Power requirement",
-      foot: "No electrical power required",
-      electric: "Electric power mainly during cutting action",
+      label: "Published range",
+      foot: "Manual thin-sheet models",
+      electric: "Wider Q11G range with 2, 3, 4 and 6 mm published groups",
+      hydraulic: "Broader heavy-duty hydraulic configurations",
+    },
+    {
+      label: "Drive system",
+      foot: "Foot pedal and mechanical linkage",
+      electric: "Motor, cycloidal reducer, brake and chain transmission",
       hydraulic: "Electric motor and hydraulic system",
     },
     {
-      label: "Cutting efficiency",
-      foot: "Manual and suited to intermittent work",
-      electric: "Powered and repeatable for daily batches",
-      hydraulic: "High capacity for industrial production",
-    },
-    {
-      label: "Energy use",
-      foot: "No electricity, higher manual effort",
-      electric: "Reduced unnecessary idle power consumption",
-      hydraulic: "Higher system demand for heavier work",
-    },
-    {
-      label: "Workshop noise",
-      foot: "Low mechanical noise",
-      electric: "Lower-noise powered operation",
-      hydraulic: "Depends on hydraulic system and duty cycle",
-    },
-    {
-      label: "Maintenance level",
-      foot: "Low",
-      electric: "Low to moderate",
-      hydraulic: "Higher system maintenance",
-    },
-    {
-      label: "Typical application",
-      foot: "Occasional simple thin-sheet cuts",
-      electric: "HVAC, galvanized sheet, roofing and cabinet work",
-      hydraulic: "Thicker plate and continuous heavy production",
-    },
-    {
-      label: "Recommended buyer",
-      foot: "Low-volume user without power dependence",
-      electric: "Energy-conscious small or medium workshop",
-      hydraulic: "Industrial sheet metal manufacturer",
+      label: "Best fit",
+      foot: "Occasional cuts without electrical power",
+      electric: "Energy-conscious daily thin-sheet production",
+      hydraulic: "Heavier plate or higher-force industrial work",
     },
   ],
-  workflow: {
-    eyebrow: "Complete Sheet Metal Workflow",
-    title: "Connect Cutting with Your Complete Sheet Metal Workflow",
-    intro:
-      "This energy-saving electric shearing machine can be used as the first cutting step before folding, lock forming, grooving and other sheet metal forming processes.",
-    steps: ["Cutting", "Folding", "Lock Forming", "Grooving", "Duct Assembly"],
+  binaryComparison: {
+    leftLabel: "Energy-Saving Electric Shearing Machine",
+    rightLabel: "Small Electric Shearing Machine",
+    rows: [
+      {
+        label: "Main priority",
+        left: "Reduced unnecessary power use, lower-noise operation and operating-cost control",
+        right: "Compact footprint, small workshop placement and powered simplicity",
+      },
+      {
+        label: "Typical production",
+        left: "Regular daily batches in an energy-conscious sheet metal workshop",
+        right: "Small or mixed thin-sheet batches in compact working areas",
+      },
+      {
+        label: "Published range",
+        left: "Separate Q11G range with published groups from 2 to 6 mm",
+        right: "Compact Q11G range with published groups from 1.2 to 2 mm",
+      },
+      {
+        label: "Page selection intent",
+        left: "Energy-Saving Electric Shearing Machine and energy-efficient cutting research",
+        right: "Small electric shear, compact electric shear and mini-shear research",
+      },
+    ],
   },
-  supportEyebrow: "Project Support",
-  supportTitle: "More Than a Machine, A Practical Energy-Saving Cutting Recommendation",
+  energyComparison: {
+    eyebrow: "Hydraulic Alternative Review",
+    title: "Energy-Saving Electric Shear vs Hydraulic Shearing Machine",
+    intro:
+      "Choose by confirmed material, strength, thickness, width and duty—not by energy language alone. A hydraulic shear is generally the appropriate comparison when higher cutting force or heavier production requirements exceed the electric model scope.",
+    leftLabel: "Energy-Saving Electric Shear",
+    rightLabel: "Hydraulic Shearing Machine",
+    rows: [
+      {
+        label: "Best application",
+        left: "Confirmed thin-sheet straight cutting and daily batches",
+        right: "Heavier material or more demanding industrial production",
+      },
+      {
+        label: "System",
+        left: "Electric mechanical lower-drive transmission",
+        right: "Motor, pump, valves, cylinders and hydraulic circuit",
+      },
+      {
+        label: "Operating priority",
+        left: "Reduced unnecessary non-cutting power use and simpler maintenance",
+        right: "Higher force, capacity and production-duty options",
+      },
+      {
+        label: "Selection trigger",
+        left: "Material and capacity fall within a confirmed Q11G model",
+        right: "Required thickness, force, control or duty exceeds electric-shear suitability",
+      },
+    ],
+  },
+  workflow: {
+    eyebrow: "Complete Sheet-Metal Workflow",
+    title: "Connect Energy-Saving Cutting to Downstream Production",
+    intro:
+      "The shear prepares straight blanks. Folding, lock forming, flange forming, enclosure assembly and other downstream operations remain separate production steps.",
+    steps: ["Cutting", "Folding", "Lock Forming", "Flange Forming", "Assembly"],
+  },
+  manufacturer: {
+    eyebrow: "Manufacturing and Supply Review",
+    title: "Energy-Saving Electric Shearing Machine Manufacturer",
+    intro:
+      "ZYRON supports machine matching, production coordination and export preparation for buyers comparing an Energy-Saving Electric Shearing Machine Supplier, Electric Shearing Machine Manufacturer, Electric Sheet Metal Shear Manufacturer, Energy-Saving Sheet Metal Shear Manufacturer or Q11G Electric Shearing Machine Manufacturer.",
+    items: [
+      {
+        title: "Machine Manufacturing and Assembly",
+        text: "Transfer the confirmed model, mechanical configuration, voltage and order requirements into production and assembly review.",
+      },
+      {
+        title: "Machine and Blade Inspection",
+        text: "Review mechanical movement, controls, cutting function, blade installation and the configured safety functions.",
+      },
+      {
+        title: "Back-Gauge and Model Inspection",
+        text: "Check the selected model, published table values, 500 mm back-gauge travel and required repeat blank dimensions.",
+      },
+      {
+        title: "Voltage, Packing and Technical Support",
+        text: "Confirm destination voltage and frequency, prepare approved documentation and export packing, and support operating handover.",
+      },
+    ],
+  },
+  supportEyebrow: "Engineering Selection Support",
+  supportTitle: "Build the Specification from the Workpiece",
   supportItems: [
     {
-      title: "Model Selection Support",
-      text: "We help recommend a suitable model based on your material, thickness and cutting length.",
+      title: "Confirm Material",
+      text: "Provide material type, grade, tensile strength and surface condition.",
     },
     {
-      title: "Energy-Saving Application Advice",
-      text: "We help you understand whether this machine is suitable for your cutting frequency and workshop process.",
+      title: "Confirm Thickness and Width",
+      text: "Provide normal and maximum thickness plus the required cutting width; flag the two source rows needing verification.",
     },
     {
-      title: "Workshop Layout Matching",
-      text: "We can help match the machine with your available space and production workflow.",
+      title: "Confirm Production Pattern",
+      text: "Provide daily cuts, batch sizes, repeat dimensions and expected time between cutting cycles.",
     },
     {
-      title: "Branding and Export Support",
-      text: "Machine color, logo, packaging and export configuration can be customized according to your project needs.",
+      title: "Confirm Installation and Delivery",
+      text: "Provide voltage, frequency, floor space, destination and shipping requirements.",
     },
   ],
   faqEyebrow: "Buyer Questions",
-  faqTitle: "Frequently Asked Questions",
+  faqTitle: "Energy-Saving Electric Shearing Machine FAQ",
   faqs: [
     {
-      question: "What is an energy-saving electric shearing machine used for?",
+      question: "What is an energy-saving electric shearing machine?",
       answer:
-        "It is used for straight cutting of thin sheet metal in workshops such as HVAC duct fabrication, galvanized sheet processing, roofing sheet processing and general sheet metal work.",
+        "It is an electric mechanical shear for straight cutting of confirmed thin sheet. This Q11G machine uses an all-steel welded frame, integrated motor and reducer, braking device, chain transmission and guillotine-type lower drive instead of a hydraulic power unit.",
     },
     {
-      question: "Why is it called energy-saving?",
+      question: "How does an energy-saving electric shearing machine save energy?",
       answer:
-        "The machine is designed to reduce unnecessary power use when it is not shearing. Power is mainly used during the cutting action, helping workshops control daily operating costs.",
+        "Its motor provides the shearing movement during a requested cutting action, and the machine returns to a non-cutting state after the stroke. The source describes no power consumption when it is not shearing, so the practical benefit is reduced unnecessary power use between cuts rather than a guaranteed percentage.",
     },
     {
-      question: "What materials can it cut?",
+      question: "Does the machine consume power when it is not shearing?",
       answer:
-        "It can be used for materials such as mild steel, galvanized sheet, aluminum sheet, copper sheet, stainless steel and other thin sheet materials. The actual cutting capacity depends on the selected model and material.",
+        "The original product description states that the machine consumes no power when not shearing. Electrical auxiliaries and the final configured machine should still be confirmed, and actual energy use depends on model, motor power and cutting frequency.",
     },
     {
-      question: "Is it suitable for stainless steel?",
+      question: "How much power can an energy-saving electric shearing machine save?",
       answer:
-        "Yes, it can be used for stainless steel within the suitable thickness range. Please provide your material grade and thickness for model recommendation.",
+        "No verified percentage is available, so this page does not claim one. Compare the selected motor power, number of cuts, non-cutting time, configured auxiliaries and local electricity tariff to estimate the operating-cost difference for your production schedule.",
     },
     {
-      question: "How is it different from a small electric shearing machine?",
+      question: "What materials can an electric sheet metal shear cut?",
       answer:
-        "A small electric shearing machine focuses on compact size and efficient cutting. An energy-saving electric shearing machine further emphasizes lower unnecessary energy consumption, low noise and daily operating cost control.",
+        "Potential applications include mild steel, galvanized sheet, stainless steel, aluminum sheet, copper sheet and other thin metal sheet. Actual capacity depends on grade, tensile strength, thickness and the selected machine model.",
     },
     {
-      question: "How is it different from a hydraulic shearing machine?",
+      question: "Can it cut galvanized steel?",
       answer:
-        "A hydraulic shearing machine is usually used for heavier cutting capacity and larger production needs. An energy-saving electric shearing machine is more suitable for thin sheet cutting, lower maintenance needs and energy-conscious workshops.",
+        "Yes, galvanized sheet processing is a suitable application after the coating, base-metal grade, tensile strength, thickness and required width are confirmed against the selected model.",
     },
     {
-      question: "Can it be used for HVAC duct fabrication?",
+      question: "Can it cut stainless steel?",
       answer:
-        "Yes. It can be used to cut galvanized sheets before folding, lock forming, grooving and duct assembly.",
+        "A suitable stainless sheet may be considered, but the published carbon-steel capacity must not be reused automatically. Send the stainless grade, tensile strength, thickness and width for written model confirmation.",
     },
     {
-      question: "How do I choose the right model?",
+      question: "What sheet thickness can it cut?",
       answer:
-        "Please provide your material, thickness, cutting length and daily production volume. We will recommend a suitable cutting solution according to your workshop needs.",
+        "The original table contains 2 mm, 3 mm, 4 mm and 6 mm model groups. These are published nominal values, not universal limits for every material. Capacity must be confirmed from the complete workpiece data.",
+    },
+    {
+      question: "Which Q11G model should I choose?",
+      answer:
+        "Choose from material grade and strength, maximum thickness, required cutting width, daily frequency, back-gauge requirement, motor power, voltage and destination. Do not rely only on the thickness number in the model name.",
+    },
+    {
+      question: "What cutting widths are available?",
+      answer:
+        "The source table includes 1300, 1500, 1600, 2000 and 2500 mm widths across the 3, 4 and 6 mm groups. NEEDS PRODUCT DATA VERIFICATION: the Q11G-2 x 2000 and Q11G-2 x 2500 rows each show 3000 mm in the width column, so those two values must be confirmed before quotation.",
+    },
+    {
+      question: "What is the difference between an energy-saving electric shear and a small electric shear?",
+      answer:
+        "The energy-saving page focuses on reduced unnecessary power use, lower-noise daily operation, operating-cost review and a wider published Q11G range. The small electric page focuses on compact footprint, small workshops, compact widths and small or mixed batches.",
+    },
+    {
+      question: "What is the difference between an electric shear and a hydraulic shear?",
+      answer:
+        "The electric shear uses a motorized mechanical drive for confirmed thin-sheet cutting. A hydraulic shear uses a hydraulic power system and is generally selected when the material, force, control requirement or production duty exceeds the electric machine scope.",
+    },
+    {
+      question: "How much does an energy-saving electric shearing machine cost?",
+      answer:
+        "Energy-Saving Electric Shearing Machine Price depends on model, material, thickness, cutting width, motor, voltage, configuration, destination and shipping requirement. Buyers comparing an Energy-Saving Electric Shearing Machine for Sale should request a confirmed quotation rather than rely on an unverified fixed price.",
     },
   ],
-  ctaEyebrow: "Talk to a Shearing Specialist",
-  ctaTitle: "Need a Lower-Cost Thin Sheet Cutting Solution?",
+  ctaEyebrow: "Manufacturer Quotation",
+  ctaTitle: "Request an Energy-Saving Electric Shearing Machine Quote",
   ctaIntro:
-    "Tell us your material, thickness, cutting length and daily cutting frequency. ZYRON will help recommend the right energy-saving electric shearing machine for your workshop.",
+    "Send the required material, grade, thickness, cutting width, daily cutting frequency, motor and voltage requirements, configuration, destination and shipping requirement. ZYRON will check the Q11G Energy-Saving Electric Shearing Machine scope before preparing a quotation.",
   requiredInfo: [
-    "Material",
-    "Thickness",
-    "Cutting length",
-    "Daily cutting frequency",
-    "Workshop application",
+    "Material, grade and tensile strength",
+    "Normal and maximum sheet thickness",
+    "Required cutting width",
+    "Daily cutting frequency and batch size",
+    "Motor, voltage and configuration requirements",
+    "Destination and shipping requirement",
+  ],
+  relatedLinks: [
+    { label: "shearing machines", href: "/products/series/shearing-machines" },
+    {
+      label: "small electric shearing machine",
+      href: "/products/compact-electric-shearing-machine",
+    },
+    { label: "foot operated shearing machine", href: "/products/foot-shear" },
+    {
+      label: "hydraulic swing beam shearing machine",
+      href: "/products/hydraulic-swing-beam-shear",
+    },
+    {
+      label: "hydraulic guillotine shearing machine",
+      href: "/products/hydraulic-guillotine-shear",
+    },
+    {
+      label: "sheet metal folding machine",
+      href: "/products/electric-sheet-metal-folding-machine",
+    },
+    {
+      label: "HVAC lock forming machine",
+      href: "/products/multi-function-lock-forming-machine",
+    },
   ],
 } as const satisfies ShearingSolutionContent;

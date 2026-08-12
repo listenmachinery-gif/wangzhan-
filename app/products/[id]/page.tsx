@@ -754,25 +754,13 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
   }
 
   if (product.id === "energy-saving-electric-shearing-machine") {
-    const title =
-      "Energy-Saving Electric Shearing Machine | Thin Sheet Cutting Solution | ZYRON";
+    const title = "Energy-Saving Electric Shearing Machine | ZYRON";
     const description =
-      "Energy-saving electric shearing machine for thin sheet metal cutting, HVAC duct fabrication, galvanized sheet processing and daily workshop production. Get a lower-cost cutting solution from ZYRON Heavy Industry.";
+      "Energy-saving electric shearing machine for efficient thin sheet cutting with reduced unnecessary power use, low-noise operation and Q11G models for daily production.";
 
     return {
       title,
       description,
-      keywords: [
-        "energy-saving electric shearing machine",
-        "energy efficient sheet metal shear",
-        "electric shearing machine",
-        "sheet metal cutting machine",
-        "thin sheet cutting solution",
-        "galvanized sheet cutting",
-        "HVAC duct fabrication",
-        "low energy sheet metal cutting",
-        "workshop shearing solution",
-      ],
       alternates: {
         canonical: `/products/${product.id}`,
       },
@@ -783,7 +771,7 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
         images: [
           {
             url: product.image,
-            alt: "Energy-saving electric shearing machine for thin sheet metal cutting",
+            alt: "energy-saving electric shearing machine for thin sheet metal cutting",
           },
         ],
       },

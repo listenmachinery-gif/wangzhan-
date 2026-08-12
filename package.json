@@ -20,7 +20,8 @@
     "verify:about-zyron": "node scripts/verify-about-zyron-page.mjs",
     "verify:foot-shear-seo": "node scripts/verify-foot-shear-page.mjs",
     "verify:reel-shear-seo": "node scripts/verify-slitting-and-beading-machine-parameters.mjs",
-    "verify:small-electric-shear-seo": "node scripts/verify-small-electric-shear-page.mjs"
+    "verify:small-electric-shear-seo": "node scripts/verify-small-electric-shear-page.mjs",
+    "verify:energy-saving-shear-seo": "node scripts/verify-energy-saving-electric-shear-page.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

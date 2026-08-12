@@ -771,6 +771,11 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
               <h2 className="mt-4 text-3xl font-semibold leading-tight text-neutral-950 sm:text-5xl">
                 {manufacturer?.title ?? content.supportTitle}
               </h2>
+              {manufacturer?.intro ? (
+                <p className="mt-5 max-w-xl text-base leading-8 text-neutral-600">
+                  {manufacturer.intro}
+                </p>
+              ) : null}
             </div>
             <div className="grid gap-px bg-neutral-200 sm:grid-cols-2">
               {(manufacturer?.items ?? content.supportItems).map((item, index) => {
