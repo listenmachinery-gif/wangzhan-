@@ -661,24 +661,13 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
   }
 
   if (product.id === "reel-shear-beading-machine") {
-    const title =
-      "Reel Shear Beading Machine | Sheet Metal Cutting and Beading Solution";
+    const title = "Reel Shear Beading Machine for HVAC Duct | ZYRON";
     const description =
-      "Compact reel shear beading machine for thin sheet metal cutting, plate opening and reinforcement beading. Suitable for HVAC duct fabrication, ventilation duct workshops and light sheet metal processing.";
+      "Reel shear beading machine for thin sheet metal cutting, slitting and reinforcement beading. Built for HVAC duct fabrication, galvanized sheet work and compact workshops.";
 
     return {
       title,
       description,
-      keywords: [
-        "Reel Shear Beading Machine",
-        "Rolling Shear Beading Machine",
-        "Sheet Metal Beading and Cutting Machine",
-        "Duct Beading Machine",
-        "HVAC Duct Beading Machine",
-        "Sheet Metal Reinforcement Machine",
-        "Thin Sheet Cutting and Beading Machine",
-        "Duct Fabrication Machine",
-      ],
       alternates: {
         canonical: `/products/${product.id}`,
       },
@@ -689,7 +678,7 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
         images: [
           {
             url: product.image,
-            alt: "Reel shear beading machine for sheet metal cutting and duct beading",
+            alt: "reel shear beading machine for HVAC sheet metal fabrication",
           },
         ],
       },

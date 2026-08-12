@@ -14,6 +14,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { reelShearBeadingPageContent } from "@/data/reel-shear-beading-page";
+import { companyIdentity } from "@/data/company";
 import type { Product } from "@/data/products";
 
 type ReelShearBeadingSolutionPageProps = {
@@ -151,6 +152,7 @@ export default function ReelShearBeadingSolutionPage({
   const technicalParameters = product.technicalParameters;
   const productUrl = "https://www.zyroncnc.com/products/reel-shear-beading-machine";
   const productImage = `https://www.zyroncnc.com${product.image}`;
+  const organizationId = `${companyIdentity.url}/#organization`;
 
   if (!technicalParameters) {
     throw new Error("Reel Shear Beading Machine technical parameters are required");
@@ -158,26 +160,44 @@ export default function ReelShearBeadingSolutionPage({
 
   const productSchema = {
     "@context": "https://schema.org",
-    "@type": "ProductModel",
+    "@type": "Product",
+    "@id": `${productUrl}#product`,
     name: product.name,
     description: content.hero.description,
     image: productImage,
     url: productUrl,
-    category: "Sheet Metal Cutting and Beading Machine",
+    model: technicalParameters.rows[0]?.[0] ?? "LQ-15",
+    category: "Reel Shear Beading Machine",
     brand: {
       "@type": "Brand",
       name: "ZYRON",
     },
     manufacturer: {
-      "@type": "Organization",
-      name: "ZYRON Heavy Industry",
-      url: "https://www.zyroncnc.com",
+      "@id": organizationId,
     },
     additionalProperty: technicalParameters.columns.map((column, index) => ({
       "@type": "PropertyValue",
       name: column,
       value: technicalParameters.rows[0]?.[index] ?? "",
     })),
+  };
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": organizationId,
+    name: companyIdentity.name,
+    alternateName: companyIdentity.alternateName,
+    url: companyIdentity.url,
+    logo: companyIdentity.logo,
+    email: companyIdentity.email,
+    telephone: companyIdentity.telephone,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: companyIdentity.addressParts.streetAddress,
+      addressLocality: companyIdentity.addressParts.addressLocality,
+      addressRegion: companyIdentity.addressParts.addressRegion,
+      addressCountry: companyIdentity.addressParts.addressCountry,
+    },
   };
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -228,6 +248,10 @@ export default function ReelShearBeadingSolutionPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(organizationSchema) }}
       />
       <script
         type="application/ld+json"
@@ -297,9 +321,9 @@ export default function ReelShearBeadingSolutionPage({
                 <div className="absolute inset-x-[10%] bottom-[9%] h-[10%] rounded-[50%] bg-black/55 blur-xl" />
                 <Image
                   src={product.image}
-                  alt="Reel shear beading machine for sheet metal cutting and duct beading"
+                  alt="reel shear beading machine for HVAC sheet metal fabrication"
                   fill
-                  loading="lazy"
+                  priority
                   sizes="(min-width: 1280px) 52vw, (min-width: 1024px) 50vw, 100vw"
                   className="object-contain p-5 sm:p-8"
                 />
@@ -307,7 +331,7 @@ export default function ReelShearBeadingSolutionPage({
               <div className="grid border-x border-b border-white/10 bg-black/20 sm:grid-cols-3">
                 {[
                   ["Model", technicalParameters.rows[0]?.[0] ?? "—"],
-                  ["Functions", "Cutting + Beading"],
+                  ["Functions", "Cutting + Slitting + Beading"],
                   ["Workshop", "HVAC / Thin Sheet"],
                 ].map(([label, value]) => (
                   <div key={label} className="border-white/10 px-5 py-4 sm:border-l sm:first:border-l-0">
@@ -323,7 +347,28 @@ export default function ReelShearBeadingSolutionPage({
         </div>
       </section>
 
-      <section data-section="problems" className="px-5 py-16 sm:px-8 lg:py-24">
+      <section data-section="overview" className="px-5 py-16 sm:px-8 lg:py-24">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
+          <div>
+            <p className={sectionLabelClass}>Machine Role</p>
+            <h2 className="mt-4 text-3xl font-semibold leading-tight text-neutral-950 sm:text-5xl">
+              {content.overview.heading}
+            </h2>
+          </div>
+          <div className="border-t-2 border-[#76B900] pt-7">
+            <h3 className="text-2xl font-semibold leading-tight text-neutral-950 sm:text-3xl">
+              {content.overview.title}
+            </h3>
+            <div className="mt-6 grid gap-5 text-base leading-8 text-neutral-600">
+              {content.overview.paragraphs.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section data-section="problems" className="bg-[#F4F6F8] px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
             <SectionIntro
@@ -396,6 +441,28 @@ export default function ReelShearBeadingSolutionPage({
         </div>
       </section>
 
+      <section data-section="operations" className="bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
+        <div className="mx-auto max-w-7xl">
+          <SectionIntro
+            label="Confirmed Machine Functions"
+            title="Sheet Metal Cutting, Slitting and Beading"
+            text="The LQ-15 combines related preparation operations, but each workpiece still needs material, thickness and tooling confirmation."
+            light
+          />
+          <div className="mt-12 grid gap-px bg-white/10 md:grid-cols-2">
+            {content.operations.map((operation, index) => (
+              <article key={operation.title} className="bg-[#111417] p-7 sm:p-9">
+                <p className="text-sm font-semibold text-[#76B900]">
+                  {String(index + 1).padStart(2, "0")}
+                </p>
+                <h3 className="mt-7 text-2xl font-semibold text-white">{operation.title}</h3>
+                <p className="mt-4 text-sm leading-7 text-zinc-400">{operation.text}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section data-section="applications" className="px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <SectionIntro
@@ -405,7 +472,7 @@ export default function ReelShearBeadingSolutionPage({
           />
           <div className="mt-10 grid border-y border-neutral-200 md:grid-cols-2 xl:grid-cols-3">
             {content.applications.map((application, index) => {
-              const Icon = applicationIcons[index];
+              const Icon = applicationIcons[index % applicationIcons.length];
 
               return (
                 <article
@@ -431,19 +498,17 @@ export default function ReelShearBeadingSolutionPage({
           <div className="grid gap-10 lg:grid-cols-[0.74fr_1.26fr] lg:gap-16">
             <SectionIntro
               label="Materials"
-              title="Confirm material behavior before confirming capacity."
+              title={content.materialsHeading}
               text={content.materialsNote}
             />
             <div className="grid gap-px bg-neutral-300 sm:grid-cols-2 lg:grid-cols-3">
               {content.materials.map((material, index) => (
-                <div key={material} className="bg-white p-6 sm:min-h-40">
+                <div key={material.title} className="bg-white p-6 sm:min-h-48">
                   <p className="text-sm font-semibold text-[#76B900]">
                     {String(index + 1).padStart(2, "0")}
                   </p>
-                  <p className="mt-8 text-lg font-semibold text-neutral-950">{material}</p>
-                  <p className="mt-2 text-xs leading-6 text-neutral-500">
-                    Subject to thickness, strength and tooling review.
-                  </p>
+                  <h3 className="mt-8 text-lg font-semibold text-neutral-950">{material.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-neutral-600">{material.text}</p>
                 </div>
               ))}
             </div>
@@ -595,11 +660,38 @@ export default function ReelShearBeadingSolutionPage({
         </div>
       </section>
 
+      <section data-section="manufacturer" className="bg-[#F4F6F8] px-5 py-16 sm:px-8 lg:py-24">
+        <div className="mx-auto max-w-7xl">
+          <SectionIntro
+            label="Manufacturing & Supply Review"
+            title={content.manufacturer.heading}
+            text={content.manufacturer.intro}
+          />
+          <p className="mt-6 max-w-4xl text-sm leading-7 text-neutral-600">
+            {content.manufacturer.sourcingNote}
+          </p>
+          <div className="mt-10 grid gap-px bg-neutral-300 md:grid-cols-2">
+            {content.manufacturer.points.map((point, index) => (
+              <article key={point.title} className="bg-white p-7 sm:p-9">
+                <p className="text-sm font-semibold text-[#76B900]">
+                  {String(index + 1).padStart(2, "0")}
+                </p>
+                <h3 className="mt-7 text-xl font-semibold text-neutral-950">{point.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-neutral-600">{point.text}</p>
+              </article>
+            ))}
+          </div>
+          <div className="mt-8 border-l-2 border-[#76B900] bg-white px-6 py-5 text-sm leading-7 text-neutral-700">
+            {content.manufacturer.buyingGuide}
+          </div>
+        </div>
+      </section>
+
       <section data-section="technical" className="bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
         <div className="mx-auto max-w-[1440px]">
           <SectionIntro
             label="Technical Specifications"
-            title="Verified Reel Shear Beading Machine parameters."
+            title="LQ-15 Reel Shear Beading Machine Specifications"
             text="Use the confirmed model data below as the starting point for workpiece and configuration review."
             light
           />
@@ -656,7 +748,7 @@ export default function ReelShearBeadingSolutionPage({
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.72fr_1.28fr] lg:gap-20">
           <SectionIntro
             label="FAQ"
-            title="Questions to settle before quotation."
+            title="Reel Shear Beading Machine FAQ"
             text="Use these answers as selection guidance. Final machine suitability still depends on engineering confirmation of the workpiece and process."
           />
           <div className="border-t border-neutral-200">

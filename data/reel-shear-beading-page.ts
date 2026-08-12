@@ -28,239 +28,326 @@ export type ReelShearRelatedLink = {
 
 export const reelShearBeadingPageContent = {
   hero: {
-    eyebrow: "Thin Sheet Cutting & Beading Solution",
+    eyebrow: "Thin Sheet Cutting, Slitting & Beading",
     title: "Reel Shear Beading Machine",
     subtitle:
-      "Compact cutting and beading solution for thin sheet metal and HVAC duct fabrication.",
+      "Compact sheet metal cutting and beading for HVAC duct fabrication.",
     description:
-      "A practical machine for sheet metal cutting, plate opening and reinforcement beading. Suitable for ventilation duct workshops, HVAC sheet metal processing, construction duct fabrication and light sheet metal forming.",
+      "This sheet metal reel shear beading machine combines suitable thin-sheet cutting, slitting-profile work and reinforcement beading in one compact workstation. The LQ-15 supports galvanized duct-panel preparation and mixed work in a small HVAC fabrication shop.",
     valuePoints: [
       "Cutting and Beading in One Machine",
-      "Suitable for Thin Sheet Metal",
-      "Compact Workshop Equipment",
-      "Practical for Duct Fabrication",
+      "Verified Beading / Slitting Profiles",
+      "0.5–1.2 mm Published Thickness Range",
+      "Compact Support for HVAC Duct Work",
+    ],
+  },
+  overview: {
+    heading: "Product Overview",
+    title: "One compact workstation for preparing thin sheet and duct panels.",
+    paragraphs: [
+      "The LQ-15 combines appropriate thin-sheet shearing, profile slitting and reinforcement beading before downstream folding, lock forming, flanging and assembly. Combining these preparation steps reduces transfers between separate machines when a workshop handles short runs, mixed parts or site work.",
+      "A reel shearing beading machine is useful to HVAC duct manufacturers, contractors and light-fabrication workshops that need flexible sheet preparation rather than a fully automatic duct line. It works as a sheet metal cutting and beading machine for HVAC production support; it does not replace the other machines required to finish a duct.",
+      "Compared with a standalone reel shear machine, the combined workstation also provides matched beading and slitting-profile capability for suitable sheet. Buyers should select it from the required operations and tooling rather than from a product label alone.",
     ],
   },
   problems: [
     {
-      title: "Manual sheet cutting is slow",
-      text: "Support basic thin-sheet blanking and sectional cutting with less fully manual handling.",
+      title: "Separate preparation steps slow short runs",
+      text: "Keep suitable cutting, slitting-profile work and beading at one station when batches are small or varied.",
     },
     {
-      title: "Flat duct sheets need more rigidity",
-      text: "Form reinforcement beads that help reduce deformation across flat duct panels.",
+      title: "Flat duct sheets need reinforcement",
+      text: "Form beads that help add rigidity to suitable panels before folding and assembly.",
     },
     {
-      title: "Small workshops need compact machines",
-      text: "Fit duct-processing points, job sites and small sheet-metal workshops where floor space is limited.",
+      title: "Small workshops have limited floor space",
+      text: "Use a compact machine where a larger automated line would not match the available space or production pattern.",
     },
     {
-      title: "Separate tools increase handling time",
-      text: "Bring cutting and beading into one compact workstation to reduce process changes.",
-    },
-    {
-      title: "Duct fabrication needs flexible processing",
-      text: "Support varied thin-sheet and duct-panel preparation requirements in daily work.",
+      title: "Job-site work needs flexible preparation",
+      text: "Support confirmed thin-sheet preparation close to the installation workflow.",
     },
   ] satisfies ReelShearCard[],
   solutions: [
     {
-      title: "On-site Duct Fabrication",
-      suitableFor: "Ventilation installation teams and job-site fabrication points",
+      title: "Construction-Site Duct Work",
+      suitableFor: "Ventilation contractors and temporary fabrication points",
       recommendedUse:
-        "Basic thin-sheet cutting and reinforcement beading near the installation area",
-      productionValue: "A compact supporting machine for flexible site work",
+        "Confirmed thin-sheet trimming, slitting-profile work and reinforcement beading near installation",
+      productionValue: "A compact supporting station for flexible site work",
     },
     {
       title: "Small HVAC Workshop",
-      suitableFor: "Small duct factories and repair or fabrication shops",
-      recommendedUse: "Daily sheet opening, trimming and duct-panel reinforcement",
-      productionValue: "Combines two practical preparation steps in one workstation",
+      suitableFor: "Small duct factories, repair shops and mixed-batch fabricators",
+      recommendedUse: "Daily duct-sheet preparation and panel reinforcement",
+      productionValue:
+        "A reel shear beading machine for small HVAC workshop production without a full automatic line",
     },
     {
-      title: "Supporting Machine in Duct Production Line",
+      title: "Supporting Duct Production Station",
       suitableFor:
-        "Workshops already using lock formers, folding machines, shears or TDF/TDC flange machines",
-      recommendedUse: "Auxiliary cutting and beading within the wider duct workflow",
-      productionValue: "Fills a focused preparation role without replacing the full line",
+        "Workshops already using lock formers, folding machines, shears or TDF flange machines",
+      recommendedUse: "Auxiliary cutting, slitting and beading within the wider duct workflow",
+      productionValue: "Fills a focused preparation role without replacing downstream equipment",
     },
   ] satisfies ReelShearSolution[],
-  applications: [
+  operations: [
     {
-      title: "HVAC duct fabrication",
-      text: "Prepare thin duct sheets before folding, locking, flanging and assembly.",
+      title: "Sheet Metal Cutting",
+      text: "Prepare suitable thin sheet for later duct-panel operations. This sheet metal cutting and beading machine is intended for confirmed light-gauge work within the published LQ-15 range.",
     },
     {
-      title: "Ventilation duct installation",
-      text: "Support practical cutting and beading tasks near the installation workflow.",
+      title: "Reinforcement Beading",
+      text: "Form reinforcement beads that help stiffen appropriate HVAC panels before folding, locking and assembly. This is the core forming role of the thin sheet metal beading machine.",
     },
     {
-      title: "Galvanized sheet processing",
-      text: "Handle suitable galvanized thin sheet after material and thickness confirmation.",
+      title: "Sheet Metal Slitting",
+      text: "The verified LQ-15 function field includes beading / slitting profiles. As a sheet metal beading and slitting machine, its exact profile must be matched to the supplied roller or tooling.",
     },
     {
-      title: "Construction site duct work",
-      text: "Provide a compact preparation station where large production equipment is impractical.",
-    },
-    {
-      title: "Light sheet metal workshop",
-      text: "Combine two common preparation operations for mixed small-batch work.",
-    },
-    {
-      title: "Air duct reinforcement",
-      text: "Add reinforcement beads to help improve the rigidity of suitable duct panels.",
+      title: "Roller Shear and Beading Machine Profiles",
+      text: "Profile rollers create the selected bead or groove geometry. For any sheet metal shearing and beading machine, the exact result must match the supplied tooling rather than an assumed universal profile.",
     },
   ] satisfies ReelShearCard[],
+  applications: [
+    {
+      title: "HVAC Duct Fabrication",
+      text: "Use the HVAC duct reel shear beading machine to prepare suitable thin sheet before folding, locking, flanging and duct assembly.",
+    },
+    {
+      title: "Ventilation Duct Manufacturing",
+      text: "Support short-run and mixed-size panel preparation as an HVAC duct cutting and beading machine within a broader ventilation workflow.",
+    },
+    {
+      title: "Galvanized Sheet Processing",
+      text: "A reel shear beading machine for galvanized sheet can cut and form confirmed material after thickness, strength and tooling review.",
+    },
+    {
+      title: "Construction Site Duct Work",
+      text: "Provide a compact preparation point where transporting each small task back to a large workshop is impractical.",
+    },
+    {
+      title: "Small HVAC Workshop",
+      text: "Combine several focused preparation operations for repair work, custom fittings and mixed small batches.",
+    },
+    {
+      title: "Light Sheet Metal Fabrication",
+      text: "Process suitable light-gauge parts when the required cut and profile match the LQ-15 configuration.",
+    },
+    {
+      title: "Air Duct Reinforcement",
+      text: "Add beads to suitable flat duct panels to help improve rigidity before final forming and assembly.",
+    },
+  ] satisfies ReelShearCard[],
+  materialsHeading: "Materials for LQ-15 Processing Review",
   materials: [
-    "Galvanized Sheet",
-    "Mild Steel Sheet",
-    "Stainless Steel Sheet",
-    "Aluminum Sheet",
-    "Color Steel Sheet",
-    "Thin Metal Plate",
-  ],
+    {
+      title: "Galvanized Sheet",
+      text: "Common in HVAC duct work; confirm coating, base-metal thickness and required profile before selection.",
+    },
+    {
+      title: "Mild Steel Sheet",
+      text: "Suitable applications depend on actual grade, tensile strength, thickness and installed tooling.",
+    },
+    {
+      title: "Stainless Steel Sheet",
+      text: "Its higher forming resistance requires separate capacity confirmation rather than assuming the mild-steel range.",
+    },
+    {
+      title: "Aluminum Sheet",
+      text: "Confirm alloy, temper, surface protection and profile geometry to limit marking or distortion.",
+    },
+    {
+      title: "Color Steel Sheet",
+      text: "Review coating sensitivity and tooling contact before cutting or forming pre-painted material.",
+    },
+    {
+      title: "Thin Metal Plate",
+      text: "Other thin plate should be evaluated from material strength, thickness and the required bead or slit profile.",
+    },
+  ] satisfies ReelShearCard[],
   materialsNote:
-    "The suitable thickness depends on material strength, machine configuration and selected roller or tooling. Please confirm your material and thickness before quotation.",
+    "The published 0.5–1.2 mm range is machine data, not a promise that every listed material can run at the same maximum thickness. Confirm material grade, strength and tooling before quotation.",
   workflow: [
     {
       title: "Sheet Preparation",
-      text: "Prepare galvanized sheet or thin metal plate according to duct size.",
+      text: "Confirm sheet material, thickness and duct dimensions.",
     },
     {
-      title: "Cutting / Plate Opening",
-      text: "Use the machine for basic sheet cutting or plate opening.",
+      title: "Cutting / Slitting",
+      text: "Prepare the blank or required slitting profile with matched tooling.",
     },
     {
       title: "Beading Reinforcement",
-      text: "Form reinforcement ribs to improve sheet rigidity.",
+      text: "Form the selected reinforcement profile in the panel.",
     },
     {
       title: "Folding or Lock Forming",
-      text: "Continue with a folding machine, lock former or flange forming machine.",
+      text: "Continue with the appropriate folding, locking or flange-forming process.",
     },
     {
       title: "Duct Assembly",
-      text: "Assemble duct panels for ventilation or HVAC projects.",
+      text: "Join the prepared panels and install required corners or flanges.",
     },
     {
-      title: "Installation",
-      text: "Move finished ducts to the planned site installation.",
+      title: "Site Installation",
+      text: "Move the completed duct sections into the ventilation project.",
     },
   ] satisfies ReelShearCard[],
   advantages: [
-    "Combines cutting and beading functions",
-    "Compact structure for small workshops",
-    "Suitable for confirmed thin sheet metal processing",
-    "Helps reinforce duct panels",
-    "Practical operation for daily fabrication",
-    "Supporting equipment for duct production",
-    "Works in a wider flow with folding, lock forming and flange forming machines",
+    "Combines confirmed cutting, beading and slitting-profile work",
+    "Compact structure for small workshops and supporting stations",
+    "Published LQ-15 parameters support transparent selection",
+    "Helps reinforce suitable duct panels",
+    "Supports mixed thin-sheet preparation tasks",
+    "Works with folding, lock forming and flange-forming equipment",
   ],
   comparison: [
     {
-      label: "Main function",
-      reelShear: "Basic thin-sheet cutting and reinforcement beading",
-      multiLine: "Continuous multi-line reinforcement beading",
+      label: "Primary role",
+      reelShear: "Flexible thin-sheet cutting, slitting-profile work and reinforcement beading",
+      multiLine: "Continuous multi-line reinforcement beading for duct panels",
     },
     {
       label: "Cutting ability",
       reelShear: "Included for suitable thin-sheet preparation",
-      multiLine: "Not the primary function",
+      multiLine: "Not normally the primary function",
     },
     {
-      label: "Beading ability",
-      reelShear: "Focused beading for flexible preparation",
-      multiLine: "Multiple reinforcement lines for duct panels",
+      label: "Beading pattern",
+      reelShear: "Selected bead or groove profile through matched tooling",
+      multiLine: "Several longitudinal reinforcement lines in one pass",
     },
     {
-      label: "Suitable workshop",
-      reelShear: "Job sites and small or mixed-production workshops",
-      multiLine: "Duct workshops with regular panel reinforcement work",
+      label: "Workshop fit",
+      reelShear: "Job sites and compact or mixed-production workshops",
+      multiLine: "Duct workshops with repeat panel-reinforcement work",
     },
     {
-      label: "Production flexibility",
-      reelShear: "Combines two basic operations in one compact machine",
-      multiLine: "Specialized for repeat multi-line beading",
-    },
-    {
-      label: "Recommended use",
-      reelShear: "Flexible cutting and beading support",
-      multiLine: "Batch duct-panel reinforcement",
+      label: "Selection priority",
+      reelShear: "Operational flexibility across the confirmed combined functions",
+      multiLine: "Repeatable multi-line beading output",
     },
   ] satisfies ReelShearComparisonRow[],
   selectionQuestions: [
-    "Sheet material",
-    "Maximum sheet thickness",
-    "Sheet width or working length",
-    "Cutting requirement",
-    "Beading shape requirement",
-    "Daily production quantity",
-    "Workshop type: factory or job site",
-    "Voltage requirement",
-    "Need to match with a folding machine, lock former or flange machine",
+    "Sheet material and grade",
+    "Minimum and maximum thickness",
+    "Sheet size and required working area",
+    "Cutting or slitting requirement",
+    "Bead or groove profile",
+    "Daily quantity and batch pattern",
+    "Available workshop space",
+    "Local voltage and frequency",
+    "Destination and shipping requirements",
   ],
+  manufacturer: {
+    heading: "Reel Shear Beading Machine Manufacturer",
+    intro:
+      "ZYRON supports machine selection from workpiece review through assembly, inspection and delivery preparation. Buyers comparing a reel shear beading machine supplier or reel shear beading machine factory should confirm the same technical scope before placing an order.",
+    sourcingNote:
+      "Whether an inquiry uses reel shearing beading machine manufacturer, sheet metal reel shear beading machine manufacturer or HVAC duct reel shear beading machine manufacturer, selection should begin with material, thickness, required profile, voltage and downstream duct process.",
+    points: [
+      {
+        title: "Requirement and Tooling Review",
+        text: "Review material, thickness, cut, slit and bead-profile requirements before confirming the LQ-15 configuration.",
+      },
+      {
+        title: "Assembly and Functional Inspection",
+        text: "Check the configured machine movements, controls, rollers, tooling and operating functions before packing.",
+      },
+      {
+        title: "Voltage Configuration",
+        text: "Confirm destination voltage and frequency as part of the electrical configuration review.",
+      },
+      {
+        title: "Export Packing and Support",
+        text: "Prepare the confirmed accessories, documentation and packing method for the destination and shipping route.",
+      },
+    ] satisfies ReelShearCard[],
+    buyingGuide:
+      "A reel shear beading machine for sale should be compared by verified function and configuration, not product name alone. Some catalogs use the term reel bead cutting machine, so confirm whether the required operation is shearing, slitting or profile forming. Reel shear beading machine price depends on machine configuration, tooling, voltage, material requirement, destination and shipping requirement; request a written quotation for the final scope.",
+  },
   faqs: [
     {
       question: "What is a reel shear beading machine?",
       answer:
-        "It is a practical machine for suitable thin-sheet cutting and reinforcement beading, commonly used in duct fabrication and job-site sheet-metal preparation.",
+        "It is a compact shearing and beading machine that combines suitable thin-sheet cutting, slitting-profile work and reinforcement beading in one workstation.",
+    },
+    {
+      question: "What is a reel shearing beading machine used for?",
+      answer:
+        "It prepares suitable sheet-metal blanks and reinforcement profiles before downstream duct folding, lock forming, flanging and assembly.",
+    },
+    {
+      question: "Can a reel shear beading machine cut galvanized sheet?",
+      answer:
+        "Galvanized sheet is a typical application, but the base-metal grade, thickness, coating and selected tooling must be confirmed before the machine configuration is approved.",
+    },
+    {
+      question: "Is a reel shear beading machine suitable for HVAC duct fabrication?",
+      answer:
+        "Yes, it can support thin-sheet cutting, slitting-profile work and reinforcement beading in an HVAC duct workflow. Folding, lock forming, flanging and assembly remain separate operations.",
     },
     {
       question:
         "What is the difference between a reel shear beading machine and a duct beading machine?",
       answer:
-        "A conventional multi-line duct beading machine focuses on forming several reinforcement beads, while a reel shear beading machine combines basic cutting and beading functions.",
+        "The reel shear combines flexible cutting and beading functions, while a multi-line duct beading machine focuses on forming several continuous reinforcement lines across duct panels.",
     },
     {
-      question: "What materials can this machine process?",
+      question: "What sheet thickness can the LQ-15 process?",
       answer:
-        "Typical applications include galvanized sheet, thin mild steel, stainless steel, aluminum and color steel. Actual suitability depends on material strength, thickness, configuration and tooling.",
+        "The published LQ-15 sheet-thickness range is 0.5–1.2 mm. Actual suitability must be checked against the material grade, strength and required tooling; the maximum is not guaranteed for every material.",
     },
     {
-      question: "Is it suitable for HVAC duct fabrication?",
+      question: "What is the difference between shearing, slitting and beading?",
       answer:
-        "It can support basic preparation work in HVAC duct workshops, ventilation projects, job sites and small fabrication shops.",
+        "Shearing separates sheet across a cut, slitting produces a narrower cut or profile path, and beading forms a raised or recessed reinforcement profile without treating all three operations as interchangeable.",
     },
     {
-      question: "Can it replace a full automatic duct production line?",
+      question: "How much does a reel shear beading machine cost?",
       answer:
-        "No. It is better positioned as compact workshop equipment, a job-site machine or a supporting station in a wider duct-production process.",
+        "Price depends on machine configuration, tooling, voltage, material requirement, destination and shipping requirement. Send these details to request a quote; no fixed price is published without a confirmed scope.",
     },
     {
-      question: "Can it work with other duct machines?",
+      question: "How do I choose a reel shear beading machine?",
       answer:
-        "It can be placed in a workflow with lock formers, folding machines, flange machines and shears when the overall process is matched correctly.",
+        "Provide the material and grade, thickness range, sheet size, required cut or slit, bead profile, daily quantity, voltage, workshop space and destination for configuration review.",
     },
     {
-      question: "What information should I provide before quotation?",
+      question: "Can the beading roller or tooling be customized?",
       answer:
-        "Provide material, thickness, sheet width, required cutting and beading work, daily quantity, voltage and destination country or port.",
-    },
-    {
-      question: "Can the roller or tooling be customized?",
-      answer:
-        "Tooling options may be reviewed for the required bead shape and process. Final availability must be confirmed by a sales engineer.",
+        "Tooling options can be reviewed against the required bead or groove profile. Availability and final dimensions must be technically confirmed before order approval.",
     },
   ] satisfies ReelShearFaq[],
   relatedLinks: [
-    { label: "Duct Beading Machine", href: "/products/five-line-beading-machine" },
     {
-      label: "Lock Forming Machine",
+      label: "multi-line duct beading machine",
+      href: "/products/five-line-beading-machine",
+    },
+    {
+      label: "HVAC lock forming machine",
       href: "/products/multi-function-lock-forming-machine",
     },
-    { label: "Folding Machine", href: "/products/manual-sheet-metal-folding-machine" },
-    { label: "TDF Flange Forming Machine", href: "/products/tdf-flange-forming-machine" },
     {
-      label: "Electric Shearing Machine",
+      label: "sheet metal folding machine",
+      href: "/products/manual-sheet-metal-folding-machine",
+    },
+    {
+      label: "TDF flange forming machine",
+      href: "/products/tdf-flange-forming-machine",
+    },
+    {
+      label: "electric shearing machine",
       href: "/products/compact-electric-shearing-machine",
     },
     {
-      label: "HVAC Duct Production Line",
+      label: "HVAC duct production line",
       href: "/products/u-shaped-auto-duct-production-line-5",
     },
   ] satisfies ReelShearRelatedLink[],
   finalCta: {
-    title: "Need a Compact Cutting and Beading Solution?",
-    text: "Send your sheet material, thickness, working width and duct fabrication requirement. We will recommend a suitable reel shear beading machine configuration for your workshop.",
+    title: "Request an LQ-15 Reel Shear Beading Machine Quote",
+    text: "Send your sheet material and grade, thickness range, sheet size, cut or slit requirement, bead profile, voltage, destination and shipping needs. We will review the configuration before preparing a quotation.",
   },
 };
