@@ -785,23 +785,13 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
   }
 
   if (product.id === "hydraulic-swing-beam-shear") {
-    const title =
-      "Hydraulic Swing Beam Shearing Machine | Sheet Metal Cutting Solution";
+    const title = "Hydraulic Swing Beam Shearing Machine | ZYRON";
     const description =
-      "Reliable hydraulic swing beam shearing machine for sheet metal cutting, suitable for carbon steel, stainless steel, galvanized sheet, aluminum and general fabrication workshops.";
+      "Hydraulic swing beam shearing machine for reliable sheet metal cutting with QC12Y/QC12K series, hydraulic drive, adjustable blade clearance and multiple capacities.";
 
     return {
       title,
       description,
-      keywords: [
-        "hydraulic swing beam shearing machine",
-        "hydraulic sheet metal shear",
-        "sheet metal cutting machine",
-        "metal plate shearing solution",
-        "swing beam shear for fabrication workshop",
-        "CNC hydraulic shearing machine",
-        "hydraulic guillotine shear alternative",
-      ],
       alternates: {
         canonical: `/products/${product.id}`,
       },
@@ -812,7 +802,7 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
         images: [
           {
             url: product.image,
-            alt: "Hydraulic swing beam shearing machine for sheet metal cutting",
+            alt: "hydraulic swing beam shearing machine for sheet metal cutting",
           },
         ],
       },

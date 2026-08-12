@@ -144,7 +144,7 @@ export const hydraulicGuillotineShearPageContent = {
   advantagesEyebrow: "Core Features",
   advantagesTitle: "Why Choose a Hydraulic Guillotine Shear?",
   advantagesIntro:
-    "The QC12Y/QC12K platform combines a rigid welded frame, hydraulic drive and practical positioning systems for repeatable daily sheet cutting.",
+    "The hydraulic guillotine platform combines a rigid welded frame, guided blade-holder movement and practical positioning systems for demanding daily plate cutting.",
   advantages: [
     {
       title: "Welded Steel Frame",
@@ -180,7 +180,7 @@ export const hydraulicGuillotineShearPageContent = {
     },
     {
       title: "Guillotine cutting structure",
-      text: "Uses a practical arc-motion blade holder for dependable straight shearing.",
+      text: "Uses near-linear guided blade-holder movement for dependable straight shearing.",
     },
     {
       title: "Hold-down device",
@@ -355,5 +355,11 @@ export const hydraulicGuillotineShearPageContent = {
     "Required cutting length",
     "Daily cutting frequency",
     "Control and voltage requirements",
+  ],
+  relatedLinks: [
+    {
+      label: "hydraulic swing beam shearing machine",
+      href: "/products/hydraulic-swing-beam-shear",
+    },
   ],
 } as const satisfies ShearingSolutionContent;
