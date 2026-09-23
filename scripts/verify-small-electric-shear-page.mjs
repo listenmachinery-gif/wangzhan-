@@ -140,18 +140,18 @@ for (const heading of [
 }
 
 for (const material of [
-  "Mild Steel",
-  "Galvanized Sheet",
+  "Mild Steel Sheet",
+  "Galvanized Steel Sheet",
   "Aluminum Sheet",
+  "Stainless Steel Sheet",
   "Copper Sheet",
-  "Stainless Steel",
-  "Other Thin Sheet Materials",
+  "Brass Sheet",
 ]) {
   assert.ok(data.includes(material), `Missing material guidance: ${material}`);
 }
 assert.match(
   data,
-  /Actual cutting capacity depends on material grade, tensile strength, sheet thickness and machine model\./,
+  /Actual cutting capacity depends on material type, grade, tensile strength, hardness or temper, sheet thickness, cutting length, blade condition and blade clearance\./,
 );
 
 for (const question of [

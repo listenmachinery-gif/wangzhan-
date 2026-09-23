@@ -1,6 +1,8 @@
 export type ShearingSolutionItem = {
   title: string;
   text: string;
+  image?: string;
+  alt?: string;
 };
 
 export type ShearingStructurePart = {

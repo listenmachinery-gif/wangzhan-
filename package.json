@@ -22,6 +22,7 @@
     "verify:foot-shear-media": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types scripts/verify-foot-shear-media.mjs",
     "verify:reel-shear-seo": "node scripts/verify-slitting-and-beading-machine-parameters.mjs",
     "verify:small-electric-shear-seo": "node scripts/verify-small-electric-shear-page.mjs",
+    "verify:small-electric-shear-media": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types scripts/verify-small-electric-shear-media.mjs",
     "verify:energy-saving-shear-seo": "node scripts/verify-energy-saving-electric-shear-page.mjs",
     "verify:hydraulic-swing-beam-seo": "node scripts/verify-hydraulic-swing-beam-shear-page.mjs"
   },

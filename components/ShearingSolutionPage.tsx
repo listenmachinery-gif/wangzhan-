@@ -414,14 +414,46 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
           <h2 className="mt-4 max-w-4xl text-3xl font-semibold leading-tight text-neutral-950 sm:text-5xl">
             {content.applicationsTitle}
           </h2>
-          <div className={`mt-10 grid gap-4 md:grid-cols-2 ${content.applications.length === 5 ? "lg:grid-cols-5" : "lg:grid-cols-3"}`}>
+          <div
+            className={`mt-10 grid gap-4 md:grid-cols-2 ${
+              content.applications.some((item) => item.image)
+                ? "lg:grid-cols-4"
+                : content.applications.length === 5
+                  ? "lg:grid-cols-5"
+                  : "lg:grid-cols-3"
+            }`}
+          >
             {content.applications.map((item, index) => {
               const Icon = applicationIcons[index % applicationIcons.length];
               return (
-                <article key={item.title} className="border border-neutral-200 p-6 transition hover:border-[#76B900] hover:shadow-lg">
-                  <Icon size={23} strokeWidth={1.7} className="text-[#76B900]" aria-hidden="true" />
-                  <h3 className="mt-7 text-lg font-semibold leading-snug text-neutral-950">{item.title}</h3>
-                  <p className="mt-4 text-sm leading-7 text-neutral-600">{item.text}</p>
+                <article
+                  key={item.title}
+                  className="overflow-hidden border border-neutral-200 bg-white transition hover:border-[#76B900] hover:shadow-lg"
+                >
+                  {item.image ? (
+                    <div className="relative aspect-[16/10] overflow-hidden bg-neutral-100">
+                      <Image
+                        src={item.image}
+                        alt={item.alt ?? item.title}
+                        fill
+                        sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
+                        className="object-cover transition duration-500 hover:scale-[1.03]"
+                      />
+                    </div>
+                  ) : null}
+                  <div className="p-6">
+                    {!item.image ? (
+                      <Icon size={23} strokeWidth={1.7} className="text-[#76B900]" aria-hidden="true" />
+                    ) : (
+                      <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#76B900]">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                    )}
+                    <h3 className={`${item.image ? "mt-4" : "mt-7"} text-lg font-semibold leading-snug text-neutral-950`}>
+                      {item.title}
+                    </h3>
+                    <p className="mt-4 text-sm leading-7 text-neutral-600">{item.text}</p>
+                  </div>
                 </article>
               );
             })}
@@ -448,13 +480,26 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
                 const Icon = applicationIcons[index % applicationIcons.length];
 
                 return (
-                  <article key={item.title} className="min-h-56 bg-white p-7 transition-colors hover:bg-neutral-50">
-                    <div className="flex items-center justify-between gap-4">
-                      <Icon size={23} strokeWidth={1.7} className="text-[#76B900]" aria-hidden="true" />
-                      <span className="text-xs font-semibold text-neutral-400">0{index + 1}</span>
+                  <article key={item.title} className="overflow-hidden bg-white transition-colors hover:bg-neutral-50">
+                    {item.image ? (
+                      <div className="relative aspect-[16/9] overflow-hidden bg-neutral-100">
+                        <Image
+                          src={item.image}
+                          alt={item.alt ?? item.title}
+                          fill
+                          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                          className="object-cover transition duration-500 hover:scale-[1.03]"
+                        />
+                      </div>
+                    ) : null}
+                    <div className="p-7">
+                      <div className="flex items-center justify-between gap-4">
+                        <Icon size={23} strokeWidth={1.7} className="text-[#76B900]" aria-hidden="true" />
+                        <span className="text-xs font-semibold text-neutral-400">0{index + 1}</span>
+                      </div>
+                      <h3 className="mt-8 text-xl font-semibold text-neutral-950">{item.title}</h3>
+                      <p className="mt-3 text-sm leading-7 text-neutral-600">{item.text}</p>
                     </div>
-                    <h3 className="mt-8 text-xl font-semibold text-neutral-950">{item.title}</h3>
-                    <p className="mt-3 text-sm leading-7 text-neutral-600">{item.text}</p>
                   </article>
                 );
               })}
@@ -477,7 +522,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
             </div>
             <div className="grid gap-px bg-neutral-200 sm:grid-cols-2">
               {content.advantages.map((item, index) => {
-                const Icon = advantageIcons[index];
+                const Icon = advantageIcons[index % advantageIcons.length];
                 return (
                   <article key={item.title} className="bg-white p-7 transition-colors hover:bg-neutral-50">
                     <Icon size={22} strokeWidth={1.7} className="text-[#76B900]" aria-hidden="true" />
