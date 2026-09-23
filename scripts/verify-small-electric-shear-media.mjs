@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { basename, dirname, resolve } from "node:path";
 
 const root = process.cwd();
 const { smallElectricShearPageContent } = await import("../data/small-electric-shear-page.ts");
@@ -120,6 +120,22 @@ assert.equal(
   "Every application and material card must use a distinct real photograph",
 );
 
+const sourcePhotoIds = mediaItems.map((item) => {
+  const sourceManifest = readFileSync(resolve(root, `public${dirname(item.image)}`, "SOURCES.md"), "utf8");
+  const sourceLine = sourceManifest
+    .split("\n")
+    .find((line) => line.includes(`\`${basename(item.image)}\``));
+  const sourcePhotoId = sourceLine?.match(/Photo (\d+)/)?.[1];
+
+  assert.ok(sourcePhotoId, `${item.title} is missing a traceable source-photo ID`);
+  return sourcePhotoId;
+});
+assert.equal(
+  new Set(sourcePhotoIds).size,
+  14,
+  "Every application and material card must come from a genuinely distinct source photograph",
+);
+
 const refreshedDocumentSections = JSON.stringify({
   overview: smallElectricShearPageContent.overview,
   applications: smallElectricShearPageContent.applications,
@@ -130,6 +146,11 @@ assert.doesNotMatch(
   refreshedDocumentSections,
   /foot[- ]operated shear|foot shear/i,
   "Copied foot-shear wording must be corrected in refreshed document sections",
+);
+assert.doesNotMatch(
+  refreshedDocumentSections,
+  /more repeatable powered output/i,
+  "The page must not make an unsupported comparative output claim",
 );
 assert.match(
   smallElectricShearPageContent.materials.note,

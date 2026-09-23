@@ -133,8 +133,8 @@ export const smallElectricShearPageContent = {
     {
       title: "Small-Batch and Mixed Production",
       text: "Use the adjustable back gauge and electric drive for repeated blank sizes while retaining flexibility across short or mixed runs.",
-      image: "/products/foot-shear-content/application-small-batch.webp",
-      alt: "Real worker carrying out small-batch metal fabrication in a compact industrial workshop",
+      image: "/products/foot-shear-content/application-prototyping.webp",
+      alt: "Real fabrication technicians measuring components for prototyping and mixed production work",
     },
     {
       title: "Material Preparation Before Forming",
@@ -230,7 +230,7 @@ export const smallElectricShearPageContent = {
     },
     {
       title: "A Practical Middle Ground",
-      text: "It offers more repeatable powered output than a manual shear without moving directly to a larger hydraulic installation.",
+      text: "It provides a powered alternative to manual shearing without moving directly to a larger hydraulic installation.",
     },
   ],
   structureEyebrow: "Machine Structure",
