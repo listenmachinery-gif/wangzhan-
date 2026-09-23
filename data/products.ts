@@ -253,7 +253,7 @@ const productSeeds: Record<string, ProductSeed[]> = {
   "shearing-machines": [
     {
       name: "Foot Shear",
-      tagline: "Foot-operated sheet cutting for light-gauge workshop trimming without electrical power.",
+      tagline: "Manual straight cutting for light-gauge sheet metal with foot-pedal control and no electrical power.",
       detailKey: "foot-operated-shearing-machine",
       legacyIds: ["foot-operated-shearing-machine"],
       seoTerms: ["Foot-Operated Sheet Metal Shear"],

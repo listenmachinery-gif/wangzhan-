@@ -11,14 +11,16 @@ export type ProductDetailContent = {
 
 export const shearingProductDetails: Partial<Record<string, ProductDetailContent>> = {
   "foot-operated-shearing-machine": {
-    "performanceFeatures": "The foot-operated shearing machine features an attractive appearance and a novel structure. It uses sliding guide rails, and the foot-operated tension spring adopts a fixed sliding-fulcrum structure, reducing the operating force by two-thirds. The foot-operated shearing machine can be equipped with a hold-down spring, delivering high shearing quality. It is also lightweight and easy to move, and is widely used for manual shearing and blanking in the thin sheet metal industry. The blades of this machine are made of 9CrSi material, with durable cutting edges.",
+    "performanceFeatures": "The foot-operated shearing machine is a manually powered sheet metal shear for straight cutting of light-gauge material. It uses a foot pedal, mechanical linkage, sliding guide rails and a tension-spring return structure to drive the moving blade across the fixed lower blade. The machine requires no electrical, hydraulic or compressed-air power during the cutting stroke, keeps both hands available for material positioning, and can be equipped with hold-down and gauge devices for repeatable thin-sheet blanking. The blades are made of 9CrSi material for durable cutting edges.",
     "advantages": [
-      "No power required, energy-saving and cost-saving: The machine relies on foot-operated manual force to complete shearing, making it suitable for small-batch production, thin sheet cutting, shop processing, and on-site trimming.",
-      "Step-to-shear operation, simple and easy to use: The shearing mechanism is driven by the foot pedal. It has a low operating threshold and allows ordinary workers to get started quickly.",
-      "Labor-saving structural design: The foot-operated shear adopts a sliding-fulcrum tension spring structure, which can significantly reduce the required foot-pedal force.",
-      "Stable shearing quality: Hold-down and back-gauge devices help secure the sheet, support dimensional positioning, and ensure straight-line shearing.",
-      "Simple structure, durable and easy to maintain: The machine body has a relatively simple structure and is suitable for long-term use in thin metal sheet and sheet-metal cutting and blanking.",
-      "Wide application range: It can be used for manual shearing and blanking of thin metal sheets, sheet-metal materials, plastic sheets, and other materials."
+      "No electricity required: The cutting stroke is completed by foot power and mechanical linkage, without an electric motor, hydraulic station or compressed-air supply.",
+      "Hands remain free for positioning: The operator can support, align and position the sheet with both hands before pressing the foot pedal.",
+      "Simple mechanical operation: The direct pedal and linkage mechanism is easy to understand and maintain for everyday sheet metal cutting tasks.",
+      "Stable material holding: Optional hold-down devices help secure the sheet as the blades move through the material.",
+      "Convenient repeat positioning: Front gauges and back gauges can be used to position sheets for repeated workpiece dimensions.",
+      "Rigid construction for reliable cutting: A stable frame supports the bed and cutting head, helping control deflection and maintain blade alignment.",
+      "Suitable for light-gauge sheet metal: Mild steel, galvanized sheet, aluminum, suitable stainless steel, copper and brass can be reviewed according to model capacity and material strength.",
+      "Practical for small-batch production: HVAC fabrication, repair shops, maintenance departments, training workshops and intermittent production can use the machine without investing in a powered shear."
     ],
     "technicalParameters": {
       "columns": [

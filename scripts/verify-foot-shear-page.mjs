@@ -90,7 +90,10 @@ for (const model of ["Q11-1 x 1000", "Q11-1 x 1300", "Q11-1 x 1500"]) {
   assert.doesNotMatch(source.component, new RegExp(model.replaceAll(" ", "\\s*")));
 }
 assert.match(source.component, /product\.technicalParameters/);
-assert.match(source.data, /Actual cutting capacity depends on material tensile strength, grade, thickness, sheet condition and machine model\./);
+assert.match(
+  source.data,
+  /Actual cutting capacity depends on material type, grade, tensile strength, hardness or temper, sheet thickness, cutting length, blade condition and blade clearance\./,
+);
 
 assert.equal((source.data.match(/question:/g) ?? []).length, 10, "Expected exactly ten visible buyer FAQs");
 for (const question of [
