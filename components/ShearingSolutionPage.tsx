@@ -406,6 +406,51 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
 
       {content.backgaugeCarousel ? <BackgaugeCarousel {...content.backgaugeCarousel} /> : null}
 
+      {content.materialRangeGallery ? (
+        <section data-section="material-range-gallery" className="bg-[#F3F5F4] px-5 py-16 sm:px-8 lg:py-24">
+          <div className="mx-auto max-w-7xl">
+            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,0.55fr)] lg:items-end">
+              <div className="max-w-4xl">
+                <p className={sectionLabelClass}>{content.materialRangeGallery.eyebrow}</p>
+                <h2 className="mt-4 text-3xl font-semibold leading-tight text-neutral-950 sm:text-5xl">
+                  {content.materialRangeGallery.title}
+                </h2>
+                <p className="mt-5 max-w-3xl text-base leading-8 text-neutral-600">
+                  {content.materialRangeGallery.intro}
+                </p>
+              </div>
+              <p className="border-l-2 border-[#76B900] pl-5 text-sm leading-6 text-neutral-600">
+                {content.materialRangeGallery.note}
+              </p>
+            </div>
+
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+              {content.materialRangeGallery.items.map((item) => (
+                <figure
+                  key={item.image}
+                  className="group relative aspect-[4/3] overflow-hidden bg-neutral-900 shadow-[0_14px_36px_rgba(15,23,42,0.12)]"
+                >
+                  <Image
+                    src={item.image}
+                    alt={item.alt}
+                    fill
+                    sizes="(min-width: 1280px) 400px, (min-width: 1024px) calc(33vw - 40px), (min-width: 640px) calc(50vw - 36px), calc(100vw - 40px)"
+                    className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.035] motion-reduce:transform-none motion-reduce:transition-none"
+                  />
+                  <div
+                    className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_52%,rgba(0,0,0,0.82)_100%)]"
+                    aria-hidden="true"
+                  />
+                  <figcaption className="absolute inset-x-0 bottom-0 px-4 pb-5 text-center sm:px-5 sm:pb-6">
+                    <h3 className="text-lg font-semibold leading-tight text-white sm:text-xl">{item.title}</h3>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <section data-section="problems" className="bg-white px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-3xl">

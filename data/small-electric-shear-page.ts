@@ -144,6 +144,61 @@ export const smallElectricShearPageContent = {
       },
     ],
   },
+  materialRangeGallery: {
+    eyebrow: "Material Versatility",
+    title: "Wide Application Range for Multiple Sheet Materials",
+    intro:
+      "Explore common sheet materials used across fabrication, electrical, architectural, and specialty applications.",
+    note:
+      "Actual cutting suitability depends on material grade, thickness, tensile strength, hardness, structure, cutting length, blade condition, blade clearance, and the selected machine configuration.",
+    items: [
+      {
+        image: "/products/shearing/small-electric/material-range/mild-steel-sheet.webp",
+        alt: "Dark gray mild steel sheet displayed on a studio surface for electric shear material selection",
+        title: "Mild Steel Sheet",
+      },
+      {
+        image: "/products/shearing/small-electric/material-range/aluminum-sheet.webp",
+        alt: "Silver aluminum sheet displayed on a studio surface for compact electric shear applications",
+        title: "Aluminum Sheet",
+      },
+      {
+        image: "/products/shearing/small-electric/material-range/galvanized-steel-sheet.webp",
+        alt: "Zinc-pattern galvanized steel sheet shown as a material option for electric shearing",
+        title: "Galvanized Steel Sheet",
+      },
+      {
+        image: "/products/shearing/small-electric/material-range/stainless-steel-sheet.webp",
+        alt: "Brushed stainless steel sheet displayed for model-specific electric shear evaluation",
+        title: "Stainless Steel Sheet",
+      },
+      {
+        image: "/products/shearing/small-electric/material-range/copper-sheet.webp",
+        alt: "Polished copper sheet displayed as a non-ferrous material for confirmed shear configurations",
+        title: "Copper Sheet",
+      },
+      {
+        image: "/products/shearing/small-electric/material-range/printed-circuit-board.webp",
+        alt: "Green printed circuit board panel displayed for specialty sheet-cutting applications",
+        title: "Printed Circuit Board",
+      },
+      {
+        image: "/products/shearing/small-electric/material-range/stainless-steel-security-mesh.webp",
+        alt: "Stainless steel woven security mesh shown for application-specific shearing assessment",
+        title: "Stainless Steel Security Mesh",
+      },
+      {
+        image: "/products/shearing/small-electric/material-range/prepainted-steel-sheet.webp",
+        alt: "Blue prepainted steel sheet displayed for protected-surface electric shear applications",
+        title: "Prepainted Steel Sheet",
+      },
+      {
+        image: "/products/shearing/small-electric/material-range/glass-epoxy-laminate-sheet.webp",
+        alt: "Amber glass-epoxy laminate sheet displayed for specialty cutting configuration review",
+        title: "Glass-Epoxy Laminate Sheet",
+      },
+    ],
+  },
   painEyebrow: "Daily Workshop Challenges",
   painTitle: "What Problems Does This Small Electric Shear Solve?",
   painPoints: [

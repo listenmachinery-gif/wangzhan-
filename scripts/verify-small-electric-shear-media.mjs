@@ -224,6 +224,45 @@ const expectedBackgaugeOptions = [
     text: "Powered positioning speeds up size changes, reduces manual setup effort, and improves repeatability for higher-volume production.",
   },
 ];
+
+const expectedMaterialRangeItems = [
+  {
+    image: "/products/shearing/small-electric/material-range/mild-steel-sheet.webp",
+    title: "Mild Steel Sheet",
+  },
+  {
+    image: "/products/shearing/small-electric/material-range/aluminum-sheet.webp",
+    title: "Aluminum Sheet",
+  },
+  {
+    image: "/products/shearing/small-electric/material-range/galvanized-steel-sheet.webp",
+    title: "Galvanized Steel Sheet",
+  },
+  {
+    image: "/products/shearing/small-electric/material-range/stainless-steel-sheet.webp",
+    title: "Stainless Steel Sheet",
+  },
+  {
+    image: "/products/shearing/small-electric/material-range/copper-sheet.webp",
+    title: "Copper Sheet",
+  },
+  {
+    image: "/products/shearing/small-electric/material-range/printed-circuit-board.webp",
+    title: "Printed Circuit Board",
+  },
+  {
+    image: "/products/shearing/small-electric/material-range/stainless-steel-security-mesh.webp",
+    title: "Stainless Steel Security Mesh",
+  },
+  {
+    image: "/products/shearing/small-electric/material-range/prepainted-steel-sheet.webp",
+    title: "Prepainted Steel Sheet",
+  },
+  {
+    image: "/products/shearing/small-electric/material-range/glass-epoxy-laminate-sheet.webp",
+    title: "Glass-Epoxy Laminate Sheet",
+  },
+];
 const backgaugeCarousel = smallElectricShearPageContent.backgaugeCarousel;
 assert.ok(backgaugeCarousel, "The Small Electric page must include its three-option backgauge carousel");
 assert.equal(backgaugeCarousel?.eyebrow, "Backgauge Options");
@@ -242,6 +281,24 @@ assert.equal(backgaugeOptions.length, 3, "The carousel must contain exactly thre
 assert.equal(new Set(backgaugeOptions.map((item) => item.image)).size, 3, "Every backgauge option must use a distinct image");
 for (const item of backgaugeOptions) {
   assert.match(item.image, /^\/products\/shearing\/small-electric\/backgauge-options\/.+\.webp$/);
+  assert.ok(item.alt.length >= 32, `${item.image} alt text is not descriptive enough`);
+  assert.ok(existsSync(resolve(root, `public${item.image}`)), `${item.image} does not exist`);
+}
+
+const materialRangeGallery = smallElectricShearPageContent.materialRangeGallery;
+assert.ok(materialRangeGallery, "The Small Electric page must include its nine-image material range gallery");
+assert.equal(materialRangeGallery?.eyebrow, "Material Versatility");
+assert.equal(materialRangeGallery?.title, "Wide Application Range for Multiple Sheet Materials");
+const materialRangeItems = materialRangeGallery?.items ?? [];
+assert.deepEqual(
+  materialRangeItems.map(({ image, title }) => ({ image, title })),
+  expectedMaterialRangeItems,
+  "The material gallery must keep all nine supplied images and English names in order",
+);
+assert.equal(materialRangeItems.length, 9, "The material gallery must contain exactly nine items");
+assert.equal(new Set(materialRangeItems.map((item) => item.image)).size, 9, "Every material card must use a distinct image");
+for (const item of materialRangeItems) {
+  assert.match(item.image, /^\/products\/shearing\/small-electric\/material-range\/.+\.webp$/);
   assert.ok(item.alt.length >= 32, `${item.image} alt text is not descriptive enough`);
   assert.ok(existsSync(resolve(root, `public${item.image}`)), `${item.image} does not exist`);
 }
@@ -278,6 +335,7 @@ assert.match(solutionPageSource, /import ProductShowcase from "@\/components\/Pr
 const showcasePlacement = solutionPageSource.indexOf("<ProductShowcase");
 const detailsPlacement = solutionPageSource.indexOf("data-section=\"details-gallery\"");
 const backgaugePlacement = solutionPageSource.indexOf("<BackgaugeCarousel");
+const materialRangePlacement = solutionPageSource.indexOf('data-section="material-range-gallery"');
 const problemsPlacement = solutionPageSource.indexOf("data-section=\"problems\"");
 assert.ok(showcasePlacement >= 0, "The solution page must render the product showcase section");
 assert.ok(
@@ -286,7 +344,11 @@ assert.ok(
 );
 assert.match(solutionPageSource, /import BackgaugeCarousel from "@\/components\/BackgaugeCarousel";/);
 assert.ok(backgaugePlacement > detailsPlacement, "The backgauge carousel must appear after the machine-detail section");
-assert.ok(problemsPlacement > backgaugePlacement, "The backgauge carousel must appear before the problem section");
+assert.ok(materialRangePlacement > backgaugePlacement, "The material gallery must appear after the backgauge carousel");
+assert.ok(problemsPlacement > materialRangePlacement, "The material gallery must appear before the problem section");
+assert.match(solutionPageSource, /data-section="material-range-gallery"[\s\S]*lg:grid-cols-3/);
+assert.match(solutionPageSource, /data-section="material-range-gallery"[\s\S]*text-center/);
+assert.match(solutionPageSource, /group-hover:scale-\[1\.035\]/);
 
 const mediaItems = [
   ...smallElectricShearPageContent.applications,

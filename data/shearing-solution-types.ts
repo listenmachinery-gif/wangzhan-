@@ -107,6 +107,20 @@ export type ShearingBackgaugeCarousel = {
   items: readonly ShearingBackgaugeOption[];
 };
 
+export type ShearingMaterialRangeItem = {
+  image: string;
+  alt: string;
+  title: string;
+};
+
+export type ShearingMaterialRangeGallery = {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  note: string;
+  items: readonly ShearingMaterialRangeItem[];
+};
+
 export type ShearingRelatedLink = {
   label: string;
   href: string;
@@ -134,6 +148,7 @@ export type ShearingSolutionContent = {
   productShowcase?: ShearingProductShowcase;
   detailGallery?: ShearingDetailGallery;
   backgaugeCarousel?: ShearingBackgaugeCarousel;
+  materialRangeGallery?: ShearingMaterialRangeGallery;
   painEyebrow: string;
   painTitle: string;
   painPoints: readonly ShearingSolutionItem[];
