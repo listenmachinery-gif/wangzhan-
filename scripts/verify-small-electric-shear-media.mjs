@@ -258,6 +258,7 @@ assert.match(backgaugeComponentSource, /onPointerDown=\{handlePointerDown\}/, "T
 assert.match(backgaugeComponentSource, /onPointerUp=\{handlePointerUp\}/, "The carousel must complete pointer swipe tracking");
 assert.match(backgaugeComponentSource, /touch-pan-y/, "The carousel must preserve vertical touch scrolling");
 assert.match(backgaugeComponentSource, /motion-reduce:/, "Carousel motion must respect reduced-motion preferences");
+assert.match(backgaugeComponentSource, /aspect-\[4\/3\]/, "The mobile image stage must leave enough height for readable overlay copy");
 assert.match(backgaugeComponentSource, /data-section="backgauge-options"/, "The carousel must expose its section identity");
 
 const showcaseComponentPath = resolve(root, "components/ProductShowcase.tsx");

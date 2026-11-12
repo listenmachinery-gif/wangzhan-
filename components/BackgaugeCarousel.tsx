@@ -76,7 +76,7 @@ export default function BackgaugeCarousel({ eyebrow, title, intro, items }: Shea
 
         <div className="mt-10 border border-white/10 bg-[#0B0D10] shadow-2xl shadow-black/25 lg:mt-12">
           <div
-            className="group relative aspect-[8/5] touch-pan-y overflow-hidden bg-[#0B0D10] sm:aspect-[1705/923]"
+            className="group relative aspect-[4/3] touch-pan-y overflow-hidden bg-[#0B0D10] sm:aspect-[1705/923]"
             onPointerDown={handlePointerDown}
             onPointerUp={handlePointerUp}
             onPointerCancel={() => {
@@ -125,7 +125,7 @@ export default function BackgaugeCarousel({ eyebrow, title, intro, items }: Shea
               <h3 className="mt-2 text-xl font-semibold leading-tight text-white sm:text-3xl lg:text-4xl">
                 {activeItem.title}
               </h3>
-              <p className="mx-auto mt-2 max-w-3xl text-xs leading-5 text-white/80 sm:mt-3 sm:text-base sm:leading-7 lg:text-lg">
+              <p className="mx-auto mt-2 max-w-3xl text-[13px] leading-5 text-white/80 sm:mt-3 sm:text-base sm:leading-7 lg:text-lg">
                 {activeItem.text}
               </p>
             </div>
