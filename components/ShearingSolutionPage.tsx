@@ -24,6 +24,7 @@ import {
 import type { Product } from "@/data/products";
 import type { ShearingSolutionContent } from "@/data/shearing-solution-types";
 import { companyIdentity } from "@/data/company";
+import BackgaugeCarousel from "@/components/BackgaugeCarousel";
 import ProductShowcase from "@/components/ProductShowcase";
 
 type ShearingSolutionPageProps = {
@@ -402,6 +403,8 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
           </div>
         </section>
       ) : null}
+
+      {content.backgaugeCarousel ? <BackgaugeCarousel {...content.backgaugeCarousel} /> : null}
 
       <section data-section="problems" className="bg-white px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
