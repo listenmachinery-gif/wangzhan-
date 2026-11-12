@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const root = process.cwd();
@@ -17,6 +17,44 @@ const nextConfig = read("next.config.ts");
 const sitemap = read("app/sitemap.ts");
 const robots = read("app/robots.ts");
 const combined = `${shared}\n${wrapper}\n${data}`;
+const heroAsset = resolve(
+  root,
+  "public/products/shearing/small-electric-shearing-machine-hero.png",
+);
+
+assert.ok(heroAsset.endsWith("small-electric-shearing-machine-hero.png"));
+assert.ok(existsSync(heroAsset), "Dedicated Small Electric hero artwork is missing");
+assert.match(types, /heroBackgroundImage\?:\s*string/);
+assert.match(types, /heroBackgroundAlt\?:\s*string/);
+assert.match(types, /heroIntro\?:\s*string/);
+assert.match(types, /heroValuePoints\?:\s*readonly string\[\]/);
+assert.ok(
+  data.includes(
+    'heroBackgroundImage: "/products/shearing/small-electric-shearing-machine-hero.png"',
+  ),
+  "Small Electric content must select the dedicated hero artwork",
+);
+assert.ok(
+  data.includes('heroSubtitle: "Compact Q11G cutting power for everyday thin-sheet production."'),
+  "Small Electric hero must use the approved supporting line",
+);
+assert.match(
+  data,
+  /heroIntro:\s*"Straight, repeatable cutting for HVAC duct, roofing, sign making and light fabrication—without the footprint of a hydraulic shear\."/,
+  "Small Electric hero must use the approved concise description",
+);
+assert.ok(data.includes('"600–2500 mm published cutting widths"'));
+assert.ok(data.includes('"Foot-pedal control for practical workshop operation"'));
+assert.match(shared, /content\.heroBackgroundImage\s*\?/);
+assert.match(shared, /data-hero-variant="full-bleed"/);
+assert.match(shared, /src=\{content\.heroBackgroundImage\}/);
+assert.match(shared, /alt=\{content\.heroBackgroundAlt \?\? content\.imageAlt\}/);
+assert.match(shared, /priority/);
+assert.match(shared, /data-hero-variant="default"/);
+assert.ok(
+  (shared.match(/href="\/contact"/g) ?? []).length >= 2,
+  "Hero must retain two contact CTAs",
+);
 
 const metadataBranch = route.match(
   /if \(product\.id === "compact-electric-shearing-machine"\) \{[\s\S]*?\n\s*}\n\n\s*if \(product\.id === "energy-saving-electric-shearing-machine"\)/,
@@ -41,10 +79,14 @@ assert.match(
   /product\.id === "compact-electric-shearing-machine"[\s\S]*?<SmallElectricShearSolutionPage product=\{product\}/,
 );
 assert.match(wrapper, /smallElectricShearPageContent/);
-assert.equal((shared.match(/<h1\b/g) ?? []).length, 1, "Shared page must render one H1");
+assert.equal(
+  (shared.match(/<h1\b/g) ?? []).length,
+  2,
+  "Shared page must define one H1 in each mutually exclusive hero branch",
+);
 assert.ok(data.includes('title: "Small Electric Shearing Machine"'), "H1 content is incorrect");
 assert.ok(
-  data.includes('heroSubtitle: "Compact Electric Sheet Metal Shear for Thin Sheet Cutting"'),
+  data.includes('heroSubtitle: "Compact Q11G cutting power for everyday thin-sheet production."'),
   "Hero subtitle is missing",
 );
 

@@ -7,7 +7,15 @@ export const smallElectricShearPageContent = {
   structureImageAlt: "Q11G small electric shearing machine structure",
   eyebrow: "Compact Q11G Sheet Metal Cutting",
   title: "Small Electric Shearing Machine",
-  heroSubtitle: "Compact Electric Sheet Metal Shear for Thin Sheet Cutting",
+  heroBackgroundImage: "/products/shearing/small-electric-shearing-machine-hero.png",
+  heroBackgroundAlt: "Small electric shearing machine operated by a workshop technician",
+  heroSubtitle: "Compact Q11G cutting power for everyday thin-sheet production.",
+  heroIntro:
+    "Straight, repeatable cutting for HVAC duct, roofing, sign making and light fabrication—without the footprint of a hydraulic shear.",
+  heroValuePoints: [
+    "600–2500 mm published cutting widths",
+    "Foot-pedal control for practical workshop operation",
+  ],
   intro:
     "A compact motor-driven shearing machine for straight cutting of thin sheet before folding, lock forming, roofing, signage and enclosure assembly. The Q11G series gives small workshops a powered alternative to manual shearing without the size and system complexity of a hydraulic shear.",
   valuePoints: [

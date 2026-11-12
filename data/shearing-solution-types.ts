@@ -79,7 +79,11 @@ export type ShearingSolutionContent = {
   structureImageAlt?: string;
   eyebrow: string;
   title: string;
+  heroBackgroundImage?: string;
+  heroBackgroundAlt?: string;
   heroSubtitle?: string;
+  heroIntro?: string;
+  heroValuePoints?: readonly string[];
   intro: string;
   valuePoints: readonly string[];
   heroBadges?: readonly string[];

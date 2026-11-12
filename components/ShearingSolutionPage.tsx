@@ -179,7 +179,73 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
 
-      <section data-section="hero" className="relative isolate overflow-hidden bg-[#0B0D10] px-5 pb-16 pt-8 text-white sm:px-8 lg:pb-24 lg:pt-12">
+      {content.heroBackgroundImage ? (
+        <section
+          data-section="hero"
+          data-hero-variant="full-bleed"
+          className="relative isolate min-h-[780px] overflow-hidden bg-[#0B0D10] text-white lg:min-h-[720px] xl:min-h-[800px] 2xl:min-h-[900px]"
+        >
+          <Image
+            src={content.heroBackgroundImage}
+            alt={content.heroBackgroundAlt ?? content.imageAlt}
+            fill
+            priority
+            sizes="100vw"
+            className="-z-20 object-contain object-bottom lg:object-cover lg:object-center"
+          />
+          <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(7,8,9,1)_0%,rgba(7,8,9,0.96)_48%,rgba(7,8,9,0.15)_76%,rgba(7,8,9,0)_100%)] lg:bg-[linear-gradient(90deg,rgba(7,8,9,0.98)_0%,rgba(7,8,9,0.88)_24%,rgba(7,8,9,0.56)_38%,rgba(7,8,9,0.08)_56%,rgba(7,8,9,0)_72%)]" />
+
+          <div className="mx-auto flex min-h-[780px] max-w-[1440px] flex-col px-5 pb-[260px] pt-8 sm:px-8 lg:min-h-[720px] lg:justify-center lg:pb-12 lg:pt-12 xl:min-h-[800px] 2xl:min-h-[900px]">
+            <Link
+              href="/products"
+              className="relative mb-10 inline-flex w-fit items-center gap-2 text-sm text-zinc-300 transition-colors hover:text-white lg:absolute lg:top-12"
+            >
+              <ArrowLeft size={16} aria-hidden="true" />
+              Back to Products
+            </Link>
+
+            <div className="relative max-w-[430px]">
+              <h1 className="text-4xl font-semibold leading-[1.06] text-white sm:text-5xl lg:text-6xl">
+                {content.title}
+              </h1>
+              {content.heroSubtitle ? (
+                <p className="mt-5 text-xl font-medium leading-8 text-zinc-100 sm:text-2xl">
+                  {content.heroSubtitle}
+                </p>
+              ) : null}
+              <p className="mt-5 text-base leading-7 text-zinc-300 sm:text-lg sm:leading-8">
+                {content.heroIntro ?? content.intro}
+              </p>
+
+              <div className="mt-6 grid gap-3">
+                {(content.heroValuePoints ?? content.valuePoints).slice(0, 2).map((point) => (
+                  <span key={point} className="inline-flex items-start gap-3 text-sm font-semibold leading-6 text-zinc-100">
+                    <span className="mt-2 h-2 w-2 shrink-0 bg-[#76B900]" />
+                    {point}
+                  </span>
+                ))}
+              </div>
+
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/contact"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-sm bg-[#76B900] px-6 text-sm font-semibold text-[#0B0D10] transition-colors hover:bg-[#8DDB00]"
+                >
+                  {content.primaryCta}
+                  <ArrowRight size={16} aria-hidden="true" />
+                </Link>
+                <Link
+                  href="/contact"
+                  className="inline-flex min-h-12 items-center justify-center rounded-sm border border-white/35 bg-black/10 px-6 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:border-[#76B900] hover:text-[#8DDB00]"
+                >
+                  {content.secondaryCta}
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : (
+      <section data-section="hero" data-hero-variant="default" className="relative isolate overflow-hidden bg-[#0B0D10] px-5 pb-16 pt-8 text-white sm:px-8 lg:pb-24 lg:pt-12">
         <div className="absolute inset-0 -z-20 bg-[linear-gradient(118deg,#0B0D10_0%,#12171a_48%,#070809_100%)]" />
         <div className="absolute inset-y-0 right-0 -z-10 w-2/3 bg-[radial-gradient(circle_at_62%_48%,rgba(118,185,0,0.16),transparent_48%)]" />
         <div className="mx-auto max-w-[1440px]">
@@ -272,6 +338,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
           </div>
         </div>
       </section>
+      )}
 
       {content.overview ? (
         <section data-section="overview" className="bg-white px-5 py-16 sm:px-8 lg:py-24">
