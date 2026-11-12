@@ -37,6 +37,44 @@ export const smallElectricShearPageContent = {
       "This electric sheet metal cutting machine is also described as a mini electric shearing machine or thin sheet metal shearing machine when compact placement is the priority. It is suited to blanks prepared before folding, lock forming, roofing, sign making, enclosure production and HVAC fabrication, but model selection must still follow the actual material type, grade, strength, thickness, cutting length and daily work pattern.",
     ],
   },
+  detailGallery: {
+    eyebrow: "Machine Details",
+    title: "Small Electric Shearing Machine Details",
+    items: [
+      {
+        image: "/products/shearing/small-electric/details/welded-steel-plate-construction.png",
+        alt: "Welded steel plate frame construction of the Q11G small electric shearing machine",
+      },
+      {
+        image: "/products/shearing/small-electric/details/polyurethane-hold-down-system.png",
+        alt: "Polyurethane hold-down cylinders securing sheet metal on the small electric shear",
+      },
+      {
+        image: "/products/shearing/small-electric/details/ball-transfer-units.png",
+        alt: "Ball transfer units on the front worktable of the small electric shearing machine",
+      },
+      {
+        image: "/products/shearing/small-electric/details/direct-coupled-motor-gear-reducer.png",
+        alt: "Direct-coupled electric motor and gear reducer inside the Q11G shearing machine",
+      },
+      {
+        image: "/products/shearing/small-electric/details/brake-assembly.png",
+        alt: "Mechanical brake assembly controlling repeatable stops between electric shear cuts",
+      },
+      {
+        image: "/products/shearing/small-electric/details/high-alloy-tool-steel-blade.png",
+        alt: "High-alloy tool steel blade and hold-down system on the small electric shear",
+      },
+      {
+        image: "/products/shearing/small-electric/details/manual-backgauge.png",
+        alt: "Manual backgauge assembly for repeatable sheet positioning on the electric shear",
+      },
+      {
+        image: "/products/shearing/small-electric/details/electrical-control-box.png",
+        alt: "Electrical control box and labeled wiring for the small electric shearing machine",
+      },
+    ],
+  },
   painEyebrow: "Daily Workshop Challenges",
   painTitle: "What Problems Does This Small Electric Shear Solve?",
   painPoints: [

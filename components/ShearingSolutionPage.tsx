@@ -360,6 +360,36 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </section>
       ) : null}
 
+      {content.detailGallery ? (
+        <section data-section="details-gallery" className="bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
+          <div className="mx-auto max-w-7xl">
+            <div className="max-w-3xl">
+              <p className={sectionLabelClass}>{content.detailGallery.eyebrow}</p>
+              <h2 className="mt-4 text-3xl font-semibold leading-tight text-white sm:text-5xl">
+                {content.detailGallery.title}
+              </h2>
+            </div>
+
+            <div className="mt-10 grid gap-5 md:grid-cols-2 lg:gap-6">
+              {content.detailGallery.items.map((item) => (
+                <figure key={item.image} className="overflow-hidden border border-white/10 bg-[#111519]">
+                  <div className="relative aspect-[1672/941] w-full">
+                    <Image
+                      src={item.image}
+                      alt={item.alt}
+                      fill
+                      sizes="(min-width: 768px) 50vw, 100vw"
+                      className="object-contain"
+                    />
+                  </div>
+                  <figcaption className="sr-only">{item.alt}</figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <section data-section="problems" className="bg-white px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-3xl">

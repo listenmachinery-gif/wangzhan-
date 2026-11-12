@@ -26,6 +26,17 @@ const expectedMaterialTitles = [
   "Brass Sheet",
 ];
 
+const expectedDetailImages = [
+  "/products/shearing/small-electric/details/welded-steel-plate-construction.png",
+  "/products/shearing/small-electric/details/polyurethane-hold-down-system.png",
+  "/products/shearing/small-electric/details/ball-transfer-units.png",
+  "/products/shearing/small-electric/details/direct-coupled-motor-gear-reducer.png",
+  "/products/shearing/small-electric/details/brake-assembly.png",
+  "/products/shearing/small-electric/details/high-alloy-tool-steel-blade.png",
+  "/products/shearing/small-electric/details/manual-backgauge.png",
+  "/products/shearing/small-electric/details/electrical-control-box.png",
+];
+
 const expectedParameterRows = [
   ["Q11G-2 x 600", "2", "600", "1 deg 30 min", "30", "500", "3", "1200 x 640 x 1100"],
   ["Q11G-2 x 800", "2", "800", "1 deg 30 min", "30", "500", "3", "1400 x 640 x 1100"],
@@ -102,6 +113,28 @@ assert.deepEqual(
   expectedParameterRows,
   "The original eight Q11G parameter rows must remain unchanged",
 );
+
+const detailGallery = smallElectricShearPageContent.detailGallery;
+assert.ok(detailGallery, "The Small Electric page must include its machine-detail gallery");
+assert.equal(detailGallery?.eyebrow, "Machine Details");
+assert.equal(detailGallery?.title, "Small Electric Shearing Machine Details");
+const detailItems = detailGallery?.items ?? [];
+assert.equal(detailItems.length, 8, "The gallery must contain eight machine-detail images");
+assert.deepEqual(
+  detailItems.map((item) => item.image),
+  expectedDetailImages,
+  "The eight machine-detail images must remain in the approved order",
+);
+assert.equal(
+  new Set(detailItems.map((item) => item.image)).size,
+  8,
+  "Every machine-detail card must use a distinct image",
+);
+for (const item of detailItems) {
+  assert.match(item.image, /^\/products\/shearing\/small-electric\/details\/.+\.png$/);
+  assert.ok(item.alt.length >= 32, `${item.image} alt text is not descriptive enough`);
+  assert.ok(existsSync(resolve(root, `public${item.image}`)), `${item.image} does not exist`);
+}
 
 const mediaItems = [
   ...smallElectricShearPageContent.applications,

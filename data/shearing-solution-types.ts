@@ -67,6 +67,17 @@ export type ShearingEditorialSection = {
   items?: readonly ShearingSolutionItem[];
 };
 
+export type ShearingDetailImage = {
+  image: string;
+  alt: string;
+};
+
+export type ShearingDetailGallery = {
+  eyebrow: string;
+  title: string;
+  items: readonly ShearingDetailImage[];
+};
+
 export type ShearingRelatedLink = {
   label: string;
   href: string;
@@ -91,6 +102,7 @@ export type ShearingSolutionContent = {
   primaryCta: string;
   secondaryCta: string;
   overview?: ShearingEditorialSection;
+  detailGallery?: ShearingDetailGallery;
   painEyebrow: string;
   painTitle: string;
   painPoints: readonly ShearingSolutionItem[];
