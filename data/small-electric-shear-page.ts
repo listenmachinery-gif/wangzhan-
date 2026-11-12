@@ -119,6 +119,31 @@ export const smallElectricShearPageContent = {
       },
     ],
   },
+  backgaugeCarousel: {
+    eyebrow: "Backgauge Options",
+    title: "Choose the Right Backgauge for Your Workflow",
+    intro: "Compare three positioning systems for different setup, precision, and production requirements.",
+    items: [
+      {
+        image: "/products/shearing/small-electric/backgauge-options/manually-adjustable-backgauge.webp",
+        alt: "Manually adjustable backgauge fitted to the rear of a small electric shearing machine",
+        title: "Manually Adjustable Backgauge",
+        text: "A straightforward, economical choice for flexible small-batch work, with direct stop positioning and simple day-to-day adjustment.",
+      },
+      {
+        image: "/products/shearing/small-electric/backgauge-options/handwheel-adjustable-backgauge.webp",
+        alt: "Handwheel-adjustable rack backgauge on a compact electric sheet metal shearing machine",
+        title: "Handwheel-Adjustable Backgauge",
+        text: "Fine handwheel control makes precise dimensional changes easier and supports repeatable positioning without powered adjustment.",
+      },
+      {
+        image: "/products/shearing/small-electric/backgauge-options/motorized-backgauge.webp",
+        alt: "Motorized rear backgauge and drive motor on a compact electric shearing machine",
+        title: "Motorized Backgauge",
+        text: "Powered positioning speeds up size changes, reduces manual setup effort, and improves repeatability for higher-volume production.",
+      },
+    ],
+  },
   painEyebrow: "Daily Workshop Challenges",
   painTitle: "What Problems Does This Small Electric Shear Solve?",
   painPoints: [
