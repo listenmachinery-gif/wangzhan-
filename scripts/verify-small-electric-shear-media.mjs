@@ -26,15 +26,47 @@ const expectedMaterialTitles = [
   "Brass Sheet",
 ];
 
-const expectedDetailImages = [
-  "/products/shearing/small-electric/details/welded-steel-plate-construction.png",
-  "/products/shearing/small-electric/details/polyurethane-hold-down-system.png",
-  "/products/shearing/small-electric/details/ball-transfer-units.png",
-  "/products/shearing/small-electric/details/direct-coupled-motor-gear-reducer.png",
-  "/products/shearing/small-electric/details/brake-assembly.png",
-  "/products/shearing/small-electric/details/high-alloy-tool-steel-blade.png",
-  "/products/shearing/small-electric/details/manual-backgauge.png",
-  "/products/shearing/small-electric/details/electrical-control-box.png",
+const expectedDetailItems = [
+  {
+    image: "/products/shearing/small-electric/details/welded-steel-plate-construction-clean.png",
+    title: "Welded Steel Plate Construction",
+    text: "Rigid all-steel frame helps reduce deflection and maintain stable blade alignment for consistent cuts.",
+  },
+  {
+    image: "/products/shearing/small-electric/details/ball-transfer-units-clean.png",
+    title: "Ball Transfer Units",
+    text: "Low-friction ball supports make sheet positioning smoother and reduce effort during feeding.",
+  },
+  {
+    image: "/products/shearing/small-electric/details/polyurethane-hold-down-system-clean.png",
+    title: "Polyurethane Hold-Down System",
+    text: "Resilient hold-down pads secure the sheet while helping protect its surface during cutting.",
+  },
+  {
+    image: "/products/shearing/small-electric/details/direct-coupled-motor-gear-reducer-clean.png",
+    title: "Direct-Coupled Motor & Gear Reducer",
+    text: "Compact direct drive delivers steady torque with fewer transmission components and reliable power transfer.",
+  },
+  {
+    image: "/products/shearing/small-electric/details/brake-assembly-clean.png",
+    title: "Brake Assembly",
+    text: "Controls shaft overrun for precise, repeatable stopping between cutting cycles.",
+  },
+  {
+    image: "/products/shearing/small-electric/details/high-alloy-tool-steel-blade-clean.png",
+    title: "High-Alloy Tool Steel Blade",
+    text: "Wear-resistant blade material retains a sharp cutting edge for clean, consistent results.",
+  },
+  {
+    image: "/products/shearing/small-electric/details/manual-backgauge-clean.png",
+    title: "Manual Backgauge",
+    text: "Simple hand adjustment sets repeat dimensions quickly for accurate small-batch production.",
+  },
+  {
+    image: "/products/shearing/small-electric/details/electrical-control-box-clean.png",
+    title: "Electrical Control Box",
+    text: "Centralized, clearly arranged components simplify operation, inspection, and routine maintenance.",
+  },
 ];
 
 const expectedParameterRows = [
@@ -121,9 +153,9 @@ assert.equal(detailGallery?.title, "Small Electric Shearing Machine Details");
 const detailItems = detailGallery?.items ?? [];
 assert.equal(detailItems.length, 8, "The gallery must contain eight machine-detail images");
 assert.deepEqual(
-  detailItems.map((item) => item.image),
-  expectedDetailImages,
-  "The eight machine-detail images must remain in the approved order",
+  detailItems.map(({ image, title, text }) => ({ image, title, text })),
+  expectedDetailItems,
+  "The eight detail images, English names, benefits, and user-requested order must remain exact",
 );
 assert.equal(
   new Set(detailItems.map((item) => item.image)).size,

@@ -372,17 +372,27 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
 
             <div className="mt-10 grid gap-5 md:grid-cols-2 lg:gap-6">
               {content.detailGallery.items.map((item) => (
-                <figure key={item.image} className="overflow-hidden border border-white/10 bg-[#111519]">
-                  <div className="relative aspect-[1672/941] w-full">
-                    <Image
-                      src={item.image}
-                      alt={item.alt}
-                      fill
-                      sizes="(min-width: 768px) 50vw, 100vw"
-                      className="object-contain"
-                    />
-                  </div>
-                  <figcaption className="sr-only">{item.alt}</figcaption>
+                <figure
+                  key={item.image}
+                  className="group relative aspect-[1672/941] overflow-hidden border border-white/10 bg-[#111519]"
+                >
+                  <Image
+                    src={item.image}
+                    alt={item.alt}
+                    fill
+                    sizes="(min-width: 1280px) 616px, (min-width: 768px) calc(50vw - 44px), calc(100vw - 40px)"
+                    className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.035] motion-reduce:transform-none motion-reduce:transition-none"
+                  />
+                  <div
+                    className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_40%,rgba(0,0,0,0.9)_100%)]"
+                    aria-hidden="true"
+                  />
+                  <figcaption className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+                    <h3 className="text-xl font-semibold leading-tight text-white sm:text-2xl">{item.title}</h3>
+                    <p className="mt-2 max-w-[44rem] text-sm leading-6 text-white/80 sm:text-base sm:leading-7">
+                      {item.text}
+                    </p>
+                  </figcaption>
                 </figure>
               ))}
             </div>

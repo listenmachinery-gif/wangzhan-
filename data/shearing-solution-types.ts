@@ -70,6 +70,8 @@ export type ShearingEditorialSection = {
 export type ShearingDetailImage = {
   image: string;
   alt: string;
+  title: string;
+  text: string;
 };
 
 export type ShearingDetailGallery = {
