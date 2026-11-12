@@ -207,6 +207,28 @@ for (const item of showcaseImages) {
   assert.ok(existsSync(resolve(root, `public${item.image}`)), `${item.image} does not exist`);
 }
 
+const showcaseComponentPath = resolve(root, "components/ProductShowcase.tsx");
+assert.ok(existsSync(showcaseComponentPath), "The product showcase client component must exist");
+const showcaseComponentSource = readFileSync(showcaseComponentPath, "utf8");
+assert.match(showcaseComponentSource, /^"use client";/, "The interactive showcase must be a client component");
+assert.match(showcaseComponentSource, /aria-pressed=\{index === activeIndex\}/, "Active thumbnails must expose selected state");
+assert.match(showcaseComponentSource, /setActiveIndex\(index\)/, "Each thumbnail must select its own image");
+assert.match(showcaseComponentSource, /Previous product view/, "The showcase must include an accessible previous control");
+assert.match(showcaseComponentSource, /Next product view/, "The showcase must include an accessible next control");
+assert.match(showcaseComponentSource, /images\.length\) % images\.length/, "Previous and next controls must wrap");
+assert.match(showcaseComponentSource, /object-contain/, "Showcase images must remain uncropped");
+assert.match(showcaseComponentSource, /data-section="product-showcase"/, "The showcase must expose its section identity");
+
+const solutionPageSource = readFileSync(resolve(root, "components/ShearingSolutionPage.tsx"), "utf8");
+assert.match(solutionPageSource, /import ProductShowcase from "@\/components\/ProductShowcase";/);
+const showcasePlacement = solutionPageSource.indexOf("<ProductShowcase");
+const detailsPlacement = solutionPageSource.indexOf("data-section=\"details-gallery\"");
+assert.ok(showcasePlacement >= 0, "The solution page must render the product showcase section");
+assert.ok(
+  detailsPlacement > showcasePlacement,
+  "The product showcase must appear immediately before the machine-detail section",
+);
+
 const mediaItems = [
   ...smallElectricShearPageContent.applications,
   ...smallElectricShearPageContent.materials.items,

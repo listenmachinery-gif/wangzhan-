@@ -24,6 +24,7 @@ import {
 import type { Product } from "@/data/products";
 import type { ShearingSolutionContent } from "@/data/shearing-solution-types";
 import { companyIdentity } from "@/data/company";
+import ProductShowcase from "@/components/ProductShowcase";
 
 type ShearingSolutionPageProps = {
   product: Product;
@@ -359,6 +360,8 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
           </div>
         </section>
       ) : null}
+
+      {content.productShowcase ? <ProductShowcase {...content.productShowcase} /> : null}
 
       {content.detailGallery ? (
         <section data-section="details-gallery" className="bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
