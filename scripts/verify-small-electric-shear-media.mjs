@@ -207,6 +207,59 @@ for (const item of showcaseImages) {
   assert.ok(existsSync(resolve(root, `public${item.image}`)), `${item.image} does not exist`);
 }
 
+const expectedBackgaugeOptions = [
+  {
+    image: "/products/shearing/small-electric/backgauge-options/manually-adjustable-backgauge.webp",
+    title: "Manually Adjustable Backgauge",
+    text: "A straightforward, economical choice for flexible small-batch work, with direct stop positioning and simple day-to-day adjustment.",
+  },
+  {
+    image: "/products/shearing/small-electric/backgauge-options/handwheel-adjustable-backgauge.webp",
+    title: "Handwheel-Adjustable Backgauge",
+    text: "Fine handwheel control makes precise dimensional changes easier and supports repeatable positioning without powered adjustment.",
+  },
+  {
+    image: "/products/shearing/small-electric/backgauge-options/motorized-backgauge.webp",
+    title: "Motorized Backgauge",
+    text: "Powered positioning speeds up size changes, reduces manual setup effort, and improves repeatability for higher-volume production.",
+  },
+];
+const backgaugeCarousel = smallElectricShearPageContent.backgaugeCarousel;
+assert.ok(backgaugeCarousel, "The Small Electric page must include its three-option backgauge carousel");
+assert.equal(backgaugeCarousel?.eyebrow, "Backgauge Options");
+assert.equal(backgaugeCarousel?.title, "Choose the Right Backgauge for Your Workflow");
+assert.equal(
+  backgaugeCarousel?.intro,
+  "Compare three positioning systems for different setup, precision, and production requirements.",
+);
+const backgaugeOptions = backgaugeCarousel?.items ?? [];
+assert.deepEqual(
+  backgaugeOptions.map(({ image, title, text }) => ({ image, title, text })),
+  expectedBackgaugeOptions,
+  "The backgauge carousel must keep the three supplied options and approved English benefits in order",
+);
+assert.equal(backgaugeOptions.length, 3, "The carousel must contain exactly three backgauge options");
+assert.equal(new Set(backgaugeOptions.map((item) => item.image)).size, 3, "Every backgauge option must use a distinct image");
+for (const item of backgaugeOptions) {
+  assert.match(item.image, /^\/products\/shearing\/small-electric\/backgauge-options\/.+\.webp$/);
+  assert.ok(item.alt.length >= 32, `${item.image} alt text is not descriptive enough`);
+  assert.ok(existsSync(resolve(root, `public${item.image}`)), `${item.image} does not exist`);
+}
+
+const backgaugeComponentPath = resolve(root, "components/BackgaugeCarousel.tsx");
+assert.ok(existsSync(backgaugeComponentPath), "The backgauge carousel client component must exist");
+const backgaugeComponentSource = readFileSync(backgaugeComponentPath, "utf8");
+assert.match(backgaugeComponentSource, /^"use client";/, "The interactive backgauge carousel must be a client component");
+assert.match(backgaugeComponentSource, /aria-pressed=\{index === activeIndex\}/, "Backgauge selectors must expose selected state");
+assert.match(backgaugeComponentSource, /Previous backgauge option/, "The carousel must include an accessible previous control");
+assert.match(backgaugeComponentSource, /Next backgauge option/, "The carousel must include an accessible next control");
+assert.match(backgaugeComponentSource, /items\.length\) % items\.length/, "Previous and next controls must wrap");
+assert.match(backgaugeComponentSource, /onPointerDown=\{handlePointerDown\}/, "The carousel must start pointer swipe tracking");
+assert.match(backgaugeComponentSource, /onPointerUp=\{handlePointerUp\}/, "The carousel must complete pointer swipe tracking");
+assert.match(backgaugeComponentSource, /touch-pan-y/, "The carousel must preserve vertical touch scrolling");
+assert.match(backgaugeComponentSource, /motion-reduce:/, "Carousel motion must respect reduced-motion preferences");
+assert.match(backgaugeComponentSource, /data-section="backgauge-options"/, "The carousel must expose its section identity");
+
 const showcaseComponentPath = resolve(root, "components/ProductShowcase.tsx");
 assert.ok(existsSync(showcaseComponentPath), "The product showcase client component must exist");
 const showcaseComponentSource = readFileSync(showcaseComponentPath, "utf8");
@@ -223,11 +276,16 @@ const solutionPageSource = readFileSync(resolve(root, "components/ShearingSoluti
 assert.match(solutionPageSource, /import ProductShowcase from "@\/components\/ProductShowcase";/);
 const showcasePlacement = solutionPageSource.indexOf("<ProductShowcase");
 const detailsPlacement = solutionPageSource.indexOf("data-section=\"details-gallery\"");
+const backgaugePlacement = solutionPageSource.indexOf("<BackgaugeCarousel");
+const problemsPlacement = solutionPageSource.indexOf("data-section=\"problems\"");
 assert.ok(showcasePlacement >= 0, "The solution page must render the product showcase section");
 assert.ok(
   detailsPlacement > showcasePlacement,
   "The product showcase must appear immediately before the machine-detail section",
 );
+assert.match(solutionPageSource, /import BackgaugeCarousel from "@\/components\/BackgaugeCarousel";/);
+assert.ok(backgaugePlacement > detailsPlacement, "The backgauge carousel must appear after the machine-detail section");
+assert.ok(problemsPlacement > backgaugePlacement, "The backgauge carousel must appear before the problem section");
 
 const mediaItems = [
   ...smallElectricShearPageContent.applications,
