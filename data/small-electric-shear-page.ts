@@ -37,6 +37,34 @@ export const smallElectricShearPageContent = {
       "This electric sheet metal cutting machine is also described as a mini electric shearing machine or thin sheet metal shearing machine when compact placement is the priority. It is suited to blanks prepared before folding, lock forming, roofing, sign making, enclosure production and HVAC fabrication, but model selection must still follow the actual material type, grade, strength, thickness, cutting length and daily work pattern.",
     ],
   },
+  productShowcase: {
+    eyebrow: "Product Showcase",
+    title: "Explore the Machine from Every Angle",
+    description:
+      "Review the front, side and rear construction of the Q11G small electric shearing machine before selecting a model.",
+    images: [
+      {
+        image: "/products/shearing/small-electric/showcase/front-left.webp",
+        alt: "Front-left view of the Q11G small electric shearing machine and foot pedal",
+        label: "Front Left View",
+      },
+      {
+        image: "/products/shearing/small-electric/showcase/front-right.webp",
+        alt: "Front-right view of the Q11G small electric shearing machine and control box",
+        label: "Front Right View",
+      },
+      {
+        image: "/products/shearing/small-electric/showcase/rear-left.webp",
+        alt: "Rear-left view of the Q11G small electric shear drive and backgauge assembly",
+        label: "Rear Left View",
+      },
+      {
+        image: "/products/shearing/small-electric/showcase/rear-right.webp",
+        alt: "Rear-right view of the Q11G small electric shear frame and drive mechanism",
+        label: "Rear Right View",
+      },
+    ],
+  },
   detailGallery: {
     eyebrow: "Machine Details",
     title: "Small Electric Shearing Machine Details",

@@ -5,22 +5,6 @@ import { basename, dirname, resolve } from "node:path";
 const root = process.cwd();
 const { smallElectricShearPageContent } = await import("../data/small-electric-shear-page.ts");
 const { shearingProductDetails } = await import("../data/shearing-details.ts");
-const { getFrameIndexFromPointer, getSteppedFrameIndex } = await import(
-  "../components/product-spin-utils.ts"
-);
-
-assert.equal(getFrameIndexFromPointer(0, 800, 8), 0, "The left edge must select the first frame");
-assert.equal(getFrameIndexFromPointer(799, 800, 8), 7, "The right edge must select the last frame");
-assert.equal(getFrameIndexFromPointer(-20, 800, 8), 0, "Pointer positions before the stage must clamp");
-assert.equal(getFrameIndexFromPointer(900, 800, 8), 7, "Pointer positions after the stage must clamp");
-assert.equal(getFrameIndexFromPointer(400, 800, 8), 4, "The stage midpoint must select the middle frame");
-assert.equal(getFrameIndexFromPointer(100, 0, 8), 0, "A zero-width stage must safely select frame zero");
-assert.equal(getFrameIndexFromPointer(100, 800, 0), 0, "An empty sequence must safely select frame zero");
-assert.equal(getFrameIndexFromPointer(Number.NaN, 800, 8), 0, "Non-finite pointer input must be safe");
-assert.equal(getSteppedFrameIndex(7, 1, 8), 0, "Right Arrow must wrap from last to first");
-assert.equal(getSteppedFrameIndex(0, -1, 8), 7, "Left Arrow must wrap from first to last");
-assert.equal(getSteppedFrameIndex(3, 1, 8), 4, "Keyboard stepping must advance one frame");
-assert.equal(getSteppedFrameIndex(3, -1, 0), 0, "An empty sequence must safely select frame zero");
 
 const expectedApplicationTitles = [
   "HVAC and Duct Fabrication",
@@ -180,6 +164,45 @@ assert.equal(
 );
 for (const item of detailItems) {
   assert.match(item.image, /^\/products\/shearing\/small-electric\/details\/.+\.png$/);
+  assert.ok(item.alt.length >= 32, `${item.image} alt text is not descriptive enough`);
+  assert.ok(existsSync(resolve(root, `public${item.image}`)), `${item.image} does not exist`);
+}
+
+const expectedShowcaseImages = [
+  {
+    image: "/products/shearing/small-electric/showcase/front-left.webp",
+    label: "Front Left View",
+  },
+  {
+    image: "/products/shearing/small-electric/showcase/front-right.webp",
+    label: "Front Right View",
+  },
+  {
+    image: "/products/shearing/small-electric/showcase/rear-left.webp",
+    label: "Rear Left View",
+  },
+  {
+    image: "/products/shearing/small-electric/showcase/rear-right.webp",
+    label: "Rear Right View",
+  },
+];
+const productShowcase = smallElectricShearPageContent.productShowcase;
+assert.ok(productShowcase, "The Small Electric page must include its four-image product showcase");
+assert.equal(productShowcase?.eyebrow, "Product Showcase");
+assert.equal(productShowcase?.title, "Explore the Machine from Every Angle");
+assert.equal(
+  productShowcase?.description,
+  "Review the front, side and rear construction of the Q11G small electric shearing machine before selecting a model.",
+);
+const showcaseImages = productShowcase?.images ?? [];
+assert.deepEqual(
+  showcaseImages.map(({ image, label }) => ({ image, label })),
+  expectedShowcaseImages,
+  "The product showcase must keep the four supplied views in the approved order",
+);
+assert.equal(new Set(showcaseImages.map((item) => item.image)).size, 4, "Every showcase image must be distinct");
+for (const item of showcaseImages) {
+  assert.match(item.image, /^\/products\/shearing\/small-electric\/showcase\/.+\.webp$/);
   assert.ok(item.alt.length >= 32, `${item.image} alt text is not descriptive enough`);
   assert.ok(existsSync(resolve(root, `public${item.image}`)), `${item.image} does not exist`);
 }

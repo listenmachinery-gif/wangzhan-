@@ -80,6 +80,19 @@ export type ShearingDetailGallery = {
   items: readonly ShearingDetailImage[];
 };
 
+export type ShearingShowcaseImage = {
+  image: string;
+  alt: string;
+  label: string;
+};
+
+export type ShearingProductShowcase = {
+  eyebrow: string;
+  title: string;
+  description: string;
+  images: readonly ShearingShowcaseImage[];
+};
+
 export type ShearingRelatedLink = {
   label: string;
   href: string;
@@ -104,6 +117,7 @@ export type ShearingSolutionContent = {
   primaryCta: string;
   secondaryCta: string;
   overview?: ShearingEditorialSection;
+  productShowcase?: ShearingProductShowcase;
   detailGallery?: ShearingDetailGallery;
   painEyebrow: string;
   painTitle: string;
