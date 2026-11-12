@@ -19,4 +19,3 @@ Create a product showcase from the four supplied, unmodified machine photographs
 - Require exactly four distinct local WebP assets with descriptive alt text and exact view labels.
 - Verify the module renders before Machine Details and keeps the existing eight detail cards unchanged.
 - Run media/SEO checks, lint, production build, and desktop/mobile browser interaction QA.
-

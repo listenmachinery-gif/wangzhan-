@@ -62,4 +62,3 @@
 - [ ] Verify desktop and mobile rendering and interactions with Playwright because Browser/IAB is unavailable.
 - [ ] Inspect screenshots with `view_image`, remove temporary QA artifacts, and self-review the branch.
 - [ ] Merge to `main`, re-run verification, push, deploy production, and verify the live URL.
-
