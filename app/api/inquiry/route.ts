@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import {
+  SMALL_ELECTRIC_SHEAR_BACKGAUGES,
+  recommendSmallElectricShear,
+} from "@/data/small-electric-shear-selector";
 
 export const runtime = "nodejs";
 
 type InquiryPayload = {
+  inquiryType?: unknown;
   name?: unknown;
   company?: unknown;
   email?: unknown;
@@ -16,6 +21,10 @@ type InquiryPayload = {
   workingLength?: unknown;
   targetOutput?: unknown;
   requirement?: unknown;
+  cuttingThickness?: unknown;
+  cuttingWidth?: unknown;
+  recommendedModel?: unknown;
+  backgauge?: unknown;
   website?: unknown;
 };
 
@@ -66,6 +75,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Invalid inquiry data." }, { status: 400 });
   }
 
+  const inquiryType = cleanValue(payload.inquiryType);
+  const isSmallElectricSelector = inquiryType === "small-electric-shear-selector";
   const name = cleanValue(payload.name);
   const company = cleanValue(payload.company);
   const email = cleanValue(payload.email);
@@ -78,6 +89,11 @@ export async function POST(request: Request) {
   const workingLength = cleanValue(payload.workingLength);
   const targetOutput = cleanValue(payload.targetOutput);
   const requirement = cleanValue(payload.requirement);
+  const cuttingThicknessValue = cleanValue(payload.cuttingThickness);
+  const cuttingWidthValue = cleanValue(payload.cuttingWidth);
+  const cuttingThickness = Number(cuttingThicknessValue);
+  const cuttingWidth = Number(cuttingWidthValue);
+  const backgauge = cleanValue(payload.backgauge);
   const website = cleanValue(payload.website);
 
   if (website) {
@@ -87,7 +103,30 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!name || !email || !requirement) {
+  const selectorRecommendation = isSmallElectricSelector
+    ? recommendSmallElectricShear(material, cuttingThickness, cuttingWidth)
+    : null;
+  const recommendedModel = selectorRecommendation?.model || "Custom selection required";
+  const validBackgauge = SMALL_ELECTRIC_SHEAR_BACKGAUGES.includes(
+    backgauge as (typeof SMALL_ELECTRIC_SHEAR_BACKGAUGES)[number],
+  );
+  const validSelectorDimensions =
+    Number.isFinite(cuttingThickness) &&
+    Number.isFinite(cuttingWidth) &&
+    cuttingThickness > 0 &&
+    cuttingWidth > 0;
+
+  if (
+    isSmallElectricSelector &&
+    (!email || !material || !validSelectorDimensions || !validBackgauge)
+  ) {
+    return NextResponse.json(
+      { message: "Please provide valid material, thickness, width, backgauge, and email details." },
+      { status: 400 },
+    );
+  }
+
+  if (!isSmallElectricSelector && (!name || !email || !requirement)) {
     return NextResponse.json({ message: "Please provide name, email, and production requirement." }, { status: 400 });
   }
 
@@ -101,20 +140,34 @@ export async function POST(request: Request) {
   }
 
   const transporter = nodemailer.createTransport(smtpConfig);
-  const subject = `New ZYRON inquiry from ${name}`;
-  const rows = [
-    ["Name", name],
-    ["Company", company || "-"],
-    ["Email", email],
-    ["WhatsApp / Phone", whatsapp || "-"],
-    ["Product Interest", productInterest || "-"],
-    ["Destination Country", destinationCountry || "-"],
-    ["Material", material || "-"],
-    ["Thickness Range", thicknessRange || "-"],
-    ["Working Length", workingLength || "-"],
-    ["Target Output", targetOutput || "-"],
-    ["Production Requirement", requirement],
-  ];
+  const subject = isSmallElectricSelector
+    ? `New ZYRON Small Electric Shear Selection — ${recommendedModel}`
+    : `New ZYRON inquiry from ${name}`;
+  const rows = isSmallElectricSelector
+    ? [
+        ["Inquiry Type", "Small Electric Shear Selection"],
+        ["Email", email],
+        ["WhatsApp / Phone", whatsapp || "-"],
+        ["Destination Country", destinationCountry || "-"],
+        ["Cutting Material", material],
+        ["Cutting Thickness", `${cuttingThicknessValue} mm`],
+        ["Cutting Width", `${cuttingWidthValue} mm`],
+        ["Recommended Model", recommendedModel],
+        ["Backgauge Type", backgauge],
+      ]
+    : [
+        ["Name", name],
+        ["Company", company || "-"],
+        ["Email", email],
+        ["WhatsApp / Phone", whatsapp || "-"],
+        ["Product Interest", productInterest || "-"],
+        ["Destination Country", destinationCountry || "-"],
+        ["Material", material || "-"],
+        ["Thickness Range", thicknessRange || "-"],
+        ["Working Length", workingLength || "-"],
+        ["Target Output", targetOutput || "-"],
+        ["Production Requirement", requirement],
+      ];
   const htmlRows = rows
     .map(
       ([label, value]) => `

@@ -4,6 +4,11 @@ import {
   SMALL_ELECTRIC_SHEAR_MATERIALS,
   recommendSmallElectricShear,
 } from "../data/small-electric-shear-selector.ts";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 const materialNames = [
   "Mild Steel Sheet",
@@ -78,5 +83,44 @@ assert.equal(recommendSmallElectricShear("Unknown Sheet", 1, 600), null);
 assert.equal(recommendSmallElectricShear("Mild Steel Sheet", 0, 600), null);
 assert.equal(recommendSmallElectricShear("Mild Steel Sheet", -1, 600), null);
 assert.equal(recommendSmallElectricShear("Mild Steel Sheet", 1, Number.NaN), null);
+
+const selectorPath = resolve(root, "components/SmallElectricShearSelector.tsx");
+assert.ok(existsSync(selectorPath), "The selector client component must exist");
+const selectorSource = readFileSync(selectorPath, "utf8");
+assert.match(selectorSource, /^"use client";/);
+assert.match(selectorSource, /recommendSmallElectricShear\(material, thickness, width\)/);
+assert.match(selectorSource, /aria-live="polite"/);
+assert.match(selectorSource, /fetch\("\/api\/inquiry"/);
+assert.match(selectorSource, /mailto:info@zyroncnc\.com/);
+assert.doesNotMatch(selectorSource, /name="name"/);
+
+const fieldOrder = [
+  "Cutting Material",
+  "Cutting Thickness",
+  "Cutting Width",
+  "Recommended Model",
+  "Backgauge Type",
+  "Email",
+  "WhatsApp / Phone",
+  "Destination Country",
+];
+let previousFieldIndex = -1;
+for (const label of fieldOrder) {
+  const fieldIndex = selectorSource.indexOf(label);
+  assert.ok(fieldIndex > previousFieldIndex, `${label} must appear in the requested field order`);
+  previousFieldIndex = fieldIndex;
+}
+
+const solutionSource = readFileSync(resolve(root, "components/ShearingSolutionPage.tsx"), "utf8");
+const carouselIndex = solutionSource.indexOf("<ModelCardCarousel");
+const selectorIndex = solutionSource.indexOf("<SmallElectricShearSelector");
+assert.ok(carouselIndex >= 0 && selectorIndex > carouselIndex, "The selector must render below the model carousel");
+
+const inquiryRouteSource = readFileSync(resolve(root, "app/api/inquiry/route.ts"), "utf8");
+assert.match(inquiryRouteSource, /recommendSmallElectricShear\(material, cuttingThickness, cuttingWidth\)/);
+assert.match(inquiryRouteSource, /Small Electric Shear Selection/);
+assert.match(inquiryRouteSource, /\["Recommended Model", recommendedModel\]/);
+assert.doesNotMatch(inquiryRouteSource, /cleanValue\(payload\.recommendedModel\)/);
+assert.match(inquiryRouteSource, /process\.env\.INQUIRY_TO_EMAIL \|\| "info@zyroncnc\.com"/);
 
 console.log("Small Electric Shear selector rules passed.");

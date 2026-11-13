@@ -30,6 +30,7 @@ import { companyIdentity } from "@/data/company";
 import BackgaugeCarousel from "@/components/BackgaugeCarousel";
 import ModelCardCarousel from "@/components/ModelCardCarousel";
 import ProductShowcase from "@/components/ProductShowcase";
+import SmallElectricShearSelector from "@/components/SmallElectricShearSelector";
 
 type ShearingSolutionPageProps = {
   product: Product;
@@ -829,6 +830,9 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
           {content.modelCards ? (
             <div data-technical-model-cards className="mt-8">
               <ModelCardCarousel cards={content.modelCards} />
+              {product.id === "compact-electric-shearing-machine" ? (
+                <SmallElectricShearSelector />
+              ) : null}
             </div>
           ) : null}
         </div>

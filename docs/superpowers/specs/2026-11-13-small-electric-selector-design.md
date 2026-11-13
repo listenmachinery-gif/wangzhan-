@@ -20,6 +20,7 @@ Add an English model-selection inquiry form immediately below the seven-model ca
 - Empty or non-positive dimensions show a prompt rather than a model. Inputs above all standard limits show a custom-selection message.
 - The server recomputes the recommendation from material, thickness, and width instead of trusting a posted model value.
 - Email is required. Backgauge is required. Phone and destination country remain optional so a valid lead is not blocked.
+- A no-match result is sent as `Custom selection required` so an out-of-range lead is not blocked.
 - Successful SMTP delivery shows confirmation and clears contact fields while retaining the selector configuration. Failure opens a prefilled email to `info@zyroncnc.com`.
 
 ## Constraints
@@ -27,4 +28,4 @@ Add an English model-selection inquiry form immediately below the seven-model ca
 - Preserve the existing SMTP environment-variable setup and recipient fallback.
 - Do not add a name field that the user did not request.
 - Keep the shared product page server-rendered; only the selector is a client component.
-- Use accessible labels, live recommendation status, numeric validation, disabled submission when no standard model matches, and responsive layout.
+- Use accessible labels, live recommendation status, numeric validation, and responsive layout.
