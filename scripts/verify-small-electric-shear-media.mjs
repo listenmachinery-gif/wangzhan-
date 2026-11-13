@@ -397,6 +397,49 @@ assert.match(showcaseComponentSource, /object-contain/, "Showcase images must re
 assert.match(showcaseComponentSource, /data-section="product-showcase"/, "The showcase must expose its section identity");
 
 const solutionPageSource = readFileSync(resolve(root, "components/ShearingSolutionPage.tsx"), "utf8");
+const requestedHiddenSections = [
+  "problems",
+  "solution",
+  "process",
+  "applications",
+  "materials",
+  "advantages",
+  "structure",
+  "model-guide",
+  "comparison",
+  "energy-comparison",
+  "workflow",
+  "manufacturer",
+  "related",
+  "cta",
+];
+assert.deepEqual(
+  smallElectricShearPageContent.hiddenSections,
+  requestedHiddenSections,
+  "The small electric shear page must hide exactly the fourteen requested long-form modules",
+);
+for (const section of requestedHiddenSections) {
+  assert.match(
+    solutionPageSource,
+    new RegExp(`isSectionVisible\\(\"${section}\"\\)`),
+    `The shared renderer must guard the ${section} section`,
+  );
+}
+for (const retainedSection of [
+  "overview",
+  "product-showcase",
+  "details-gallery",
+  "backgauge-options",
+  "material-range-gallery",
+  "technical",
+  "industry-gallery",
+  "faq",
+]) {
+  assert.ok(
+    !requestedHiddenSections.includes(retainedSection),
+    `${retainedSection} must remain visible on the small electric shear page`,
+  );
+}
 assert.match(solutionPageSource, /import ProductShowcase from "@\/components\/ProductShowcase";/);
 const showcasePlacement = solutionPageSource.indexOf("<ProductShowcase");
 const detailsPlacement = solutionPageSource.indexOf("data-section=\"details-gallery\"");

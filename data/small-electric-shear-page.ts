@@ -1,6 +1,22 @@
 import type { ShearingSolutionContent } from "./shearing-solution-types";
 
 export const smallElectricShearPageContent = {
+  hiddenSections: [
+    "problems",
+    "solution",
+    "process",
+    "applications",
+    "materials",
+    "advantages",
+    "structure",
+    "model-guide",
+    "comparison",
+    "energy-comparison",
+    "workflow",
+    "manufacturer",
+    "related",
+    "cta",
+  ],
   schemaName: "Small Electric Shearing Machine",
   schemaCategory: "Compact Electric Sheet Metal Shear",
   imageAlt: "small electric shearing machine for thin sheet metal cutting",

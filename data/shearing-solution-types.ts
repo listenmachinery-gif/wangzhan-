@@ -133,7 +133,24 @@ export type ShearingRelatedLink = {
   href: string;
 };
 
+export type ShearingSolutionSectionId =
+  | "problems"
+  | "solution"
+  | "process"
+  | "applications"
+  | "materials"
+  | "advantages"
+  | "structure"
+  | "model-guide"
+  | "comparison"
+  | "energy-comparison"
+  | "workflow"
+  | "manufacturer"
+  | "related"
+  | "cta";
+
 export type ShearingSolutionContent = {
+  hiddenSections?: readonly ShearingSolutionSectionId[];
   schemaName: string;
   schemaCategory: string;
   imageAlt: string;

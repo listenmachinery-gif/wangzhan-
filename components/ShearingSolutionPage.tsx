@@ -22,7 +22,10 @@ import {
   ZapOff,
 } from "lucide-react";
 import type { Product } from "@/data/products";
-import type { ShearingSolutionContent } from "@/data/shearing-solution-types";
+import type {
+  ShearingSolutionContent,
+  ShearingSolutionSectionId,
+} from "@/data/shearing-solution-types";
 import { companyIdentity } from "@/data/company";
 import BackgaugeCarousel from "@/components/BackgaugeCarousel";
 import ProductShowcase from "@/components/ProductShowcase";
@@ -55,6 +58,8 @@ function getStructurePart(part: ShearingSolutionContent["structureParts"][number
 }
 
 export default function ShearingSolutionPage({ product, content }: ShearingSolutionPageProps) {
+  const hiddenSections = new Set(content.hiddenSections ?? []);
+  const isSectionVisible = (section: ShearingSolutionSectionId) => !hiddenSections.has(section);
   const technicalParameters = product.technicalParameters;
   const workflow = content.workflow;
   const energyUse = content.energyUse;
@@ -451,7 +456,8 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </section>
       ) : null}
 
-      <section data-section="problems" className="bg-white px-5 py-16 sm:px-8 lg:py-24">
+      {isSectionVisible("problems") ? (
+        <section data-section="problems" className="bg-white px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <div className="max-w-3xl">
             <p className={sectionLabelClass}>{content.painEyebrow}</p>
@@ -472,9 +478,11 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
             })}
           </div>
         </div>
-      </section>
+        </section>
+      ) : null}
 
-      <section data-section="solution" className="px-5 py-16 sm:px-8 lg:py-24">
+      {isSectionVisible("solution") ? (
+        <section data-section="solution" className="px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
           <div>
             <p className={sectionLabelClass}>{content.solutionEyebrow}</p>
@@ -500,7 +508,8 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
             </div>
           </aside>
         </div>
-      </section>
+        </section>
+      ) : null}
 
       {energyUse ? (
         <section className="bg-white px-5 py-16 sm:px-8 lg:py-24">
@@ -539,7 +548,8 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </section>
       ) : null}
 
-      <section data-section="process" className="bg-[#101316] px-5 py-16 text-white sm:px-8 lg:py-24">
+      {isSectionVisible("process") ? (
+        <section data-section="process" className="bg-[#101316] px-5 py-16 text-white sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <p className={sectionLabelClass}>{content.processEyebrow}</p>
           <h2 className="mt-4 text-3xl font-semibold sm:text-5xl">{content.processTitle}</h2>
@@ -564,9 +574,11 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
             ))}
           </div>
         </div>
-      </section>
+        </section>
+      ) : null}
 
-      <section data-section="applications" className="bg-white px-5 py-16 sm:px-8 lg:py-24">
+      {isSectionVisible("applications") ? (
+        <section data-section="applications" className="bg-white px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <p className={sectionLabelClass}>{content.applicationsEyebrow}</p>
           <h2 className="mt-4 max-w-4xl text-3xl font-semibold leading-tight text-neutral-950 sm:text-5xl">
@@ -617,9 +629,10 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
             })}
           </div>
         </div>
-      </section>
+        </section>
+      ) : null}
 
-      {materials ? (
+      {materials && isSectionVisible("materials") ? (
         <section data-section="materials" className="border-t border-neutral-200 bg-[#f3f5f6] px-5 py-16 sm:px-8 lg:py-24">
           <div className="mx-auto max-w-7xl">
             <div className="grid gap-7 lg:grid-cols-[0.76fr_1.24fr] lg:items-end">
@@ -666,7 +679,8 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </section>
       ) : null}
 
-      <section data-section="advantages" className="px-5 py-16 sm:px-8 lg:py-24">
+      {isSectionVisible("advantages") ? (
+        <section data-section="advantages" className="px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-8 lg:grid-cols-[0.7fr_1.3fr]">
             <div>
@@ -692,9 +706,11 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
             </div>
           </div>
         </div>
-      </section>
+        </section>
+      ) : null}
 
-      <section data-section="structure" className="bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
+      {isSectionVisible("structure") ? (
+        <section data-section="structure" className="bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
             <div>
@@ -740,7 +756,8 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
             </div>
           </div>
         </div>
-      </section>
+        </section>
+      ) : null}
 
       <section data-section="technical" className="bg-white px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
@@ -846,7 +863,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </section>
       ) : null}
 
-      {modelGuide ? (
+      {modelGuide && isSectionVisible("model-guide") ? (
         <section data-section="model-guide" className="bg-[#101316] px-5 py-16 text-white sm:px-8 lg:py-24">
           <div className="mx-auto max-w-7xl">
             <p className={sectionLabelClass}>{modelGuide.eyebrow}</p>
@@ -869,7 +886,8 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </section>
       ) : null}
 
-      <section data-section="comparison" className="px-5 py-16 sm:px-8 lg:py-24">
+      {isSectionVisible("comparison") ? (
+        <section data-section="comparison" className="px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <p className={sectionLabelClass}>{content.comparisonEyebrow}</p>
           <h2 className="mt-4 text-3xl font-semibold leading-tight text-neutral-950 sm:text-5xl">
@@ -929,9 +947,10 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
             )}
           </div>
         </div>
-      </section>
+        </section>
+      ) : null}
 
-      {energyComparison ? (
+      {energyComparison && isSectionVisible("energy-comparison") ? (
         <section data-section="energy-comparison" className="bg-white px-5 py-16 sm:px-8 lg:py-24">
           <div className="mx-auto max-w-7xl">
             <p className={sectionLabelClass}>{energyComparison.eyebrow}</p>
@@ -963,7 +982,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </section>
       ) : null}
 
-      {workflow ? (
+      {workflow && isSectionVisible("workflow") ? (
         <section data-section="workflow" className="bg-[#101316] px-5 py-16 text-white sm:px-8 lg:py-24">
           <div className="mx-auto max-w-7xl">
             <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
@@ -1002,7 +1021,8 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </section>
       ) : null}
 
-      <section data-section="manufacturer" className="bg-white px-5 py-16 sm:px-8 lg:py-24">
+      {isSectionVisible("manufacturer") ? (
+        <section data-section="manufacturer" className="bg-white px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr]">
             <div>
@@ -1030,7 +1050,8 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
             </div>
           </div>
         </div>
-      </section>
+        </section>
+      ) : null}
 
       <section
         data-section="faq"
@@ -1061,7 +1082,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </div>
       </section>
 
-      {content.relatedLinks ? (
+      {content.relatedLinks && isSectionVisible("related") ? (
         <section data-section="related" className="bg-white px-5 py-16 sm:px-8 lg:py-20">
           <div className="mx-auto max-w-7xl">
             <p className={sectionLabelClass}>Related Sheet Metal Equipment</p>
@@ -1080,7 +1101,8 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </section>
       ) : null}
 
-      <section data-section="cta" className="bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
+      {isSectionVisible("cta") ? (
+        <section data-section="cta" className="bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
         <div className={`mx-auto grid max-w-7xl gap-8 ${content.requiredInfo ? "lg:grid-cols-[1fr_0.62fr]" : "lg:grid-cols-[1fr_auto] lg:items-end"}`}>
           <div>
             <p className={sectionLabelClass}>{content.ctaEyebrow}</p>
@@ -1138,7 +1160,8 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
             </div>
           )}
         </div>
-      </section>
+        </section>
+      ) : null}
     </main>
   );
 }
