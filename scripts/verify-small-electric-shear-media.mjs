@@ -401,37 +401,37 @@ const expectedModelCards = [
   {
     model: "Q11G-2X600",
     image: "/products/shearing/small-electric/models/q11g-2x600-small-electric-shearing-machine.webp",
-    values: ["2 mm", "600 mm", "1°30′", "30 times/min", "500 mm", "3 kW", "1200 × 640 × 1100 mm"],
+    values: ["2 mm", "600 mm", "1°30′", "720 mm", "30 times/min", "500 mm", "3 kW", "1200 × 640 × 1100 mm"],
   },
   {
     model: "Q11G-2X800",
     image: "/products/shearing/small-electric/models/q11g-2x800-small-electric-shearing-machine.webp",
-    values: ["2 mm", "800 mm", "1°30′", "30 times/min", "500 mm", "3 kW", "1400 × 640 × 1100 mm"],
+    values: ["2 mm", "800 mm", "1°30′", "720 mm", "30 times/min", "500 mm", "3 kW", "1400 × 640 × 1100 mm"],
   },
   {
     model: "Q11G-2X1000",
     image: "/products/shearing/small-electric/models/q11g-2x1000-small-electric-shearing-machine.webp",
-    values: ["2 mm", "1000 mm", "1°30′", "30 times/min", "500 mm", "3 kW", "1600 × 640 × 1100 mm"],
+    values: ["2 mm", "1000 mm", "1°30′", "720 mm", "30 times/min", "500 mm", "3 kW", "1600 × 640 × 1100 mm"],
   },
   {
     model: "Q11G-2X1300",
     image: "/products/shearing/small-electric/models/q11g-2x1300-small-electric-shearing-machine.webp",
-    values: ["2 mm", "1300 mm", "1°30′", "30 times/min", "500 mm", "3 kW", "1900 × 640 × 1100 mm"],
+    values: ["2 mm", "1300 mm", "1°30′", "720 mm", "30 times/min", "500 mm", "3 kW", "1900 × 640 × 1100 mm"],
   },
   {
     model: "Q11G-2X1600",
     image: "/products/shearing/small-electric/models/q11g-2x1600-small-electric-shearing-machine.webp",
-    values: ["2 mm", "1600 mm", "1°30′", "30 times/min", "500 mm", "3 kW", "2200 × 640 × 1100 mm"],
+    values: ["2 mm", "1600 mm", "1°30′", "720 mm", "30 times/min", "500 mm", "3 kW", "2200 × 640 × 1100 mm"],
   },
   {
     model: "Q11G-1.5X2000",
     image: "/products/shearing/small-electric/models/q11g-1-5x2000-small-electric-shearing-machine.webp",
-    values: ["1.5 mm", "2000 mm", "1°30′", "30 times/min", "500 mm", "3 kW", "2600 × 640 × 1100 mm"],
+    values: ["1.5 mm", "2000 mm", "1°30′", "720 mm", "30 times/min", "500 mm", "3 kW", "2600 × 640 × 1100 mm"],
   },
   {
     model: "Q11G-1.2X2500",
     image: "/products/shearing/small-electric/models/q11g-1-2x2500-small-electric-shearing-machine.webp",
-    values: ["1.2 mm", "2500 mm", "1°30′", "30 times/min", "500 mm", "3 kW", "3100 × 640 × 1100 mm"],
+    values: ["1.2 mm", "2500 mm", "1°30′", "720 mm", "30 times/min", "500 mm", "3 kW", "3100 × 640 × 1100 mm"],
   },
 ];
 const modelCards = smallElectricShearPageContent.modelCards ?? [];
@@ -447,7 +447,9 @@ assert.deepEqual(
 assert.equal(modelCards.length, 7, "The technical section must contain exactly seven model cards");
 assert.equal(new Set(modelCards.map((card) => card.image)).size, 7, "Every model card must use its own image");
 for (const card of modelCards) {
-  assert.equal(card.specifications.length, 7, `${card.model} must show all seven published specifications`);
+  assert.equal(card.specifications.length, 8, `${card.model} must show all eight published specifications`);
+  assert.equal(card.specifications[3]?.label, "Worktable Height", `${card.model} must place worktable height after shearing angle`);
+  assert.equal(card.specifications[3]?.value, "720 mm", `${card.model} must use the requested worktable height`);
   assert.ok(card.alt.length >= 32, `${card.model} needs descriptive image alt text`);
   assert.match(card.image, /^\/products\/shearing\/small-electric\/models\/.+\.webp$/);
   assert.ok(existsSync(resolve(root, `public${card.image}`)), `${card.model} image does not exist`);
@@ -456,9 +458,18 @@ const technicalSectionStart = solutionPageSource.indexOf('data-section="technica
 const technicalSectionEnd = solutionPageSource.indexOf('data-section="industry-gallery"');
 const technicalSectionSource = solutionPageSource.slice(technicalSectionStart, technicalSectionEnd);
 assert.match(technicalSectionSource, /data-technical-model-cards/);
-assert.match(technicalSectionSource, /lg:grid-cols-\[minmax\(0,0\.92fr\)_minmax\(0,1\.08fr\)\]/);
-assert.match(technicalSectionSource, /<dl/);
-assert.match(technicalSectionSource, /sizes="\(min-width: 1024px\) 560px, 100vw"/);
+assert.match(technicalSectionSource, /<ModelCardCarousel cards=\{content\.modelCards\} \/>/);
+
+const modelCarouselPath = resolve(root, "components/ModelCardCarousel.tsx");
+assert.ok(existsSync(modelCarouselPath), "The technical model carousel client component must exist");
+const modelCarouselSource = readFileSync(modelCarouselPath, "utf8");
+assert.match(modelCarouselSource, /^"use client";/, "The model carousel must be a client component");
+assert.match(modelCarouselSource, /Previous model/);
+assert.match(modelCarouselSource, /Next model/);
+assert.match(modelCarouselSource, /aria-pressed=\{index === activeIndex\}/);
+assert.match(modelCarouselSource, /onKeyDown=\{handleKeyDown\}/);
+assert.match(modelCarouselSource, /lg:grid-cols-\[minmax\(0,0\.92fr\)_minmax\(0,1\.08fr\)\]/);
+assert.match(modelCarouselSource, /sizes="\(min-width: 1024px\) 560px, 100vw"/);
 const requestedHiddenSections = [
   "problems",
   "solution",
