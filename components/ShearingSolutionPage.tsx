@@ -824,6 +824,55 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
               <p className="p-6 text-sm text-neutral-600">Please contact ZYRON for confirmed model specifications.</p>
             )}
           </div>
+
+          {content.modelCards ? (
+            <div data-technical-model-cards className="mt-8 space-y-5">
+              {content.modelCards.map((card, index) => (
+                <article
+                  key={card.model}
+                  className="overflow-hidden border border-neutral-200 bg-[#f3f5f6] shadow-[0_14px_38px_rgba(15,23,42,0.06)]"
+                >
+                  <div className="grid lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-white">
+                      <Image
+                        src={card.image}
+                        alt={card.alt}
+                        fill
+                        sizes="(min-width: 1024px) 560px, 100vw"
+                        className="object-cover transition-transform duration-500 ease-out hover:scale-[1.025] motion-reduce:transform-none motion-reduce:transition-none"
+                      />
+                    </div>
+                    <div className="flex flex-col p-6 sm:p-8 lg:p-10">
+                      <div className="flex items-center justify-between gap-5">
+                        <p className={sectionLabelClass}>Model</p>
+                        <span className="text-sm font-semibold tabular-nums text-neutral-400">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                      </div>
+                      <h3 className="mt-3 text-2xl font-semibold text-neutral-950 sm:text-3xl">
+                        {card.model}
+                      </h3>
+                      <dl className="mt-7 grid gap-x-7 sm:grid-cols-2">
+                        {card.specifications.map((specification) => (
+                          <div
+                            key={specification.label}
+                            className="border-t border-neutral-300 py-3.5"
+                          >
+                            <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-neutral-500">
+                              {specification.label}
+                            </dt>
+                            <dd className="mt-1.5 text-base font-semibold leading-6 text-neutral-950">
+                              {specification.value}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : null}
         </div>
       </section>
 

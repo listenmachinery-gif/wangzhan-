@@ -128,6 +128,18 @@ export type ShearingIndustryGallery = {
   items: readonly ShearingDetailImage[];
 };
 
+export type ShearingModelSpecification = {
+  label: string;
+  value: string;
+};
+
+export type ShearingModelCard = {
+  model: string;
+  image: string;
+  alt: string;
+  specifications: readonly ShearingModelSpecification[];
+};
+
 export type ShearingRelatedLink = {
   label: string;
   href: string;
@@ -173,6 +185,7 @@ export type ShearingSolutionContent = {
   detailGallery?: ShearingDetailGallery;
   backgaugeCarousel?: ShearingBackgaugeCarousel;
   materialRangeGallery?: ShearingMaterialRangeGallery;
+  modelCards?: readonly ShearingModelCard[];
   painEyebrow: string;
   painTitle: string;
   painPoints: readonly ShearingSolutionItem[];
