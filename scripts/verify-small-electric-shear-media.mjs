@@ -263,6 +263,54 @@ const expectedMaterialRangeItems = [
     title: "Glass-Epoxy Laminate Sheet",
   },
 ];
+
+const expectedIndustryGalleryItems = [
+  {
+    image: "/products/shearing/small-electric/industries/sheet-metal-fabrication-and-machinery-manufacturing.webp",
+    title: "Sheet Metal Fabrication and Machinery Manufacturing",
+    text: "Machine tool enclosures, production line drive guards, equipment shields",
+  },
+  {
+    image: "/products/shearing/small-electric/industries/hvac-and-ventilation-systems.webp",
+    title: "HVAC and Ventilation Systems",
+    text: "Galvanized steel side panels for rectangular ducts, duct access panels",
+  },
+  {
+    image: "/products/shearing/small-electric/industries/electrical-and-power-distribution-equipment-manufacturing.webp",
+    title: "Electrical and Power Distribution Equipment Manufacturing",
+    text: "Control cabinet doors, distribution box side panels, electrical component mounting plates",
+  },
+  {
+    image: "/products/shearing/small-electric/industries/metal-building-envelopes-and-architectural-finishes.webp",
+    title: "Metal Building Envelopes and Architectural Finishes",
+    text: "Metal roof edge trim, window sill flashing, decorative ceiling panels",
+  },
+  {
+    image: "/products/shearing/small-electric/industries/commercial-signage-fabrication.webp",
+    title: "Commercial Signage Fabrication",
+    text: "Aluminum storefront sign panels, backing panels for wayfinding signs, lightbox back panels",
+  },
+  {
+    image: "/products/shearing/small-electric/industries/industrial-equipment-repair-and-retrofitting.webp",
+    title: "Industrial Equipment Repair and Retrofitting",
+    text: "Compressor access covers, replacement guard panels for existing equipment, sheet metal repair patches",
+  },
+  {
+    image: "/products/shearing/small-electric/industries/commercial-kitchen-and-foodservice-equipment-manufacturing.webp",
+    title: "Commercial Kitchen and Foodservice Equipment Manufacturing",
+    text: "Stainless steel worktops, kitchen cabinet side panels, sink enclosure panels",
+  },
+  {
+    image: "/products/shearing/small-electric/industries/home-appliance-and-commercial-refrigeration-equipment-manufacturing.webp",
+    title: "Home Appliance and Commercial Refrigeration Equipment Manufacturing",
+    text: "Freezer side panels, refrigerated display case back panels, washing machine rear covers",
+  },
+  {
+    image: "/products/shearing/small-electric/industries/metal-furniture-and-storage-equipment-manufacturing.webp",
+    title: "Metal Furniture and Storage Equipment Manufacturing",
+    text: "Steel storage locker doors, tool cabinet drawer fronts, shelf panels for light-duty racks",
+  },
+];
 const backgaugeCarousel = smallElectricShearPageContent.backgaugeCarousel;
 assert.ok(backgaugeCarousel, "The Small Electric page must include its three-option backgauge carousel");
 assert.equal(backgaugeCarousel?.eyebrow, "Backgauge Options");
@@ -303,6 +351,24 @@ for (const item of materialRangeItems) {
   assert.ok(existsSync(resolve(root, `public${item.image}`)), `${item.image} does not exist`);
 }
 
+const industryGallery = smallElectricShearPageContent.industryGallery;
+assert.ok(industryGallery, "The Small Electric page must include its nine-card applicable-industries gallery");
+assert.equal(industryGallery?.eyebrow, "Applicable Industries");
+assert.equal(industryGallery?.title, "Built for Diverse Sheet Metal Industries");
+const industryGalleryItems = industryGallery?.items ?? [];
+assert.deepEqual(
+  industryGalleryItems.map(({ image, title, text }) => ({ image, title, text })),
+  expectedIndustryGalleryItems,
+  "The industry gallery must keep all nine supplied images, titles, descriptions, and requested order",
+);
+assert.equal(industryGalleryItems.length, 9, "The industry gallery must contain exactly nine cards");
+assert.equal(new Set(industryGalleryItems.map((item) => item.image)).size, 9, "Every industry card must use a distinct image");
+for (const item of industryGalleryItems) {
+  assert.match(item.image, /^\/products\/shearing\/small-electric\/industries\/.+\.webp$/);
+  assert.ok(item.alt.length >= 32, `${item.image} alt text is not descriptive enough`);
+  assert.ok(existsSync(resolve(root, `public${item.image}`)), `${item.image} does not exist`);
+}
+
 const backgaugeComponentPath = resolve(root, "components/BackgaugeCarousel.tsx");
 assert.ok(existsSync(backgaugeComponentPath), "The backgauge carousel client component must exist");
 const backgaugeComponentSource = readFileSync(backgaugeComponentPath, "utf8");
@@ -337,6 +403,9 @@ const detailsPlacement = solutionPageSource.indexOf("data-section=\"details-gall
 const backgaugePlacement = solutionPageSource.indexOf("<BackgaugeCarousel");
 const materialRangePlacement = solutionPageSource.indexOf('data-section="material-range-gallery"');
 const problemsPlacement = solutionPageSource.indexOf("data-section=\"problems\"");
+const technicalPlacement = solutionPageSource.indexOf('data-section="technical"');
+const industryGalleryPlacement = solutionPageSource.indexOf('data-section="industry-gallery"');
+const modelGuidePlacement = solutionPageSource.indexOf('data-section="model-guide"');
 assert.ok(showcasePlacement >= 0, "The solution page must render the product showcase section");
 assert.ok(
   detailsPlacement > showcasePlacement,
@@ -349,6 +418,14 @@ assert.ok(problemsPlacement > materialRangePlacement, "The material gallery must
 assert.match(solutionPageSource, /data-section="material-range-gallery"[\s\S]*lg:grid-cols-3/);
 assert.match(solutionPageSource, /data-section="material-range-gallery"[\s\S]*text-center/);
 assert.match(solutionPageSource, /group-hover:scale-\[1\.035\]/);
+assert.ok(industryGalleryPlacement > technicalPlacement, "The industry gallery must appear after the technical parameters");
+assert.ok(
+  modelGuidePlacement < 0 || industryGalleryPlacement < modelGuidePlacement,
+  "The industry gallery must appear before the model guide",
+);
+assert.match(solutionPageSource, /data-section="industry-gallery"[\s\S]*lg:grid-cols-3/);
+assert.match(solutionPageSource, /data-industry-image[\s\S]*data-industry-copy/);
+assert.match(solutionPageSource, /group-hover:scale-\[1\.035\][\s\S]*motion-reduce:/);
 
 const mediaItems = [
   ...smallElectricShearPageContent.applications,

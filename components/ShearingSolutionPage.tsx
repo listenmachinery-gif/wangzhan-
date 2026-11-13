@@ -810,6 +810,42 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         </div>
       </section>
 
+      {content.industryGallery ? (
+        <section data-section="industry-gallery" className="bg-[#101316] px-5 py-16 text-white sm:px-8 lg:py-24">
+          <div className="mx-auto max-w-7xl">
+            <div className="max-w-4xl">
+              <p className={sectionLabelClass}>{content.industryGallery.eyebrow}</p>
+              <h2 className="mt-4 text-3xl font-semibold leading-tight text-white sm:text-5xl">
+                {content.industryGallery.title}
+              </h2>
+              <p className="mt-5 max-w-3xl text-base leading-8 text-zinc-400">
+                {content.industryGallery.intro}
+              </p>
+            </div>
+
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+              {content.industryGallery.items.map((item) => (
+                <article key={item.image} className="group flex h-full flex-col bg-white">
+                  <div data-industry-image className="relative aspect-[4/3] overflow-hidden bg-neutral-900">
+                    <Image
+                      src={item.image}
+                      alt={item.alt}
+                      fill
+                      sizes="(min-width: 1280px) 400px, (min-width: 1024px) calc(33vw - 40px), (min-width: 640px) calc(50vw - 36px), calc(100vw - 40px)"
+                      className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.035] motion-reduce:transform-none motion-reduce:transition-none"
+                    />
+                  </div>
+                  <div data-industry-copy className="flex flex-1 flex-col p-6 sm:p-7">
+                    <h3 className="text-xl font-semibold leading-snug text-neutral-950">{item.title}</h3>
+                    <p className="mt-4 text-sm leading-7 text-neutral-600">{item.text}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       {modelGuide ? (
         <section data-section="model-guide" className="bg-[#101316] px-5 py-16 text-white sm:px-8 lg:py-24">
           <div className="mx-auto max-w-7xl">

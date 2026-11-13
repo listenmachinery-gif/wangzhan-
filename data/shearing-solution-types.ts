@@ -121,6 +121,13 @@ export type ShearingMaterialRangeGallery = {
   items: readonly ShearingMaterialRangeItem[];
 };
 
+export type ShearingIndustryGallery = {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  items: readonly ShearingDetailImage[];
+};
+
 export type ShearingRelatedLink = {
   label: string;
   href: string;
@@ -178,6 +185,7 @@ export type ShearingSolutionContent = {
   technicalTitle: string;
   technicalNote: string;
   splitTableHeaderUnits: boolean;
+  industryGallery?: ShearingIndustryGallery;
   comparisonEyebrow: string;
   comparisonTitle: string;
   comparisonIntro: string;

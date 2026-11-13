@@ -436,6 +436,68 @@ export const smallElectricShearPageContent = {
   technicalNote:
     "The table is rendered directly from the project product record. Capacity still depends on material grade, tensile strength, sheet thickness and the selected model.",
   splitTableHeaderUnits: true,
+  industryGallery: {
+    eyebrow: "Applicable Industries",
+    title: "Built for Diverse Sheet Metal Industries",
+    intro:
+      "See how compact electric shearing supports everyday panel and component preparation across fabrication, building systems, equipment, and commercial manufacturing.",
+    items: [
+      {
+        image: "/products/shearing/small-electric/industries/sheet-metal-fabrication-and-machinery-manufacturing.webp",
+        alt: "Fabricated sheet metal machine enclosure installed on an industrial production conveyor",
+        title: "Sheet Metal Fabrication and Machinery Manufacturing",
+        text: "Machine tool enclosures, production line drive guards, equipment shields",
+      },
+      {
+        image: "/products/shearing/small-electric/industries/hvac-and-ventilation-systems.webp",
+        alt: "Galvanized rectangular HVAC ductwork installed in a modern commercial interior",
+        title: "HVAC and Ventilation Systems",
+        text: "Galvanized steel side panels for rectangular ducts, duct access panels",
+      },
+      {
+        image: "/products/shearing/small-electric/industries/electrical-and-power-distribution-equipment-manufacturing.webp",
+        alt: "Large electrical control and power distribution cabinets in an industrial facility",
+        title: "Electrical and Power Distribution Equipment Manufacturing",
+        text: "Control cabinet doors, distribution box side panels, electrical component mounting plates",
+      },
+      {
+        image: "/products/shearing/small-electric/industries/metal-building-envelopes-and-architectural-finishes.webp",
+        alt: "Standing seam metal roof and architectural edge trim on a modern commercial building",
+        title: "Metal Building Envelopes and Architectural Finishes",
+        text: "Metal roof edge trim, window sill flashing, decorative ceiling panels",
+      },
+      {
+        image: "/products/shearing/small-electric/industries/commercial-signage-fabrication.webp",
+        alt: "Fabricated metal storefront sign panel mounted above a commercial entrance",
+        title: "Commercial Signage Fabrication",
+        text: "Aluminum storefront sign panels, backing panels for wayfinding signs, lightbox back panels",
+      },
+      {
+        image: "/products/shearing/small-electric/industries/industrial-equipment-repair-and-retrofitting.webp",
+        alt: "Industrial compressor with replacement sheet metal access and guard panels",
+        title: "Industrial Equipment Repair and Retrofitting",
+        text: "Compressor access covers, replacement guard panels for existing equipment, sheet metal repair patches",
+      },
+      {
+        image: "/products/shearing/small-electric/industries/commercial-kitchen-and-foodservice-equipment-manufacturing.webp",
+        alt: "Stainless steel commercial kitchen worktop and fabricated cabinet panels",
+        title: "Commercial Kitchen and Foodservice Equipment Manufacturing",
+        text: "Stainless steel worktops, kitchen cabinet side panels, sink enclosure panels",
+      },
+      {
+        image: "/products/shearing/small-electric/industries/home-appliance-and-commercial-refrigeration-equipment-manufacturing.webp",
+        alt: "Commercial refrigerated display case with fabricated metal side and back panels",
+        title: "Home Appliance and Commercial Refrigeration Equipment Manufacturing",
+        text: "Freezer side panels, refrigerated display case back panels, washing machine rear covers",
+      },
+      {
+        image: "/products/shearing/small-electric/industries/metal-furniture-and-storage-equipment-manufacturing.webp",
+        alt: "Fabricated steel tool cabinet and drawer fronts in an industrial workshop",
+        title: "Metal Furniture and Storage Equipment Manufacturing",
+        text: "Steel storage locker doors, tool cabinet drawer fronts, shelf panels for light-duty racks",
+      },
+    ],
+  },
   modelGuide: {
     eyebrow: "Available Models and Cutting Widths",
     title: "Available Q11G Models and Cutting Widths",
