@@ -19,37 +19,48 @@ const robots = read("app/robots.ts");
 const combined = `${shared}\n${wrapper}\n${data}`;
 const heroAsset = resolve(
   root,
-  "public/products/shearing/small-electric-shearing-machine-hero.png",
+  "public/products/shearing/small-electric/hero/desktop.jpg",
+);
+const heroTabletAsset = resolve(
+  root,
+  "public/products/shearing/small-electric/hero/tablet.jpg",
+);
+const heroMobileAsset = resolve(
+  root,
+  "public/products/shearing/small-electric/hero/mobile.jpg",
 );
 
-assert.ok(heroAsset.endsWith("small-electric-shearing-machine-hero.png"));
-assert.ok(existsSync(heroAsset), "Dedicated Small Electric hero artwork is missing");
+assert.ok(existsSync(heroAsset), "Desktop Small Electric hero artwork is missing");
+assert.ok(existsSync(heroTabletAsset), "Tablet Small Electric hero artwork is missing");
+assert.ok(existsSync(heroMobileAsset), "Mobile Small Electric hero artwork is missing");
 assert.match(types, /heroBackgroundImage\?:\s*string/);
+assert.match(types, /heroBackgroundTabletImage\?:\s*string/);
+assert.match(types, /heroBackgroundMobileImage\?:\s*string/);
 assert.match(types, /heroBackgroundAlt\?:\s*string/);
 assert.match(types, /heroIntro\?:\s*string/);
 assert.match(types, /heroValuePoints\?:\s*readonly string\[\]/);
 assert.ok(
   data.includes(
-    'heroBackgroundImage: "/products/shearing/small-electric-shearing-machine-hero.png"',
+    'heroBackgroundImage: "/products/shearing/small-electric/hero/desktop.jpg"',
   ),
-  "Small Electric content must select the dedicated hero artwork",
+  "Small Electric content must select the dedicated desktop hero artwork",
 );
+assert.ok(data.includes('heroBackgroundTabletImage: "/products/shearing/small-electric/hero/tablet.jpg"'));
+assert.ok(data.includes('heroBackgroundMobileImage: "/products/shearing/small-electric/hero/mobile.jpg"'));
 assert.ok(
-  data.includes('heroSubtitle: "Compact Q11G cutting power for everyday thin-sheet production."'),
+  data.includes(
+    'heroSubtitle: "Small Size. Powerful Performance. Precision Cutting. Reliable Performance."',
+  ),
   "Small Electric hero must use the approved supporting line",
 );
-assert.match(
-  data,
-  /heroIntro:\s*"Straight, repeatable cutting for HVAC duct, roofing, sign making and light fabrication—without the footprint of a hydraulic shear\."/,
-  "Small Electric hero must use the approved concise description",
-);
-assert.ok(data.includes('"600–2500 mm published cutting widths"'));
-assert.ok(data.includes('"Foot-pedal control for practical workshop operation"'));
+assert.ok(data.includes('secondaryCta: "View Models"'));
 assert.match(shared, /content\.heroBackgroundImage\s*\?/);
 assert.match(shared, /data-hero-variant="full-bleed"/);
+assert.match(shared, /<picture[\s\S]*?<source[\s\S]*?media="\(max-width: 639px\)"/);
+assert.match(shared, /<source[\s\S]*?media="\(max-width: 1023px\)"/);
 assert.match(shared, /src=\{content\.heroBackgroundImage\}/);
 assert.match(shared, /alt=\{content\.heroBackgroundAlt \?\? content\.imageAlt\}/);
-assert.match(shared, /priority/);
+assert.match(shared, /href="#model-selector"/);
 assert.match(shared, /data-hero-variant="default"/);
 assert.ok(
   (shared.match(/href="\/contact"/g) ?? []).length >= 2,
@@ -86,7 +97,9 @@ assert.equal(
 );
 assert.ok(data.includes('title: "Small Electric Shearing Machine"'), "H1 content is incorrect");
 assert.ok(
-  data.includes('heroSubtitle: "Compact Q11G cutting power for everyday thin-sheet production."'),
+  data.includes(
+    'heroSubtitle: "Small Size. Powerful Performance. Precision Cutting. Reliable Performance."',
+  ),
   "Hero subtitle is missing",
 );
 

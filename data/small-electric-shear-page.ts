@@ -23,9 +23,11 @@ export const smallElectricShearPageContent = {
   structureImageAlt: "Q11G small electric shearing machine structure",
   eyebrow: "Compact Q11G Sheet Metal Cutting",
   title: "Small Electric Shearing Machine",
-  heroBackgroundImage: "/products/shearing/small-electric-shearing-machine-hero.png",
-  heroBackgroundAlt: "Small electric shearing machine operated by a workshop technician",
-  heroSubtitle: "Compact Q11G cutting power for everyday thin-sheet production.",
+  heroBackgroundImage: "/products/shearing/small-electric/hero/desktop.jpg",
+  heroBackgroundTabletImage: "/products/shearing/small-electric/hero/tablet.jpg",
+  heroBackgroundMobileImage: "/products/shearing/small-electric/hero/mobile.jpg",
+  heroBackgroundAlt: "ZYRON small electric shearing machines arranged inside the production workshop",
+  heroSubtitle: "Small Size. Powerful Performance. Precision Cutting. Reliable Performance.",
   heroIntro:
     "Straight, repeatable cutting for HVAC duct, roofing, sign making and light fabrication—without the footprint of a hydraulic shear.",
   heroValuePoints: [
@@ -43,7 +45,7 @@ export const smallElectricShearPageContent = {
   heroBadges: ["Q11G Series", "Electric Drive", "Thin Sheet Cutting"],
   heroModelSeries: "Q11G Series",
   primaryCta: "Request a Quote",
-  secondaryCta: "Get Q11G Model Advice",
+  secondaryCta: "View Models",
   overview: {
     eyebrow: "Product Overview",
     title: "Compact powered cutting for everyday sheet metal work.",

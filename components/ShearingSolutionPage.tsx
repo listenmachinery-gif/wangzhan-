@@ -192,50 +192,48 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
         <section
           data-section="hero"
           data-hero-variant="full-bleed"
-          className="relative isolate min-h-[780px] overflow-hidden bg-[#0B0D10] text-white lg:min-h-[720px] xl:min-h-[800px] 2xl:min-h-[900px]"
+          className="relative isolate min-h-[780px] overflow-hidden bg-[#0B0D10] text-white sm:min-h-[620px] lg:min-h-[720px] xl:min-h-[800px]"
         >
-          <Image
-            src={content.heroBackgroundImage}
-            alt={content.heroBackgroundAlt ?? content.imageAlt}
-            fill
-            priority
-            sizes="100vw"
-            className="-z-20 object-contain object-bottom lg:object-cover lg:object-center"
-          />
-          <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(7,8,9,1)_0%,rgba(7,8,9,0.96)_48%,rgba(7,8,9,0.15)_76%,rgba(7,8,9,0)_100%)] lg:bg-[linear-gradient(90deg,rgba(7,8,9,0.98)_0%,rgba(7,8,9,0.88)_24%,rgba(7,8,9,0.56)_38%,rgba(7,8,9,0.08)_56%,rgba(7,8,9,0)_72%)]" />
+          <picture className="absolute inset-0 -z-20 block">
+            <source
+              media="(max-width: 639px)"
+              srcSet={content.heroBackgroundMobileImage ?? content.heroBackgroundImage}
+            />
+            <source
+              media="(max-width: 1023px)"
+              srcSet={content.heroBackgroundTabletImage ?? content.heroBackgroundImage}
+            />
+            <Image
+              src={content.heroBackgroundImage}
+              alt={content.heroBackgroundAlt ?? content.imageAlt}
+              fill
+              priority
+              sizes="100vw"
+              className="h-full w-full object-cover object-center"
+            />
+          </picture>
+          <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(7,8,9,0.94)_0%,rgba(7,8,9,0.72)_22%,rgba(7,8,9,0.24)_48%,rgba(7,8,9,0.06)_70%,rgba(7,8,9,0.22)_100%)]" />
 
-          <div className="mx-auto flex min-h-[780px] max-w-[1440px] flex-col px-5 pb-[260px] pt-8 sm:px-8 lg:min-h-[720px] lg:justify-center lg:pb-12 lg:pt-12 xl:min-h-[800px] 2xl:min-h-[900px]">
+          <div className="mx-auto min-h-[780px] max-w-[1440px] px-5 pb-16 pt-5 sm:min-h-[620px] sm:px-8 sm:pt-7 lg:min-h-[720px] lg:px-10 lg:pt-9 xl:min-h-[800px]">
             <Link
               href="/products"
-              className="relative mb-10 inline-flex w-fit items-center gap-2 text-sm text-zinc-300 transition-colors hover:text-white lg:absolute lg:top-12"
+              className="inline-flex w-fit items-center gap-2 text-sm text-zinc-200 transition-colors hover:text-white"
             >
               <ArrowLeft size={16} aria-hidden="true" />
               Back to Products
             </Link>
 
-            <div className="relative max-w-[430px]">
-              <h1 className="text-4xl font-semibold leading-[1.06] text-white sm:text-5xl lg:text-6xl">
+            <div className="mx-auto mt-8 max-w-5xl text-center sm:mt-9 lg:mt-10">
+              <h1 className="text-4xl font-semibold leading-[1.04] text-white drop-shadow-[0_2px_16px_rgba(0,0,0,0.5)] sm:text-5xl lg:text-6xl xl:text-7xl">
                 {content.title}
               </h1>
               {content.heroSubtitle ? (
-                <p className="mt-5 text-xl font-medium leading-8 text-zinc-100 sm:text-2xl">
+                <p className="mx-auto mt-4 max-w-4xl text-base font-medium leading-7 text-zinc-100 drop-shadow-[0_2px_12px_rgba(0,0,0,0.65)] sm:text-xl sm:leading-8 lg:text-2xl">
                   {content.heroSubtitle}
                 </p>
               ) : null}
-              <p className="mt-5 text-base leading-7 text-zinc-300 sm:text-lg sm:leading-8">
-                {content.heroIntro ?? content.intro}
-              </p>
 
-              <div className="mt-6 grid gap-3">
-                {(content.heroValuePoints ?? content.valuePoints).slice(0, 2).map((point) => (
-                  <span key={point} className="inline-flex items-start gap-3 text-sm font-semibold leading-6 text-zinc-100">
-                    <span className="mt-2 h-2 w-2 shrink-0 bg-[#76B900]" />
-                    {point}
-                  </span>
-                ))}
-              </div>
-
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
                 <Link
                   href="/contact"
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-sm bg-[#76B900] px-6 text-sm font-semibold text-[#0B0D10] transition-colors hover:bg-[#8DDB00]"
@@ -244,8 +242,8 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
                   <ArrowRight size={16} aria-hidden="true" />
                 </Link>
                 <Link
-                  href="/contact"
-                  className="inline-flex min-h-12 items-center justify-center rounded-sm border border-white/35 bg-black/10 px-6 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:border-[#76B900] hover:text-[#8DDB00]"
+                  href="#model-selector"
+                  className="inline-flex min-h-12 items-center justify-center rounded-sm border border-white/55 bg-black/25 px-6 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:border-[#76B900] hover:text-[#8DDB00]"
                 >
                   {content.secondaryCta}
                 </Link>
@@ -830,7 +828,7 @@ export default function ShearingSolutionPage({ product, content }: ShearingSolut
           </div>
 
           {content.modelCards ? (
-            <div data-technical-model-cards className="mt-8">
+            <div id="model-selector" data-technical-model-cards className="mt-8 scroll-mt-24">
               <ModelCardCarousel cards={content.modelCards} />
               {product.id === "compact-electric-shearing-machine" ? (
                 <SmallElectricShearSelector />

@@ -170,6 +170,8 @@ export type ShearingSolutionContent = {
   eyebrow: string;
   title: string;
   heroBackgroundImage?: string;
+  heroBackgroundTabletImage?: string;
+  heroBackgroundMobileImage?: string;
   heroBackgroundAlt?: string;
   heroSubtitle?: string;
   heroIntro?: string;
