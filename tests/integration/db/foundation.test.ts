@@ -65,6 +65,7 @@ describe("CMS PostgreSQL foundation", () => {
         mimeType: "image/webp",
         byteSize: 1024,
         checksum: "sha256:q11g",
+        usage: "EDITORIAL_IMAGE",
         altText: "Q11G compact electric shearing machine",
         uploadedById: user.id,
       },

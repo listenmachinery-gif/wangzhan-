@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import path from "node:path";
+import sharp from "sharp";
 
 export type MediaUsage = "EDITORIAL_IMAGE" | "DECORATIVE_IMAGE" | "DOCUMENT" | "VIDEO";
 
@@ -24,6 +25,8 @@ export type MediaInspection = {
   extension: string;
   checksum: string;
   byteSize: number;
+  width?: number;
+  height?: number;
 };
 
 export type MediaPolicyCode =
@@ -31,6 +34,8 @@ export type MediaPolicyCode =
   | "SIGNATURE_MISMATCH"
   | "FILE_TOO_LARGE"
   | "UNSAFE_SVG"
+  | "MALFORMED_MEDIA"
+  | "USAGE_MISMATCH"
   | "DUPLICATE_MEDIA"
   | "ALT_TEXT_REQUIRED";
 
@@ -54,7 +59,7 @@ export class DuplicateMediaError extends MediaPolicyError {
 const DEFAULT_LIMITS: MediaByteLimits = {
   image: 10 * 1024 * 1024,
   document: 25 * 1024 * 1024,
-  video: 100 * 1024 * 1024,
+  video: 25 * 1024 * 1024,
 };
 
 const TYPE_BY_EXTENSION: Record<string, string> = {
@@ -62,7 +67,6 @@ const TYPE_BY_EXTENSION: Record<string, string> = {
   ".jpeg": "image/jpeg",
   ".png": "image/png",
   ".webp": "image/webp",
-  ".svg": "image/svg+xml",
   ".pdf": "application/pdf",
   ".mp4": "video/mp4",
   ".webm": "video/webm",
@@ -85,23 +89,7 @@ function detectMime(bytes: Uint8Array): string | null {
   if (Buffer.from(bytes.slice(4, 8)).toString("ascii") === "ftyp") return "video/mp4";
   if (startsWith(bytes, [0x1a, 0x45, 0xdf, 0xa3])) return "video/webm";
 
-  const text = Buffer.from(bytes.slice(0, 1024)).toString("utf8").trimStart();
-  if (/^(?:<\?xml[^>]*>\s*)?<svg[\s>]/i.test(text)) return "image/svg+xml";
   return null;
-}
-
-function assertSafeSvg(bytes: Uint8Array) {
-  const source = Buffer.from(bytes).toString("utf8");
-  const forbidden = [
-    /<\s*script\b/i,
-    /\son[a-z]+\s*=/i,
-    /(?:href|src)\s*=\s*["']\s*(?:https?:|\/\/|data:|javascript:)/i,
-    /<\s*(?:iframe|object|embed|foreignObject)\b/i,
-  ];
-
-  if (forbidden.some((pattern) => pattern.test(source))) {
-    throw new MediaPolicyError("UNSAFE_SVG", "SVG contains active or externally loaded content.");
-  }
 }
 
 function limitFor(mime: string, limits: MediaByteLimits) {
@@ -126,7 +114,25 @@ export async function inspectMediaUpload(input: MediaInspectionInput): Promise<M
   if (input.bytes.byteLength > limitFor(detectedMime, limits)) {
     throw new MediaPolicyError("FILE_TOO_LARGE", "File exceeds the allowed size.");
   }
-  if (detectedMime === "image/svg+xml") assertSafeSvg(input.bytes);
+  const usageMatches =
+    ((input.usage === "EDITORIAL_IMAGE" || input.usage === "DECORATIVE_IMAGE") && detectedMime.startsWith("image/")) ||
+    (input.usage === "DOCUMENT" && detectedMime === "application/pdf") ||
+    (input.usage === "VIDEO" && detectedMime.startsWith("video/"));
+  if (!usageMatches) {
+    throw new MediaPolicyError("USAGE_MISMATCH", "Declared usage does not match the detected media type.");
+  }
+  let width: number | undefined;
+  let height: number | undefined;
+  if (detectedMime.startsWith("image/")) {
+    try {
+      const metadata = await sharp(input.bytes, { failOn: "error" }).metadata();
+      if (!metadata.width || !metadata.height) throw new Error("Missing image dimensions.");
+      width = metadata.width;
+      height = metadata.height;
+    } catch {
+      throw new MediaPolicyError("MALFORMED_MEDIA", "Image content is truncated or malformed.");
+    }
+  }
   if (input.usage === "EDITORIAL_IMAGE" && !input.altText?.trim()) {
     throw new MediaPolicyError("ALT_TEXT_REQUIRED", "Editorial images require alt text.");
   }
@@ -134,5 +140,5 @@ export async function inspectMediaUpload(input: MediaInspectionInput): Promise<M
   const checksum = createHash("sha256").update(input.bytes).digest("hex");
   if (input.existingChecksums?.has(checksum)) throw new DuplicateMediaError(checksum);
 
-  return { detectedMime, extension, checksum, byteSize: input.bytes.byteLength };
+  return { detectedMime, extension, checksum, byteSize: input.bytes.byteLength, width, height };
 }

@@ -3,6 +3,13 @@ import { ZodError } from "zod";
 
 import { AuthenticationRequiredError, PermissionDeniedError, requirePermission } from "@/lib/auth/guards";
 import {
+  assertBoundedUploadRequest,
+  assertSameOriginMutation,
+  ContentLengthRequiredError,
+  PayloadTooLargeError,
+  UntrustedOriginError,
+} from "@/lib/auth/request-security";
+import {
   MediaService,
   MediaServicePermissionError,
 } from "@/lib/services/media-service";
@@ -17,6 +24,9 @@ function errorResponse(error: unknown) {
   if (error instanceof PermissionDeniedError || error instanceof MediaServicePermissionError) {
     return NextResponse.json({ code: "FORBIDDEN" }, { status: 403 });
   }
+  if (error instanceof UntrustedOriginError) return NextResponse.json({ code: "UNTRUSTED_ORIGIN" }, { status: 403 });
+  if (error instanceof PayloadTooLargeError) return NextResponse.json({ code: "PAYLOAD_TOO_LARGE" }, { status: 413 });
+  if (error instanceof ContentLengthRequiredError) return NextResponse.json({ code: "LENGTH_REQUIRED" }, { status: 411 });
   if (error instanceof DuplicateMediaError) {
     return NextResponse.json({ code: error.code, message: error.message }, { status: 409 });
   }
@@ -52,6 +62,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    assertSameOriginMutation(request);
+    assertBoundedUploadRequest(request);
     const principal = await requirePermission("media.write");
     const formData = await request.formData();
     const file = formData.get("file");

@@ -41,6 +41,19 @@ test.beforeAll(async () => {
 
 test("uploads, searches, previews, edits alt text, and prevents referenced deletion", async ({ page }) => {
   await page.goto("/admin/login");
+  const unauthenticatedStatus = await page.evaluate(async () => {
+    const body = new FormData();
+    body.append("usage", "EDITORIAL_IMAGE");
+    return (await fetch("/api/admin/media", { method: "POST", body })).status;
+  });
+  expect(unauthenticatedStatus).toBe(401);
+
+  const untrusted = await page.request.post("/api/admin/media", {
+    headers: { origin: "https://attacker.test", "sec-fetch-site": "cross-site" },
+    multipart: { usage: "EDITORIAL_IMAGE" },
+  });
+  expect(untrusted.status()).toBe(403);
+
   await page.getByLabel("管理员邮箱").fill(email);
   await page.getByLabel("密码").fill(password);
   await page.getByRole("button", { name: "登录 ZYRON CMS" }).click();
@@ -48,9 +61,12 @@ test("uploads, searches, previews, edits alt text, and prevents referenced delet
   await expect(page.getByRole("heading", { name: "媒体资源" })).toBeVisible();
 
   await page.getByLabel("选择媒体文件").setInputFiles({
-    name: "e2e-shearing-machine.jpg",
-    mimeType: "image/jpeg",
-    buffer: Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46]),
+    name: "e2e-shearing-machine.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+      "base64",
+    ),
   });
   await page.getByLabel("替代文本", { exact: true }).fill("E2E electric shearing machine");
   await page.getByRole("textbox", { name: "分类", exact: true }).fill("E2E products");
@@ -59,9 +75,12 @@ test("uploads, searches, previews, edits alt text, and prevents referenced delet
 
   await page.getByLabel("搜索媒体").fill("e2e-shearing");
   await page.getByRole("button", { name: "搜索" }).click();
-  await expect(page.getByText("e2e-shearing-machine.jpg")).toBeVisible();
+  await expect(page.getByText("e2e-shearing-machine.png")).toBeVisible();
   await page.getByRole("button", { name: "预览与编辑" }).click();
   await expect(page.getByRole("dialog", { name: "媒体预览" })).toBeVisible();
+  await expect(
+    page.getByRole("dialog", { name: "媒体预览" }).getByRole("img", { name: "E2E electric shearing machine" }),
+  ).toHaveJSProperty("naturalWidth", 1);
   await page.getByLabel("替代文本编辑").fill("Updated E2E machine alt text");
   await page.getByRole("button", { name: "保存替代文本" }).click();
   await expect(page.getByRole("dialog", { name: "媒体预览" }).getByRole("status")).toHaveText("替代文本已保存");
@@ -69,7 +88,7 @@ test("uploads, searches, previews, edits alt text, and prevents referenced delet
 
   const db = database();
   const asset = await db.mediaAsset.findFirstOrThrow({
-    where: { originalName: "e2e-shearing-machine.jpg", lifecycleStatus: "ACTIVE" },
+    where: { originalName: "e2e-shearing-machine.png", lifecycleStatus: "ACTIVE" },
     orderBy: { createdAt: "desc" },
   });
   await db.mediaReference.create({

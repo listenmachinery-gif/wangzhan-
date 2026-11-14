@@ -30,7 +30,7 @@ export function MediaUploader({ onUploaded }: { onUploaded: (asset: MediaLibrary
     <form onSubmit={submit} className="grid gap-4 rounded-xl border border-neutral-200 bg-white p-5 lg:grid-cols-[1.2fr_1fr_1fr_auto] lg:items-end">
       <label className="grid gap-2 text-sm font-medium">
         选择媒体文件
-        <input name="file" type="file" required accept="image/jpeg,image/png,image/webp,image/svg+xml,application/pdf,video/mp4,video/webm" className="block w-full rounded-lg border border-neutral-300 p-2 text-sm" />
+        <input name="file" type="file" required accept="image/jpeg,image/png,image/webp,application/pdf,video/mp4,video/webm" className="block w-full rounded-lg border border-neutral-300 p-2 text-sm" />
       </label>
       <label className="grid gap-2 text-sm font-medium">
         替代文本
@@ -39,7 +39,15 @@ export function MediaUploader({ onUploaded }: { onUploaded: (asset: MediaLibrary
       <label className="grid gap-2 text-sm font-medium">
         分类
         <input name="category" placeholder="例如：产品图" className="rounded-lg border border-neutral-300 px-3 py-2" />
-        <input type="hidden" name="usage" value="EDITORIAL_IMAGE" />
+      </label>
+      <label className="grid gap-2 text-sm font-medium lg:col-span-3">
+        用途
+        <select name="usage" defaultValue="EDITORIAL_IMAGE" className="rounded-lg border border-neutral-300 px-3 py-2">
+          <option value="EDITORIAL_IMAGE">内容图片（必须填写替代文本）</option>
+          <option value="DECORATIVE_IMAGE">装饰图片</option>
+          <option value="DOCUMENT">文档</option>
+          <option value="VIDEO">视频</option>
+        </select>
       </label>
       <button disabled={busy} className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#76B900] px-4 text-sm font-semibold text-[#0B0D10] disabled:opacity-50">
         <Upload className="h-4 w-4" aria-hidden /> {busy ? "上传中…" : "上传文件"}

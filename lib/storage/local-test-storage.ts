@@ -22,7 +22,7 @@ export class LocalTestStorageAdapter implements StorageAdapter {
   async put(input: StoragePutInput) {
     const target = this.resolve(input.key);
     await mkdir(path.dirname(target), { recursive: true });
-    await writeFile(target, input.body);
+    await writeFile(target, input.body, { flag: "wx" });
   }
 
   async getSignedUrl(key: string) {

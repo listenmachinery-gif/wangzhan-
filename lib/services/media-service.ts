@@ -1,11 +1,12 @@
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 
-import type { MediaAsset, PrismaClient } from "@prisma/client";
+import { Prisma, type MediaAsset, type PrismaClient } from "@prisma/client";
 
 import { can, type Permission, type Principal } from "@/lib/auth/permissions";
 import { db } from "@/lib/db/client";
 import {
+  DuplicateMediaError,
   inspectMediaUpload,
   type MediaUsage,
 } from "@/lib/storage/file-signatures";
@@ -41,6 +42,13 @@ export class MediaNotFoundError extends Error {
   }
 }
 
+export class MediaUsageInvariantError extends Error {
+  constructor() {
+    super("Editorial images require alt text.");
+    this.name = "MediaUsageInvariantError";
+  }
+}
+
 function assertPermission(principal: Principal, permission: Permission) {
   if (!can(principal, permission)) throw new MediaServicePermissionError(permission);
 }
@@ -59,14 +67,12 @@ export class MediaService {
 
   async createUpload(principal: Principal, input: MediaUploadInput): Promise<MediaAsset> {
     assertPermission(principal, "media.write");
-    const existing = await this.database.mediaAsset.findMany({
-      where: { lifecycleStatus: { not: "DELETED" } },
-      select: { checksum: true },
+    const inspection = await inspectMediaUpload(input);
+    const duplicate = await this.database.mediaAsset.findUnique({
+      where: { checksum: inspection.checksum },
+      select: { id: true },
     });
-    const inspection = await inspectMediaUpload({
-      ...input,
-      existingChecksums: new Set(existing.map((asset) => asset.checksum)),
-    });
+    if (duplicate) throw new DuplicateMediaError(inspection.checksum);
     const objectKey = objectKeyFor(input.filename);
 
     await this.storage.put({
@@ -85,8 +91,11 @@ export class MediaService {
             mimeType: inspection.detectedMime,
             byteSize: inspection.byteSize,
             checksum: inspection.checksum,
+            usage: input.usage,
             altText: input.altText?.trim() || null,
             category: input.category?.trim() || null,
+            width: inspection.width,
+            height: inspection.height,
             uploadedById: principal.id,
           },
         });
@@ -108,6 +117,9 @@ export class MediaService {
       });
     } catch (error) {
       await this.storage.delete(objectKey).catch(() => undefined);
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        throw new DuplicateMediaError(inspection.checksum);
+      }
       throw error;
     }
   }
@@ -146,35 +158,85 @@ export class MediaService {
 
   async listReferences(principal: Principal, mediaId: string) {
     assertPermission(principal, "media.read");
-    return this.database.mediaReference.findMany({
-      where: { mediaAssetId: mediaId },
-      select: { id: true, entityType: true, entityId: true, field: true, createdAt: true },
-      orderBy: { createdAt: "asc" },
+    const asset = await this.database.mediaAsset.findUnique({
+      where: { id: mediaId },
+      include: {
+        references: { select: { id: true, entityType: true, entityId: true, field: true, createdAt: true } },
+        desktopBanners: { select: { id: true, createdAt: true } },
+        tabletBanners: { select: { id: true, createdAt: true } },
+        mobileBanners: { select: { id: true, createdAt: true } },
+        ogSeoRecords: { select: { id: true, createdAt: true } },
+      },
     });
+    if (!asset) throw new MediaNotFoundError();
+    return [
+      ...asset.references,
+      ...asset.desktopBanners.map((item) => ({ id: `banner-desktop-${item.id}`, entityType: "Banner", entityId: item.id, field: "desktopMedia", createdAt: item.createdAt })),
+      ...asset.tabletBanners.map((item) => ({ id: `banner-tablet-${item.id}`, entityType: "Banner", entityId: item.id, field: "tabletMedia", createdAt: item.createdAt })),
+      ...asset.mobileBanners.map((item) => ({ id: `banner-mobile-${item.id}`, entityType: "Banner", entityId: item.id, field: "mobileMedia", createdAt: item.createdAt })),
+      ...asset.ogSeoRecords.map((item) => ({ id: `seo-og-${item.id}`, entityType: "SeoRecord", entityId: item.id, field: "ogMedia", createdAt: item.createdAt })),
+    ].sort((left, right) => left.createdAt.getTime() - right.createdAt.getTime());
   }
 
   async deleteUnreferenced(principal: Principal, mediaId: string) {
     assertPermission(principal, "media.delete");
-    const asset = await this.database.mediaAsset.findFirst({
-      where: { id: mediaId, lifecycleStatus: "ACTIVE" },
-      include: { references: { select: { entityType: true, entityId: true, field: true } } },
-    });
-    if (!asset) throw new MediaNotFoundError();
-    if (asset.references.length > 0) throw new MediaInUseError(asset.references);
+    await this.database.$transaction(
+      async (transaction) => {
+        const asset = await transaction.mediaAsset.findFirst({
+          where: { id: mediaId, lifecycleStatus: "ACTIVE" },
+          include: {
+            references: { select: { entityType: true, entityId: true, field: true } },
+            desktopBanners: { select: { id: true } },
+            tabletBanners: { select: { id: true } },
+            mobileBanners: { select: { id: true } },
+            ogSeoRecords: { select: { id: true } },
+          },
+        });
+        if (!asset) throw new MediaNotFoundError();
+        const directReferences = [
+          ...asset.desktopBanners.map(({ id }) => ({ entityType: "Banner", entityId: id, field: "desktopMedia" })),
+          ...asset.tabletBanners.map(({ id }) => ({ entityType: "Banner", entityId: id, field: "tabletMedia" })),
+          ...asset.mobileBanners.map(({ id }) => ({ entityType: "Banner", entityId: id, field: "mobileMedia" })),
+          ...asset.ogSeoRecords.map(({ id }) => ({ entityType: "SeoRecord", entityId: id, field: "ogMedia" })),
+        ];
+        const references = [...asset.references, ...directReferences];
+        if (references.length > 0) throw new MediaInUseError(references);
+        await transaction.mediaAsset.update({
+          where: { id: asset.id },
+          data: { lifecycleStatus: "TOMBSTONED" },
+        });
+        await transaction.auditLog.create({
+          data: {
+            actorId: principal.id,
+            action: "media.delete.requested",
+            entityType: "MediaAsset",
+            entityId: asset.id,
+            before: { lifecycleStatus: "ACTIVE", objectKey: asset.objectKey },
+            after: { lifecycleStatus: "TOMBSTONED" },
+          },
+        });
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    );
+    return this.cleanupTombstoned(mediaId, principal.id);
+  }
 
-    await this.database.mediaAsset.update({
-      where: { id: asset.id },
-      data: { lifecycleStatus: "TOMBSTONED" },
-    });
+  async cleanupTombstoned(mediaId: string, actorId?: string) {
+    const asset = await this.database.mediaAsset.findUnique({ where: { id: mediaId } });
+    if (!asset) throw new MediaNotFoundError();
+    if (asset.lifecycleStatus === "DELETED") return asset;
+    if (asset.lifecycleStatus !== "TOMBSTONED") throw new Error("Media asset is not queued for cleanup.");
+
     await this.storage.delete(asset.objectKey);
     return this.database.$transaction(async (transaction) => {
-      const deleted = await transaction.mediaAsset.update({
-        where: { id: asset.id },
+      const result = await transaction.mediaAsset.updateMany({
+        where: { id: asset.id, lifecycleStatus: "TOMBSTONED" },
         data: { lifecycleStatus: "DELETED", deletedAt: new Date() },
       });
-      await transaction.auditLog.create({
+      const deleted = await transaction.mediaAsset.findUniqueOrThrow({ where: { id: asset.id } });
+      if (result.count > 0) await transaction.auditLog.create({
         data: {
-          actorId: principal.id,
+          actorId,
           action: "media.delete",
           entityType: "MediaAsset",
           entityId: asset.id,
@@ -196,6 +258,9 @@ export class MediaService {
       where: { id: mediaId, lifecycleStatus: "ACTIVE" },
     });
     if (!before) throw new MediaNotFoundError();
+    if (before.usage === "EDITORIAL_IMAGE" && data.altText !== undefined && !data.altText?.trim()) {
+      throw new MediaUsageInvariantError();
+    }
     return this.database.$transaction(async (transaction) => {
       const updated = await transaction.mediaAsset.update({ where: { id: mediaId }, data });
       await transaction.auditLog.create({

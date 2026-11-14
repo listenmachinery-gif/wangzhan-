@@ -7,16 +7,13 @@ import {
   inspectMediaUpload,
 } from "@/lib/storage/file-signatures";
 
-const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46]);
-const png = Buffer.from([
-  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
-]);
+const png = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+  "base64",
+);
 
 describe("media upload file policy", () => {
-  it.each([
-    ["machine.jpg", "image/jpeg", jpeg, "image/jpeg"],
-    ["machine.png", "image/png", png, "image/png"],
-  ])("accepts a valid %s signature", async (filename, declaredMime, bytes, expectedMime) => {
+  it.each([["machine.png", "image/png", png, "image/png"]])("accepts a valid %s signature", async (filename, declaredMime, bytes, expectedMime) => {
     const result = await inspectMediaUpload({
       filename,
       declaredMime,
@@ -26,6 +23,7 @@ describe("media upload file policy", () => {
     });
 
     expect(result.detectedMime).toBe(expectedMime);
+    expect(result).toMatchObject({ width: 1, height: 1 });
     expect(result.checksum).toBe(createHash("sha256").update(bytes).digest("hex"));
   });
 
@@ -33,8 +31,8 @@ describe("media upload file policy", () => {
     await expect(
       inspectMediaUpload({
         filename: "machine.png",
-        declaredMime: "image/png",
-        bytes: jpeg,
+        declaredMime: "image/jpeg",
+        bytes: png,
         altText: "Machine",
         usage: "EDITORIAL_IMAGE",
       }),
@@ -44,21 +42,23 @@ describe("media upload file policy", () => {
   it("rejects content over the type-specific byte limit", async () => {
     await expect(
       inspectMediaUpload({
-        filename: "large.jpg",
-        declaredMime: "image/jpeg",
-        bytes: Buffer.concat([jpeg, Buffer.alloc(10)]),
+        filename: "large.png",
+        declaredMime: "image/png",
+        bytes: Buffer.concat([png, Buffer.alloc(10)]),
         altText: "Large machine",
         usage: "EDITORIAL_IMAGE",
-        limits: { image: 12, document: 12, video: 12 },
+        limits: { image: png.byteLength, document: 12, video: 12 },
       }),
     ).rejects.toMatchObject({ code: "FILE_TOO_LARGE" } satisfies Partial<MediaPolicyError>);
   });
 
   it.each([
+    '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0" /></svg>',
     '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',
     '<svg xmlns="http://www.w3.org/2000/svg"><image href="https://evil.example/pixel" /></svg>',
     '<svg xmlns="http://www.w3.org/2000/svg"><path onload="alert(1)" /></svg>',
-  ])("rejects unsafe SVG content", async (svg) => {
+    '<svg xmlns="http://www.w3.org/2000/svg"><a href="java&#x73;cript:alert(1)">x</a></svg>',
+  ])("rejects SVG content rather than serving active XML", async (svg) => {
     await expect(
       inspectMediaUpload({
         filename: "diagram.svg",
@@ -67,17 +67,29 @@ describe("media upload file policy", () => {
         altText: "Machine diagram",
         usage: "EDITORIAL_IMAGE",
       }),
-    ).rejects.toMatchObject({ code: "UNSAFE_SVG" } satisfies Partial<MediaPolicyError>);
+    ).rejects.toMatchObject({ code: "UNSUPPORTED_FILE_TYPE" } satisfies Partial<MediaPolicyError>);
+  });
+
+  it("rejects truncated images even when the leading magic bytes match", async () => {
+    await expect(
+      inspectMediaUpload({
+        filename: "broken.jpg",
+        declaredMime: "image/jpeg",
+        bytes: Buffer.from([0xff, 0xd8, 0xff, 0xe0]),
+        altText: "Broken image",
+        usage: "EDITORIAL_IMAGE",
+      }),
+    ).rejects.toMatchObject({ code: "MALFORMED_MEDIA" } satisfies Partial<MediaPolicyError>);
   });
 
   it("rejects a checksum already present in the media library", async () => {
-    const checksum = createHash("sha256").update(jpeg).digest("hex");
+    const checksum = createHash("sha256").update(png).digest("hex");
 
     await expect(
       inspectMediaUpload({
-        filename: "duplicate.jpg",
-        declaredMime: "image/jpeg",
-        bytes: jpeg,
+        filename: "duplicate.png",
+        declaredMime: "image/png",
+        bytes: png,
         altText: "Machine",
         usage: "EDITORIAL_IMAGE",
         existingChecksums: new Set([checksum]),
@@ -88,9 +100,9 @@ describe("media upload file policy", () => {
   it("requires meaningful alt text for editorial images", async () => {
     await expect(
       inspectMediaUpload({
-        filename: "machine.jpg",
-        declaredMime: "image/jpeg",
-        bytes: jpeg,
+        filename: "machine.png",
+        declaredMime: "image/png",
+        bytes: png,
         altText: " ",
         usage: "EDITORIAL_IMAGE",
       }),
@@ -107,5 +119,16 @@ describe("media upload file policy", () => {
     });
 
     expect(result.detectedMime).toBe("application/pdf");
+  });
+
+  it("rejects a declared usage that does not match the detected media type", async () => {
+    await expect(
+      inspectMediaUpload({
+        filename: "manual.pdf",
+        declaredMime: "application/pdf",
+        bytes: Buffer.from("%PDF-1.7\n"),
+        usage: "VIDEO",
+      }),
+    ).rejects.toMatchObject({ code: "USAGE_MISMATCH" } satisfies Partial<MediaPolicyError>);
   });
 });

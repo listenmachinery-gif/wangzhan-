@@ -299,7 +299,8 @@ model MediaAsset {
   originalName   String
   mimeType       String
   byteSize       Int
-  checksum       String
+  checksum       String               @unique
+  usage          String
   altText        String?
   category       String?
   width          Int?
@@ -319,7 +320,6 @@ model MediaAsset {
   mobileBanners  Banner[]             @relation("BannerMobileMedia")
   ogSeoRecords   SeoRecord[]          @relation("SeoOgMedia")
 
-  @@index([checksum])
   @@index([lifecycleStatus, createdAt])
 }
 

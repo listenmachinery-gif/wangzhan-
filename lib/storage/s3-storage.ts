@@ -39,6 +39,7 @@ export class S3StorageAdapter implements StorageAdapter {
         Body: input.body,
         ContentType: input.contentType,
         CacheControl: input.cacheControl,
+        IfNoneMatch: "*",
       }),
     );
   }
