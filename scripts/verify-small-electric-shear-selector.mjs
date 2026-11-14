@@ -93,6 +93,9 @@ assert.match(selectorSource, /aria-live="polite"/);
 assert.match(selectorSource, /fetch\("\/api\/inquiry"/);
 assert.match(selectorSource, /mailto:info@zyroncnc\.com/);
 assert.doesNotMatch(selectorSource, /name="name"/);
+assert.match(selectorSource, /data-selector-grid/);
+assert.match(selectorSource, /lg:grid-cols-2/, "The desktop selector must use two columns");
+assert.match(selectorSource, /data-selector-submit[^>]*className="lg:col-span-2"/, "The submit area must span the full desktop form width");
 
 const fieldOrder = [
   "Cutting Material",

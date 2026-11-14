@@ -127,7 +127,7 @@ export default function SmallElectricShearSelector() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-8 grid max-w-3xl gap-5">
+      <form data-selector-grid onSubmit={handleSubmit} className="mt-8 grid gap-5 lg:grid-cols-2 lg:gap-x-6">
         <label className={labelClass}>
           Cutting Material
           <select
@@ -260,7 +260,7 @@ export default function SmallElectricShearSelector() {
 
         <input name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
 
-        <div>
+        <div data-selector-submit className="lg:col-span-2">
           <button
             type="submit"
             disabled={submitState === "sending" || !hasValidDimensions}

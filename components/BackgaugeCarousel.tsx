@@ -2,13 +2,14 @@
 
 import Image from "next/image";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ShearingBackgaugeCarousel } from "@/data/shearing-solution-types";
 
 const swipeThreshold = 48;
 
 export default function BackgaugeCarousel({ eyebrow, title, intro, items }: ShearingBackgaugeCarousel) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const pointerStart = useRef<{ x: number; y: number } | null>(null);
 
   const showPrevious = useCallback(() => {
@@ -18,6 +19,19 @@ export default function BackgaugeCarousel({ eyebrow, title, intro, items }: Shea
   const showNext = useCallback(() => {
     setActiveIndex((index) => (index + 1) % items.length);
   }, [items.length]);
+
+  useEffect(() => {
+    if (
+      isPaused ||
+      items.length <= 1 ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+
+    const timer = window.setInterval(showNext, 5000);
+    return () => window.clearInterval(timer);
+  }, [isPaused, items.length, showNext]);
 
   if (items.length === 0) {
     return null;
@@ -57,8 +71,17 @@ export default function BackgaugeCarousel({ eyebrow, title, intro, items }: Shea
   return (
     <section
       data-section="backgauge-options"
+      data-auto-carousel
       className="overflow-hidden bg-[#111519] px-5 py-16 text-white sm:px-8 lg:py-24"
       aria-labelledby="backgauge-options-title"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onFocusCapture={() => setIsPaused(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setIsPaused(false);
+        }
+      }}
     >
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-6 lg:grid-cols-[0.7fr_1.3fr] lg:items-end lg:gap-16">
@@ -94,7 +117,7 @@ export default function BackgaugeCarousel({ eyebrow, title, intro, items }: Shea
               draggable={false}
             />
             <div
-              className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent_28%,rgba(0,0,0,0.08)_45%,rgba(0,0,0,0.92)_100%)]"
+              className="pointer-events-none absolute inset-0 hidden bg-[linear-gradient(180deg,transparent_28%,rgba(0,0,0,0.08)_45%,rgba(0,0,0,0.92)_100%)] lg:block"
               aria-hidden="true"
             />
 
@@ -116,7 +139,7 @@ export default function BackgaugeCarousel({ eyebrow, title, intro, items }: Shea
             </button>
 
             <div
-              className="pointer-events-none absolute inset-x-12 bottom-5 mx-auto max-w-4xl text-center sm:inset-x-20 sm:bottom-9 lg:bottom-12"
+              className="pointer-events-none absolute inset-x-12 bottom-12 mx-auto hidden max-w-4xl text-center lg:block"
               aria-live="polite"
             >
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9EDB36] sm:text-xs">
@@ -129,6 +152,18 @@ export default function BackgaugeCarousel({ eyebrow, title, intro, items }: Shea
                 {activeItem.text}
               </p>
             </div>
+          </div>
+
+          <div data-mobile-copy-below className="border-t border-white/10 px-5 py-6 text-center lg:hidden" aria-live="polite">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9EDB36] sm:text-xs">
+              Option {String(activeIndex + 1).padStart(2, "0")}
+            </p>
+            <h3 className="mt-2 text-xl font-semibold leading-tight text-white sm:text-3xl">
+              {activeItem.title}
+            </h3>
+            <p className="mx-auto mt-3 max-w-3xl text-sm leading-6 text-white/75 sm:text-base sm:leading-7">
+              {activeItem.text}
+            </p>
           </div>
 
           <div className="grid border-t border-white/10 sm:grid-cols-3" aria-label="Select a backgauge option">

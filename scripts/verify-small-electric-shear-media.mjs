@@ -383,6 +383,10 @@ assert.match(backgaugeComponentSource, /touch-pan-y/, "The carousel must preserv
 assert.match(backgaugeComponentSource, /motion-reduce:/, "Carousel motion must respect reduced-motion preferences");
 assert.match(backgaugeComponentSource, /aspect-\[4\/3\]/, "The mobile image stage must leave enough height for readable overlay copy");
 assert.match(backgaugeComponentSource, /data-section="backgauge-options"/, "The carousel must expose its section identity");
+assert.match(backgaugeComponentSource, /window\.setInterval/, "Backgauge options must advance automatically");
+assert.match(backgaugeComponentSource, /prefers-reduced-motion: reduce/, "Backgauge autoplay must respect reduced motion");
+assert.match(backgaugeComponentSource, /data-mobile-copy-below/, "Backgauge copy must render below the image on phone and tablet layouts");
+assert.match(backgaugeComponentSource, /lg:hidden/, "Backgauge copy must use its separate phone and tablet layout below the image");
 
 const showcaseComponentPath = resolve(root, "components/ProductShowcase.tsx");
 assert.ok(existsSync(showcaseComponentPath), "The product showcase client component must exist");
@@ -395,6 +399,8 @@ assert.match(showcaseComponentSource, /Next product view/, "The showcase must in
 assert.match(showcaseComponentSource, /images\.length\) % images\.length/, "Previous and next controls must wrap");
 assert.match(showcaseComponentSource, /object-contain/, "Showcase images must remain uncropped");
 assert.match(showcaseComponentSource, /data-section="product-showcase"/, "The showcase must expose its section identity");
+assert.match(showcaseComponentSource, /window\.setInterval/, "Product showcase views must advance automatically");
+assert.match(showcaseComponentSource, /prefers-reduced-motion: reduce/, "Product showcase autoplay must respect reduced motion");
 
 const solutionPageSource = readFileSync(resolve(root, "components/ShearingSolutionPage.tsx"), "utf8");
 const expectedModelCards = [
@@ -470,6 +476,11 @@ assert.match(modelCarouselSource, /aria-pressed=\{index === activeIndex\}/);
 assert.match(modelCarouselSource, /onKeyDown=\{handleKeyDown\}/);
 assert.match(modelCarouselSource, /lg:grid-cols-\[minmax\(0,0\.92fr\)_minmax\(0,1\.08fr\)\]/);
 assert.match(modelCarouselSource, /sizes="\(min-width: 1024px\) 560px, 100vw"/);
+assert.match(modelCarouselSource, /window\.setInterval/, "Model cards must advance automatically");
+assert.match(modelCarouselSource, /prefers-reduced-motion: reduce/, "Model card autoplay must respect reduced motion");
+assert.match(solutionPageSource, /data-detail-image/);
+assert.match(solutionPageSource, /data-detail-copy/);
+assert.match(solutionPageSource, /data-detail-copy[^>]*className="[^"]*lg:absolute/);
 const requestedHiddenSections = [
   "problems",
   "solution",
