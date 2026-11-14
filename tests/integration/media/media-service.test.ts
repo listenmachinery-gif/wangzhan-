@@ -248,7 +248,13 @@ describe("MediaService", () => {
       db.auditLog.findFirstOrThrow({ where: { entityId: asset.id, action: "media.delete.requested" } }),
     ).resolves.toBeTruthy();
 
-    await service.cleanupTombstoned(asset.id);
+    await expect(
+      db.mediaReference.create({
+        data: { mediaAssetId: asset.id, entityType: "Product", entityId: "late-product", field: "hero" },
+      }),
+    ).rejects.toThrow();
+
+    await service.deleteUnreferenced(administrator, asset.id);
     expect(storage.objects.has(asset.objectKey)).toBe(false);
     await expect(db.mediaAsset.findUniqueOrThrow({ where: { id: asset.id } })).resolves.toMatchObject({
       lifecycleStatus: "DELETED",

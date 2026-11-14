@@ -180,6 +180,13 @@ export class MediaService {
 
   async deleteUnreferenced(principal: Principal, mediaId: string) {
     assertPermission(principal, "media.delete");
+    const current = await this.database.mediaAsset.findUnique({
+      where: { id: mediaId },
+      select: { lifecycleStatus: true },
+    });
+    if (!current || current.lifecycleStatus === "DELETED") throw new MediaNotFoundError();
+    if (current.lifecycleStatus === "TOMBSTONED") return this.cleanupTombstoned(mediaId, principal.id);
+
     await this.database.$transaction(
       async (transaction) => {
         const asset = await transaction.mediaAsset.findFirst({
@@ -222,10 +229,27 @@ export class MediaService {
   }
 
   async cleanupTombstoned(mediaId: string, actorId?: string) {
-    const asset = await this.database.mediaAsset.findUnique({ where: { id: mediaId } });
+    const asset = await this.database.mediaAsset.findUnique({
+      where: { id: mediaId },
+      include: {
+        references: { select: { entityType: true, entityId: true, field: true } },
+        desktopBanners: { select: { id: true } },
+        tabletBanners: { select: { id: true } },
+        mobileBanners: { select: { id: true } },
+        ogSeoRecords: { select: { id: true } },
+      },
+    });
     if (!asset) throw new MediaNotFoundError();
     if (asset.lifecycleStatus === "DELETED") return asset;
     if (asset.lifecycleStatus !== "TOMBSTONED") throw new Error("Media asset is not queued for cleanup.");
+    const references = [
+      ...asset.references,
+      ...asset.desktopBanners.map(({ id }) => ({ entityType: "Banner", entityId: id, field: "desktopMedia" })),
+      ...asset.tabletBanners.map(({ id }) => ({ entityType: "Banner", entityId: id, field: "tabletMedia" })),
+      ...asset.mobileBanners.map(({ id }) => ({ entityType: "Banner", entityId: id, field: "mobileMedia" })),
+      ...asset.ogSeoRecords.map(({ id }) => ({ entityType: "SeoRecord", entityId: id, field: "ogMedia" })),
+    ];
+    if (references.length > 0) throw new MediaInUseError(references);
 
     await this.storage.delete(asset.objectKey);
     return this.database.$transaction(async (transaction) => {
