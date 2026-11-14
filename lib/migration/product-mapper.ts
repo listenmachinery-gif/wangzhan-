@@ -122,6 +122,14 @@ export function mapLegacyProduct(legacy: LegacyProductInput): MappingResult {
 
   const page = legacy.page ?? {};
   const consumed = new Set<string>();
+  const nestedUnmapped: UnmappedLegacyContent[] = [];
+  const reportUnknownFields = (path: string, value: Record<string, unknown>, allowed: readonly string[]) => {
+    for (const [key, nestedValue] of Object.entries(value)) {
+      if (!allowed.includes(key)) {
+        nestedUnmapped.push({ path: `${path}.${key}`, value: nestedValue, reason: "No standardized mapping" });
+      }
+    }
+  };
   const object = (key: string) => {
     const value = page[key];
     return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
@@ -162,6 +170,7 @@ export function mapLegacyProduct(legacy: LegacyProductInput): MappingResult {
   if (overview) {
     const paragraphs = Array.isArray(overview.paragraphs) ? overview.paragraphs.map(String) : [String(overview.intro ?? legacy.tagline)];
     set("OVERVIEW", { eyebrow: String(overview.eyebrow ?? "Product Overview"), title: String(overview.title ?? legacy.name), paragraphs });
+    reportUnknownFields("page.overview", overview, ["eyebrow", "title", "paragraphs", "intro"]);
     consumed.add("overview");
   }
 
@@ -188,6 +197,10 @@ export function mapLegacyProduct(legacy: LegacyProductInput): MappingResult {
         ...(item.label ? { label: String(item.label) } : {}),
       })),
     });
+    reportUnknownFields(`page.${key}`, source, ["eyebrow", "title", "description", "intro", itemsKey]);
+    (items as Array<Record<string, unknown>>).forEach((item, index) => {
+      reportUnknownFields(`page.${key}.${itemsKey}.${index}`, item, ["image", "alt", "title", "label", "text"]);
+    });
     consumed.add(key);
   }
 
@@ -202,6 +215,9 @@ export function mapLegacyProduct(legacy: LegacyProductInput): MappingResult {
     const items = itemArray(key);
     if (!items?.length || typeof items[0] !== "object") continue;
     set(type, { eyebrow: string(eyebrowKey) ?? legacy.categoryName, title: string(titleKey) ?? legacy.name, items: mapCards(items) });
+    items.forEach((item, index) => {
+      reportUnknownFields(`page.${key}.${index}`, item, ["title", "label", "text", "description", "image", "alt"]);
+    });
     [key, eyebrowKey, titleKey].forEach((mappedKey) => consumed.add(mappedKey));
   }
 
@@ -213,7 +229,7 @@ export function mapLegacyProduct(legacy: LegacyProductInput): MappingResult {
       paragraphs: solutionParagraphs,
       fit: stringArray("solutionFit"),
     });
-    ["solutionParagraphs", "solutionEyebrow", "solutionTitle", "solutionFit", "solutionFitEyebrow", "solutionFitTitle"].forEach((key) => consumed.add(key));
+    ["solutionParagraphs", "solutionEyebrow", "solutionTitle", "solutionFit"].forEach((key) => consumed.add(key));
   }
 
   const materials = object("materials");
@@ -224,6 +240,12 @@ export function mapLegacyProduct(legacy: LegacyProductInput): MappingResult {
       paragraphs: [String(materials.note ?? "Confirm material requirements before ordering.")],
       materials: (materials.items as Array<Record<string, unknown>>).map((item) => String(item.title ?? "")),
       note: String(materials.note ?? "Confirm material requirements before ordering."),
+    });
+    reportUnknownFields("page.materials", materials, ["eyebrow", "title", "note", "items"]);
+    (materials.items as unknown[]).forEach((item, index) => {
+      if (item && typeof item === "object" && !Array.isArray(item)) {
+        reportUnknownFields(`page.materials.items.${index}`, item as Record<string, unknown>, ["title"]);
+      }
     });
     consumed.add("materials");
   }
@@ -237,7 +259,12 @@ export function mapLegacyProduct(legacy: LegacyProductInput): MappingResult {
         ? { title: part, text: part }
         : { title: String((part as Record<string, unknown>).title ?? ""), text: String((part as Record<string, unknown>).text ?? (part as Record<string, unknown>).title ?? "") }),
     });
-    ["structureParts", "structureEyebrow", "structureTitle", "structureImageAlt", "structureCallouts"].forEach((key) => consumed.add(key));
+    structureParts.forEach((part, index) => {
+      if (part && typeof part === "object" && !Array.isArray(part)) {
+        reportUnknownFields(`page.structureParts.${index}`, part as Record<string, unknown>, ["title", "text"]);
+      }
+    });
+    ["structureParts", "structureEyebrow", "structureTitle"].forEach((key) => consumed.add(key));
   }
 
   const modelCards = itemArray("modelCards");
@@ -254,6 +281,14 @@ export function mapLegacyProduct(legacy: LegacyProductInput): MappingResult {
         })),
       })),
     });
+    modelCards.forEach((item, index) => {
+      reportUnknownFields(`page.modelCards.${index}`, item, ["model", "name", "specifications"]);
+      if (Array.isArray(item.specifications)) {
+        (item.specifications as Array<Record<string, unknown>>).forEach((specification, specificationIndex) => {
+          reportUnknownFields(`page.modelCards.${index}.specifications.${specificationIndex}`, specification, ["label", "value"]);
+        });
+      }
+    });
     consumed.add("modelCards");
   }
 
@@ -266,6 +301,12 @@ export function mapLegacyProduct(legacy: LegacyProductInput): MappingResult {
     ];
     if (paragraphs.length) {
       set("MODEL_GUIDE", { eyebrow: String(modelGuide.eyebrow ?? "Model Guide"), title: String(modelGuide.title ?? legacy.name), paragraphs });
+      reportUnknownFields("page.modelGuide", modelGuide, ["eyebrow", "title", "intro", "paragraphs", "items"]);
+      if (Array.isArray(modelGuide.items)) {
+        (modelGuide.items as Array<Record<string, unknown>>).forEach((item, index) => {
+          reportUnknownFields(`page.modelGuide.items.${index}`, item, ["title", "text"]);
+        });
+      }
       consumed.add("modelGuide");
     }
   }
@@ -280,7 +321,7 @@ export function mapLegacyProduct(legacy: LegacyProductInput): MappingResult {
       columns: ["Feature", ...valueKeys.map((key) => key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^./, (letter) => letter.toUpperCase()))],
       rows: comparisonRows.map((row) => ({ label: String(row.label ?? ""), values: valueKeys.map((key) => String(row[key] ?? "—")) })),
     });
-    ["comparisonRows", "comparisonEyebrow", "comparisonTitle", "comparisonIntro", "comparisonElectricLabel", "comparisonHighlight", "binaryComparison"].forEach((key) => consumed.add(key));
+    ["comparisonRows", "comparisonEyebrow", "comparisonTitle", "comparisonIntro"].forEach((key) => consumed.add(key));
   }
 
   const energyComparison = object("energyComparison");
@@ -291,6 +332,10 @@ export function mapLegacyProduct(legacy: LegacyProductInput): MappingResult {
       paragraphs: [String(energyComparison.intro ?? legacy.tagline)],
       columns: ["Metric", String(energyComparison.leftLabel ?? "Option A"), String(energyComparison.rightLabel ?? "Option B")],
       rows: (energyComparison.rows as Array<Record<string, unknown>>).map((row) => ({ label: String(row.label ?? ""), values: [String(row.left ?? ""), String(row.right ?? "")] })),
+    });
+    reportUnknownFields("page.energyComparison", energyComparison, ["eyebrow", "title", "intro", "leftLabel", "rightLabel", "rows"]);
+    (energyComparison.rows as Array<Record<string, unknown>>).forEach((row, index) => {
+      reportUnknownFields(`page.energyComparison.rows.${index}`, row, ["label", "left", "right"]);
     });
     consumed.add("energyComparison");
   }
@@ -303,7 +348,24 @@ export function mapLegacyProduct(legacy: LegacyProductInput): MappingResult {
       paragraphs: workflow.intro ? [String(workflow.intro)] : undefined,
       items: workflow.steps.map((step, index) => ({ title: `Step ${index + 1}`, text: String(step) })),
     });
+    reportUnknownFields("page.workflow", workflow, ["eyebrow", "title", "intro", "steps"]);
     consumed.add("workflow");
+  }
+
+  const manufacturer = object("manufacturer");
+  if (manufacturer && Array.isArray(manufacturer.items) && manufacturer.items.length) {
+    const items = manufacturer.items as Array<Record<string, unknown>>;
+    set("MANUFACTURER_SUPPORT", {
+      eyebrow: String(manufacturer.eyebrow ?? legacy.categoryName),
+      title: String(manufacturer.title ?? legacy.name),
+      ...(manufacturer.intro ? { paragraphs: [String(manufacturer.intro)] } : {}),
+      items: mapCards(items),
+    });
+    reportUnknownFields("page.manufacturer", manufacturer, ["eyebrow", "title", "intro", "items"]);
+    items.forEach((item, index) => {
+      reportUnknownFields(`page.manufacturer.items.${index}`, item, ["title", "label", "text", "description", "image", "alt"]);
+    });
+    consumed.add("manufacturer");
   }
 
   const faqs = itemArray("faqs");
@@ -314,6 +376,7 @@ export function mapLegacyProduct(legacy: LegacyProductInput): MappingResult {
       paragraphs: [legacy.performanceFeatures ?? legacy.tagline],
       items: faqs.map((item) => ({ question: String(item.question ?? ""), answer: String(item.answer ?? "") })),
     });
+    faqs.forEach((item, index) => reportUnknownFields(`page.faqs.${index}`, item, ["question", "answer"]));
     ["faqs", "faqEyebrow", "faqTitle"].forEach((key) => consumed.add(key));
   }
 
@@ -323,7 +386,14 @@ export function mapLegacyProduct(legacy: LegacyProductInput): MappingResult {
       eyebrow: "Related Products",
       title: `Explore More ${legacy.categoryName}`,
       paragraphs: [legacy.performanceFeatures ?? legacy.tagline],
-      items: relatedLinks.map((item) => ({ label: String(item.label ?? ""), href: String(item.href ?? "") })),
+      items: relatedLinks.map((item) => ({
+        label: String(item.label ?? ""),
+        href: String(item.href ?? ""),
+        ...(item.description ? { description: String(item.description) } : {}),
+      })),
+    });
+    relatedLinks.forEach((item, index) => {
+      reportUnknownFields(`page.relatedLinks.${index}`, item, ["label", "href", "description"]);
     });
     consumed.add("relatedLinks");
   }
@@ -353,7 +423,7 @@ export function mapLegacyProduct(legacy: LegacyProductInput): MappingResult {
   }
   if (hiddenSections.length) consumed.add("hiddenSections");
 
-  const unmapped: UnmappedLegacyContent[] = [];
+  const unmapped: UnmappedLegacyContent[] = [...nestedUnmapped];
   for (const [key, value] of Object.entries(page)) {
     if (consumed.has(key)) continue;
     unmapped.push({ path: `page.${key}`, value, reason: "No standardized mapping" });

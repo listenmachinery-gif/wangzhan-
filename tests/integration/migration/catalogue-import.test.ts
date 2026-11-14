@@ -19,6 +19,8 @@ describe("legacy catalogue import", () => {
     expect(second.imported).toEqual(first.imported);
     await expect(db.productCategory.count()).resolves.toBe(catalogue.categories.length);
     await expect(db.product.count()).resolves.toBe(catalogue.products.length);
+    const persistedCategorySlugs = (await db.productCategory.findMany({ select: { slug: true }, orderBy: { slug: "asc" } })).map(({ slug }) => slug);
+    expect(persistedCategorySlugs).toEqual(catalogue.categories.map(({ id }) => id).sort());
     const persistedSlugs = (await db.product.findMany({ select: { slug: true }, orderBy: { slug: "asc" } })).map(({ slug }) => slug);
     expect(persistedSlugs).toEqual(catalogue.products.map(({ id }) => id).sort());
 
@@ -70,11 +72,21 @@ describe("legacy catalogue import", () => {
 
     await expect(db.mediaReference.findFirstOrThrow({ where: { mediaAssetId: asset.id } })).resolves.toMatchObject({
       entityType: "Product",
-      field: expect.stringContaining("HERO"),
+      field: expect.stringContaining("legacy-import:HERO"),
     });
+
+    const product = await db.product.findUniqueOrThrow({ where: { slug: "test-shear" } });
+    await db.mediaReference.create({
+      data: { mediaAssetId: asset.id, entityType: "Product", entityId: product.id, field: "admin:manual-cover" },
+    });
+    await importLegacyCatalogue({ database: db, catalogue, write: true });
+
+    await expect(db.mediaReference.findFirst({
+      where: { entityId: product.id, field: "admin:manual-cover" },
+    })).resolves.not.toBeNull();
   });
 
-  it("dry-run writes nothing and invalid input rolls back the whole catalogue", async () => {
+  it("dry-run writes nothing and a mid-transaction failure rolls back the whole catalogue", async () => {
     const catalogue = await readLegacyCatalogue({ includePageContent: false });
     const dryRun = await importLegacyCatalogue({ database: db, catalogue, write: false });
     expect(dryRun.dryRun).toBe(true);
@@ -86,7 +98,11 @@ describe("legacy catalogue import", () => {
         write: true,
         catalogue: {
           categories: catalogue.categories.slice(0, 1),
-          products: [catalogue.products[0], { ...catalogue.products[1], id: "", name: "" }],
+          products: [catalogue.products[0], {
+            ...catalogue.products[1],
+            categoryId: "missing-category",
+            categoryName: "Missing Category",
+          }],
         },
       }),
     ).rejects.toThrow();

@@ -2,7 +2,7 @@ import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { productCategories, products } from "@/data/products";
+import { legacyProductRedirects, productCategories, products } from "@/data/products";
 import type { LegacyProductInput } from "@/lib/migration/product-mapper";
 
 export type LegacyCategoryInput = {
@@ -21,8 +21,12 @@ export type LegacyCatalogue = {
 const PAGE_PRODUCT_ALIASES: Record<string, string> = {
   "small-electric-shear": "compact-electric-shearing-machine",
   "energy-saving-electric-shear": "energy-saving-electric-shearing-machine",
-  "foot-shear": "foot-operated-shearing-machine",
+  "foot-shear": "foot-shear",
   "reel-shear-beading": "reel-shear-beading-machine",
+  ...Object.fromEntries(legacyProductRedirects.map(({ source, destination }) => [
+    source.replace(/^\/products\//, ""),
+    destination.replace(/^\/products\//, ""),
+  ])),
 };
 
 function mainPageObject(module: Record<string, unknown>) {

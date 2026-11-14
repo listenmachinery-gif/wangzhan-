@@ -107,7 +107,13 @@ export async function importLegacyCatalogue(options: {
         },
       });
 
-      await transaction.mediaReference.deleteMany({ where: { entityType: "Product", entityId: product.id } });
+      await transaction.mediaReference.deleteMany({
+        where: {
+          entityType: "Product",
+          entityId: product.id,
+          field: { startsWith: "legacy-import:" },
+        },
+      });
       for (const productModule of mapping.modules) {
         const section = await transaction.productSection.upsert({
           where: { productId_type: { productId: product.id, type: productModule.type } },
@@ -135,7 +141,7 @@ export async function importLegacyCatalogue(options: {
                 mediaAssetId: item.mediaAssetId,
                 entityType: "Product",
                 entityId: product.id,
-                field: `${section.type}:${item.path}`,
+                field: `legacy-import:${section.type}:${item.path}`,
               },
             },
             update: {},
@@ -143,7 +149,7 @@ export async function importLegacyCatalogue(options: {
               mediaAssetId: item.mediaAssetId,
               entityType: "Product",
               entityId: product.id,
-              field: `${section.type}:${item.path}`,
+              field: `legacy-import:${section.type}:${item.path}`,
             },
           });
           mediaReferenceCount += 1;

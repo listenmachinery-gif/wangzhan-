@@ -12,12 +12,17 @@ async function main() {
   const database = new PrismaClient({ adapter: new PrismaPg({ connectionString: databaseUrl }) });
   try {
     const catalogue = await readLegacyCatalogue({ includePageContent: false });
+    const expectedCategories = catalogue.categories.map(({ id }) => id).sort();
+    const actualCategories = (await database.productCategory.findMany({ select: { slug: true }, orderBy: { slug: "asc" } })).map(({ slug }) => slug);
     const expected = catalogue.products.map(({ id }) => id).sort();
     const actual = (await database.product.findMany({ select: { slug: true }, orderBy: { slug: "asc" } })).map(({ slug }) => slug);
     if (JSON.stringify(actual) !== JSON.stringify(expected)) {
       throw new Error(`Catalogue slug parity failed: expected ${expected.length}, found ${actual.length}.`);
     }
-    console.log(`Catalogue verification passed: ${actual.length} product slugs match.`);
+    if (JSON.stringify(actualCategories) !== JSON.stringify(expectedCategories)) {
+      throw new Error(`Category slug parity failed: expected ${expectedCategories.length}, found ${actualCategories.length}.`);
+    }
+    console.log(`Catalogue verification passed: ${actualCategories.length} category and ${actual.length} product slugs match.`);
   } finally {
     await database.$disconnect();
   }
