@@ -6,11 +6,11 @@ import { PrismaClient } from "@prisma/client";
 const globalForPrisma = globalThis as unknown as { db?: PrismaClient };
 
 function createClient() {
-  const connectionString = process.env.DATABASE_URL;
-
-  if (!connectionString) {
-    throw new Error("DATABASE_URL is required for the CMS database client.");
-  }
+  // Prisma constructs its adapter while Next.js collects route modules during
+  // `next build`. An unreachable placeholder keeps credential-free builds
+  // possible; any runtime query still fails visibly until DATABASE_URL exists.
+  const connectionString =
+    process.env.DATABASE_URL ?? "postgresql://invalid:invalid@127.0.0.1:1/zyron_cms_unconfigured";
 
   return new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 }
