@@ -11,7 +11,7 @@ export function GalleryModule({ type, data }: { type: ProductModuleType; data: G
         {data.items.map((item) => (
           <figure key={`${item.image}:${item.title}`} className="overflow-hidden border border-neutral-200 bg-neutral-50">
             <Image src={item.image} alt={item.alt} width={960} height={640} className="aspect-[3/2] h-auto w-full object-cover" />
-            <figcaption className="p-5"><h3 className="text-xl font-semibold">{item.title}</h3>{item.text ? <p className="mt-2 leading-7 text-neutral-600">{item.text}</p> : null}</figcaption>
+            <figcaption className="p-5">{item.label ? <p className="text-xs font-semibold uppercase tracking-wide text-ignition">{item.label}</p> : null}<h3 className="mt-1 text-xl font-semibold">{item.title}</h3>{item.text ? <p className="mt-2 leading-7 text-neutral-600">{item.text}</p> : null}</figcaption>
           </figure>
         ))}
       </div>

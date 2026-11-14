@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ProductCatalog } from "@/components/ProductCatalog";
-import { productCategories, products } from "@/data/products";
 import { listPublishedCategories } from "@/lib/repositories/category-repository";
+import { buildPublicCatalogueView } from "@/lib/repositories/public-catalogue-view";
 
 export const dynamic = "force-dynamic";
 
@@ -17,8 +17,8 @@ export const metadata = {
 };
 
 const heroStats = [
-  { value: String(productCategories.length), label: "Machine Series" },
-  { value: String(products.length), label: "Product Types" },
+  { value: "0", label: "Machine Series" },
+  { value: "0", label: "Product Types" },
   { value: "60+", label: "Countries Served" },
 ];
 
@@ -31,27 +31,7 @@ const selectionSteps = [
 
 export default async function ProductsPage() {
   const publishedCategories = await listPublishedCategories();
-  const publishedCategoryBySlug = new Map(publishedCategories.map((category) => [category.slug, category]));
-  const visibleCategories = productCategories
-    .filter((category) => publishedCategoryBySlug.has(category.id))
-    .map((category) => {
-      const published = publishedCategoryBySlug.get(category.id)!;
-      return {
-        ...category,
-        name: published.name,
-        summary: published.summary ?? category.summary,
-        description: published.description ?? category.description,
-      };
-    });
-  const publishedProducts = new Map(
-    publishedCategories.flatMap((category) => category.products.map((product) => [product.slug, product] as const)),
-  );
-  const visibleProducts = products
-    .filter((product) => publishedProducts.has(product.id))
-    .map((product) => {
-      const published = publishedProducts.get(product.id)!;
-      return { ...product, name: published.name, tagline: published.summary };
-    });
+  const { categories: visibleCategories, products: visibleProducts } = buildPublicCatalogueView(publishedCategories);
   const visibleHeroStats = [
     { value: String(visibleCategories.length), label: "Machine Series" },
     { value: String(visibleProducts.length), label: "Product Types" },

@@ -3,7 +3,7 @@ import type { ProductModuleType } from "@/lib/product-modules/types";
 const editorial = { eyebrow: "Section", title: "Title", paragraphs: ["Useful product information."] };
 const gallery = {
   ...editorial,
-  items: [{ image: "/products/example.webp", alt: "Machine example", title: "Example", text: "Detail" }],
+  items: [{ image: "/products/example.webp", alt: "Machine example", title: "Example", text: "Detail", label: "Featured" }],
 };
 const cards = { ...editorial, items: [{ title: "Capability", text: "Clear explanation" }] };
 
@@ -12,7 +12,7 @@ export const validProductModuleData: Record<ProductModuleType, unknown> = {
     eyebrow: "Q11G Series",
     title: "Small Electric Shearing Machine",
     subtitle: "Compact precision cutting",
-    images: { desktop: "/hero.webp", alt: "Small electric shearing machine" },
+    images: { desktop: "/hero.webp", tablet: "/hero-tablet.webp", mobile: "/hero-mobile.webp", alt: "Small electric shearing machine" },
     badges: ["Electric Drive"],
     valuePoints: ["600–2500 mm widths"],
     primaryCta: { label: "Request a Quote", href: "#quote" },
@@ -53,6 +53,6 @@ export const validProductModuleData: Record<ProductModuleType, unknown> = {
   WORKFLOW: cards,
   MANUFACTURER_SUPPORT: cards,
   FAQ: { ...editorial, items: [{ question: "Which model fits?", answer: "Confirm material and cutting length." }] },
-  RELATED_LINKS: { ...editorial, items: [{ label: "Shearing machines", href: "/products/series/shearing-machines" }] },
+  RELATED_LINKS: { ...editorial, items: [{ label: "Shearing machines", href: "/products/series/shearing-machines", description: "Browse the full cutting range." }] },
   CTA: { ...editorial, primaryCta: { label: "Request a Quote", href: "#quote" }, requiredInfo: ["Material"] },
 };

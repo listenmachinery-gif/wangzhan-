@@ -43,7 +43,30 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
   const product = products.find((item) => item.id === id);
 
   if (!product) {
-    return {};
+    if (published.source !== "database") return {};
+    const hero = published.modules.find((item) => item.type === "HERO")?.data as {
+      images?: { desktop?: string; alt?: string };
+    } | undefined;
+    const title = `${published.name} | ZYRON Heavy Industry`;
+    const description = published.description ?? published.summary;
+    const image = hero?.images?.desktop;
+    return {
+      title,
+      description,
+      alternates: { canonical: `/products/${published.slug}` },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${published.slug}`,
+        ...(image ? { images: [{ url: image, alt: hero?.images?.alt ?? published.name }] } : {}),
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        ...(image ? { images: [image] } : {}),
+      },
+    };
   }
 
   if (product.id === "electric-two-roll-plate-rolling-machine") {

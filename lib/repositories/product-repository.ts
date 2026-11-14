@@ -38,7 +38,11 @@ type RepositoryOptions = {
 export async function listPublishedProductSlugs(options: RepositoryOptions = {}) {
   const database = options.database ?? db;
   const rows = await database.product.findMany({
-    where: { status: "PUBLISHED", category: { status: "PUBLISHED" } },
+    where: {
+      status: "PUBLISHED",
+      publishedAt: { not: null },
+      category: { status: "PUBLISHED", publishedAt: { not: null } },
+    },
     select: { slug: true },
     orderBy: [{ position: "asc" }, { slug: "asc" }],
   });
@@ -50,20 +54,21 @@ export async function getPublishedProductBySlug(
   options: RepositoryOptions = {},
 ): Promise<PublishedProduct | null> {
   const database = options.database ?? db;
-  const product = await database.product.findFirst({
-    where: {
-      slug,
-      status: "PUBLISHED",
-      publishedAt: { not: null },
-      category: { status: "PUBLISHED", publishedAt: { not: null } },
-    },
+  const product = await database.product.findUnique({
+    where: { slug },
     include: {
-      category: { select: { slug: true, name: true } },
+      category: { select: { slug: true, name: true, status: true, publishedAt: true } },
       sections: { where: { visible: true }, orderBy: [{ position: "asc" }, { type: "asc" }] },
     },
   });
 
   if (!product) return options.allowLegacyFallback ? getLegacyProductFallback(slug) : null;
+  if (
+    product.status !== "PUBLISHED"
+    || !product.publishedAt
+    || product.category.status !== "PUBLISHED"
+    || !product.category.publishedAt
+  ) return null;
 
   const modules = product.sections.map((section) => {
     const type = section.type as ProductModuleType;

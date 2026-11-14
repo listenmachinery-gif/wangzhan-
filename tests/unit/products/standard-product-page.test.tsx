@@ -27,6 +27,11 @@ describe("StandardProductPage", () => {
     expect(container.querySelector("[data-technical-table-scroll]")).toHaveClass("overflow-x-auto");
     expect(screen.getAllByRole("table", { name: "Title" })).toHaveLength(3);
     expect(screen.getByText("Which model fits?")).toBeInTheDocument();
+    expect(screen.getByText("Electric Drive")).toBeInTheDocument();
+    expect(screen.getAllByText("Featured").length).toBeGreaterThan(0);
+    expect(screen.getByText("Browse the full cutting range.")).toBeInTheDocument();
+    expect(screen.getByText("Information to include")).toBeInTheDocument();
+    expect(container.querySelector("source[media='(max-width: 639px)']")).toHaveAttribute("srcset", "/hero-mobile.webp");
     expect(container.querySelector("script[data-faq-schema]")?.textContent).toContain("Which model fits?");
   });
 

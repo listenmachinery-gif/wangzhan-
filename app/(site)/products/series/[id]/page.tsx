@@ -3,8 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
-import { getCategoryById, getCategoryDirectory, getCategoryHref, products } from "@/data/products";
+import { getCategoryHref } from "@/data/products";
 import { getPublishedCategoryBySlug } from "@/lib/repositories/category-repository";
+import { buildProductDirectory, toPublicCategory, toPublicProduct } from "@/lib/repositories/public-catalogue-view";
 
 export const dynamic = "force-dynamic";
 
@@ -25,17 +26,12 @@ function usesProductCutout(image: string) {
 
 export async function generateMetadata({ params }: ProductSeriesPageProps): Promise<Metadata> {
   const { id } = await params;
-  const legacyCategory = getCategoryById(id);
   const publishedCategory = await getPublishedCategoryBySlug(id);
 
-  if (!legacyCategory || !publishedCategory) {
+  if (!publishedCategory) {
     return {};
   }
-  const category = {
-    ...legacyCategory,
-    name: publishedCategory.name,
-    description: publishedCategory.description ?? legacyCategory.description,
-  };
+  const category = toPublicCategory(publishedCategory);
 
   return {
     title: `${category.name} | ZYRON Heavy Industry`,
@@ -65,37 +61,14 @@ export async function generateMetadata({ params }: ProductSeriesPageProps): Prom
 
 export default async function ProductSeriesPage({ params }: ProductSeriesPageProps) {
   const { id } = await params;
-  const legacyCategory = getCategoryById(id);
   const publishedCategory = await getPublishedCategoryBySlug(id);
 
-  if (!legacyCategory || !publishedCategory) {
+  if (!publishedCategory) {
     notFound();
   }
-
-  const category = {
-    ...legacyCategory,
-    name: publishedCategory.name,
-    summary: publishedCategory.summary ?? legacyCategory.summary,
-    description: publishedCategory.description ?? legacyCategory.description,
-  };
-
-  const publishedProductBySlug = new Map(publishedCategory.products.map((product) => [product.slug, product]));
-  const categoryProducts = products
-    .filter((product) => product.categoryId === category.id && publishedProductBySlug.has(product.id))
-    .map((product) => {
-      const published = publishedProductBySlug.get(product.id)!;
-      return { ...product, name: published.name, tagline: published.summary };
-    });
-  const categoryProductBySlug = new Map(categoryProducts.map((product) => [product.id, product]));
-  const directory = getCategoryDirectory(category.id)
-    .map((group) => ({
-      ...group,
-      products: group.products.flatMap((product) => {
-        const published = categoryProductBySlug.get(product.id);
-        return published ? [published] : [];
-      }),
-    }))
-    .filter((group) => group.products.length > 0);
+  const category = toPublicCategory(publishedCategory);
+  const categoryProducts = publishedCategory.products.map((product) => toPublicProduct(product, category));
+  const directory = buildProductDirectory(categoryProducts);
 
   return (
     <main className="bg-[#f4f6f8] text-[#101214]">

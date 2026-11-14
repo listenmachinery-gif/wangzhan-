@@ -1,5 +1,8 @@
 import type { MetadataRoute } from "next";
-import { getCategoryHref, productCategories, products } from "@/data/products";
+import { getCategoryHref } from "@/data/products";
+import { listPublishedCategories } from "@/lib/repositories/category-repository";
+
+export const dynamic = "force-dynamic";
 
 const siteUrl = "https://www.zyroncnc.com";
 
@@ -12,8 +15,9 @@ const staticRoutes = [
   { path: "/contact", changeFrequency: "monthly", priority: 0.7 },
 ] as const;
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
+  const categories = await listPublishedCategories();
 
   return [
     ...staticRoutes.map((route) => ({
@@ -22,17 +26,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: route.changeFrequency,
       priority: route.priority,
     })),
-    ...productCategories.map((category) => ({
-      url: `${siteUrl}${getCategoryHref(category.id)}`,
-      lastModified: now,
+    ...categories.map((category) => ({
+      url: `${siteUrl}${getCategoryHref(category.slug)}`,
+      lastModified: category.publishedAt ?? now,
       changeFrequency: "weekly" as const,
       priority: 0.85,
     })),
-    ...products.map((product) => ({
-      url: `${siteUrl}/products/${product.id}`,
-      lastModified: now,
+    ...categories.flatMap((category) => category.products.map((product) => ({
+      url: `${siteUrl}/products/${product.slug}`,
+      lastModified: product.publishedAt ?? now,
       changeFrequency: "monthly" as const,
       priority: 0.8,
-    })),
+    }))),
   ];
 }

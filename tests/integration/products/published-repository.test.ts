@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { products as legacyProducts } from "@/data/products";
@@ -13,7 +14,9 @@ import {
   getPublishedCategoryBySlug,
   listPublishedCategories,
 } from "@/lib/repositories/category-repository";
+import { buildPublicCatalogueView } from "@/lib/repositories/public-catalogue-view";
 import { publishProduct } from "@/lib/services/publication-service";
+import { validProductModuleData } from "@/tests/fixtures/product-modules";
 
 describe("published catalogue repositories", () => {
   beforeEach(async () => {
@@ -34,6 +37,11 @@ describe("published catalogue repositories", () => {
     expect(slugs).not.toContain("mechanical-punch-press");
     expect((await listPublishedCategories({ database: db })).map((category) => category.slug)).not.toContain("press-machines");
     await expect(getPublishedCategoryBySlug("press-machines", { database: db })).resolves.toBeNull();
+
+    await expect(getPublishedProductBySlug("foot-shear", {
+      database: db,
+      allowLegacyFallback: true,
+    })).resolves.toBeNull();
   });
 
   it("returns visible validated modules in deterministic position order", async () => {
@@ -82,6 +90,38 @@ describe("published catalogue repositories", () => {
     })).resolves.toMatchObject({ source: "legacy", slug: legacy.id, name: legacy.name });
   });
 
+  it("makes CMS-only published products discoverable without a legacy array entry", async () => {
+    const category = await db.productCategory.findUniqueOrThrow({ where: { slug: "shearing-machines" } });
+    await db.product.create({
+      data: {
+        categoryId: category.id,
+        slug: "cms-only-test-machine",
+        name: "CMS Only Test Machine",
+        summary: "Created entirely in the CMS.",
+        status: "PUBLISHED",
+        publishedAt: new Date(),
+        sections: {
+          create: {
+            type: "HERO",
+            position: 0,
+            visible: true,
+            content: validProductModuleData.HERO as Prisma.InputJsonValue,
+          },
+        },
+      },
+    });
+
+    const view = buildPublicCatalogueView(await listPublishedCategories({ database: db }));
+    expect(view.products.find((product) => product.id === "cms-only-test-machine")).toMatchObject({
+      name: "CMS Only Test Machine",
+      image: "/hero.webp",
+    });
+    await expect(getPublishedProductBySlug("cms-only-test-machine", { database: db })).resolves.toMatchObject({
+      source: "database",
+      slug: "cms-only-test-machine",
+    });
+  });
+
   it("publishes validated content without changing the immutable slug", async () => {
     const product = await db.product.update({
       where: { slug: "compact-electric-shearing-machine" },
@@ -113,5 +153,9 @@ describe("published catalogue repositories", () => {
       expectedVersion: product.version,
       revalidate: () => undefined,
     })).rejects.toThrow(/version/i);
+    await expect(db.product.update({
+      where: { id: product.id },
+      data: { slug: "changed-public-slug" },
+    })).rejects.toThrow(/locked product slug/i);
   });
 });

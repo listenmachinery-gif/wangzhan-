@@ -14,25 +14,28 @@ type PublishProductInput = {
 };
 
 export async function publishProduct(input: PublishProductInput) {
-  const before = await input.database.product.findUniqueOrThrow({
-    where: { id: input.productId },
-    include: {
-      category: { select: { slug: true, status: true, publishedAt: true } },
-      sections: { where: { visible: true }, orderBy: { position: "asc" } },
-    },
-  });
-  if (before.version !== input.expectedVersion) throw new Error("Product version conflict.");
-  if (before.category.status !== "PUBLISHED" || !before.category.publishedAt) {
-    throw new Error("Product category must be published first.");
-  }
-  if (before.registeredWidget && !isRegisteredProductWidget(before.registeredWidget)) {
-    throw new Error("Product widget is not registered.");
-  }
-  for (const section of before.sections) {
-    validateModule(section.type as ProductModuleType, section.content);
-  }
+  const result = await input.database.$transaction(async (transaction) => {
+    const before = await transaction.product.findUniqueOrThrow({
+      where: { id: input.productId },
+      include: {
+        category: { select: { slug: true, status: true, publishedAt: true } },
+        sections: { where: { visible: true }, orderBy: { position: "asc" } },
+      },
+    });
+    if (before.version !== input.expectedVersion) throw new Error("Product version conflict.");
+    if (before.category.status !== "PUBLISHED" || !before.category.publishedAt) {
+      throw new Error("Product category must be published first.");
+    }
+    if (before.registeredWidget && !isRegisteredProductWidget(before.registeredWidget)) {
+      throw new Error("Product widget is not registered.");
+    }
+    if (!before.sections.some((section) => section.type === "HERO")) {
+      throw new Error("A visible HERO module is required before publication.");
+    }
+    for (const section of before.sections) {
+      validateModule(section.type as ProductModuleType, section.content);
+    }
 
-  const published = await input.database.$transaction(async (transaction) => {
     const result = await transaction.product.updateMany({
       where: { id: before.id, version: input.expectedVersion },
       data: {
@@ -55,15 +58,15 @@ export async function publishProduct(input: PublishProductInput) {
         after: { status: after.status, version: after.version } as Prisma.InputJsonValue,
       },
     });
-    return after;
-  });
+    return { after, categorySlug: before.category.slug };
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 
   const invalidate = input.revalidate ?? revalidatePath;
   await Promise.all([
-    invalidate(`/products/${published.slug}`),
-    invalidate(`/products/series/${before.category.slug}`),
+    invalidate(`/products/${result.after.slug}`),
+    invalidate(`/products/series/${result.categorySlug}`),
     invalidate("/products"),
     invalidate("/sitemap.xml"),
   ]);
-  return published;
+  return result.after;
 }

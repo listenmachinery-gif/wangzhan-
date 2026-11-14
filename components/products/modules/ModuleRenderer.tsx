@@ -32,12 +32,12 @@ export function ModuleRenderer({ productModule }: { productModule: ProductModule
 
   if (type === "RELATED_LINKS") {
     const links = data as EditorialData & { items: Array<{ label: string; href: string; description?: string }> };
-    return <SectionShell type={type} eyebrow={links.eyebrow} title={links.title} paragraphs={links.paragraphs}><nav aria-label={links.title} className="mt-8 flex flex-wrap gap-3">{links.items.map((item) => <Link key={item.href} href={item.href} className="border border-neutral-300 px-5 py-3 font-semibold">{item.label}</Link>)}</nav></SectionShell>;
+    return <SectionShell type={type} eyebrow={links.eyebrow} title={links.title} paragraphs={links.paragraphs}><nav aria-label={links.title} className="mt-8 grid gap-3 md:grid-cols-2">{links.items.map((item) => <Link key={item.href} href={item.href} className="border border-neutral-300 px-5 py-4 font-semibold">{item.label}{item.description ? <span className="mt-1 block text-sm font-normal text-neutral-600">{item.description}</span> : null}</Link>)}</nav></SectionShell>;
   }
 
   if (type === "CTA") {
     const cta = data as EditorialData & { primaryCta: { label: string; href: string }; secondaryCta?: { label: string; href: string }; requiredInfo?: string[] };
-    return <SectionShell type={type} eyebrow={cta.eyebrow} title={cta.title} paragraphs={cta.paragraphs} dark><div className="mt-8 flex flex-wrap gap-3"><Link href={cta.primaryCta.href} className="bg-ignition px-6 py-3 font-semibold">{cta.primaryCta.label}</Link>{cta.secondaryCta ? <Link href={cta.secondaryCta.href} className="border border-white/40 px-6 py-3 font-semibold">{cta.secondaryCta.label}</Link> : null}</div></SectionShell>;
+    return <SectionShell type={type} eyebrow={cta.eyebrow} title={cta.title} paragraphs={cta.paragraphs} dark>{cta.requiredInfo?.length ? <div className="mt-7"><h3 className="font-semibold">Information to include</h3><ul className="mt-3 flex flex-wrap gap-2">{cta.requiredInfo.map((item) => <li key={item} className="border border-white/25 px-3 py-2 text-sm">{item}</li>)}</ul></div> : null}<div className="mt-8 flex flex-wrap gap-3"><Link href={cta.primaryCta.href} className="bg-ignition px-6 py-3 font-semibold">{cta.primaryCta.label}</Link>{cta.secondaryCta ? <Link href={cta.secondaryCta.href} className="border border-white/40 px-6 py-3 font-semibold">{cta.secondaryCta.label}</Link> : null}</div></SectionShell>;
   }
 
   const editorial = data as EditorialData & { fit?: string[]; materials?: string[]; note?: string };
