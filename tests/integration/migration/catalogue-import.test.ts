@@ -13,6 +13,10 @@ describe("legacy catalogue import", () => {
     const catalogue = await readLegacyCatalogue({ includePageContent: false });
 
     const first = await importLegacyCatalogue({ database: db, catalogue, write: true });
+    const firstPublishedAt = (await db.product.findUniqueOrThrow({
+      where: { slug: "compact-electric-shearing-machine" },
+      select: { publishedAt: true },
+    })).publishedAt;
     const second = await importLegacyCatalogue({ database: db, catalogue, write: true });
 
     expect(first.imported).toMatchObject({ categories: catalogue.categories.length, products: catalogue.products.length });
@@ -28,6 +32,12 @@ describe("legacy catalogue import", () => {
       where: { slug: "compact-electric-shearing-machine" },
       include: { sections: { orderBy: { position: "asc" } } },
     });
+    const sampleCategory = await db.productCategory.findUniqueOrThrow({ where: { slug: "shearing-machines" } });
+    expect(sample.status).toBe("PUBLISHED");
+    expect(sample.publishedAt).not.toBeNull();
+    expect(sample.publishedAt).toEqual(firstPublishedAt);
+    expect(sampleCategory.status).toBe("PUBLISHED");
+    expect(sampleCategory.publishedAt).not.toBeNull();
     expect(sample.slugLocked).toBe(true);
     expect(sample.sections.map(({ position }) => position)).toEqual(
       Array.from({ length: sample.sections.length }, (_, index) => index),

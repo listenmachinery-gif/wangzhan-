@@ -1,4 +1,4 @@
-import { Prisma, type PrismaClient } from "@prisma/client";
+import { Prisma, PublicationStatus, type PrismaClient } from "@prisma/client";
 import { z } from "zod";
 
 import { stableImportReport, type ImportReport } from "@/lib/migration/import-report";
@@ -64,15 +64,18 @@ export async function importLegacyCatalogue(options: {
   if (!options.write) return stableImportReport(baseReport);
 
   let mediaReferenceCount = 0;
+  const importedAt = new Date();
   await options.database.$transaction(async (transaction) => {
     for (const category of catalogue.categories) {
-      await transaction.productCategory.upsert({
+      const persistedCategory = await transaction.productCategory.upsert({
         where: { slug: category.id },
         update: {
           name: category.name,
           summary: category.summary,
           description: category.description,
           position: category.position,
+          status: PublicationStatus.PUBLISHED,
+          archivedAt: null,
         },
         create: {
           slug: category.id,
@@ -80,8 +83,16 @@ export async function importLegacyCatalogue(options: {
           summary: category.summary,
           description: category.description,
           position: category.position,
+          status: PublicationStatus.PUBLISHED,
+          publishedAt: importedAt,
         },
       });
+      if (!persistedCategory.publishedAt) {
+        await transaction.productCategory.update({
+          where: { id: persistedCategory.id },
+          data: { publishedAt: importedAt },
+        });
+      }
     }
 
     for (const mapping of mappings) {
@@ -96,6 +107,8 @@ export async function importLegacyCatalogue(options: {
           summary: mapping.product.summary,
           description: mapping.product.description,
           slugLocked: true,
+          status: PublicationStatus.PUBLISHED,
+          archivedAt: null,
         },
         create: {
           categoryId: category.id,
@@ -104,8 +117,16 @@ export async function importLegacyCatalogue(options: {
           summary: mapping.product.summary,
           description: mapping.product.description,
           slugLocked: true,
+          status: PublicationStatus.PUBLISHED,
+          publishedAt: importedAt,
         },
       });
+      if (!product.publishedAt) {
+        await transaction.product.update({
+          where: { id: product.id },
+          data: { publishedAt: importedAt },
+        });
+      }
 
       await transaction.mediaReference.deleteMany({
         where: {
