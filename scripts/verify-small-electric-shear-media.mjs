@@ -385,6 +385,8 @@ assert.match(backgaugeComponentSource, /aspect-\[4\/3\]/, "The mobile image stag
 assert.match(backgaugeComponentSource, /data-section="backgauge-options"/, "The carousel must expose its section identity");
 assert.match(backgaugeComponentSource, /window\.setInterval/, "Backgauge options must advance automatically");
 assert.match(backgaugeComponentSource, /prefers-reduced-motion: reduce/, "Backgauge autoplay must respect reduced motion");
+assert.doesNotMatch(backgaugeComponentSource, /onMouseEnter/, "Backgauge autoplay must not stop when a desktop pointer rests on the section");
+assert.doesNotMatch(backgaugeComponentSource, /setIsPaused/, "Backgauge autoplay must remain continuous after pointer and keyboard interaction");
 assert.match(backgaugeComponentSource, /data-mobile-copy-below/, "Backgauge copy must render below the image on phone and tablet layouts");
 assert.match(backgaugeComponentSource, /lg:hidden/, "Backgauge copy must use its separate phone and tablet layout below the image");
 
@@ -401,6 +403,8 @@ assert.match(showcaseComponentSource, /object-contain/, "Showcase images must re
 assert.match(showcaseComponentSource, /data-section="product-showcase"/, "The showcase must expose its section identity");
 assert.match(showcaseComponentSource, /window\.setInterval/, "Product showcase views must advance automatically");
 assert.match(showcaseComponentSource, /prefers-reduced-motion: reduce/, "Product showcase autoplay must respect reduced motion");
+assert.doesNotMatch(showcaseComponentSource, /onMouseEnter/, "Product showcase autoplay must not stop when a desktop pointer rests on the section");
+assert.doesNotMatch(showcaseComponentSource, /setIsPaused/, "Product showcase autoplay must remain continuous after pointer and keyboard interaction");
 
 const solutionPageSource = readFileSync(resolve(root, "components/ShearingSolutionPage.tsx"), "utf8");
 const expectedModelCards = [
@@ -478,6 +482,8 @@ assert.match(modelCarouselSource, /lg:grid-cols-\[minmax\(0,0\.92fr\)_minmax\(0,
 assert.match(modelCarouselSource, /sizes="\(min-width: 1024px\) 560px, 100vw"/);
 assert.match(modelCarouselSource, /window\.setInterval/, "Model cards must advance automatically");
 assert.match(modelCarouselSource, /prefers-reduced-motion: reduce/, "Model card autoplay must respect reduced motion");
+assert.doesNotMatch(modelCarouselSource, /onMouseEnter/, "Model card autoplay must not stop when a desktop pointer rests on the carousel");
+assert.doesNotMatch(modelCarouselSource, /setIsPaused/, "Model card autoplay must remain continuous after pointer and keyboard interaction");
 assert.match(solutionPageSource, /data-detail-image/);
 assert.match(solutionPageSource, /data-detail-copy/);
 assert.match(solutionPageSource, /data-detail-copy[^>]*className="[^"]*lg:absolute/);

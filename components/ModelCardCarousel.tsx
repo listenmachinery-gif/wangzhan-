@@ -11,7 +11,6 @@ type ModelCardCarouselProps = {
 
 export default function ModelCardCarousel({ cards }: ModelCardCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
 
   const showPrevious = useCallback(() => {
     setActiveIndex((current) => (current - 1 + cards.length) % cards.length);
@@ -23,7 +22,6 @@ export default function ModelCardCarousel({ cards }: ModelCardCarouselProps) {
 
   useEffect(() => {
     if (
-      isPaused ||
       cards.length <= 1 ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
@@ -32,7 +30,7 @@ export default function ModelCardCarousel({ cards }: ModelCardCarouselProps) {
 
     const timer = window.setInterval(showNext, 5000);
     return () => window.clearInterval(timer);
-  }, [cards.length, isPaused, showNext]);
+  }, [cards.length, showNext]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "ArrowLeft") {
@@ -67,14 +65,6 @@ export default function ModelCardCarousel({ cards }: ModelCardCarouselProps) {
       onKeyDown={handleKeyDown}
       aria-label="Small electric shearing machine models"
       className="outline-none focus-visible:ring-2 focus-visible:ring-[#76B900] focus-visible:ring-offset-4"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onFocusCapture={() => setIsPaused(true)}
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) {
-          setIsPaused(false);
-        }
-      }}
     >
       <div className="mb-4 flex items-center justify-between gap-4">
         <p className="text-sm font-semibold text-neutral-600" aria-live="polite">

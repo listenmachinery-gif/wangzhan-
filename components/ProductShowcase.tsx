@@ -14,7 +14,6 @@ type ProductShowcaseProps = {
 
 export default function ProductShowcase({ eyebrow, title, description, images }: ProductShowcaseProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const showPrevious = useCallback(() => {
     setActiveIndex((current) => (current - 1 + images.length) % images.length);
   }, [images.length]);
@@ -24,7 +23,6 @@ export default function ProductShowcase({ eyebrow, title, description, images }:
 
   useEffect(() => {
     if (
-      isPaused ||
       images.length <= 1 ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
@@ -33,7 +31,7 @@ export default function ProductShowcase({ eyebrow, title, description, images }:
 
     const timer = window.setInterval(showNext, 5000);
     return () => window.clearInterval(timer);
-  }, [images.length, isPaused, showNext]);
+  }, [images.length, showNext]);
 
   if (images.length === 0) {
     return null;
@@ -46,14 +44,6 @@ export default function ProductShowcase({ eyebrow, title, description, images }:
       data-section="product-showcase"
       data-auto-carousel
       className="bg-[#F3F5F7] px-5 py-16 sm:px-8 lg:py-24"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onFocusCapture={() => setIsPaused(true)}
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) {
-          setIsPaused(false);
-        }
-      }}
     >
       <div className="mx-auto max-w-7xl">
         <div className="grid items-end gap-6 lg:grid-cols-[0.82fr_1.18fr] lg:gap-16">

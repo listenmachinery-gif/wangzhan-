@@ -9,7 +9,6 @@ const swipeThreshold = 48;
 
 export default function BackgaugeCarousel({ eyebrow, title, intro, items }: ShearingBackgaugeCarousel) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const pointerStart = useRef<{ x: number; y: number } | null>(null);
 
   const showPrevious = useCallback(() => {
@@ -22,7 +21,6 @@ export default function BackgaugeCarousel({ eyebrow, title, intro, items }: Shea
 
   useEffect(() => {
     if (
-      isPaused ||
       items.length <= 1 ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
@@ -31,7 +29,7 @@ export default function BackgaugeCarousel({ eyebrow, title, intro, items }: Shea
 
     const timer = window.setInterval(showNext, 5000);
     return () => window.clearInterval(timer);
-  }, [isPaused, items.length, showNext]);
+  }, [items.length, showNext]);
 
   if (items.length === 0) {
     return null;
@@ -74,14 +72,6 @@ export default function BackgaugeCarousel({ eyebrow, title, intro, items }: Shea
       data-auto-carousel
       className="overflow-hidden bg-[#111519] px-5 py-16 text-white sm:px-8 lg:py-24"
       aria-labelledby="backgauge-options-title"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onFocusCapture={() => setIsPaused(true)}
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) {
-          setIsPaused(false);
-        }
-      }}
     >
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-6 lg:grid-cols-[0.7fr_1.3fr] lg:items-end lg:gap-16">
