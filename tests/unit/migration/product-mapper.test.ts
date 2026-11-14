@@ -139,7 +139,48 @@ describe("legacy product mapper", () => {
       expect(result.modules.find((item) => item.type === "HERO")?.data).toMatchObject({
         title: legacy!.page?.title ?? legacy!.name,
       });
+
+      const pageApplications = Array.isArray(legacy!.page?.applications)
+        ? legacy!.page.applications as Array<Record<string, unknown>>
+        : undefined;
+      const expectedApplication = pageApplications?.length
+        ? {
+            title: String(pageApplications[0].title),
+            text: String(pageApplications[0].text),
+          }
+        : {
+            title: legacy!.applications[0],
+            text: legacy!.applications[0],
+          };
+      const applications = result.modules.find((item) => item.type === "APPLICATIONS")?.data as {
+        items: Array<{ title: string; text: string }>;
+      };
+      expect(applications.items[0], `application mapping for ${slug}`).toMatchObject(expectedApplication);
+
+      const pagePainPoints = Array.isArray(legacy!.page?.painPoints)
+        ? legacy!.page.painPoints as Array<Record<string, unknown>>
+        : undefined;
+      if (pagePainPoints?.length) {
+        const problems = result.modules.find((item) => item.type === "PROBLEMS")?.data as {
+          items: Array<{ title: string; text: string }>;
+        };
+        expect(problems.items[0], `problem mapping for ${slug}`).toEqual({
+          title: String(pagePainPoints[0].title),
+          text: String(pagePainPoints[0].text),
+        });
+      }
+
+      if (legacy!.page?.hero && typeof legacy!.page.hero === "object") {
+        expect(result.unmapped.find((item) => item.path === "page.hero")?.value).toEqual(legacy!.page.hero);
+      }
     }
+
+    const compact = catalogue.products.find((product) => product.id === "compact-electric-shearing-machine")!;
+    const compactMapping = mapLegacyProduct(compact);
+    expect(compactMapping.modules.find((item) => item.type === "HERO")?.data).toMatchObject({
+      images: { desktop: compact.page?.heroBackgroundImage },
+      subtitle: compact.page?.heroSubtitle,
+    });
 
     const pressBrake = mapLegacyProduct(catalogue.products.find((product) => product.id === "nc-hydraulic-press-brake")!);
     expect(pressBrake.modules.find((item) => item.type === "PROBLEMS")).toMatchObject({ visible: true });
