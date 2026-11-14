@@ -16,7 +16,15 @@ test.beforeAll(async () => {
   await database.productCategory.deleteMany();
   const catalogue = await readLegacyCatalogue({ includePageContent: true });
   await importLegacyCatalogue({ database, catalogue, write: true });
-  const category = await database.productCategory.findUniqueOrThrow({ where: { slug: "shearing-machines" } });
+  const category = await database.productCategory.create({
+    data: {
+      slug: "cms-only-test-category",
+      name: "CMS Only Test Category",
+      summary: "Created entirely in the CMS.",
+      status: "PUBLISHED",
+      publishedAt: new Date(),
+    },
+  });
   await database.product.create({
     data: {
       categoryId: category.id,
@@ -43,6 +51,17 @@ test.beforeAll(async () => {
   await database.$disconnect();
 });
 
+test.afterAll(async () => {
+  const database = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+  await database.product.updateMany({
+    where: { slug: "foot-shear" },
+    data: { status: "PUBLISHED", publishedAt: new Date() },
+  });
+  await database.product.deleteMany({ where: { slug: "cms-only-test-machine" } });
+  await database.productCategory.deleteMany({ where: { slug: "cms-only-test-category" } });
+  await database.$disconnect();
+});
+
 test("renders database-published products at unchanged URLs with the shared layout", async ({ page }) => {
   await page.goto("/products/compact-electric-shearing-machine");
   await expect(page).toHaveURL(/\/products\/compact-electric-shearing-machine$/);
@@ -61,7 +80,8 @@ test("makes a CMS-only product discoverable with metadata and media", async ({ p
   await expect(page.locator("link[rel='canonical']")).toHaveAttribute("href", /\/products\/cms-only-test-machine$/);
   await expect(page.locator("meta[property='og:image']")).toHaveAttribute("content", /\/products\/product-center-hero\.png$/);
 
-  await page.goto("/products/series/shearing-machines");
+  await page.goto("/products/series/cms-only-test-category");
+  await expect(page.getByRole("heading", { level: 1, name: "CMS Only Test Category" })).toBeVisible();
   await expect(page.getByRole("link", { name: "CMS Only Test Machine" })).toBeVisible();
 });
 
@@ -85,7 +105,7 @@ test("published listings come from the database and drafts return 404", async ({
   await page.goto("/products");
   await expect(page.getByText("54", { exact: true }).first()).toBeVisible();
   await page.goto("/products/series/shearing-machines");
-  await expect(page.getByRole("link", { name: "View Details" })).toHaveCount(7);
+  await expect(page.getByRole("link", { name: "View Details" })).toHaveCount(6);
 
   const database = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
   await database.product.update({ where: { slug: "foot-shear" }, data: { status: "DRAFT", publishedAt: null } });
@@ -96,11 +116,5 @@ test("published listings come from the database and drafts return 404", async ({
   const sitemapXml = await sitemap.text();
   expect(sitemapXml).not.toContain("/products/foot-shear");
   expect(sitemapXml).toContain("/products/cms-only-test-machine");
-  const restoreDatabase = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
-  await restoreDatabase.product.update({
-    where: { slug: "foot-shear" },
-    data: { status: "PUBLISHED", publishedAt: new Date() },
-  });
-  await restoreDatabase.product.delete({ where: { slug: "cms-only-test-machine" } });
-  await restoreDatabase.$disconnect();
+  expect(sitemapXml).toContain("/products/series/cms-only-test-category");
 });

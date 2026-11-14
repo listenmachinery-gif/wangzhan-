@@ -91,7 +91,15 @@ describe("published catalogue repositories", () => {
   });
 
   it("makes CMS-only published products discoverable without a legacy array entry", async () => {
-    const category = await db.productCategory.findUniqueOrThrow({ where: { slug: "shearing-machines" } });
+    const category = await db.productCategory.create({
+      data: {
+        slug: "cms-only-test-category",
+        name: "CMS Only Test Category",
+        summary: "Created entirely in the CMS.",
+        status: "PUBLISHED",
+        publishedAt: new Date(),
+      },
+    });
     await db.product.create({
       data: {
         categoryId: category.id,
@@ -112,6 +120,9 @@ describe("published catalogue repositories", () => {
     });
 
     const view = buildPublicCatalogueView(await listPublishedCategories({ database: db }));
+    expect(view.categories.find((item) => item.id === category.slug)).toMatchObject({
+      name: "CMS Only Test Category",
+    });
     expect(view.products.find((product) => product.id === "cms-only-test-machine")).toMatchObject({
       name: "CMS Only Test Machine",
       image: "/hero.webp",
@@ -156,6 +167,10 @@ describe("published catalogue repositories", () => {
     await expect(db.product.update({
       where: { id: product.id },
       data: { slug: "changed-public-slug" },
+    })).rejects.toThrow(/locked product slug/i);
+    await expect(db.product.update({
+      where: { id: product.id },
+      data: { slugLocked: false },
     })).rejects.toThrow(/locked product slug/i);
   });
 });
