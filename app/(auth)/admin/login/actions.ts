@@ -28,7 +28,7 @@ export async function loginAction(_state: LoginActionState, formData: FormData):
     httpOnly: true,
     secure: true,
     sameSite: "lax",
-    path: "/admin",
+    path: "/",
     expires: result.expiresAt,
   });
   redirect("/admin");

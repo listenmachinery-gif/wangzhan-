@@ -12,4 +12,5 @@ tsconfig.tsbuildinfo
 .playwright/
 test-results/
 playwright-report/
+.storage-test/
 .worktrees/

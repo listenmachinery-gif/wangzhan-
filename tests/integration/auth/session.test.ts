@@ -53,6 +53,6 @@ describe("opaque administrator sessions", () => {
     expect(cookie).toContain("HttpOnly");
     expect(cookie).toContain("Secure");
     expect(cookie).toContain("SameSite=Lax");
-    expect(cookie).toContain("Path=/admin");
+    expect(cookie).toContain("Path=/;");
   });
 });

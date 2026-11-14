@@ -83,5 +83,6 @@ export async function revokeSession(token: string) {
 }
 
 export function formatSessionCookie(token: string, expiresAt: Date) {
-  return `${SESSION_COOKIE_NAME}=${token}; Path=/admin; Expires=${expiresAt.toUTCString()}; HttpOnly; Secure; SameSite=Lax`;
+  // The authenticated CMS uses both /admin pages and /api/admin endpoints.
+  return `${SESSION_COOKIE_NAME}=${token}; Path=/; Expires=${expiresAt.toUTCString()}; HttpOnly; Secure; SameSite=Lax`;
 }
