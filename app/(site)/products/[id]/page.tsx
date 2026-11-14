@@ -22,7 +22,11 @@ import SheetAndTubeFiberLaserCuttingMachineSolutionPage from "@/components/Sheet
 import SingleTableFiberLaserCuttingMachineSolutionPage from "@/components/SingleTableFiberLaserCuttingMachineSolutionPage";
 import SmallElectricShearSolutionPage from "@/components/SmallElectricShearSolutionPage";
 import TorsionBarCncPressBrakeSolutionPage from "@/components/TorsionBarCncPressBrakeSolutionPage";
+import { StandardProductPage } from "@/components/products/StandardProductPage";
 import { getCategoryById, products } from "@/data/products";
+import { getPublishedProductBySlug } from "@/lib/repositories/product-repository";
+
+export const dynamic = "force-dynamic";
 
 type ProductDetailProps = {
   params: Promise<{
@@ -30,12 +34,12 @@ type ProductDetailProps = {
   }>;
 };
 
-export function generateStaticParams() {
-  return products.map((product) => ({ id: product.id }));
-}
-
 export async function generateMetadata({ params }: ProductDetailProps): Promise<Metadata> {
   const { id } = await params;
+  const published = await getPublishedProductBySlug(id, {
+    allowLegacyFallback: process.env.ZYRON_ENABLE_LEGACY_PRODUCT_FALLBACK === "true",
+  });
+  if (!published) return {};
   const product = products.find((item) => item.id === id);
 
   if (!product) {
@@ -929,6 +933,14 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
 
 export default async function ProductDetailPage({ params }: ProductDetailProps) {
   const { id } = await params;
+  const published = await getPublishedProductBySlug(id, {
+    allowLegacyFallback: process.env.ZYRON_ENABLE_LEGACY_PRODUCT_FALLBACK === "true",
+  });
+  if (published?.source === "database") {
+    return <StandardProductPage product={published} />;
+  }
+  if (!published) notFound();
+
   const product = products.find((item) => item.id === id);
 
   if (!product) {

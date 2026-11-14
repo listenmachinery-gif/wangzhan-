@@ -3,7 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
-import { getCategoryById, getCategoryDirectory, getCategoryHref, productCategories, products } from "@/data/products";
+import { getCategoryById, getCategoryDirectory, getCategoryHref, products } from "@/data/products";
+import { getPublishedCategoryBySlug } from "@/lib/repositories/category-repository";
+
+export const dynamic = "force-dynamic";
 
 type ProductSeriesPageProps = {
   params: Promise<{
@@ -20,17 +23,19 @@ function usesProductCutout(image: string) {
   );
 }
 
-export function generateStaticParams() {
-  return productCategories.map((category) => ({ id: category.id }));
-}
-
 export async function generateMetadata({ params }: ProductSeriesPageProps): Promise<Metadata> {
   const { id } = await params;
-  const category = getCategoryById(id);
+  const legacyCategory = getCategoryById(id);
+  const publishedCategory = await getPublishedCategoryBySlug(id);
 
-  if (!category) {
+  if (!legacyCategory || !publishedCategory) {
     return {};
   }
+  const category = {
+    ...legacyCategory,
+    name: publishedCategory.name,
+    description: publishedCategory.description ?? legacyCategory.description,
+  };
 
   return {
     title: `${category.name} | ZYRON Heavy Industry`,
@@ -60,14 +65,37 @@ export async function generateMetadata({ params }: ProductSeriesPageProps): Prom
 
 export default async function ProductSeriesPage({ params }: ProductSeriesPageProps) {
   const { id } = await params;
-  const category = getCategoryById(id);
+  const legacyCategory = getCategoryById(id);
+  const publishedCategory = await getPublishedCategoryBySlug(id);
 
-  if (!category) {
+  if (!legacyCategory || !publishedCategory) {
     notFound();
   }
 
-  const categoryProducts = products.filter((product) => product.categoryId === category.id);
-  const directory = getCategoryDirectory(category.id);
+  const category = {
+    ...legacyCategory,
+    name: publishedCategory.name,
+    summary: publishedCategory.summary ?? legacyCategory.summary,
+    description: publishedCategory.description ?? legacyCategory.description,
+  };
+
+  const publishedProductBySlug = new Map(publishedCategory.products.map((product) => [product.slug, product]));
+  const categoryProducts = products
+    .filter((product) => product.categoryId === category.id && publishedProductBySlug.has(product.id))
+    .map((product) => {
+      const published = publishedProductBySlug.get(product.id)!;
+      return { ...product, name: published.name, tagline: published.summary };
+    });
+  const categoryProductBySlug = new Map(categoryProducts.map((product) => [product.id, product]));
+  const directory = getCategoryDirectory(category.id)
+    .map((group) => ({
+      ...group,
+      products: group.products.flatMap((product) => {
+        const published = categoryProductBySlug.get(product.id);
+        return published ? [published] : [];
+      }),
+    }))
+    .filter((group) => group.products.length > 0);
 
   return (
     <main className="bg-[#f4f6f8] text-[#101214]">

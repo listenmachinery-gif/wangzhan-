@@ -3,6 +3,9 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { productCategories, products } from "@/data/products";
+import { listPublishedCategories } from "@/lib/repositories/category-repository";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Products | ZYRON Heavy Industry",
@@ -26,7 +29,34 @@ const selectionSteps = [
   "Receive quotation, delivery plan, installation guidance, and service support.",
 ];
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const publishedCategories = await listPublishedCategories();
+  const publishedCategoryBySlug = new Map(publishedCategories.map((category) => [category.slug, category]));
+  const visibleCategories = productCategories
+    .filter((category) => publishedCategoryBySlug.has(category.id))
+    .map((category) => {
+      const published = publishedCategoryBySlug.get(category.id)!;
+      return {
+        ...category,
+        name: published.name,
+        summary: published.summary ?? category.summary,
+        description: published.description ?? category.description,
+      };
+    });
+  const publishedProducts = new Map(
+    publishedCategories.flatMap((category) => category.products.map((product) => [product.slug, product] as const)),
+  );
+  const visibleProducts = products
+    .filter((product) => publishedProducts.has(product.id))
+    .map((product) => {
+      const published = publishedProducts.get(product.id)!;
+      return { ...product, name: published.name, tagline: published.summary };
+    });
+  const visibleHeroStats = [
+    { value: String(visibleCategories.length), label: "Machine Series" },
+    { value: String(visibleProducts.length), label: "Product Types" },
+    ...heroStats.slice(2),
+  ];
   return (
     <main className="bg-[#f4f6f8] text-[#101214]">
       <section className="relative isolate min-h-[calc(100vh-4rem)] overflow-hidden bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
@@ -76,7 +106,7 @@ export default function ProductsPage() {
           </div>
 
           <div className="mt-14 grid w-full max-w-4xl gap-5 border-y border-white/15 py-7 sm:grid-cols-3">
-            {heroStats.map((stat) => (
+            {visibleHeroStats.map((stat) => (
               <div key={stat.label}>
                 <p className="text-5xl font-semibold tracking-normal text-white">{stat.value}</p>
                 <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-300">{stat.label}</p>
@@ -114,7 +144,7 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      <ProductCatalog products={products} categories={productCategories} />
+      <ProductCatalog products={visibleProducts} categories={visibleCategories} />
 
       <section className="px-5 pb-16 sm:px-8">
         <div className="mx-auto grid max-w-7xl gap-8 rounded-md bg-graphite-950 px-6 py-14 text-center text-white sm:px-10 lg:grid-cols-[1fr_auto] lg:items-center lg:text-left">

@@ -1,68 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { PRODUCT_MODULE_TYPES, type ProductModuleType } from "@/lib/product-modules/types";
+import { PRODUCT_MODULE_TYPES } from "@/lib/product-modules/types";
 import { validateModule } from "@/lib/product-modules/schemas";
-
-const editorial = { eyebrow: "Section", title: "Title", paragraphs: ["Useful product information."] };
-const gallery = {
-  ...editorial,
-  items: [{ image: "/products/example.webp", alt: "Machine example", title: "Example", text: "Detail" }],
-};
-const cards = { ...editorial, items: [{ title: "Capability", text: "Clear explanation" }] };
-
-const valid: Record<ProductModuleType, unknown> = {
-  HERO: {
-    eyebrow: "Q11G Series",
-    title: "Small Electric Shearing Machine",
-    subtitle: "Compact precision cutting",
-    images: { desktop: "/hero.webp", alt: "Small electric shearing machine" },
-    badges: ["Electric Drive"],
-    valuePoints: ["600–2500 mm widths"],
-    primaryCta: { label: "Request a Quote", href: "#quote" },
-  },
-  OVERVIEW: editorial,
-  PRODUCT_SHOWCASE: gallery,
-  DETAIL_GALLERY: gallery,
-  OPTION_CAROUSEL: gallery,
-  MATERIAL_GALLERY: gallery,
-  PROBLEMS: cards,
-  SOLUTION: { ...editorial, fit: ["Small workshops"] },
-  PROCESS: cards,
-  APPLICATIONS: cards,
-  MATERIAL_GUIDANCE: { ...editorial, materials: ["Mild steel"], note: "Confirm grade and thickness." },
-  ADVANTAGES: cards,
-  STRUCTURE: cards,
-  TECHNICAL: {
-    ...editorial,
-    columns: [{ key: "model", label: "Model" }, { key: "width", label: "Width", unit: "mm" }],
-    rows: [{ model: "Q11G-2x600", width: "600" }],
-  },
-  MODEL_CARDS: {
-    ...editorial,
-    items: [{ name: "Q11G-2x600", specs: [{ label: "Width", value: "600", unit: "mm" }] }],
-  },
-  INDUSTRY_GALLERY: gallery,
-  MODEL_GUIDE: editorial,
-  COMPARISON: {
-    ...editorial,
-    columns: ["Feature", "Electric", "Hydraulic"],
-    rows: [{ label: "Footprint", values: ["Compact", "Large"] }],
-  },
-  ENERGY_COMPARISON: {
-    ...editorial,
-    columns: ["Metric", "Electric", "Hydraulic"],
-    rows: [{ label: "Idle power", values: ["Low", "Higher"] }],
-  },
-  WORKFLOW: cards,
-  MANUFACTURER_SUPPORT: cards,
-  FAQ: { ...editorial, items: [{ question: "Which model fits?", answer: "Confirm material and cutting length." }] },
-  RELATED_LINKS: { ...editorial, items: [{ label: "Shearing machines", href: "/products/series/shearing-machines" }] },
-  CTA: { ...editorial, primaryCta: { label: "Request a Quote", href: "#quote" }, requiredInfo: ["Material"] },
-};
+import { validProductModuleData } from "@/tests/fixtures/product-modules";
 
 describe("standard product module schemas", () => {
   it.each(PRODUCT_MODULE_TYPES)("accepts a valid %s module", (type) => {
-    expect(validateModule(type, valid[type])).toEqual(valid[type]);
+    expect(validateModule(type, validProductModuleData[type])).toEqual(validProductModuleData[type]);
   });
 
   it.each(PRODUCT_MODULE_TYPES)("rejects malformed %s content", (type) => {
@@ -70,6 +14,9 @@ describe("standard product module schemas", () => {
   });
 
   it("rejects unknown properties so legacy content cannot disappear silently", () => {
-    expect(() => validateModule("OVERVIEW", { ...editorial, legacyMystery: true })).toThrow();
+    expect(() => validateModule("OVERVIEW", {
+      ...(validProductModuleData.OVERVIEW as object),
+      legacyMystery: true,
+    })).toThrow();
   });
 });
