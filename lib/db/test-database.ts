@@ -19,6 +19,8 @@ export async function resetTestDatabase() {
   assertTestDatabase();
 
   await db.$transaction([
+    db.pageVersion.deleteMany(),
+    db.sitePage.deleteMany(),
     db.leadNotificationAttempt.deleteMany(),
     db.leadActivity.deleteMany(),
     db.leadAssignment.deleteMany(),

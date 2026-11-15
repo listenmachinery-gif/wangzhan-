@@ -69,10 +69,10 @@
 - Create: `app/api/admin/pages/[id]/rollback/route.ts`
 - Test: `tests/integration/pages/page-service.test.ts`
 
-- [ ] Write failing integration tests for permission, conflict, draft isolation, publish, immutable history, rollback, audit and revalidation.
-- [ ] Apply the migration only to the test database and verify expected failures.
-- [ ] Implement transactional service and thin API routes.
-- [ ] Run integration and unit suites.
+- [x] Write failing integration tests for permission, conflict, draft isolation, publish, immutable history, rollback, audit and revalidation.
+- [x] Apply the migration only to the test database and verify expected failures.
+- [x] Implement transactional service and thin API routes.
+- [x] Run integration and unit suites.
 
 ### Task 4: Admin page center and editor
 
