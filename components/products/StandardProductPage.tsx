@@ -45,6 +45,7 @@ export function StandardProductPage({ product }: { product: {
         return (
           <section
             key={group.id}
+            id={group.id}
             aria-label={group.label}
             data-product-layout-group={group.id}
           >

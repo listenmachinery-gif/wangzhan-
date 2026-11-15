@@ -70,6 +70,9 @@ test("renders database-published products at unchanged URLs with the shared layo
   await expect(page.locator("[data-product-module]")).toHaveCount(10);
   expect(await page.locator("script[data-faq-schema]").textContent()).toContain("FAQPage");
   await expect(page.locator("link[rel='canonical']")).toHaveAttribute("href", /\/products\/compact-electric-shearing-machine$/);
+  await page.getByRole("link", { name: "View Models" }).click();
+  await expect(page).toHaveURL(/#models$/);
+  await expect(page.locator("section#models")).toBeInViewport();
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.locator("[data-technical-table-scroll]").first()).toHaveCSS("overflow-x", "auto");
 });
