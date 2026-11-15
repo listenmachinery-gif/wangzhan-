@@ -11,7 +11,14 @@ import { ModuleEditorRegistry, type JsonValue } from "./ModuleEditorRegistry";
 type Section = { id: string; type: ProductModuleType; position: number; visible: boolean; content: JsonValue; mediaAssetIds: string[] };
 type ProductState = { id: string; name: string; slug: string; summary: string; description: string | null; categoryId: string; status: string; version: number; sections: Section[] };
 
-export function ProductEditor({ initialProduct, categories }: { initialProduct: ProductState; categories: Array<{ id: string; name: string }> }) {
+function referencedMediaIds(value: JsonValue): string[] {
+  if (typeof value === "string") return value.match(/^\/api\/media\/([^/?#]+)$/)?.[1] ? [decodeURIComponent(value.slice("/api/media/".length))] : [];
+  if (Array.isArray(value)) return value.flatMap(referencedMediaIds);
+  if (value && typeof value === "object") return Object.values(value).flatMap(referencedMediaIds);
+  return [];
+}
+
+export function ProductEditor({ initialProduct, categories, media }: { initialProduct: ProductState; categories: Array<{ id: string; name: string }>; media: Array<{ id: string; name: string }> }) {
   const router = useRouter();
   const [product, setProduct] = useState(initialProduct);
   const [sections, setSections] = useState(initialProduct.sections);
@@ -47,7 +54,7 @@ export function ProductEditor({ initialProduct, categories }: { initialProduct: 
           position,
           visible: section.visible,
           content: section.content,
-          mediaAssetIds: section.mediaAssetIds,
+          mediaAssetIds: [...new Set(referencedMediaIds(section.content))],
         })),
       }),
     });
@@ -75,7 +82,7 @@ export function ProductEditor({ initialProduct, categories }: { initialProduct: 
     setMessage("已添加空白模块；请填写全部必填字段后保存。");
   }
   async function copy() {
-    const result = await request(`/api/admin/products/${product.id}`, { method: "POST", body: JSON.stringify({ action: "copy", name: copyName, slug: copySlug }) });
+    const result = await request(`/api/admin/products/${product.id}`, { method: "POST", body: JSON.stringify({ action: "copy", name: copyName, slug: copySlug, expectedVersion: product.version }) });
     router.push(`/admin/products/${result.id}`);
   }
 
@@ -98,8 +105,7 @@ export function ProductEditor({ initialProduct, categories }: { initialProduct: 
         {sections.map((section, index) => (
           <article key={section.id || section.type} data-module-editor={section.type} className="rounded-xl border border-neutral-200 bg-white p-5">
             <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-semibold text-[#5F9500]">{section.type}</p><h3 className="mt-1 font-semibold">{SMALL_ELECTRIC_PRODUCT_MODULE_LABELS[section.type]}</h3></div><div className="flex items-center gap-2"><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={section.visible} onChange={(event) => setSections(sections.map((item, itemIndex) => itemIndex === index ? { ...item, visible: event.target.checked } : item))} />显示</label><button aria-label="上移模块" onClick={() => move(index, -1)} className="rounded border px-2 py-1">↑</button><button aria-label="下移模块" onClick={() => move(index, 1)} className="rounded border px-2 py-1">↓</button><button onClick={() => setSections(sections.filter((_, itemIndex) => itemIndex !== index))} className="rounded border border-red-200 px-2 py-1 text-red-700">删除</button></div></div>
-            <ModuleEditorRegistry type={section.type} value={section.content} onChange={(content) => setSections(sections.map((item, itemIndex) => itemIndex === index ? { ...item, content } : item))} />
-            <label className="mt-4 block text-xs font-medium text-neutral-600">媒体资源 ID（逗号分隔）<input value={section.mediaAssetIds.join(",")} onChange={(event) => setSections(sections.map((item, itemIndex) => itemIndex === index ? { ...item, mediaAssetIds: event.target.value.split(",").map((value) => value.trim()).filter(Boolean) } : item))} className="mt-1 w-full rounded-md border px-3 py-2 text-sm" /></label>
+            <ModuleEditorRegistry type={section.type} value={section.content} media={media} onChange={(content) => setSections(sections.map((item, itemIndex) => itemIndex === index ? { ...item, content } : item))} />
           </article>
         ))}
         {sections.length === 0 ? <p className="rounded-xl border border-dashed p-8 text-center text-sm text-neutral-500">尚无模块。请先从已有产品复制或通过 API 添加经 schema 校验的模块。</p> : null}

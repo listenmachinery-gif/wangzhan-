@@ -19,7 +19,7 @@ const drafts: Record<ProductModuleType, unknown> = {
   MATERIAL_GUIDANCE: { ...editorial, materials: [""], note: "" },
   ADVANTAGES: cards,
   STRUCTURE: cards,
-  TECHNICAL: { ...editorial, columns: [{ key: "", label: "" }], rows: [{ value: "" }] },
+  TECHNICAL: { ...editorial, columns: [{ key: "value", label: "" }], rows: [{ value: "" }] },
   MODEL_CARDS: { ...editorial, items: [{ name: "", specs: [{ label: "", value: "" }] }] },
   INDUSTRY_GALLERY: gallery,
   MODEL_GUIDE: editorial,

@@ -105,14 +105,17 @@ describe("ProductAdminService", () => {
         type: "HERO",
         position: 0,
         visible: true,
-        content: validProductModuleData.HERO,
+        content: {
+          ...(validProductModuleData.HERO as Record<string, unknown>),
+          images: { desktop: `/api/media/${media.id}`, alt: "Module product" },
+        },
         mediaAssetIds: [media.id],
       }],
     });
     expect(saved.version).toBe(product.version + 1);
     await expect(db.mediaReference.findFirstOrThrow({
-      where: { mediaAssetId: media.id, entityType: "ProductSection" },
-    })).resolves.toMatchObject({ field: "content" });
+      where: { mediaAssetId: media.id, entityType: "Product", entityId: product.id },
+    })).resolves.toMatchObject({ field: expect.stringContaining("HERO") });
     await expect(service.saveSections(editor, product.id, {
       version: product.version,
       sections: [],
@@ -127,6 +130,15 @@ describe("ProductAdminService", () => {
         mediaAssetIds: ["missing-media"],
       }],
     })).rejects.toBeInstanceOf(ProductAdminValidationError);
+
+    await db.product.update({
+      where: { id: product.id },
+      data: { status: "PUBLISHED", publishedAt: new Date() },
+    });
+    await expect(service.saveSections(editor, product.id, {
+      version: saved.version,
+      sections: [],
+    })).rejects.toThrow(/visible HERO/i);
   });
 
   it("copies drafts, archives records, and writes audit history", async () => {
@@ -151,9 +163,15 @@ describe("ProductAdminService", () => {
     const copy = await service.copyProduct(editor, product.id, {
       name: "Original Copy",
       slug: "original-product-copy",
+      expectedVersion: saved.version,
     });
     expect(copy).toMatchObject({ status: "DRAFT", slug: "original-product-copy", publishedAt: null });
     await expect(db.productSection.count({ where: { productId: copy.id } })).resolves.toBe(1);
+    await expect(service.copyProduct(editor, product.id, {
+      name: "Stale Copy",
+      slug: "stale-copy",
+      expectedVersion: product.version,
+    })).rejects.toBeInstanceOf(ProductAdminConflictError);
 
     const archived = await service.archiveProduct(editor, product.id, saved.version);
     expect(archived).toMatchObject({ status: "ARCHIVED" });
@@ -193,5 +211,39 @@ describe("ProductAdminService", () => {
     await expect(db.auditLog.findFirstOrThrow({
       where: { entityId: product.id, action: "product.publish" },
     })).resolves.toMatchObject({ actorId: editor.id });
+  });
+
+  it("revalidates category visibility and both series when moving a published product", async () => {
+    const category = await db.productCategory.findUniqueOrThrow({ where: { id: categoryId } });
+    const product = await db.product.create({
+      data: {
+        categoryId,
+        name: "Moved Product",
+        slug: "moved-product",
+        summary: "Moved product summary",
+        status: "PUBLISHED",
+        publishedAt: new Date(),
+      },
+    });
+    const destination = await db.productCategory.create({
+      data: { name: "Destination", slug: "destination", status: "PUBLISHED", publishedAt: new Date() },
+    });
+
+    await service.updateProduct(editor, product.id, { version: product.version, categoryId: destination.id });
+    expect(revalidated).toEqual(expect.arrayContaining([
+      "/products/moved-product",
+      "/products/series/shearing-machines",
+      "/products/series/destination",
+      "/products",
+      "/sitemap.xml",
+    ]));
+
+    revalidated.length = 0;
+    await service.updateCategory(editor, category.id, { version: category.version, status: "DRAFT" });
+    expect(revalidated).toEqual(expect.arrayContaining([
+      "/products/series/shearing-machines",
+      "/products",
+      "/sitemap.xml",
+    ]));
   });
 });

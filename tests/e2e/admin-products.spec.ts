@@ -79,6 +79,17 @@ test.afterAll(async () => {
 
 test("edits, validates, reorders, hides, publishes, and updates the unchanged public URL", async ({ page }) => {
   await page.goto("/admin/login");
+  const unauthenticated = await page.evaluate(async () => (await fetch("/api/admin/products", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({}),
+  })).status);
+  expect(unauthenticated).toBe(401);
+  const untrusted = await page.request.post("/api/admin/products", {
+    headers: { origin: "https://attacker.test", "sec-fetch-site": "cross-site", "content-type": "application/json" },
+    data: {},
+  });
+  expect(untrusted.status()).toBe(403);
   await page.getByLabel("管理员邮箱").fill(email);
   await page.getByLabel("密码").fill(password);
   await page.getByRole("button", { name: "登录 ZYRON CMS" }).click();
