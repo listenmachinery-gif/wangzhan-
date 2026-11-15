@@ -19,6 +19,13 @@ function blankCopy(value: JsonValue): JsonValue {
   return null;
 }
 
+function nextTechnicalColumnKey(columns: JsonValue[]) {
+  const used = new Set(columns.flatMap((column) => column && typeof column === "object" && !Array.isArray(column) && typeof column.key === "string" ? [column.key] : []));
+  let suffix = 1;
+  while (used.has(`column_${suffix}`)) suffix += 1;
+  return `column_${suffix}`;
+}
+
 const galleryTypes = new Set<ProductModuleType>(["PRODUCT_SHOWCASE", "DETAIL_GALLERY", "OPTION_CAROUSEL", "MATERIAL_GALLERY", "INDUSTRY_GALLERY"]);
 const cardTypes = new Set<ProductModuleType>(["PROBLEMS", "PROCESS", "APPLICATIONS", "ADVANTAGES", "STRUCTURE", "WORKFLOW", "MANUFACTURER_SUPPORT"]);
 
@@ -51,7 +58,7 @@ function StructuredFields({ type, value, media, path = [], onChange, onRemove }:
   }
   if (typeof value === "number") return <input aria-label={labelFor(String(path.at(-1) ?? "value"))} type="number" value={value} onChange={(event) => onChange(path, Number(event.target.value))} className="w-full rounded-md border px-3 py-2 text-sm" />;
   if (typeof value === "boolean") return <input aria-label={labelFor(String(path.at(-1) ?? "value"))} type="checkbox" checked={value} onChange={(event) => onChange(path, event.target.checked)} />;
-  if (Array.isArray(value)) return <div className="space-y-3">{value.map((item, index) => <div key={index} className="rounded-lg border border-neutral-200 p-3"><div className="mb-2 flex items-center justify-between"><p className="text-xs font-semibold text-neutral-500">项目 {index + 1}</p><button type="button" onClick={() => onChange(path, value.filter((_, itemIndex) => itemIndex !== index))} className="text-xs text-red-700">移除</button></div><StructuredFields type={type} value={item} media={media} path={[...path, index]} onChange={onChange} onRemove={onRemove} /></div>)}<button type="button" onClick={() => onChange(path, [...value, type === "TECHNICAL" && path.join(".") === "columns" ? { key: `column_${value.length + 1}`, label: "" } : blankCopy(value.at(-1) ?? "")])} className="rounded border px-3 py-1.5 text-xs font-medium">添加项目</button></div>;
+  if (Array.isArray(value)) return <div className="space-y-3">{value.map((item, index) => <div key={index} className="rounded-lg border border-neutral-200 p-3"><div className="mb-2 flex items-center justify-between"><p className="text-xs font-semibold text-neutral-500">项目 {index + 1}</p><button type="button" onClick={() => onChange(path, value.filter((_, itemIndex) => itemIndex !== index))} className="text-xs text-red-700">移除</button></div><StructuredFields type={type} value={item} media={media} path={[...path, index]} onChange={onChange} onRemove={onRemove} /></div>)}<button type="button" onClick={() => onChange(path, [...value, type === "TECHNICAL" && path.join(".") === "columns" ? { key: nextTechnicalColumnKey(value), label: "" } : blankCopy(value.at(-1) ?? "")])} className="rounded border px-3 py-1.5 text-xs font-medium">添加项目</button></div>;
   if (value && typeof value === "object") {
     const available = Object.entries(optionalFields(type, path)).filter(([key]) => !(key in value));
     const optionalKeys = new Set(Object.keys(optionalFields(type, path)));

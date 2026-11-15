@@ -19,4 +19,19 @@ describe("standard product module schemas", () => {
       legacyMystery: true,
     })).toThrow();
   });
+
+  it("rejects duplicate technical column keys and row keys outside the declared columns", () => {
+    const technical = validProductModuleData.TECHNICAL as {
+      columns: Array<{ key: string; label: string; unit?: string }>;
+      rows: Array<Record<string, string>>;
+    };
+    expect(() => validateModule("TECHNICAL", {
+      ...technical,
+      columns: [technical.columns[0], { ...technical.columns[1], key: technical.columns[0].key }],
+    })).toThrow(/unique/i);
+    expect(() => validateModule("TECHNICAL", {
+      ...technical,
+      rows: [{ ...technical.rows[0], undeclared: "value" }],
+    })).toThrow(/declared columns/i);
+  });
 });

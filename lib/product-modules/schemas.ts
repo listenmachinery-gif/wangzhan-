@@ -75,7 +75,19 @@ export const productModuleSchemas = {
   TECHNICAL: editorialSchema.extend({
     columns: z.array(z.object({ key: nonEmpty, label: nonEmpty, unit: optionalText }).strict()).min(1),
     rows: z.array(z.record(z.string(), nonEmpty)).min(1),
-  }).strict(),
+  }).strict().superRefine(({ columns, rows }, context) => {
+    const columnKeys = new Set<string>();
+    columns.forEach((column, index) => {
+      if (columnKeys.has(column.key)) context.addIssue({ code: "custom", path: ["columns", index, "key"], message: "Technical column keys must be unique." });
+      columnKeys.add(column.key);
+    });
+    rows.forEach((row, rowIndex) => {
+      const rowKeys = Object.keys(row);
+      if (rowKeys.length !== columnKeys.size || rowKeys.some((key) => !columnKeys.has(key))) {
+        context.addIssue({ code: "custom", path: ["rows", rowIndex], message: "Technical row keys must match the declared columns." });
+      }
+    });
+  }),
   MODEL_CARDS: editorialSchema.extend({
     items: z.array(z.object({
       name: nonEmpty,

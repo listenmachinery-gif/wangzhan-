@@ -42,4 +42,13 @@ describe("ModuleEditorRegistry", () => {
       rows: [{ value: "", width: "" }],
     });
   });
+
+  it("uses the first unused generated technical column key", () => {
+    const value = Editor({ type: "TECHNICAL" });
+    fireEvent.change(screen.getByLabelText("Key"), { target: { value: "column_2" } });
+    fireEvent.click(screen.getAllByRole("button", { name: "添加项目" })[1]);
+    expect(value()).toMatchObject({
+      columns: [{ key: "column_2" }, { key: "column_1" }],
+    });
+  });
 });
