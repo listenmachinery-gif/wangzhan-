@@ -1,7 +1,8 @@
-import { db } from "@/lib/db/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@prisma/client";
 import { PERMISSIONS, ROLE_PERMISSIONS, ROLES } from "@/lib/auth/permissions";
 
-export async function seedRbac() {
+export async function seedRbac(db: PrismaClient) {
   for (const permission of PERMISSIONS) {
     await db.permission.upsert({
       where: { key: permission },
@@ -27,5 +28,8 @@ export async function seedRbac() {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  seedRbac().finally(() => db.$disconnect());
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) throw new Error("DATABASE_URL is required.");
+  const cliDb = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+  seedRbac(cliDb).finally(() => cliDb.$disconnect());
 }

@@ -28,6 +28,7 @@
 | 媒体库 | 代码完成 | 生产 R2 未配置 |
 | 询盘可靠入库与 CRM | 代码与本地验收完成 | 先入库后通知、限流、分配、跟进、行级 RBAC 与安全导出已通过测试；待生产数据库和 SMTP 验收 |
 | SEO 管理 | 代码与本地验收完成 | 数据库草稿/发布快照、产品/全局 RBAC、Metadata 覆盖、Canonical/OG/noindex、sitemap/robots、结构化数据及后台 UI/API 已通过测试；待生产数据库验收 |
+| 系统设置与用户安全 | 代码与本地验收完成 | 非敏感设置白名单/原子保存、用户角色/停用/Session 撤销、最后 Super Admin 并发保护、2FA 未配置状态、双门禁 bootstrap 与运维文档已通过测试 |
 | 统一产品详情模板 | 部分完成 | 标准渲染器已有，旧产品仍需逐个迁移和人工视觉确认 |
 | SMTP | Vercel 已配置变量 | 尚未在授权收件人上做生产测试 |
 
@@ -48,6 +49,15 @@
 Preview 运行日志为 Prisma `P1001`，目标是代码为缺少 `DATABASE_URL` 设置的不可达占位地址 `127.0.0.1:1`。因此首页、产品页和 sitemap 在 CMS Preview 中返回 500；登录页可打开，未登录管理 API 返回 401。
 
 ## 最近验证
+
+P0 基础验收（Task 12）：
+
+- 单元测试：20 个文件，138 项通过
+- PostgreSQL/S3-compatible 集成测试：35 个文件，210 项通过
+- Playwright 完整套件：12/12 通过（含真实 bootstrap、分类、产品、参数、Banner、媒体、询盘 CRM、SEO、设置/用户与公开 URL）
+- 目录校验：8 个分类、53 个产品 slug 一致
+- 类型检查、ESLint、Next.js 生产构建：通过
+- 独立代码复审：Ready Yes，无剩余 Critical/Important
 
 SEO 管理（Task 11）：
 
