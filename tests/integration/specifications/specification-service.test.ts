@@ -64,19 +64,29 @@ describe("SpecificationService", () => {
     await expect(service.createTemplate(sales, {
       name: "Forbidden",
       categoryId,
-      fields: [{ name: "Model", unit: null, valueType: "TEXT", position: 0 }],
+      fields: [{ name: "Series", unit: null, valueType: "TEXT", position: 0 }],
     })).rejects.toBeInstanceOf(SpecificationPermissionError);
 
     const template = await service.createTemplate(editor, {
       name: "Shearing machine parameters",
       categoryId,
       fields: [
-        { name: "Model", unit: null, valueType: "TEXT", position: 0 },
+        { name: "Series", unit: null, valueType: "TEXT", position: 0 },
         { name: "Cutting width", unit: "mm", valueType: "NUMBER", position: 1 },
       ],
     });
-    expect(template.fields.map((field) => [field.name, field.position])).toEqual([["Model", 0], ["Cutting width", 1]]);
+    expect(template.fields.map((field) => [field.name, field.position])).toEqual([["Series", 0], ["Cutting width", 1]]);
     await expect(db.auditLog.findFirstOrThrow({ where: { action: "specification.template.create", entityId: template.id } })).resolves.toMatchObject({ actorId: editor.id });
+    await service.createTemplate(editor, {
+      name: "Global template",
+      categoryId: null,
+      fields: [{ name: "Width", unit: "mm", valueType: "NUMBER", position: 0 }],
+    });
+    await expect(service.createTemplate(editor, {
+      name: "Global template",
+      categoryId: null,
+      fields: [{ name: "Length", unit: "mm", valueType: "NUMBER", position: 0 }],
+    })).rejects.toBeInstanceOf(SpecificationValidationError);
   });
 
   it("saves ordered models transactionally and synchronizes the public technical module", async () => {
@@ -84,7 +94,7 @@ describe("SpecificationService", () => {
       name: "Shearing machine parameters",
       categoryId,
       fields: [
-        { name: "Model", unit: null, valueType: "TEXT", position: 0 },
+        { name: "Series", unit: null, valueType: "TEXT", position: 0 },
         { name: "Cutting width", unit: "mm", valueType: "NUMBER", position: 1 },
       ],
     });
@@ -105,12 +115,14 @@ describe("SpecificationService", () => {
     const technical = await db.productSection.findUniqueOrThrow({ where: { productId_type: { productId, type: "TECHNICAL" } } });
     expect(technical.content).toMatchObject({
       columns: [
-        { key: modelField.id, label: "Model" },
+        { key: "__model", label: "Model" },
+        { key: "__sku", label: "SKU" },
+        { key: modelField.id, label: "Series" },
         { key: widthField.id, label: "Cutting width", unit: "mm" },
       ],
       rows: [
-        { [modelField.id]: "Q11G-2x600", [widthField.id]: "600" },
-        { [modelField.id]: "Q11G-2x800", [widthField.id]: "800" },
+        { __model: "Q11G-2x600", __sku: "Q11G-2X600", [modelField.id]: "Q11G-2x600", [widthField.id]: "600" },
+        { __model: "Q11G-2x800", __sku: "—", [modelField.id]: "Q11G-2x800", [widthField.id]: "800" },
       ],
     });
     expect(revalidated).toEqual(expect.arrayContaining([
@@ -174,19 +186,38 @@ describe("SpecificationService", () => {
     const xlsx = await imports.exportProduct(editor, productId, template.id, "xlsx");
     expect(xlsx.mimeType).toBe("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     expect(xlsx.buffer.byteLength).toBeGreaterThan(1_000);
-    await expect(imports.importProduct(editor, productId, {
+    const xlsxRoundTrip = await imports.importProduct(editor, productId, {
       version: saved.version,
+      templateId: template.id,
+      filename: "round-trip.xlsx",
+      bytes: xlsx.buffer,
+    });
+    expect(xlsxRoundTrip).toMatchObject({ applied: true, importedRows: 1, errors: [] });
+    await expect(imports.importProduct(editor, productId, {
+      version: xlsxRoundTrip.version!,
       templateId: template.id,
       filename: "models.txt",
       bytes: Buffer.from("not a spreadsheet"),
     })).rejects.toBeInstanceOf(SpecificationValidationError);
+    await expect(imports.importProduct(editor, productId, {
+      version: xlsxRoundTrip.version!,
+      templateId: template.id,
+      filename: "broken.xlsx",
+      bytes: Buffer.from("not an xlsx archive"),
+    })).rejects.toBeInstanceOf(SpecificationValidationError);
+    const unrelated = await service.createTemplate(editor, {
+      name: "Unrelated export template",
+      categoryId,
+      fields: [{ name: "Power", unit: "kW", valueType: "NUMBER", position: 0 }],
+    });
+    await expect(imports.exportProduct(editor, productId, unrelated.id, "csv")).rejects.toBeInstanceOf(SpecificationValidationError);
 
     const validCsv = Buffer.from([
       "Model,SKU,Active,=Model value,Width [mm]",
       "Q11G-2x650,Q11G-2X650,true,Q11G-2x650,650",
     ].join("\n"));
     const valid = await imports.importProduct(editor, productId, {
-      version: saved.version,
+      version: xlsxRoundTrip.version!,
       templateId: template.id,
       filename: "models.csv",
       bytes: validCsv,

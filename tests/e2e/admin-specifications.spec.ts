@@ -55,7 +55,7 @@ test.beforeAll(async () => {
       name: "E2E shearing parameters",
       fields: {
         create: [
-          { name: "Model", valueType: "TEXT", position: 0 },
+          { name: "Rated model", valueType: "TEXT", position: 0 },
           { name: "Cutting width", unit: "mm", valueType: "NUMBER", position: 1 },
         ],
       },
@@ -122,7 +122,7 @@ test("edits models, rejects a bad import, accepts a valid import, and updates th
   await expect(page.getByRole("heading", { name: "型号参数" })).toBeVisible();
   await page.getByRole("button", { name: "新增型号" }).click();
   await page.getByLabel("型号名称 1").fill("Q11G-2x650");
-  await page.getByLabel("Model 1").fill("Q11G-2x650");
+  await page.getByLabel("Rated model 1").fill("Q11G-2x650");
   await page.getByLabel("Cutting width 1").fill("650");
   await page.getByRole("button", { name: "保存型号参数" }).click();
   await expect(page.getByRole("status")).toContainText("已保存");
@@ -130,7 +130,7 @@ test("edits models, rejects a bad import, accepts a valid import, and updates th
   await page.getByLabel("导入参数文件").setInputFiles({
     name: "invalid.csv",
     mimeType: "text/csv",
-    buffer: Buffer.from("Model,SKU,Active,Model,Cutting width [mm]\nQ11G-bad,,true,Q11G-bad,not-a-number"),
+    buffer: Buffer.from("Model,SKU,Active,Rated model,Cutting width [mm]\nQ11G-bad,,true,Q11G-bad,not-a-number"),
   });
   await page.getByRole("button", { name: "导入并校验" }).click();
   await expect(page.getByText("第 2 行")).toBeVisible();
@@ -139,12 +139,14 @@ test("edits models, rejects a bad import, accepts a valid import, and updates th
   await page.getByLabel("导入参数文件").setInputFiles({
     name: "valid.csv",
     mimeType: "text/csv",
-    buffer: Buffer.from("Model,SKU,Active,Model,Cutting width [mm]\nQ11G-2x800,Q11G-2X800,true,Q11G-2x800,800"),
+    buffer: Buffer.from("Model,SKU,Active,Rated model,Cutting width [mm]\nQ11G-2x800,Q11G-2X800,true,Q11G-2x800,800"),
   });
   await page.getByRole("button", { name: "导入并校验" }).click();
   await expect(page.getByRole("status")).toContainText("成功导入 1 行");
 
   await page.goto(`/products/${productSlug}`);
-  await expect(page.getByText("Q11G-2x800")).toBeVisible();
-  await expect(page.getByRole("cell", { name: "800", exact: true })).toBeVisible();
+  const technical = page.locator("[data-product-module='TECHNICAL']");
+  await expect(technical.getByRole("cell", { name: "Q11G-2x800", exact: true }).first()).toBeVisible();
+  await expect(technical.locator("td").filter({ hasText: /^Q11G-2X800$/ }).first()).toBeVisible();
+  await expect(technical.getByRole("cell", { name: "800", exact: true })).toBeVisible();
 });

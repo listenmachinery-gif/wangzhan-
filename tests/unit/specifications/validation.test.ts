@@ -12,12 +12,19 @@ describe("specification validation", () => {
       name: "Shearing machine specifications",
       categoryId: "category-1",
       fields: [
-        { name: "Model", unit: null, valueType: "TEXT", position: 0 },
+        { name: "Series", unit: null, valueType: "TEXT", position: 0 },
         { name: "Cutting width", unit: "mm", valueType: "NUMBER", position: 1 },
       ],
     });
     expect(result.fields).toHaveLength(2);
     expect(result.fields[1]).toMatchObject({ unit: "mm", valueType: "NUMBER", position: 1 });
+  });
+
+  it.each(["Model", "sku", " ACTIVE "])("reserves the system identity field name %s", (name) => {
+    expect(() => specificationTemplateSchema.parse({
+      name: "Reserved template",
+      fields: [{ name, valueType: "TEXT", position: 0 }],
+    })).toThrow(/reserved/i);
   });
 
   it("rejects duplicate field names, duplicate positions, and oversized templates", () => {

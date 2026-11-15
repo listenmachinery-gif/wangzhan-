@@ -3,12 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { requirePermission } from "@/lib/auth/guards";
 import { assertSameOriginMutation } from "@/lib/auth/request-security";
 import { specificationErrorResponse } from "@/lib/http/specification-response";
-import { SpecificationImportService } from "@/lib/services/specification-import-service";
+import { SpecificationImportService, validateImportContentLength } from "@/lib/services/specification-import-service";
 
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     assertSameOriginMutation(request);
     const principal = await requirePermission("specification.write");
+    validateImportContentLength(request.headers.get("content-length"));
     const { id } = await context.params;
     const form = await request.formData();
     const file = form.get("file");

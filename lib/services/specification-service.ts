@@ -6,6 +6,7 @@ import { db } from "@/lib/db/client";
 import { validateModule } from "@/lib/product-modules/schemas";
 import {
   productModelBatchSchema,
+  isReservedSpecificationFieldName,
   specificationTemplateSchema,
   type ProductModelBatchInput,
   type SpecificationTemplateInput,
@@ -69,6 +70,11 @@ export class SpecificationService {
           const category = await transaction.productCategory.count({ where: { id: input.categoryId } });
           if (!category) throw new SpecificationValidationError("Template category does not exist.");
         }
+        const duplicate = await transaction.specificationTemplate.findFirst({
+          where: { categoryId: input.categoryId ?? null, name: { equals: input.name, mode: "insensitive" } },
+          select: { id: true },
+        });
+        if (duplicate) throw new SpecificationValidationError("A template with this name already exists in the selected scope.");
         const template = await transaction.specificationTemplate.create({
           data: {
             name: input.name,
@@ -148,6 +154,9 @@ export class SpecificationService {
       if (template.categoryId && template.categoryId !== product.category.id) {
         throw new SpecificationValidationError("Template category does not match the product category.");
       }
+      if (template.fields.some(({ name }) => isReservedSpecificationFieldName(name))) {
+        throw new SpecificationValidationError("Template fields cannot use Model, SKU, or Active because those columns are managed by the system.");
+      }
       const fieldIds = new Set(template.fields.map(({ id }) => id));
       for (const [modelIndex, model] of input.models.entries()) {
         const valueIds = Object.keys(model.values);
@@ -181,14 +190,24 @@ export class SpecificationService {
       const technical = product.sections[0];
       if (!technical) throw new SpecificationValidationError("Add a TECHNICAL module before saving model parameters.");
       const current = technical.content as Prisma.JsonObject;
+      const activeModels = input.models.filter(({ active }) => active);
+      const includeSku = activeModels.some(({ sku }) => Boolean(sku));
       const content = validateModule("TECHNICAL", {
         ...current,
-        columns: template.fields.map((field) => ({
+        columns: [
+          { key: "__model", label: "Model" },
+          ...(includeSku ? [{ key: "__sku", label: "SKU" }] : []),
+          ...template.fields.map((field) => ({
           key: field.id,
           label: field.name,
           ...(field.unit ? { unit: field.unit } : {}),
+          })),
+        ],
+        rows: activeModels.map((model) => ({
+          __model: model.name,
+          ...(includeSku ? { __sku: model.sku ?? "—" } : {}),
+          ...model.values,
         })),
-        rows: input.models.filter(({ active }) => active).map(({ values }) => values),
       });
       await transaction.productSection.update({
         where: { id: technical.id },

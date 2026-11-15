@@ -2,6 +2,11 @@ import { z } from "zod";
 
 const nonEmpty = z.string().trim().min(1);
 const position = z.coerce.number().int().min(0).max(10_000);
+const RESERVED_FIELD_NAMES = new Set(["model", "sku", "active"]);
+
+export function isReservedSpecificationFieldName(name: string) {
+  return RESERVED_FIELD_NAMES.has(name.trim().toLocaleLowerCase());
+}
 
 const specificationFieldSchema = z.object({
   id: nonEmpty.optional(),
@@ -21,6 +26,7 @@ export const specificationTemplateSchema = z.object({
   const positions = new Set<number>();
   fields.forEach((field, index) => {
     const nameKey = field.name.toLocaleLowerCase();
+    if (isReservedSpecificationFieldName(field.name)) context.addIssue({ code: "custom", path: ["fields", index, "name"], message: "Field name is reserved for system model identity." });
     if (names.has(nameKey)) context.addIssue({ code: "custom", path: ["fields", index, "name"], message: "Field name must be unique." });
     if (positions.has(field.position)) context.addIssue({ code: "custom", path: ["fields", index, "position"], message: "Field position must be unique." });
     names.add(nameKey);

@@ -12,7 +12,7 @@ import {
   SpecificationService,
   SpecificationValidationError,
 } from "@/lib/services/specification-service";
-import { escapeSpreadsheetFormula, productModelBatchSchema } from "@/lib/validation/specifications";
+import { escapeSpreadsheetFormula, isReservedSpecificationFieldName, productModelBatchSchema } from "@/lib/validation/specifications";
 
 type Revalidate = (path: string) => void | Promise<void>;
 type ImportCell = { value: string; formula: boolean };
@@ -20,6 +20,47 @@ type ImportError = { row: number; column: string; message: string };
 
 const MAX_IMPORT_BYTES = 10 * 1024 * 1024;
 const MAX_IMPORT_ROWS = 1_000;
+const MAX_XLSX_ENTRIES = 200;
+const MAX_XLSX_UNCOMPRESSED_BYTES = 20 * 1024 * 1024;
+const MAX_XLSX_COLUMNS = 200;
+export const MAX_SPECIFICATION_REQUEST_BYTES = 11 * 1024 * 1024;
+
+export function validateImportContentLength(value: string | null) {
+  const length = value === null ? Number.NaN : Number(value);
+  if (!Number.isSafeInteger(length) || length <= 0) throw new SpecificationValidationError("Specification import requires a valid Content-Length header.");
+  if (length > MAX_SPECIFICATION_REQUEST_BYTES) throw new SpecificationValidationError("Specification import request is too large.");
+  return length;
+}
+
+export function inspectXlsxArchive(bytes: Uint8Array) {
+  const archive = Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const searchStart = Math.max(0, archive.length - 65_557);
+  let endOffset = -1;
+  for (let offset = archive.length - 22; offset >= searchStart; offset -= 1) {
+    if (archive.readUInt32LE(offset) === 0x06054b50) { endOffset = offset; break; }
+  }
+  if (endOffset < 0) throw new SpecificationValidationError("Invalid XLSX archive.");
+  const entries = archive.readUInt16LE(endOffset + 10);
+  const centralSize = archive.readUInt32LE(endOffset + 12);
+  const centralOffset = archive.readUInt32LE(endOffset + 16);
+  if (entries === 0xffff || centralOffset === 0xffffffff || centralSize === 0xffffffff) throw new SpecificationValidationError("ZIP64 XLSX archives are not supported.");
+  if (entries < 1 || entries > MAX_XLSX_ENTRIES) throw new SpecificationValidationError("XLSX archive contains too many entries.");
+  if (centralOffset + centralSize > endOffset) throw new SpecificationValidationError("Invalid XLSX central directory.");
+  let offset = centralOffset;
+  let expandedBytes = 0;
+  for (let index = 0; index < entries; index += 1) {
+    if (offset + 46 > endOffset || archive.readUInt32LE(offset) !== 0x02014b50) throw new SpecificationValidationError("Invalid XLSX central directory entry.");
+    const uncompressedSize = archive.readUInt32LE(offset + 24);
+    if (uncompressedSize === 0xffffffff) throw new SpecificationValidationError("ZIP64 XLSX entries are not supported.");
+    expandedBytes += uncompressedSize;
+    if (expandedBytes > MAX_XLSX_UNCOMPRESSED_BYTES) throw new SpecificationValidationError("XLSX archive would expand beyond the safe limit.");
+    const nameLength = archive.readUInt16LE(offset + 28);
+    const extraLength = archive.readUInt16LE(offset + 30);
+    const commentLength = archive.readUInt16LE(offset + 32);
+    offset += 46 + nameLength + extraLength + commentLength;
+  }
+  if (offset !== centralOffset + centralSize) throw new SpecificationValidationError("Invalid XLSX central directory size.");
+}
 
 function csvCell(value: string) {
   return /[",\r\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
@@ -69,7 +110,7 @@ export class SpecificationImportService {
     const [product, template] = await Promise.all([
       this.database.product.findUnique({
         where: { id: productId },
-        include: { models: { orderBy: { position: "asc" }, include: { values: true } } },
+        include: { category: { select: { id: true } }, models: { orderBy: { position: "asc" }, include: { values: true } } },
       }),
       this.database.specificationTemplate.findUnique({
         where: { id: templateId },
@@ -78,6 +119,12 @@ export class SpecificationImportService {
     ]);
     if (!product) throw new SpecificationNotFoundError("product");
     if (!template) throw new SpecificationNotFoundError("template");
+    if (template.categoryId && template.categoryId !== product.category.id) throw new SpecificationValidationError("Template category does not match the product category.");
+    if (template.fields.some(({ name }) => isReservedSpecificationFieldName(name))) throw new SpecificationValidationError("Template contains a reserved system field name.");
+    const fieldIds = new Set(template.fields.map(({ id }) => id));
+    if (product.models.some((model) => model.values.length !== fieldIds.size || model.values.some(({ fieldId }) => !fieldIds.has(fieldId)))) {
+      throw new SpecificationValidationError("Template does not match the product's saved model fields.");
+    }
     const headers = ["Model", "SKU", "Active", ...template.fields.map((field) => field.unit ? `${field.name} [${field.unit}]` : field.name)];
     const safeHeaders = headers.map(escapeSpreadsheetFormula);
     const rows = product.models.map((model) => {
@@ -117,14 +164,22 @@ export class SpecificationImportService {
     let rows: ImportCell[][];
     if (extension === ".csv") rows = parseCsv(Buffer.from(input.bytes).toString("utf8"));
     else if (extension === ".xlsx") {
+      inspectXlsxArchive(input.bytes);
       const workbook = new ExcelJS.Workbook();
       const workbookBytes = input.bytes.buffer.slice(
         input.bytes.byteOffset,
         input.bytes.byteOffset + input.bytes.byteLength,
       ) as ArrayBuffer;
-      await workbook.xlsx.load(workbookBytes);
+      try {
+        await workbook.xlsx.load(workbookBytes);
+      } catch {
+        throw new SpecificationValidationError("Invalid or damaged XLSX workbook.");
+      }
       const worksheet = workbook.worksheets[0];
       if (!worksheet) return { applied: false, importedRows: 0, errors: [{ row: 1, column: "File", message: "Workbook has no worksheet." }] };
+      if (worksheet.rowCount > MAX_IMPORT_ROWS + 1 || worksheet.columnCount > MAX_XLSX_COLUMNS) {
+        throw new SpecificationValidationError("XLSX worksheet dimensions exceed the safe import limit.");
+      }
       rows = [];
       worksheet.eachRow({ includeEmpty: true }, (worksheetRow) => {
         const parsed: ImportCell[] = [];
