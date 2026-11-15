@@ -23,9 +23,9 @@ export const smallElectricShearPageContent = {
   structureImageAlt: "Q11G small electric shearing machine structure",
   eyebrow: "Compact Q11G Sheet Metal Cutting",
   title: "Small Electric Shearing Machine",
-  heroBackgroundImage: "/products/shearing/small-electric/hero/desktop.jpg",
-  heroBackgroundTabletImage: "/products/shearing/small-electric/hero/tablet.jpg",
-  heroBackgroundMobileImage: "/products/shearing/small-electric/hero/mobile.jpg",
+  heroBackgroundImage: "/products/shearing/small-electric/hero/desktop-v2.jpg",
+  heroBackgroundTabletImage: "/products/shearing/small-electric/hero/tablet-v2.jpg",
+  heroBackgroundMobileImage: "/products/shearing/small-electric/hero/mobile-v2.jpg",
   heroBackgroundAlt: "ZYRON small electric shearing machines arranged inside the production workshop",
   heroSubtitle: "Small Size. Powerful Performance. Precision Cutting. Reliable Performance.",
   heroIntro:

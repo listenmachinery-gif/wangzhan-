@@ -19,15 +19,15 @@ const robots = read("app/robots.ts");
 const combined = `${shared}\n${wrapper}\n${data}`;
 const heroAsset = resolve(
   root,
-  "public/products/shearing/small-electric/hero/desktop.jpg",
+  "public/products/shearing/small-electric/hero/desktop-v2.jpg",
 );
 const heroTabletAsset = resolve(
   root,
-  "public/products/shearing/small-electric/hero/tablet.jpg",
+  "public/products/shearing/small-electric/hero/tablet-v2.jpg",
 );
 const heroMobileAsset = resolve(
   root,
-  "public/products/shearing/small-electric/hero/mobile.jpg",
+  "public/products/shearing/small-electric/hero/mobile-v2.jpg",
 );
 
 assert.ok(existsSync(heroAsset), "Desktop Small Electric hero artwork is missing");
@@ -41,12 +41,12 @@ assert.match(types, /heroIntro\?:\s*string/);
 assert.match(types, /heroValuePoints\?:\s*readonly string\[\]/);
 assert.ok(
   data.includes(
-    'heroBackgroundImage: "/products/shearing/small-electric/hero/desktop.jpg"',
+    'heroBackgroundImage: "/products/shearing/small-electric/hero/desktop-v2.jpg"',
   ),
   "Small Electric content must select the dedicated desktop hero artwork",
 );
-assert.ok(data.includes('heroBackgroundTabletImage: "/products/shearing/small-electric/hero/tablet.jpg"'));
-assert.ok(data.includes('heroBackgroundMobileImage: "/products/shearing/small-electric/hero/mobile.jpg"'));
+assert.ok(data.includes('heroBackgroundTabletImage: "/products/shearing/small-electric/hero/tablet-v2.jpg"'));
+assert.ok(data.includes('heroBackgroundMobileImage: "/products/shearing/small-electric/hero/mobile-v2.jpg"'));
 assert.ok(
   data.includes(
     'heroSubtitle: "Small Size. Powerful Performance. Precision Cutting. Reliable Performance."',
