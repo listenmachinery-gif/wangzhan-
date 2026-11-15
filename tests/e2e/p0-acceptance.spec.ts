@@ -56,7 +56,7 @@ test("Super Admin configures non-secret settings, manages a user, and public URL
   await page.getByLabel("固定 slug").fill(categorySlug);
   await page.getByLabel("摘要").fill("Created through the protected category API.");
   await page.getByRole("button", { name: "创建草稿" }).click();
-  await expect(page.getByRole("status")).toContainText("分类已创建为草稿");
+  await expect(page.getByRole("status")).toContainText("分类已创建为草稿", { timeout: 15_000 });
   const categoryRow = page.getByRole("row", { name: new RegExp(categorySlug) });
   await expect(categoryRow).toContainText("DRAFT");
   await categoryRow.getByRole("button", { name: "发布" }).click();

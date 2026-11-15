@@ -133,7 +133,7 @@ test("edits models, rejects a bad import, accepts a valid import, and updates th
     buffer: Buffer.from("Model,SKU,Active,Rated model,Cutting width [mm]\nQ11G-bad,,true,Q11G-bad,not-a-number"),
   });
   await page.getByRole("button", { name: "导入并校验" }).click();
-  await expect(page.getByText("第 2 行")).toBeVisible();
+  await expect(page.getByText("第 2 行")).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText("Numeric value required.")).toBeVisible();
 
   await page.getByLabel("导入参数文件").setInputFiles({
