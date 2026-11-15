@@ -118,4 +118,4 @@
 - [x] Run Prisma validation/generation, typecheck, lint, unit, integration and Playwright.
 - [x] Run production build and inspect desktop/mobile editor plus homepage in Browser.
 - [x] Review diff for secrets, generated output, unrelated changes and production writes.
-- [ ] Commit the verified branch; create Preview only after code checks pass. Do not deploy Production.
+- [x] Commit the verified branch; create Preview only after code checks pass. Do not deploy Production.
