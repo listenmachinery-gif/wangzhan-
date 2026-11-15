@@ -23,6 +23,7 @@ type NavigationItem = {
   label: string;
   icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
   permission?: Permission;
+  anyPermission?: Permission[];
 };
 
 const navigation: NavigationItem[] = [
@@ -32,14 +33,20 @@ const navigation: NavigationItem[] = [
   { href: "/admin/products", label: "产品管理", icon: PackageSearch, permission: "product.read" },
   { href: "/admin/specifications", label: "型号参数", icon: SlidersHorizontal, permission: "specification.read" },
   { href: "/admin/media", label: "媒体资源", icon: Images, permission: "media.read" },
-  { href: "/admin/leads", label: "询盘 CRM", icon: Users, permission: "lead.read.all" },
+  { href: "/admin/leads", label: "询盘 CRM", icon: Users, anyPermission: ["lead.read.all", "lead.read.assigned"] },
   { href: "/admin/seo", label: "SEO 管理", icon: SearchCheck, permission: "seo.read" },
   { href: "/admin/users", label: "用户与权限", icon: KeyRound, permission: "user.manage" },
   { href: "/admin/settings", label: "系统设置", icon: Settings, permission: "settings.write" },
 ];
 
 export function getAdminNavigation(principal: Principal) {
-  return navigation.filter((item) => !item.permission || can(principal, item.permission));
+  return navigation.filter((item) =>
+    (!item.permission || can(principal, item.permission))
+    && (!item.anyPermission || item.anyPermission.some((permission) => can(principal, permission, {
+      assigneeId: principal.id,
+      assignmentActive: true,
+    }))),
+  );
 }
 
 export function AdminSidebar({
