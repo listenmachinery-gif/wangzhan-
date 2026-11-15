@@ -1,0 +1,58 @@
+# ZYRON 生产上线状态
+
+最后更新：2026-11-15（Asia/Shanghai）
+
+## 当前判定
+
+**B. 构建修复完成，但生产环境未就绪**
+
+## Git 与部署
+
+- 工作分支：`codex/fix-vercel-prisma-generate`
+- 构建修复提交：`183e203`
+- 生产基线提交：`6ef3702`
+- 构建修复：已完成，构建前显式执行 `prisma generate`
+- 手动 Preview：`dpl_J4TiML7JYXgVjL9crGGoKJijSKVz`，`READY`
+- Git Preview：`dpl_Bzx74cR18mWgv3mfnUf5LHVexTSQ`，`READY`
+- 正式域名：`https://www.zyroncnc.com`
+- 当前正式域名仍由旧生产部署提供服务，未切换到 CMS 版本
+
+## 功能状态
+
+| 模块 | 状态 | 证据/备注 |
+|---|---|---|
+| 登录、Session、RBAC | 代码与本地测试完成 | 生产管理员未初始化 |
+| 后台布局 | 完成 | 已有受保护 `/admin` 路由 |
+| 分类、产品、型号参数 | 完成 | 本地 PostgreSQL 集成及 E2E 已通过 |
+| Banner | 完成 | 首页发布流程已有测试 |
+| 媒体库 | 代码完成 | 生产 R2 未配置 |
+| 询盘可靠入库与 CRM | 进行中 | Schema 已有，服务/API/UI 尚未完成 |
+| SEO 管理 | 待实现 | Schema/权限已有，服务/API/UI 尚未完成 |
+| 统一产品详情模板 | 部分完成 | 标准渲染器已有，旧产品仍需逐个迁移和人工视觉确认 |
+| SMTP | Vercel 已配置变量 | 尚未在授权收件人上做生产测试 |
+
+## 生产基础设施
+
+| 项目 | 状态 |
+|---|---|
+| PostgreSQL | 未创建或未连接到 Vercel 项目 |
+| `DATABASE_URL` | Preview/Production 缺少 |
+| `SESSION_SECRET` | Preview/Production 缺少 |
+| Cloudflare R2 | 未授权、未配置 |
+| 管理员 | 未初始化 |
+| 数据库 Migration | 未对生产执行 |
+| 产品数据导入 | 未对生产执行 |
+
+## 当前阻塞
+
+Preview 运行日志为 Prisma `P1001`，目标是代码为缺少 `DATABASE_URL` 设置的不可达占位地址 `127.0.0.1:1`。因此首页、产品页和 sitemap 在 CMS Preview 中返回 500；登录页可打开，未登录管理 API 返回 401。
+
+## 受保护的用户工作
+
+以下文件仍只存在于原 `feature/zyron-cms` 工作区，禁止在本发布分支修改或提交：
+
+- `data/small-electric-shear-page.ts`
+- `scripts/verify-small-electric-shear-page.mjs`
+- `public/products/shearing/small-electric/hero/desktop-v2.jpg`
+- `public/products/shearing/small-electric/hero/tablet-v2.jpg`
+- `public/products/shearing/small-electric/hero/mobile-v2.jpg`
