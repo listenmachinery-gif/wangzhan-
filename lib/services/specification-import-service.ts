@@ -1,4 +1,6 @@
 import path from "node:path";
+import { Readable } from "node:stream";
+import { createInflateRaw } from "node:zlib";
 
 import ExcelJS from "exceljs";
 import type { PrismaClient } from "@prisma/client";
@@ -23,6 +25,8 @@ const MAX_IMPORT_ROWS = 1_000;
 const MAX_XLSX_ENTRIES = 200;
 const MAX_XLSX_UNCOMPRESSED_BYTES = 20 * 1024 * 1024;
 const MAX_XLSX_COLUMNS = 200;
+const MAX_XLSX_CELLS = MAX_IMPORT_ROWS * MAX_XLSX_COLUMNS;
+const MAX_XLSX_XML_MARKERS = 2_000_000;
 export const MAX_SPECIFICATION_REQUEST_BYTES = 11 * 1024 * 1024;
 
 export function validateImportContentLength(value: string | null) {
@@ -32,7 +36,7 @@ export function validateImportContentLength(value: string | null) {
   return length;
 }
 
-export function inspectXlsxArchive(bytes: Uint8Array) {
+export async function inspectXlsxArchive(bytes: Uint8Array) {
   const archive = Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const searchStart = Math.max(0, archive.length - 65_557);
   let endOffset = -1;
@@ -47,19 +51,67 @@ export function inspectXlsxArchive(bytes: Uint8Array) {
   if (entries < 1 || entries > MAX_XLSX_ENTRIES) throw new SpecificationValidationError("XLSX archive contains too many entries.");
   if (centralOffset + centralSize > endOffset) throw new SpecificationValidationError("Invalid XLSX central directory.");
   let offset = centralOffset;
-  let expandedBytes = 0;
+  const archiveEntries: Array<{ name: string; method: number; compressedSize: number; declaredSize: number; localOffset: number }> = [];
   for (let index = 0; index < entries; index += 1) {
     if (offset + 46 > endOffset || archive.readUInt32LE(offset) !== 0x02014b50) throw new SpecificationValidationError("Invalid XLSX central directory entry.");
+    const flags = archive.readUInt16LE(offset + 8);
+    const method = archive.readUInt16LE(offset + 10);
+    const compressedSize = archive.readUInt32LE(offset + 20);
     const uncompressedSize = archive.readUInt32LE(offset + 24);
     if (uncompressedSize === 0xffffffff) throw new SpecificationValidationError("ZIP64 XLSX entries are not supported.");
-    expandedBytes += uncompressedSize;
-    if (expandedBytes > MAX_XLSX_UNCOMPRESSED_BYTES) throw new SpecificationValidationError("XLSX archive would expand beyond the safe limit.");
+    if ((flags & 0x1) !== 0) throw new SpecificationValidationError("Encrypted XLSX archives are not supported.");
+    if (![0, 8].includes(method)) throw new SpecificationValidationError("XLSX archive uses an unsupported compression method.");
     const nameLength = archive.readUInt16LE(offset + 28);
     const extraLength = archive.readUInt16LE(offset + 30);
     const commentLength = archive.readUInt16LE(offset + 32);
+    const name = archive.toString("utf8", offset + 46, offset + 46 + nameLength);
+    archiveEntries.push({ name, method, compressedSize, declaredSize: uncompressedSize, localOffset: archive.readUInt32LE(offset + 42) });
     offset += 46 + nameLength + extraLength + commentLength;
   }
   if (offset !== centralOffset + centralSize) throw new SpecificationValidationError("Invalid XLSX central directory size.");
+
+  let expandedBytes = 0;
+  let xmlMarkers = 0;
+  let worksheetRows = 0;
+  let worksheetCells = 0;
+  let sharedStrings = 0;
+  for (const entry of archiveEntries) {
+    if (entry.localOffset + 30 > archive.length || archive.readUInt32LE(entry.localOffset) !== 0x04034b50) throw new SpecificationValidationError("Invalid XLSX local file entry.");
+    const localNameLength = archive.readUInt16LE(entry.localOffset + 26);
+    const localExtraLength = archive.readUInt16LE(entry.localOffset + 28);
+    const dataOffset = entry.localOffset + 30 + localNameLength + localExtraLength;
+    const dataEnd = dataOffset + entry.compressedSize;
+    if (dataEnd > centralOffset) throw new SpecificationValidationError("Invalid XLSX compressed entry bounds.");
+    const compressed = archive.subarray(dataOffset, dataEnd);
+    const source = entry.method === 0 ? Readable.from([compressed]) : Readable.from([compressed]).pipe(createInflateRaw());
+    let actualSize = 0;
+    let carry = "";
+    try {
+      for await (const rawChunk of source) {
+        const chunk = Buffer.isBuffer(rawChunk) ? rawChunk : Buffer.from(rawChunk as Uint8Array);
+        actualSize += chunk.length;
+        expandedBytes += chunk.length;
+        if (expandedBytes > MAX_XLSX_UNCOMPRESSED_BYTES) throw new SpecificationValidationError("XLSX archive would expand beyond the safe limit.");
+        if (!entry.name.endsWith(".xml")) continue;
+        const text = carry + chunk.toString("utf8");
+        xmlMarkers += text.slice(0, -16).split("<").length - 1;
+        if (xmlMarkers > MAX_XLSX_XML_MARKERS) throw new SpecificationValidationError("XLSX XML structure exceeds the safe limit.");
+        if (/^xl\/worksheets\/.+\.xml$/.test(entry.name)) {
+          worksheetRows += (text.slice(0, -16).match(/<row(?:\s|>)/g) ?? []).length;
+          worksheetCells += (text.slice(0, -16).match(/<c(?:\s|>)/g) ?? []).length;
+          if (worksheetRows > MAX_IMPORT_ROWS || worksheetCells > MAX_XLSX_CELLS) throw new SpecificationValidationError("XLSX worksheet dimensions exceed the safe import limit.");
+        } else if (entry.name === "xl/sharedStrings.xml") {
+          sharedStrings += (text.slice(0, -16).match(/<si(?:\s|>)/g) ?? []).length;
+          if (sharedStrings > MAX_XLSX_CELLS) throw new SpecificationValidationError("XLSX shared strings exceed the safe import limit.");
+        }
+        carry = text.slice(-16);
+      }
+    } catch (error) {
+      if (error instanceof SpecificationValidationError) throw error;
+      throw new SpecificationValidationError("Invalid or damaged XLSX compressed data.");
+    }
+    if (actualSize !== entry.declaredSize) throw new SpecificationValidationError("XLSX entry size does not match its central directory.");
+  }
 }
 
 function csvCell(value: string) {
@@ -164,7 +216,7 @@ export class SpecificationImportService {
     let rows: ImportCell[][];
     if (extension === ".csv") rows = parseCsv(Buffer.from(input.bytes).toString("utf8"));
     else if (extension === ".xlsx") {
-      inspectXlsxArchive(input.bytes);
+      await inspectXlsxArchive(input.bytes);
       const workbook = new ExcelJS.Workbook();
       const workbookBytes = input.bytes.buffer.slice(
         input.bytes.byteOffset,
