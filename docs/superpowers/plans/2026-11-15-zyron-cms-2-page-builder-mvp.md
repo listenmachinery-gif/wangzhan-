@@ -105,8 +105,8 @@
 
 - [ ] Write failing tests proving published content wins and missing/invalid/draft data keeps exact fallback content.
 - [ ] Verify tests fail.
-- [ ] Integrate the two managed homepage modules and render additional valid published nodes in the managed region.
-- [ ] Run homepage and full unit tests.
+- [x] Integrate the two managed homepage modules and render additional valid published nodes in the managed region.
+- [x] Run homepage and full unit tests.
 
 ### Task 6: End-to-end verification and handoff
 
