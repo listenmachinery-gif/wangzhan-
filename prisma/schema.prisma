@@ -1,0 +1,474 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PublicationStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ProductSectionType {
+  HERO
+  OVERVIEW
+  PRODUCT_SHOWCASE
+  DETAIL_GALLERY
+  OPTION_CAROUSEL
+  MATERIAL_GALLERY
+  PROBLEMS
+  SOLUTION
+  PROCESS
+  APPLICATIONS
+  MATERIAL_GUIDANCE
+  ADVANTAGES
+  STRUCTURE
+  TECHNICAL
+  MODEL_CARDS
+  INDUSTRY_GALLERY
+  MODEL_GUIDE
+  COMPARISON
+  ENERGY_COMPARISON
+  WORKFLOW
+  MANUFACTURER_SUPPORT
+  FAQ
+  RELATED_LINKS
+  CTA
+}
+
+enum MediaLifecycleStatus {
+  ACTIVE
+  TOMBSTONED
+  DELETED
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  IN_DISCUSSION
+  QUOTED
+  WON
+  LOST
+  SPAM
+}
+
+enum LeadActivityType {
+  NOTE
+  STATUS_CHANGE
+  ASSIGNMENT
+  EMAIL
+  FOLLOW_UP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model User {
+  id                   String           @id @default(cuid())
+  email                String           @unique
+  name                 String
+  passwordHash         String
+  isActive             Boolean          @default(true)
+  twoFactorEnabled     Boolean          @default(false)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  roles                UserRole[]
+  sessions             Session[]
+  loginAttempts        LoginAttempt[]
+  auditLogs            AuditLog[]        @relation("AuditActor")
+  uploadedMedia        MediaAsset[]      @relation("MediaUploader")
+  leadActivities       LeadActivity[]    @relation("LeadActivityActor")
+  assignedLeads        LeadAssignment[]  @relation("LeadAssignee")
+  leadAssignmentsMade  LeadAssignment[]  @relation("LeadAssignedBy")
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  key         String           @unique
+  name        String
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  key         String           @unique
+  description String
+  createdAt   DateTime         @default(now())
+  roles       RolePermission[]
+}
+
+model UserRole {
+  userId    String
+  roleId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model RolePermission {
+  roleId      String
+  permissionId String
+  createdAt   DateTime   @default(now())
+  role        Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission  Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model Session {
+  id         String    @id @default(cuid())
+  userId     String
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  ipHash     String?
+  userAgent  String?
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model LoginAttempt {
+  id             String   @id @default(cuid())
+  userId         String?
+  accountKeyHash String
+  networkKeyHash String
+  succeeded      Boolean  @default(false)
+  attemptedAt    DateTime @default(now())
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([accountKeyHash, attemptedAt])
+  @@index([networkKeyHash, attemptedAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String
+  before     Json?
+  after      Json?
+  requestId  String?
+  ipHash     String?
+  createdAt  DateTime @default(now())
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId, createdAt])
+  @@index([actorId, createdAt])
+}
+
+model ProductCategory {
+  id                    String                  @id @default(cuid())
+  parentId              String?
+  name                  String
+  slug                  String                  @unique
+  summary               String?
+  description           String?
+  status                PublicationStatus       @default(DRAFT)
+  position              Int                     @default(0)
+  version               Int                     @default(1)
+  publishedAt           DateTime?
+  archivedAt            DateTime?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  parent                ProductCategory?        @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children              ProductCategory[]       @relation("CategoryTree")
+  products              Product[]
+  specificationTemplates SpecificationTemplate[]
+
+  @@index([parentId, position])
+  @@index([status, position])
+}
+
+model Product {
+  id              String              @id @default(cuid())
+  categoryId      String
+  name            String
+  slug            String              @unique
+  summary         String
+  description     String?
+  status          PublicationStatus   @default(DRAFT)
+  position        Int                 @default(0)
+  version         Int                 @default(1)
+  slugLocked      Boolean             @default(true)
+  registeredWidget String?
+  publishedAt     DateTime?
+  archivedAt      DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  category        ProductCategory     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  sections        ProductSection[]
+  models          ProductModel[]
+  leads           Lead[]
+  seoRecords      SeoRecord[]
+
+  @@index([categoryId, status, position])
+  @@index([status, publishedAt])
+}
+
+model ProductSection {
+  id        String             @id @default(cuid())
+  productId String
+  type      ProductSectionType
+  position  Int
+  visible   Boolean            @default(true)
+  content   Json
+  version   Int                @default(1)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  product   Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, type])
+  @@unique([productId, position])
+}
+
+model ProductModel {
+  id        String               @id @default(cuid())
+  productId String
+  name      String
+  sku       String?
+  position  Int                  @default(0)
+  active    Boolean              @default(true)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+  product   Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
+  values    SpecificationValue[]
+
+  @@unique([productId, name])
+  @@unique([productId, position])
+}
+
+model SpecificationTemplate {
+  id         String               @id @default(cuid())
+  categoryId String?
+  name       String
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+  category   ProductCategory?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  fields     SpecificationField[]
+
+  @@unique([categoryId, name])
+}
+
+model SpecificationField {
+  id         String               @id @default(cuid())
+  templateId String
+  name       String
+  unit       String?
+  valueType  String               @default("TEXT")
+  position   Int
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+  template   SpecificationTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  values     SpecificationValue[]
+
+  @@unique([templateId, name])
+  @@unique([templateId, position])
+}
+
+model SpecificationValue {
+  id        String             @id @default(cuid())
+  modelId   String
+  fieldId   String
+  value     String
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  model     ProductModel       @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  field     SpecificationField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@unique([modelId, fieldId])
+}
+
+model MediaAsset {
+  id             String               @id @default(cuid())
+  objectKey      String               @unique
+  originalName   String
+  mimeType       String
+  byteSize       Int
+  checksum       String               @unique
+  usage          String
+  altText        String?
+  category       String?
+  width          Int?
+  height         Int?
+  lifecycleStatus MediaLifecycleStatus @default(ACTIVE)
+  uploadedById   String
+  replacedById   String?              @unique
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  deletedAt      DateTime?
+  uploadedBy     User                 @relation("MediaUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
+  replacedBy     MediaAsset?          @relation("MediaReplacement", fields: [replacedById], references: [id], onDelete: SetNull)
+  replaces       MediaAsset?          @relation("MediaReplacement")
+  references     MediaReference[]
+  desktopBanners Banner[]             @relation("BannerDesktopMedia")
+  tabletBanners  Banner[]             @relation("BannerTabletMedia")
+  mobileBanners  Banner[]             @relation("BannerMobileMedia")
+  ogSeoRecords   SeoRecord[]          @relation("SeoOgMedia")
+
+  @@index([lifecycleStatus, createdAt])
+}
+
+model MediaReference {
+  id           String     @id @default(cuid())
+  mediaAssetId String
+  entityType   String
+  entityId     String
+  field        String
+  createdAt    DateTime   @default(now())
+  mediaAsset   MediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Restrict)
+
+  @@unique([mediaAssetId, entityType, entityId, field])
+  @@index([entityType, entityId])
+}
+
+model Banner {
+  id             String            @id @default(cuid())
+  name           String
+  title          String
+  subtitle       String?
+  buttonText     String?
+  buttonUrl      String?
+  textColor      String?
+  textPosition   String?
+  maskOpacity    Int?
+  desktopMediaId String
+  tabletMediaId  String?
+  mobileMediaId  String?
+  status         PublicationStatus @default(DRAFT)
+  enabled        Boolean           @default(true)
+  position       Int               @default(0)
+  startsAt       DateTime?
+  endsAt         DateTime?
+  version        Int               @default(1)
+  publishedAt    DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  desktopMedia   MediaAsset        @relation("BannerDesktopMedia", fields: [desktopMediaId], references: [id], onDelete: Restrict)
+  tabletMedia    MediaAsset?       @relation("BannerTabletMedia", fields: [tabletMediaId], references: [id], onDelete: Restrict)
+  mobileMedia    MediaAsset?       @relation("BannerMobileMedia", fields: [mobileMediaId], references: [id], onDelete: Restrict)
+
+  @@index([status, enabled, startsAt, endsAt, position])
+}
+
+model Lead {
+  id                  String                    @id @default(cuid())
+  name                String?
+  email               String
+  phone               String?
+  whatsapp            String?
+  country             String?
+  company             String?
+  interestedProductId String?
+  message             String
+  sourcePage          String?
+  material            String?
+  thickness           String?
+  workingLength       String?
+  quantity            String?
+  voltage             String?
+  budget              String?
+  status              LeadStatus                @default(NEW)
+  duplicateOfId       String?
+  nextFollowUpAt      DateTime?
+  version             Int                       @default(1)
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+  interestedProduct   Product?                  @relation(fields: [interestedProductId], references: [id], onDelete: SetNull)
+  duplicateOf         Lead?                     @relation("LeadDuplicates", fields: [duplicateOfId], references: [id], onDelete: SetNull)
+  duplicates          Lead[]                    @relation("LeadDuplicates")
+  activities          LeadActivity[]
+  assignments         LeadAssignment[]
+  notificationAttempts LeadNotificationAttempt[]
+
+  @@index([status, createdAt])
+  @@index([email, createdAt])
+  @@index([interestedProductId, createdAt])
+}
+
+model LeadActivity {
+  id        String           @id @default(cuid())
+  leadId    String
+  actorId   String?
+  type      LeadActivityType
+  content   String
+  metadata  Json?
+  createdAt DateTime         @default(now())
+  lead      Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  actor     User?            @relation("LeadActivityActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([leadId, createdAt])
+}
+
+model LeadAssignment {
+  id           String    @id @default(cuid())
+  leadId       String
+  assigneeId   String
+  assignedById String
+  assignedAt   DateTime  @default(now())
+  endedAt      DateTime?
+  lead         Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  assignee     User      @relation("LeadAssignee", fields: [assigneeId], references: [id], onDelete: Restrict)
+  assignedBy   User      @relation("LeadAssignedBy", fields: [assignedById], references: [id], onDelete: Restrict)
+
+  @@index([leadId, endedAt])
+  @@index([assigneeId, endedAt])
+}
+
+model LeadNotificationAttempt {
+  id        String             @id @default(cuid())
+  leadId    String
+  status    NotificationStatus @default(PENDING)
+  errorCode String?
+  attemptedAt DateTime         @default(now())
+  lead      Lead               @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, attemptedAt])
+}
+
+model SeoRecord {
+  id             String            @id @default(cuid())
+  pathname       String            @unique
+  productId      String?
+  title          String
+  description    String
+  canonicalUrl   String?
+  openGraphTitle String?
+  openGraphDescription String?
+  openGraphMediaId String?
+  robotsIndex    Boolean           @default(true)
+  targetKeyword  String?
+  status         PublicationStatus @default(DRAFT)
+  version        Int               @default(1)
+  publishedAt    DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  product        Product?          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  openGraphMedia MediaAsset?       @relation("SeoOgMedia", fields: [openGraphMediaId], references: [id], onDelete: SetNull)
+
+  @@index([status, robotsIndex])
+  @@index([productId])
+}
+
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  version   Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

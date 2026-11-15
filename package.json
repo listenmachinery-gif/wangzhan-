@@ -7,6 +7,17 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests --exclude 'tests/integration/**' --exclude 'tests/e2e/**'",
+    "test:integration": "dotenv run -f .env.test -- vitest run --exclude 'tests/e2e/**'",
+    "test:e2e": "dotenv run -f .env.test -- playwright test",
+    "db:generate": "prisma generate",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:test": "dotenv run -f .env.test -- prisma migrate deploy",
+    "db:seed:rbac": "tsx prisma/seed-rbac.ts",
+    "admin:bootstrap": "tsx scripts/bootstrap-admin.ts",
+    "import:catalogue": "tsx scripts/import-legacy-catalogue.ts",
+    "verify:catalogue": "tsx scripts/verify-catalogue-migration.ts",
     "verify:nc-press-brake": "node scripts/verify-nc-hydraulic-press-brake-page.mjs",
     "verify:torsion-bar-press-brake": "node scripts/verify-torsion-bar-cnc-press-brake-page.mjs",
     "verify:exchange-table-laser": "node scripts/verify-exchange-table-fiber-laser-cutting-machine-page.mjs",
@@ -28,22 +39,49 @@
     "verify:hydraulic-swing-beam-seo": "node scripts/verify-hydraulic-swing-beam-shear-page.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1169.0",
+    "@aws-sdk/s3-request-presigner": "^3.1169.0",
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "argon2": "^0.45.2",
+    "dotenv": "^18.0.10",
+    "exceljs": "^4.4.0",
     "lucide-react": "^0.468.0",
     "next": "^15.5.19",
     "nodemailer": "^9.0.1",
+    "pg": "^8.23.1",
     "react": "19.0.0",
-    "react-dom": "19.0.0"
+    "react-dom": "19.0.0",
+    "server-only": "^0.0.1",
+    "sharp": "^0.35.5",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.10",
     "@types/node": "^20.17.9",
     "@types/nodemailer": "^8.0.1",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.1",
+    "@vitejs/plugin-react": "^6.3.0",
     "autoprefixer": "^10.4.20",
+    "dotenv-cli": "^11.1.0",
     "eslint": "8.57.1",
     "eslint-config-next": "15.5.19",
+    "jsdom": "^31.0.1",
     "postcss": "^8.4.49",
+    "prisma": "^7.10.1",
     "tailwindcss": "^3.4.16",
-    "typescript": "^5.7.2"
+    "tsx": "^4.23.15",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.12"
+  },
+  "overrides": {
+    "exceljs": {
+      "uuid": "^11.1.1"
+    }
   }
 }

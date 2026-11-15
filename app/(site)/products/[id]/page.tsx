@@ -1,0 +1,1073 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import ElectricTwoRollPlateRollingMachineSolutionPage from "@/components/ElectricTwoRollPlateRollingMachineSolutionPage";
+import ElectricFoldingMachineSolutionPage from "@/components/ElectricFoldingMachineSolutionPage";
+import ElectroHydraulicServoCncPressBrakeSolutionPage from "@/components/ElectroHydraulicServoCncPressBrakeSolutionPage";
+import EnergySavingElectricShearSolutionPage from "@/components/EnergySavingElectricShearSolutionPage";
+import ExchangeTableFiberLaserCuttingMachineSolutionPage from "@/components/ExchangeTableFiberLaserCuttingMachineSolutionPage";
+import FiberTubeLaserCuttingMachineSolutionPage from "@/components/FiberTubeLaserCuttingMachineSolutionPage";
+import FootShearSolutionPage from "@/components/FootShearSolutionPage";
+import FullyAutomaticThreeRollPlateRollingMachineSolutionPage from "@/components/FullyAutomaticThreeRollPlateRollingMachineSolutionPage";
+import HydraulicFourRollPlateRollingMachineSolutionPage from "@/components/HydraulicFourRollPlateRollingMachineSolutionPage";
+import HydraulicFoldingMachineSolutionPage from "@/components/HydraulicFoldingMachineSolutionPage";
+import HydraulicSwingBeamShearSolutionPage from "@/components/HydraulicSwingBeamShearSolutionPage";
+import HydraulicGuillotineShearSolutionPage from "@/components/HydraulicGuillotineShearSolutionPage";
+import ManualFoldingMachineSolutionPage from "@/components/ManualFoldingMachineSolutionPage";
+import NcHydraulicPressBrakeSolutionPage from "@/components/NcHydraulicPressBrakeSolutionPage";
+import PneumaticFoldingMachineSolutionPage from "@/components/PneumaticFoldingMachineSolutionPage";
+import ProductSolutionPage from "@/components/ProductSolutionPage";
+import ReelShearBeadingSolutionPage from "@/components/ReelShearBeadingSolutionPage";
+import SemiAutomaticThreeRollPlateRollingMachineSolutionPage from "@/components/SemiAutomaticThreeRollPlateRollingMachineSolutionPage";
+import SheetAndTubeFiberLaserCuttingMachineSolutionPage from "@/components/SheetAndTubeFiberLaserCuttingMachineSolutionPage";
+import SingleTableFiberLaserCuttingMachineSolutionPage from "@/components/SingleTableFiberLaserCuttingMachineSolutionPage";
+import SmallElectricShearSolutionPage from "@/components/SmallElectricShearSolutionPage";
+import TorsionBarCncPressBrakeSolutionPage from "@/components/TorsionBarCncPressBrakeSolutionPage";
+import { StandardProductPage } from "@/components/products/StandardProductPage";
+import { getCategoryById, products } from "@/data/products";
+import { getPublishedProductBySlug } from "@/lib/repositories/product-repository";
+
+export const dynamic = "force-dynamic";
+
+type ProductDetailProps = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+export async function generateMetadata({ params }: ProductDetailProps): Promise<Metadata> {
+  const { id } = await params;
+  const published = await getPublishedProductBySlug(id, {
+    allowLegacyFallback: process.env.ZYRON_ENABLE_LEGACY_PRODUCT_FALLBACK === "true",
+  });
+  if (!published) return {};
+  const product = products.find((item) => item.id === id);
+
+  if (!product) {
+    if (published.source !== "database") return {};
+    const hero = published.modules.find((item) => item.type === "HERO")?.data as {
+      images?: { desktop?: string; alt?: string };
+    } | undefined;
+    const title = `${published.name} | ZYRON Heavy Industry`;
+    const description = published.description ?? published.summary;
+    const image = hero?.images?.desktop;
+    return {
+      title,
+      description,
+      alternates: { canonical: `/products/${published.slug}` },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${published.slug}`,
+        ...(image ? { images: [{ url: image, alt: hero?.images?.alt ?? published.name }] } : {}),
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        ...(image ? { images: [image] } : {}),
+      },
+    };
+  }
+
+  if (product.id === "electric-two-roll-plate-rolling-machine") {
+    const title =
+      "Electric Two-Roll Plate Rolling Machine | Thin Sheet Cylinder Rolling Solution";
+    const description =
+      "Electric two-roll plate rolling machine for thin sheet cylinder forming, HVAC parts, filter shells, exhaust covers, small tanks and metal round shells. Get a suitable sheet rolling solution based on your material, thickness and target diameter.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Electric Two-Roll Plate Rolling Machine",
+        "Electric 2-Roll Plate Rolling Machine",
+        "Two-Roll Plate Rolling Machine",
+        "2-Roll Plate Bending Machine",
+        "Two-Roller Sheet Rolling Machine",
+        "Electric Sheet Rolling Machine",
+        "Thin Sheet Plate Rolling Machine",
+        "Cylinder Rolling Machine",
+        "Sheet Metal Cylinder Forming Machine",
+        "Sheet Metal Rolling Solution",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Electric two-roll plate rolling machine for thin sheet cylinder forming",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "semi-automatic-three-roll-plate-rolling-machine") {
+    const title =
+      "Semi-Automatic Three-Roll Plate Rolling Machine | Cylinder & Cone Rolling Solution";
+    const description =
+      "Semi-automatic three-roll plate rolling machine for cylinder forming, arc bending, cone rolling, tank shells, duct parts and metal fabrication workshops. Get a suitable plate rolling solution based on your material, thickness and target diameter.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Semi-Automatic Three-Roll Plate Rolling Machine",
+        "Semi-Automatic 3-Roll Plate Rolling Machine",
+        "Three-Roll Plate Rolling Machine",
+        "3-Roll Plate Bending Machine",
+        "Three-Roller Sheet Rolling Machine",
+        "Semi-Automatic Plate Bending Machine",
+        "Sheet Metal Rolling Machine",
+        "Cylinder Rolling Machine",
+        "Cone Rolling Machine",
+        "Sheet Metal Cylinder Forming Machine",
+        "Plate Rolling Solution",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Semi-automatic three-roll plate rolling machine for cylinder and cone forming",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "fully-automatic-three-roll-plate-rolling-machine") {
+    const title =
+      "Fully Automatic Three-Roll Plate Rolling Machine | CNC Cylinder & Cone Rolling Solution";
+    const description =
+      "Fully automatic three-roll plate rolling machine for CNC plate rolling, automatic pre-bending, cylinder forming, cone rolling, tank shells, pressure vessels and heavy fabrication workshops. Get a suitable automatic plate rolling solution based on your material, thickness and target diameter.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Fully Automatic Three-Roll Plate Rolling Machine",
+        "Fully Automatic 3-Roll Plate Rolling Machine",
+        "CNC Three-Roll Plate Rolling Machine",
+        "CNC 3-Roll Plate Bending Machine",
+        "Automatic Plate Rolling Machine",
+        "Automatic Plate Bending Machine",
+        "Three-Roll Plate Rolling Machine",
+        "Cylinder Rolling Machine",
+        "Cone Rolling Machine",
+        "Tank Shell Rolling Machine",
+        "Plate Rolling Solution",
+        "CNC Plate Rolling Solution",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Fully automatic three-roll plate rolling machine for CNC cylinder and cone rolling",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "hydraulic-four-roll-plate-rolling-machine") {
+    const title =
+      "Hydraulic Four-Roll Plate Rolling Machine | Cylinder & Tank Shell Rolling Solution";
+    const description =
+      "Hydraulic four-roll plate rolling machine for plate pre-bending, cylinder forming, cone rolling, tank shells, pressure vessels, pipe sections and heavy fabrication workshops. Get a suitable hydraulic plate rolling solution based on your material, thickness and target diameter.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Hydraulic Four-Roll Plate Rolling Machine",
+        "Hydraulic 4-Roll Plate Rolling Machine",
+        "Four-Roll Plate Rolling Machine",
+        "4-Roll Plate Bending Machine",
+        "Hydraulic Plate Rolling Machine",
+        "Four-Roller Plate Bending Machine",
+        "Plate Rolling Machine for Tank Shell",
+        "Cylinder Rolling Machine",
+        "Cone Rolling Machine",
+        "Tank Shell Rolling Machine",
+        "Hydraulic Plate Bending Solution",
+        "Sheet Metal Cylinder Forming Machine",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Hydraulic four-roll plate rolling machine for cylinder and tank shell forming",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "fiber-tube-laser-cutting-machine") {
+    const title =
+      "Fiber Tube Laser Cutting Machine | Metal Pipe Cutting Solution";
+    const description =
+      "Fiber tube laser cutting machine for round tube, square tube, rectangular tube, profile tube, metal furniture, fitness equipment, guardrail, frame structures and tube fabrication workshops. Get a suitable tube laser cutting solution based on your tube material, size and production needs.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Fiber Tube Laser Cutting Machine",
+        "Fiber Laser Tube Cutting Machine",
+        "CNC Tube Laser Cutting Machine",
+        "Metal Tube Laser Cutting Machine",
+        "Laser Tube Cutting Machine",
+        "Fiber Laser Pipe Cutting Machine",
+        "CNC Pipe Laser Cutter",
+        "Tube and Profile Laser Cutting Machine",
+        "Round Tube Laser Cutting Machine",
+        "Square Tube Laser Cutting Machine",
+        "Metal Pipe Cutting Solution",
+        "Tube Laser Cutting Solution",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Fiber tube laser cutting machine for metal pipe and profile cutting",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "exchange-table-fiber-laser-cutting-machine") {
+    const title =
+      "Exchange-Table Fiber Laser Cutting Machine | High-efficiency Sheet Metal Cutting Solution";
+    const description =
+      "Exchange-table fiber laser cutting machine for high-efficiency sheet metal cutting, batch fabrication, stainless steel products, cabinet manufacturing and workshop production. Get a suitable fiber laser cutting solution based on your material, thickness and sheet size.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Exchange-Table Fiber Laser Cutting Machine",
+        "Exchange Platform Fiber Laser Cutting Machine",
+        "Dual Table Fiber Laser Cutting Machine",
+        "Shuttle Table Fiber Laser Cutting Machine",
+        "Fiber Laser Cutting Machine with Exchange Table",
+        "Sheet Metal Fiber Laser Cutting Machine",
+        "Metal Sheet Laser Cutting Machine",
+        "CNC Fiber Laser Cutting Machine",
+        "Sheet Metal Cutting Solution",
+        "High Efficiency Fiber Laser Cutter",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Exchange-table fiber laser cutting machine for sheet metal cutting",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "sheet-and-tube-fiber-laser-cutting-machine") {
+    const title =
+      "Sheet and Tube Fiber Laser Cutting Machine | Plate & Pipe Cutting Solution";
+    const description =
+      "Sheet and tube fiber laser cutting machine for metal sheet cutting, pipe cutting, furniture, fitness equipment, frame structures and fabrication workshops. Get a suitable plate and tube laser cutting solution based on your material, tube size and production needs.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Sheet and Tube Fiber Laser Cutting Machine",
+        "Plate and Tube Fiber Laser Cutting Machine",
+        "Sheet Tube Laser Cutting Machine",
+        "Plate Pipe Fiber Laser Cutting Machine",
+        "Dual-use Fiber Laser Cutting Machine",
+        "Sheet and Pipe Laser Cutter",
+        "Metal Sheet and Tube Laser Cutter",
+        "CNC Fiber Laser Cutting Machine",
+        "Sheet Metal and Tube Cutting Solution",
+        "Fiber Laser Cutter for Metal Sheet and Tube",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Sheet and tube fiber laser cutting machine for metal sheet and pipe cutting",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "electro-hydraulic-servo-cnc-press-brake") {
+    const title =
+      "Electro-Hydraulic Servo CNC Press Brake | Precision Sheet Metal Bending Solution";
+    const description =
+      "Electro-hydraulic servo CNC press brake for high-precision sheet metal bending, cabinet manufacturing, stainless steel products and workshop fabrication. Get a suitable CNC bending solution based on your material, thickness, bending length and drawing.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Electro-Hydraulic Servo CNC Press Brake",
+        "Electro-Hydraulic CNC Press Brake",
+        "Servo Hydraulic CNC Press Brake",
+        "CNC Hydraulic Press Brake",
+        "CNC Press Brake Machine",
+        "Sheet Metal Bending Machine",
+        "Sheet Metal Bending Solution",
+        "Precision Sheet Metal Bending",
+        "CNC Sheet Metal Bending Machine",
+        "Hydraulic CNC Bending Machine",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Electro-hydraulic servo CNC press brake for precision sheet metal bending",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "nc-hydraulic-press-brake") {
+    const title = "NC Hydraulic Press Brake | Sheet Metal Bending Solution";
+    const description =
+      "NC hydraulic press brake for cost-effective sheet metal bending, metal fabrication, cabinet manufacturing and workshop production. Get a suitable hydraulic bending solution based on your material, thickness and bending length.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "NC Hydraulic Press Brake",
+        "NC Press Brake Machine",
+        "Hydraulic Press Brake",
+        "Sheet Metal Bending Machine",
+        "Metal Sheet Press Brake",
+        "Torsion Bar Press Brake",
+        "E21 Press Brake",
+        "Sheet Metal Bending Solution",
+        "Hydraulic Bending Machine",
+        "Steel Plate Bending Machine",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "NC hydraulic press brake for sheet metal bending",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "torsion-bar-cnc-press-brake") {
+    const title =
+      "Torsion Bar CNC Press Brake | Cost-effective Sheet Metal Bending Solution";
+    const description =
+      "Torsion bar CNC press brake for cost-effective sheet metal bending, cabinet manufacturing, HVAC duct parts and workshop fabrication. Get a suitable CNC bending solution based on your material, thickness and bending length.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Torsion Bar CNC Press Brake",
+        "Torsion Bar Press Brake",
+        "CNC Torsion Bar Press Brake",
+        "Torsion Axis Press Brake",
+        "Hydraulic CNC Press Brake",
+        "Sheet Metal Bending Machine",
+        "Metal Sheet Press Brake",
+        "CNC Sheet Metal Bending Machine",
+        "Sheet Metal Bending Solution",
+        "Steel Plate Bending Machine",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Torsion bar CNC press brake for sheet metal bending",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "electric-sheet-metal-folding-machine") {
+    const title = "Electric Folding Machine | Sheet Metal Edge Bending Solution";
+    const description =
+      "Electric folding machine for thin sheet metal bending, edge folding, HVAC duct panel forming, roofing sheet metal and light fabrication workshops. Get a suitable electric sheet metal folding solution.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Electric Folding Machine",
+        "Electric Sheet Metal Folding Machine",
+        "Electric Sheet Metal Bender",
+        "Electric Sheet Metal Brake",
+        "Motorized Folding Machine",
+        "Sheet Metal Edge Bending Machine",
+        "HVAC Duct Folding Machine",
+        "Electric Duct Folding Machine",
+        "Sheet Metal Folding Solution",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Electric folding machine for sheet metal edge bending",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "manual-sheet-metal-folding-machine") {
+    const title = "Manual Folding Machine | Sheet Metal Edge Bending Solution";
+    const description =
+      "Manual folding machine for thin sheet metal bending, edge folding, HVAC duct panel forming, roofing sheet metal and light fabrication workshops. Get a suitable manual sheet metal folding solution.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Manual Folding Machine",
+        "Manual Sheet Metal Folding Machine",
+        "Manual Sheet Metal Bender",
+        "Manual Sheet Metal Brake",
+        "Sheet Metal Hand Brake",
+        "Hand Operated Folding Machine",
+        "Manual Metal Folding Machine",
+        "HVAC Duct Folding Machine",
+        "Sheet Metal Edge Bending Machine",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Manual folding machine for sheet metal edge bending",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "pneumatic-sheet-metal-folding-machine") {
+    const title =
+      "Pneumatic Folding Machine | HVAC Duct Sheet Metal Folding Solution";
+    const description =
+      "Pneumatic folding machine for thin sheet metal bending, HVAC duct panel folding, galvanized sheet forming and rectangular air duct fabrication. Get a suitable air-driven folding solution.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Pneumatic Folding Machine",
+        "Pneumatic Sheet Metal Folding Machine",
+        "Pneumatic Sheet Metal Bender",
+        "Pneumatic Sheet Metal Brake",
+        "Pneumatic Duct Folding Machine",
+        "HVAC Duct Folding Machine",
+        "Pneumatic TDF Folding Machine",
+        "Sheet Metal Edge Bending Machine",
+        "Air Duct Folding Machine",
+        "Sheet Metal Folding Solution",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Pneumatic folding machine for HVAC duct sheet metal folding",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "hydraulic-sheet-metal-folding-machine") {
+    const title =
+      "Hydraulic Folding Machine | Sheet Metal & HVAC Duct Folding Solution";
+    const description =
+      "Hydraulic folding machine for sheet metal edge bending, HVAC duct panel folding, long edge forming and workshop production. Get a suitable hydraulic sheet metal folding solution.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Hydraulic Folding Machine",
+        "Hydraulic Sheet Metal Folding Machine",
+        "Hydraulic Sheet Metal Bender",
+        "Hydraulic Sheet Metal Brake",
+        "Hydraulic Duct Folding Machine",
+        "Hydraulic TDF Folding Machine",
+        "HVAC Duct Folding Machine",
+        "Sheet Metal Edge Bending Machine",
+        "Hydraulic Metal Folding Machine",
+        "Sheet Metal Folding Solution",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Hydraulic folding machine for sheet metal and HVAC duct panel folding",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "reel-shear-beading-machine") {
+    const title = "Reel Shear Beading Machine for HVAC Duct | ZYRON";
+    const description =
+      "Reel shear beading machine for thin sheet metal cutting, slitting and reinforcement beading. Built for HVAC duct fabrication, galvanized sheet work and compact workshops.";
+
+    return {
+      title,
+      description,
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "reel shear beading machine for HVAC sheet metal fabrication",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "foot-shear") {
+    const title = "Foot Operated Shearing Machine for Sheet Metal | ZYRON";
+    const description =
+      "Foot operated shearing machine for accurate cutting of mild steel, galvanized steel and suitable thin sheet. No electricity required; ideal for light fabrication.";
+
+    return {
+      title,
+      description,
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Foot operated shearing machine for sheet metal cutting",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "compact-electric-shearing-machine") {
+    const title = "Small Electric Shearing Machine for Sheet Metal | ZYRON";
+    const description =
+      "Small electric shearing machine for thin sheet cutting in HVAC, roofing, sign making and light fabrication. Compact Q11G models offer multiple cutting widths.";
+
+    return {
+      title,
+      description,
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "small electric shearing machine for thin sheet metal cutting",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "energy-saving-electric-shearing-machine") {
+    const title = "Energy-Saving Electric Shearing Machine | ZYRON";
+    const description =
+      "Energy-saving electric shearing machine for efficient thin sheet cutting with reduced unnecessary power use, low-noise operation and Q11G models for daily production.";
+
+    return {
+      title,
+      description,
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "energy-saving electric shearing machine for thin sheet metal cutting",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "hydraulic-swing-beam-shear") {
+    const title = "Hydraulic Swing Beam Shearing Machine | ZYRON";
+    const description =
+      "Hydraulic swing beam shearing machine for reliable sheet metal cutting with QC12Y/QC12K series, hydraulic drive, adjustable blade clearance and multiple capacities.";
+
+    return {
+      title,
+      description,
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "hydraulic swing beam shearing machine for sheet metal cutting",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "hydraulic-guillotine-shear") {
+    const title =
+      "Hydraulic Guillotine Shearing Machine | Sheet Metal Cutting Solution";
+    const description =
+      "Heavy-duty hydraulic guillotine shearing machine for straight cutting of mild steel, stainless steel, galvanized sheet and aluminum plate. Get a suitable sheet metal cutting solution for your workshop.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "hydraulic guillotine shearing machine",
+        "hydraulic guillotine shear",
+        "CNC hydraulic guillotine shear",
+        "sheet metal shearing machine",
+        "metal plate cutting machine",
+        "steel plate cutting solution",
+        "sheet metal cutting solution",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Hydraulic guillotine shearing machine for sheet metal cutting",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  if (product.id === "single-table-fiber-laser-cutting-machine") {
+    const title =
+      "Single-Table Fiber Laser Cutting Machine | Sheet Metal Cutting Solution";
+    const description =
+      "Single-table fiber laser cutting machine for cost-effective sheet metal cutting, metal fabrication, stainless steel products, cabinet manufacturing and workshop production. Get a suitable fiber laser cutting solution based on your material, thickness and sheet size.";
+
+    return {
+      title,
+      description,
+      keywords: [
+        "Single-Table Fiber Laser Cutting Machine",
+        "Single Platform Fiber Laser Cutting Machine",
+        "Open Type Fiber Laser Cutting Machine",
+        "Sheet Metal Fiber Laser Cutting Machine",
+        "Metal Sheet Laser Cutting Machine",
+        "Fiber Laser Cutter for Metal Sheet",
+        "CNC Fiber Laser Cutting Machine",
+        "Sheet Metal Cutting Solution",
+        "Steel Plate Laser Cutting Machine",
+        "Stainless Steel Laser Cutting Machine",
+      ],
+      alternates: {
+        canonical: `/products/${product.id}`,
+      },
+      openGraph: {
+        title,
+        description,
+        url: `/products/${product.id}`,
+        images: [
+          {
+            url: product.image,
+            alt: "Single-table fiber laser cutting machine for sheet metal cutting",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [product.image],
+      },
+    };
+  }
+
+  return {
+    title: `${product.name} | ZYRON Heavy Industry`,
+    description: product.performanceFeatures ?? product.tagline,
+    keywords: [product.name, product.categoryName, ...(product.seoTerms ?? [])],
+    alternates: {
+      canonical: `/products/${product.id}`,
+    },
+    openGraph: {
+      title: `${product.name} | ZYRON Heavy Industry`,
+      description: product.performanceFeatures ?? product.tagline,
+      url: `/products/${product.id}`,
+      images: [
+        {
+          url: product.image,
+          alt: product.name,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.name} | ZYRON Heavy Industry`,
+      description: product.performanceFeatures ?? product.tagline,
+      images: [product.image],
+    },
+  };
+}
+
+export default async function ProductDetailPage({ params }: ProductDetailProps) {
+  const { id } = await params;
+  const published = await getPublishedProductBySlug(id, {
+    allowLegacyFallback: process.env.ZYRON_ENABLE_LEGACY_PRODUCT_FALLBACK === "true",
+  });
+  if (published?.source === "database") {
+    return <StandardProductPage product={published} />;
+  }
+  if (!published) notFound();
+
+  const product = products.find((item) => item.id === id);
+
+  if (!product) {
+    notFound();
+  }
+
+  if (product.id === "electric-sheet-metal-folding-machine") {
+    return <ElectricFoldingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "manual-sheet-metal-folding-machine") {
+    return <ManualFoldingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "pneumatic-sheet-metal-folding-machine") {
+    return <PneumaticFoldingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "hydraulic-sheet-metal-folding-machine") {
+    return <HydraulicFoldingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "electro-hydraulic-servo-cnc-press-brake") {
+    return <ElectroHydraulicServoCncPressBrakeSolutionPage product={product} />;
+  }
+
+  if (product.id === "exchange-table-fiber-laser-cutting-machine") {
+    return <ExchangeTableFiberLaserCuttingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "fiber-tube-laser-cutting-machine") {
+    return <FiberTubeLaserCuttingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "nc-hydraulic-press-brake") {
+    return <NcHydraulicPressBrakeSolutionPage product={product} />;
+  }
+
+  if (product.id === "torsion-bar-cnc-press-brake") {
+    return <TorsionBarCncPressBrakeSolutionPage product={product} />;
+  }
+
+  if (product.id === "foot-shear") {
+    return <FootShearSolutionPage product={product} />;
+  }
+
+  if (product.id === "compact-electric-shearing-machine") {
+    return <SmallElectricShearSolutionPage product={product} />;
+  }
+
+  if (product.id === "energy-saving-electric-shearing-machine") {
+    return <EnergySavingElectricShearSolutionPage product={product} />;
+  }
+
+  if (product.id === "hydraulic-swing-beam-shear") {
+    return <HydraulicSwingBeamShearSolutionPage product={product} />;
+  }
+
+  if (product.id === "hydraulic-guillotine-shear") {
+    return <HydraulicGuillotineShearSolutionPage product={product} />;
+  }
+
+  if (product.id === "reel-shear-beading-machine") {
+    return <ReelShearBeadingSolutionPage product={product} />;
+  }
+
+  if (product.id === "single-table-fiber-laser-cutting-machine") {
+    return <SingleTableFiberLaserCuttingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "electric-two-roll-plate-rolling-machine") {
+    return <ElectricTwoRollPlateRollingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "semi-automatic-three-roll-plate-rolling-machine") {
+    return <SemiAutomaticThreeRollPlateRollingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "fully-automatic-three-roll-plate-rolling-machine") {
+    return <FullyAutomaticThreeRollPlateRollingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "hydraulic-four-roll-plate-rolling-machine") {
+    return <HydraulicFourRollPlateRollingMachineSolutionPage product={product} />;
+  }
+
+  if (product.id === "sheet-and-tube-fiber-laser-cutting-machine") {
+    return <SheetAndTubeFiberLaserCuttingMachineSolutionPage product={product} />;
+  }
+
+  const category = getCategoryById(product.categoryId);
+  const relatedProducts = products
+    .filter((item) => item.categoryId === product.categoryId && item.id !== product.id)
+    .slice(0, 3);
+
+  if (!category) {
+    notFound();
+  }
+
+  return (
+    <ProductSolutionPage
+      product={product}
+      category={category}
+      relatedProducts={relatedProducts}
+    />
+  );
+}
