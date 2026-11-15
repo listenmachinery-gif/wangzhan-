@@ -1,3 +1,5 @@
+import { pathToFileURL } from "node:url";
+
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import { PERMISSIONS, ROLE_PERMISSIONS, ROLES } from "@/lib/auth/permissions";
@@ -27,7 +29,7 @@ export async function seedRbac(db: PrismaClient) {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new Error("DATABASE_URL is required.");
   const cliDb = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });

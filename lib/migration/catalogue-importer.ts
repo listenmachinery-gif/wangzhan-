@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import { Prisma, PublicationStatus, type PrismaClient } from "@prisma/client";
 import { z } from "zod";
 
@@ -94,8 +96,15 @@ export async function importLegacyCatalogue(options: {
         });
       }
     }
+  }, {
+    isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+    maxWait: 15_000,
+    timeout: 30_000,
+  });
 
-    for (const mapping of mappings) {
+  for (const mapping of mappings) {
+    const committedMediaReferences = await options.database.$transaction(async (transaction) => {
+      let productMediaReferenceCount = 0;
       const category = await transaction.productCategory.findUniqueOrThrow({
         where: { slug: mapping.product.categorySlug },
       });
@@ -135,23 +144,30 @@ export async function importLegacyCatalogue(options: {
           field: { startsWith: "legacy-import:" },
         },
       });
-      for (const productModule of mapping.modules) {
-        const section = await transaction.productSection.upsert({
-          where: { productId_type: { productId: product.id, type: productModule.type } },
-          update: {
-            position: productModule.position,
-            visible: productModule.visible,
-            content: (productModule.data ?? {}) as Prisma.InputJsonValue,
-          },
-          create: {
-            productId: product.id,
-            type: productModule.type,
-            position: productModule.position,
-            visible: productModule.visible,
-            content: (productModule.data ?? {}) as Prisma.InputJsonValue,
-          },
-        });
+      if (mapping.modules.length > 0) {
+        const sectionRows = mapping.modules.map((productModule) => Prisma.sql`(
+          ${randomUUID()},
+          ${product.id},
+          ${productModule.type}::"ProductSectionType",
+          ${productModule.position},
+          ${productModule.visible},
+          ${JSON.stringify(productModule.data ?? {})}::jsonb,
+          ${importedAt}
+        )`);
+        await transaction.$executeRaw(Prisma.sql`
+          INSERT INTO "ProductSection" (
+            "id", "productId", "type", "position", "visible", "content", "updatedAt"
+          )
+          VALUES ${Prisma.join(sectionRows)}
+          ON CONFLICT ("productId", "type") DO UPDATE SET
+            "position" = EXCLUDED."position",
+            "visible" = EXCLUDED."visible",
+            "content" = EXCLUDED."content",
+            "updatedAt" = EXCLUDED."updatedAt"
+        `);
+      }
 
+      for (const productModule of mapping.modules) {
         const resolved = mediaPaths(productModule.data)
           .map((item) => ({ ...item, mediaAssetId: options.mediaPathToAssetId?.get(item.value) }))
           .filter((item): item is typeof item & { mediaAssetId: string } => Boolean(item.mediaAssetId));
@@ -162,7 +178,7 @@ export async function importLegacyCatalogue(options: {
                 mediaAssetId: item.mediaAssetId,
                 entityType: "Product",
                 entityId: product.id,
-                field: `legacy-import:${section.type}:${item.path}`,
+                field: `legacy-import:${productModule.type}:${item.path}`,
               },
             },
             update: {},
@@ -170,14 +186,20 @@ export async function importLegacyCatalogue(options: {
               mediaAssetId: item.mediaAssetId,
               entityType: "Product",
               entityId: product.id,
-              field: `legacy-import:${section.type}:${item.path}`,
+              field: `legacy-import:${productModule.type}:${item.path}`,
             },
           });
-          mediaReferenceCount += 1;
+          productMediaReferenceCount += 1;
         }
       }
-    }
-  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+      return productMediaReferenceCount;
+    }, {
+      isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      maxWait: 15_000,
+      timeout: 30_000,
+    });
+    mediaReferenceCount += committedMediaReferences;
+  }
 
   return stableImportReport({
     ...baseReport,

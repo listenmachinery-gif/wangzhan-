@@ -96,7 +96,7 @@ describe("legacy catalogue import", () => {
     })).resolves.not.toBeNull();
   });
 
-  it("dry-run writes nothing and a mid-transaction failure rolls back the whole catalogue", async () => {
+  it("dry-run writes nothing and a failed product preserves prior atomic imports for a safe retry", async () => {
     const catalogue = await readLegacyCatalogue({ includePageContent: false });
     const dryRun = await importLegacyCatalogue({ database: db, catalogue, write: false });
     expect(dryRun.dryRun).toBe(true);
@@ -116,7 +116,18 @@ describe("legacy catalogue import", () => {
         },
       }),
     ).rejects.toThrow();
-    await expect(db.productCategory.count()).resolves.toBe(0);
-    await expect(db.product.count()).resolves.toBe(0);
+    await expect(db.productCategory.count()).resolves.toBe(1);
+    await expect(db.product.count()).resolves.toBe(1);
+
+    await importLegacyCatalogue({
+      database: db,
+      write: true,
+      catalogue: {
+        categories: catalogue.categories.slice(0, 1),
+        products: catalogue.products.slice(0, 2),
+      },
+    });
+    await expect(db.productCategory.count()).resolves.toBe(1);
+    await expect(db.product.count()).resolves.toBe(2);
   });
 });
