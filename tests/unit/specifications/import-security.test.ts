@@ -46,4 +46,10 @@ describe("specification import resource limits", () => {
     await expect(inspectXlsxArchive(expansionBomb)).rejects.toThrow(/expand/i);
     await expect(inspectXlsxArchive(Buffer.from("not-a-zip"))).rejects.toThrow(/XLSX/i);
   });
+
+  it("allows one header plus 1,000 XLSX data rows and rejects the next row", async () => {
+    const worksheet = (rows: number) => Buffer.from(`<worksheet><sheetData>${Array.from({ length: rows }, (_, index) => `<row r="${index + 1}"><c r="A${index + 1}"/></row>`).join("")}</sheetData></worksheet>`);
+    await expect(inspectXlsxArchive(centralDirectoryZip(worksheet(1_001)))).resolves.toBeUndefined();
+    await expect(inspectXlsxArchive(centralDirectoryZip(worksheet(1_002)))).rejects.toThrow(/dimensions/i);
+  });
 });

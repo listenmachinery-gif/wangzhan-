@@ -99,7 +99,7 @@ export async function inspectXlsxArchive(bytes: Uint8Array) {
         if (/^xl\/worksheets\/.+\.xml$/.test(entry.name)) {
           worksheetRows += (text.slice(0, -16).match(/<row(?:\s|>)/g) ?? []).length;
           worksheetCells += (text.slice(0, -16).match(/<c(?:\s|>)/g) ?? []).length;
-          if (worksheetRows > MAX_IMPORT_ROWS || worksheetCells > MAX_XLSX_CELLS) throw new SpecificationValidationError("XLSX worksheet dimensions exceed the safe import limit.");
+          if (worksheetRows > MAX_IMPORT_ROWS + 1 || worksheetCells > MAX_XLSX_CELLS) throw new SpecificationValidationError("XLSX worksheet dimensions exceed the safe import limit.");
         } else if (entry.name === "xl/sharedStrings.xml") {
           sharedStrings += (text.slice(0, -16).match(/<si(?:\s|>)/g) ?? []).length;
           if (sharedStrings > MAX_XLSX_CELLS) throw new SpecificationValidationError("XLSX shared strings exceed the safe import limit.");

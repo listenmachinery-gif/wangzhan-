@@ -1,7 +1,7 @@
 DROP INDEX IF EXISTS "SpecificationTemplate_global_name_key";
 
 UPDATE "SpecificationField"
-SET "name" = "name" || ' (legacy ' || LEFT("id", 8) || ')'
+SET "name" = "name" || ' (legacy ' || "id" || ')'
 WHERE LOWER(BTRIM("name")) IN ('model', 'sku', 'active');
 
 WITH ranked AS (
@@ -13,7 +13,7 @@ WITH ranked AS (
   WHERE "categoryId" IS NULL
 )
 UPDATE "SpecificationTemplate" AS template
-SET "name" = template."name" || ' (duplicate ' || LEFT(template."id", 8) || ')'
+SET "name" = template."name" || ' (duplicate ' || template."id" || ')'
 FROM ranked
 WHERE template."id" = ranked."id"
   AND ranked.duplicate_number > 1;

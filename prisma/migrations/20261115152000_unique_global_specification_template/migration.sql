@@ -1,7 +1,7 @@
 -- Preserve templates created before Model/SKU/Active became system-owned columns.
 -- The id suffix keeps the rename collision-free within each template.
 UPDATE "SpecificationField"
-SET "name" = "name" || ' (legacy ' || LEFT("id", 8) || ')'
+SET "name" = "name" || ' (legacy ' || "id" || ')'
 WHERE LOWER(BTRIM("name")) IN ('model', 'sku', 'active');
 
 -- The former nullable composite unique constraint allowed duplicate global names.
@@ -15,7 +15,7 @@ WITH ranked AS (
   WHERE "categoryId" IS NULL
 )
 UPDATE "SpecificationTemplate" AS template
-SET "name" = template."name" || ' (duplicate ' || LEFT(template."id", 8) || ')'
+SET "name" = template."name" || ' (duplicate ' || template."id" || ')'
 FROM ranked
 WHERE template."id" = ranked."id"
   AND ranked.duplicate_number > 1;
