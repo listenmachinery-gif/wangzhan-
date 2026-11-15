@@ -57,6 +57,7 @@ test("uploads, searches, previews, edits alt text, and prevents referenced delet
   await page.getByLabel("管理员邮箱").fill(email);
   await page.getByLabel("密码").fill(password);
   await page.getByRole("button", { name: "登录 ZYRON CMS" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
   await page.getByRole("link", { name: "媒体资源" }).click();
   await expect(page.getByRole("heading", { name: "媒体资源" })).toBeVisible();
 
@@ -75,8 +76,9 @@ test("uploads, searches, previews, edits alt text, and prevents referenced delet
 
   await page.getByLabel("搜索媒体").fill("e2e-shearing");
   await page.getByRole("button", { name: "搜索" }).click();
+  await expect(page.getByRole("listitem")).toHaveCount(1);
   await expect(page.getByText("e2e-shearing-machine.png")).toBeVisible();
-  await page.getByRole("button", { name: "预览与编辑" }).click();
+  await page.getByRole("listitem").getByRole("button", { name: "预览与编辑" }).click();
   await expect(page.getByRole("dialog", { name: "媒体预览" })).toBeVisible();
   await expect(
     page.getByRole("dialog", { name: "媒体预览" }).getByRole("img", { name: "E2E electric shearing machine" }),
@@ -96,7 +98,7 @@ test("uploads, searches, previews, edits alt text, and prevents referenced delet
   });
   await db.$disconnect();
 
-  await page.getByRole("button", { name: "预览与编辑" }).click();
+  await page.getByRole("listitem").getByRole("button", { name: "预览与编辑" }).click();
   await expect(page.getByText("引用警告")).toBeVisible();
   await page.getByRole("button", { name: "删除资源" }).click();
   await expect(page.getByRole("dialog", { name: "媒体预览" }).getByRole("status")).toContainText("无法删除");

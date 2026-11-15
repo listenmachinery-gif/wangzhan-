@@ -3,7 +3,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Factory, Headphones, PackageCheck, SlidersHorizontal, Wrench } from "lucide-react";
 import ExhibitionCarousel from "@/components/ExhibitionCarousel";
+import { HomeBannerCarousel } from "@/components/site/HomeBannerCarousel";
 import { getCategoryHref, productCategories } from "@/data/products";
+import { listActiveBanners } from "@/lib/repositories/banner-repository";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "ZYRON Heavy Industry | Industrial Sheet Metal & Duct Machinery Manufacturer",
@@ -67,9 +71,11 @@ function usesProductCutout(image: string) {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const banners = await listActiveBanners();
   return (
     <main className="bg-[#f4f6f8] text-[#101214]">
+      {banners.length ? <HomeBannerCarousel banners={banners} /> : (
       <section className="relative isolate min-h-[calc(100vh-4rem)] overflow-hidden bg-graphite-950 px-5 py-16 text-white sm:px-8 lg:py-24">
         <video
           className="absolute inset-0 z-0 h-full w-full object-cover object-center brightness-[0.48] contrast-[1.06]"
@@ -121,6 +127,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
 
       <section className="bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
         <div className="mx-auto max-w-[1440px]">
