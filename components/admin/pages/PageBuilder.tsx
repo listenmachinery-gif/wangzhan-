@@ -20,7 +20,6 @@ import {
   Trash2,
   Undo2,
 } from "lucide-react";
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { PageRenderer } from "@/components/page-builder/PageRenderer";
@@ -259,6 +258,7 @@ export function PageBuilder({
   const editRevisionRef = useRef(0);
   const savedRevisionRef = useRef(0);
   const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const operationEpochRef = useRef(0);
 
   const selectedIndex = document.nodes.findIndex(
     (node) => node.id === selectedId,
@@ -303,8 +303,10 @@ export function PageBuilder({
     (mode: "manual" | "auto") => {
       const requestedRevision = editRevisionRef.current;
       const requestedDocument = clone(document);
+      const requestedEpoch = operationEpochRef.current;
       setMessage(mode === "auto" ? "正在自动保存…" : "正在保存…");
       const task = saveQueueRef.current.then(async () => {
+        if (requestedEpoch !== operationEpochRef.current) return undefined;
         if (savedRevisionRef.current >= requestedRevision) {
           setMessage(mode === "auto" ? "已自动保存" : "草稿已保存");
           return versionRef.current;
@@ -332,6 +334,9 @@ export function PageBuilder({
           const savedVersion = result?.version ?? requestVersion;
           if (result?.version) {
             versionRef.current = result.version;
+          }
+          if (requestedEpoch !== operationEpochRef.current) return savedVersion;
+          if (result?.version) {
             setVersion(result.version);
           }
           savedRevisionRef.current = Math.max(
@@ -438,10 +443,13 @@ export function PageBuilder({
     if (response.ok) setVersions(await response.json());
   }
   async function rollback(targetVersion: number) {
+    operationEpochRef.current += 1;
+    setMessage("正在恢复历史版本…");
+    await saveQueueRef.current;
     const response = await fetch(`/api/admin/pages/${page.id}/rollback`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ version, targetVersion }),
+      body: JSON.stringify({ version: versionRef.current, targetVersion }),
     });
     const body = await response.json();
     if (!response.ok) {
@@ -462,7 +470,7 @@ export function PageBuilder({
 
   const groups = useMemo(
     () =>
-      ["基础", "布局", "外贸业务", "营销"].map((group) => ({
+      ["基础", "外贸业务", "营销"].map((group) => ({
         group,
         definitions: componentRegistry.filter((item) => item.group === group),
       })),
@@ -565,13 +573,18 @@ export function PageBuilder({
               </button>
             );
           })}
-          <Link
-            href={`/admin/pages/${page.id}/preview`}
-            target="_blank"
+          <button
+            type="button"
+            onClick={() => {
+              void (async () => {
+                if (dirty) await persist("manual");
+                window.open(`/admin/pages/${page.id}/preview`, "_blank", "noopener,noreferrer");
+              })();
+            }}
             className="ml-2 rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold"
           >
             独立预览
-          </Link>
+          </button>
           <button
             type="button"
             onClick={() => void openHistory()}

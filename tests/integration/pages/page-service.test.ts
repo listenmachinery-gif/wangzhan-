@@ -110,4 +110,12 @@ describe("PageService", () => {
       expect.objectContaining({ action: "page.rollback" }),
     ]));
   });
+
+  it("returns a committed publication when cache invalidation fails", async () => {
+    const page = await service.create(editor, { name: "Home", slug: "home", pageType: "HOME", document: defaultHomepageDocument });
+    service = new PageService(db, async () => { throw new Error("cache unavailable"); });
+
+    await expect(service.publish(editor, page.id, { version: page.version })).resolves.toMatchObject({ status: "PUBLISHED", version: 2 });
+    await expect(db.sitePage.findUniqueOrThrow({ where: { id: page.id } })).resolves.toMatchObject({ status: "PUBLISHED", version: 2 });
+  });
 });

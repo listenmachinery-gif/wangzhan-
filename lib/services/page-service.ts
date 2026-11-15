@@ -59,6 +59,17 @@ function uniqueError(error: unknown) {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
 }
 
+export function isPageTransactionConflict(error: unknown) {
+  return typeof error === "object" && error !== null && "code" in error && error.code === "P2034";
+}
+
+function throwPageTransactionError(error: unknown): never {
+  if (isPageTransactionConflict(error)) {
+    throw new PageConflictError("Page changed concurrently. Reload before retrying.");
+  }
+  throw error;
+}
+
 export class PageService {
   constructor(private readonly database: PrismaClient = db, private readonly revalidate: Revalidate = revalidatePath) {}
 
@@ -105,7 +116,8 @@ export class PageService {
     if (!can(principal, "page.write")) throw new PagePermissionError("Page write permission is required.");
     const input = pageSaveSchema.parse(rawInput);
     const document = parsePageDocument(input.document);
-    return this.database.$transaction(async (transaction) => {
+    try {
+      return await this.database.$transaction(async (transaction) => {
       const current = await transaction.sitePage.findUnique({ where: { id } });
       if (!current) throw new PageNotFoundError("Page was not found.");
       const nextVersion = current.version + 1;
@@ -118,13 +130,18 @@ export class PageService {
       const updated = await transaction.sitePage.findUniqueOrThrow({ where: { id } });
       await transaction.auditLog.create({ data: { actorId: principal.id, action: "page.save", entityType: "SitePage", entityId: id, before: { version: current.version }, after: { version: updated.version } } });
       return updated;
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    } catch (error) {
+      throwPageTransactionError(error);
+    }
   }
 
   async publish(principal: Principal, id: string, rawInput: unknown) {
     if (!can(principal, "page.publish")) throw new PagePermissionError("Page publish permission is required.");
     const input = versionSchema.parse(rawInput);
-    const page = await this.database.$transaction(async (transaction) => {
+    let page;
+    try {
+      page = await this.database.$transaction(async (transaction) => {
       const current = await transaction.sitePage.findUnique({ where: { id } });
       if (!current) throw new PageNotFoundError("Page was not found.");
       const document = parsePageDocument(current.draftContent);
@@ -139,8 +156,15 @@ export class PageService {
       const updated = await transaction.sitePage.findUniqueOrThrow({ where: { id } });
       await transaction.auditLog.create({ data: { actorId: principal.id, action: "page.publish", entityType: "SitePage", entityId: id, before: { status: current.status, version: current.version }, after: { status: updated.status, version: updated.version, publishedVersion: updated.publishedVersion } } });
       return updated;
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
-    await this.revalidate(publicPath(page.slug));
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    } catch (error) {
+      throwPageTransactionError(error);
+    }
+    try {
+      await this.revalidate(publicPath(page.slug));
+    } catch (error) {
+      console.error("Page published but cache invalidation failed", error instanceof Error ? error.message : "UnknownError");
+    }
     return page;
   }
 
@@ -158,7 +182,8 @@ export class PageService {
   async rollback(principal: Principal, id: string, rawInput: unknown) {
     if (!can(principal, "page.write")) throw new PagePermissionError("Page write permission is required.");
     const input = rollbackSchema.parse(rawInput);
-    return this.database.$transaction(async (transaction) => {
+    try {
+      return await this.database.$transaction(async (transaction) => {
       const [current, target] = await Promise.all([
         transaction.sitePage.findUnique({ where: { id } }),
         transaction.pageVersion.findUnique({ where: { pageId_version: { pageId: id, version: input.targetVersion } } }),
@@ -175,6 +200,9 @@ export class PageService {
       const updated = await transaction.sitePage.findUniqueOrThrow({ where: { id } });
       await transaction.auditLog.create({ data: { actorId: principal.id, action: "page.rollback", entityType: "SitePage", entityId: id, before: { version: current.version }, after: { version: updated.version, targetVersion: input.targetVersion } } });
       return updated;
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    } catch (error) {
+      throwPageTransactionError(error);
+    }
   }
 }

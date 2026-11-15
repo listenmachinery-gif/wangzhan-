@@ -83,10 +83,20 @@ describe("page builder component registry", () => {
     const stylesheet = container.querySelector("style")?.textContent ?? "";
 
     expect(stylesheet).toContain('[data-page-node="responsive-heading"]');
-    expect(stylesheet).toContain("@media (max-width: 1023px)");
+    expect(stylesheet).toContain("@media (min-width: 640px) and (max-width: 1023px)");
     expect(stylesheet).toContain("font-size:36px");
     expect(stylesheet).toContain("@media (max-width: 639px)");
     expect(stylesheet).toContain("font-size:24px");
-    expect(stylesheet).toContain("visibility:hidden");
+    expect(stylesheet).toContain("display:none");
+  });
+
+  it("rejects protocol-relative and remote image sources", () => {
+    const image = getComponentDefinition("IMAGE")!;
+    const factory = getComponentDefinition("FACTORY_STATS")!;
+
+    expect(image.contentSchema.safeParse({ src: "//cdn.example.com/a.jpg", alt: "A", caption: "" }).success).toBe(false);
+    expect(image.contentSchema.safeParse({ src: "https://cdn.example.com/a.jpg", alt: "A", caption: "" }).success).toBe(false);
+    expect(factory.contentSchema.safeParse({ ...factory.defaultContent, image: "//cdn.example.com/a.jpg" }).success).toBe(false);
+    expect(image.contentSchema.safeParse({ src: "/api/media/image-1", alt: "A", caption: "" }).success).toBe(true);
   });
 });

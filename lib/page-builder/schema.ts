@@ -58,8 +58,8 @@ const safeJsonSchema: z.ZodType<SafeJson> = z.lazy(() => z.union([
 
 const colorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/, "Use a six-digit hex color.");
 const mediaUrlSchema = z.string().max(2_048).refine(
-  (value) => value.startsWith("/") || value.startsWith("https://"),
-  "Media URLs must be site-relative or HTTPS.",
+  (value) => value.startsWith("/") && !value.startsWith("//"),
+  "Media URLs must be site-relative paths.",
 );
 
 export const pageStyleSchema = z.object({
@@ -129,9 +129,14 @@ export const pageDocumentSchema = z.object({
   nodes: z.array(pageNodeSchema).max(100),
 }).strict().superRefine((document, context) => {
   let total = 0;
+  const ids = new Set<string>();
   const visit = (nodes: PageNode[]) => {
     for (const node of nodes) {
       total += 1;
+      if (ids.has(node.id)) {
+        context.addIssue({ code: "custom", message: `Duplicate page node id: ${node.id}` });
+      }
+      ids.add(node.id);
       if (node.children) visit(node.children);
     }
   };

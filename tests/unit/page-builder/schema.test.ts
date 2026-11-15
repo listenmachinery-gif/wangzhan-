@@ -18,6 +18,20 @@ const sales: Principal = {
 };
 
 describe("page builder document schema", () => {
+  it("rejects duplicate node ids across the full document tree", () => {
+    const duplicate = {
+      schemaVersion: 1,
+      nodes: [
+        { id: "same-id", type: "PARAGRAPH", content: { text: "First" } },
+        { id: "container", type: "SECTION", content: { label: "Section" }, children: [
+          { id: "same-id", type: "PARAGRAPH", content: { text: "Second" } },
+        ] },
+      ],
+    };
+
+    expect(pageDocumentSchema.safeParse(duplicate).success).toBe(false);
+  });
+
   it("accepts a bounded responsive component tree", () => {
     const result = pageDocumentSchema.parse({
       schemaVersion: 1,

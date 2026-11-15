@@ -24,7 +24,7 @@ function styleToCss(style: PageStyle | undefined): CSSProperties {
     paddingInline: style.paddingX,
     paddingBlock: style.paddingY,
     gap: style.gap,
-    display: style.display,
+    display: style.visible === false ? "none" : style.display,
     gridTemplateColumns: style.columns
       ? `repeat(${style.columns}, minmax(0, 1fr))`
       : undefined,
@@ -86,12 +86,6 @@ function styleToCss(style: PageStyle | undefined): CSSProperties {
     objectFit: style.objectFit,
     objectPosition: style.objectPosition,
     zIndex: style.zIndex,
-    visibility:
-      style.visible === undefined
-        ? undefined
-        : style.visible
-          ? "visible"
-          : "hidden",
   };
 }
 
@@ -129,7 +123,7 @@ function responsiveStyles(nodes: PageNode[]): string {
   };
   nodes.forEach(visit);
   return [
-    tablet.length ? `@media (max-width: 1023px){${tablet.join("")}}` : "",
+    tablet.length ? `@media (min-width: 640px) and (max-width: 1023px){${tablet.join("")}}` : "",
     mobile.length ? `@media (max-width: 639px){${mobile.join("")}}` : "",
   ].join("");
 }

@@ -124,4 +124,43 @@ describe("PageBuilder", () => {
     await waitFor(() => expect(screen.getByText(/草稿已保存/)).toBeVisible());
     expect(onPersist).toHaveBeenCalledTimes(1);
   });
+
+  it("does not advertise layout containers before nested editing is supported", () => {
+    render(<PageBuilder page={page} canPublish onPersist={vi.fn()} />);
+
+    expect(screen.queryByRole("button", { name: "添加 Section 容器" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "添加 横向布局" })).not.toBeInTheDocument();
+    expect(screen.queryByText("布局")).not.toBeInTheDocument();
+  });
+
+  it("invalidates queued saves before rolling back", async () => {
+    let finishSave: (value: { version: number }) => void = () => undefined;
+    const onPersist = vi.fn(() => new Promise<{ version: number }>((resolve) => { finishSave = resolve; }));
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+      const url = String(input);
+      if (url.endsWith("/versions")) return new Response(JSON.stringify([{ version: 1, action: "CREATE", createdAt: new Date().toISOString(), createdBy: { name: "Admin" } }]));
+      if (url.endsWith("/rollback") && init?.method === "POST") {
+        const body = JSON.parse(String(init.body));
+        expect(body.version).toBe(2);
+        return new Response(JSON.stringify({ version: 3, draftContent: defaultHomepageDocument }));
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    });
+    const user = userEvent.setup();
+    render(<PageBuilder page={page} canPublish onPersist={onPersist} />);
+
+    fireEvent.change(screen.getByRole("textbox", { name: /^标题$/ }), { target: { value: "First queued document" } });
+    fireEvent.click(screen.getByRole("button", { name: "保存草稿" }));
+    await waitFor(() => expect(onPersist).toHaveBeenCalledTimes(1));
+    fireEvent.change(screen.getByRole("textbox", { name: /^标题$/ }), { target: { value: "Must not overwrite rollback" } });
+    fireEvent.click(screen.getByRole("button", { name: "保存草稿" }));
+    await user.click(screen.getByRole("button", { name: "历史" }));
+    fireEvent.click(await screen.findByRole("button", { name: "恢复为草稿" }));
+    finishSave({ version: 2 });
+
+    await waitFor(() => expect(screen.getByText(/已恢复 v1 为新草稿/)).toBeVisible());
+    expect(onPersist).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/rollback"), expect.anything());
+    fetchMock.mockRestore();
+  });
 });
