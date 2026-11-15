@@ -81,11 +81,12 @@ model User {
   roles                UserRole[]
   sessions             Session[]
   loginAttempts        LoginAttempt[]
-  auditLogs            AuditLog[]        @relation("AuditActor")
-  uploadedMedia        MediaAsset[]      @relation("MediaUploader")
-  leadActivities       LeadActivity[]    @relation("LeadActivityActor")
-  assignedLeads        LeadAssignment[]  @relation("LeadAssignee")
-  leadAssignmentsMade  LeadAssignment[]  @relation("LeadAssignedBy")
+  auditLogs            AuditLog[]       @relation("AuditActor")
+  uploadedMedia        MediaAsset[]     @relation("MediaUploader")
+  leadActivities       LeadActivity[]   @relation("LeadActivityActor")
+  assignedLeads        LeadAssignment[] @relation("LeadAssignee")
+  leadAssignmentsMade  LeadAssignment[] @relation("LeadAssignedBy")
+  authoredPageVersions PageVersion[]    @relation("PageVersionAuthor")
 }
 
 model Role {
@@ -118,25 +119,25 @@ model UserRole {
 }
 
 model RolePermission {
-  roleId      String
+  roleId       String
   permissionId String
-  createdAt   DateTime   @default(now())
-  role        Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission  Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   @@id([roleId, permissionId])
 }
 
 model Session {
-  id         String    @id @default(cuid())
-  userId     String
-  tokenHash  String    @unique
-  expiresAt  DateTime
-  revokedAt  DateTime?
-  ipHash     String?
-  userAgent  String?
-  createdAt  DateTime  @default(now())
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  ipHash    String?
+  userAgent String?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, expiresAt])
 }
@@ -172,22 +173,22 @@ model AuditLog {
 }
 
 model ProductCategory {
-  id                    String                  @id @default(cuid())
-  parentId              String?
-  name                  String
-  slug                  String                  @unique
-  summary               String?
-  description           String?
-  status                PublicationStatus       @default(DRAFT)
-  position              Int                     @default(0)
-  version               Int                     @default(1)
-  publishedAt           DateTime?
-  archivedAt            DateTime?
-  createdAt             DateTime                @default(now())
-  updatedAt             DateTime                @updatedAt
-  parent                ProductCategory?        @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
-  children              ProductCategory[]       @relation("CategoryTree")
-  products              Product[]
+  id                     String                  @id @default(cuid())
+  parentId               String?
+  name                   String
+  slug                   String                  @unique
+  summary                String?
+  description            String?
+  status                 PublicationStatus       @default(DRAFT)
+  position               Int                     @default(0)
+  version                Int                     @default(1)
+  publishedAt            DateTime?
+  archivedAt             DateTime?
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  parent                 ProductCategory?        @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children               ProductCategory[]       @relation("CategoryTree")
+  products               Product[]
   specificationTemplates SpecificationTemplate[]
 
   @@index([parentId, position])
@@ -195,26 +196,26 @@ model ProductCategory {
 }
 
 model Product {
-  id              String              @id @default(cuid())
-  categoryId      String
-  name            String
-  slug            String              @unique
-  summary         String
-  description     String?
-  status          PublicationStatus   @default(DRAFT)
-  position        Int                 @default(0)
-  version         Int                 @default(1)
-  slugLocked      Boolean             @default(true)
+  id               String            @id @default(cuid())
+  categoryId       String
+  name             String
+  slug             String            @unique
+  summary          String
+  description      String?
+  status           PublicationStatus @default(DRAFT)
+  position         Int               @default(0)
+  version          Int               @default(1)
+  slugLocked       Boolean           @default(true)
   registeredWidget String?
-  publishedAt     DateTime?
-  archivedAt      DateTime?
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
-  category        ProductCategory     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  sections        ProductSection[]
-  models          ProductModel[]
-  leads           Lead[]
-  seoRecords      SeoRecord[]
+  publishedAt      DateTime?
+  archivedAt       DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  category         ProductCategory   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  sections         ProductSection[]
+  models           ProductModel[]
+  leads            Lead[]
+  seoRecords       SeoRecord[]
 
   @@index([categoryId, status, position])
   @@index([status, publishedAt])
@@ -265,14 +266,14 @@ model SpecificationTemplate {
 }
 
 model SpecificationField {
-  id         String               @id @default(cuid())
+  id         String                @id @default(cuid())
   templateId String
   name       String
   unit       String?
-  valueType  String               @default("TEXT")
+  valueType  String                @default("TEXT")
   position   Int
-  createdAt  DateTime             @default(now())
-  updatedAt  DateTime             @updatedAt
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
   template   SpecificationTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
   values     SpecificationValue[]
 
@@ -294,31 +295,31 @@ model SpecificationValue {
 }
 
 model MediaAsset {
-  id             String               @id @default(cuid())
-  objectKey      String               @unique
-  originalName   String
-  mimeType       String
-  byteSize       Int
-  checksum       String               @unique
-  usage          String
-  altText        String?
-  category       String?
-  width          Int?
-  height         Int?
+  id              String               @id @default(cuid())
+  objectKey       String               @unique
+  originalName    String
+  mimeType        String
+  byteSize        Int
+  checksum        String               @unique
+  usage           String
+  altText         String?
+  category        String?
+  width           Int?
+  height          Int?
   lifecycleStatus MediaLifecycleStatus @default(ACTIVE)
-  uploadedById   String
-  replacedById   String?              @unique
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
-  deletedAt      DateTime?
-  uploadedBy     User                 @relation("MediaUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
-  replacedBy     MediaAsset?          @relation("MediaReplacement", fields: [replacedById], references: [id], onDelete: SetNull)
-  replaces       MediaAsset?          @relation("MediaReplacement")
-  references     MediaReference[]
-  desktopBanners Banner[]             @relation("BannerDesktopMedia")
-  tabletBanners  Banner[]             @relation("BannerTabletMedia")
-  mobileBanners  Banner[]             @relation("BannerMobileMedia")
-  ogSeoRecords   SeoRecord[]          @relation("SeoOgMedia")
+  uploadedById    String
+  replacedById    String?              @unique
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  deletedAt       DateTime?
+  uploadedBy      User                 @relation("MediaUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
+  replacedBy      MediaAsset?          @relation("MediaReplacement", fields: [replacedById], references: [id], onDelete: SetNull)
+  replaces        MediaAsset?          @relation("MediaReplacement")
+  references      MediaReference[]
+  desktopBanners  Banner[]             @relation("BannerDesktopMedia")
+  tabletBanners   Banner[]             @relation("BannerTabletMedia")
+  mobileBanners   Banner[]             @relation("BannerMobileMedia")
+  ogSeoRecords    SeoRecord[]          @relation("SeoOgMedia")
 
   @@index([lifecycleStatus, createdAt])
 }
@@ -366,33 +367,33 @@ model Banner {
 }
 
 model Lead {
-  id                  String                    @id @default(cuid())
-  name                String?
-  email               String
-  phone               String?
-  whatsapp            String?
-  country             String?
-  company             String?
-  interestedProductId String?
-  message             String
-  sourcePage          String?
-  material            String?
-  thickness           String?
-  workingLength       String?
-  quantity            String?
-  voltage             String?
-  budget              String?
-  status              LeadStatus                @default(NEW)
-  duplicateOfId       String?
-  nextFollowUpAt      DateTime?
-  version             Int                       @default(1)
-  createdAt           DateTime                  @default(now())
-  updatedAt           DateTime                  @updatedAt
-  interestedProduct   Product?                  @relation(fields: [interestedProductId], references: [id], onDelete: SetNull)
-  duplicateOf         Lead?                     @relation("LeadDuplicates", fields: [duplicateOfId], references: [id], onDelete: SetNull)
-  duplicates          Lead[]                    @relation("LeadDuplicates")
-  activities          LeadActivity[]
-  assignments         LeadAssignment[]
+  id                   String                    @id @default(cuid())
+  name                 String?
+  email                String
+  phone                String?
+  whatsapp             String?
+  country              String?
+  company              String?
+  interestedProductId  String?
+  message              String
+  sourcePage           String?
+  material             String?
+  thickness            String?
+  workingLength        String?
+  quantity             String?
+  voltage              String?
+  budget               String?
+  status               LeadStatus                @default(NEW)
+  duplicateOfId        String?
+  nextFollowUpAt       DateTime?
+  version              Int                       @default(1)
+  createdAt            DateTime                  @default(now())
+  updatedAt            DateTime                  @updatedAt
+  interestedProduct    Product?                  @relation(fields: [interestedProductId], references: [id], onDelete: SetNull)
+  duplicateOf          Lead?                     @relation("LeadDuplicates", fields: [duplicateOfId], references: [id], onDelete: SetNull)
+  duplicates           Lead[]                    @relation("LeadDuplicates")
+  activities           LeadActivity[]
+  assignments          LeadAssignment[]
   notificationAttempts LeadNotificationAttempt[]
 
   @@index([status, createdAt])
@@ -430,35 +431,35 @@ model LeadAssignment {
 }
 
 model LeadNotificationAttempt {
-  id        String             @id @default(cuid())
-  leadId    String
-  status    NotificationStatus @default(PENDING)
-  errorCode String?
-  attemptedAt DateTime         @default(now())
-  lead      Lead               @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  id          String             @id @default(cuid())
+  leadId      String
+  status      NotificationStatus @default(PENDING)
+  errorCode   String?
+  attemptedAt DateTime           @default(now())
+  lead        Lead               @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   @@index([leadId, attemptedAt])
 }
 
 model SeoRecord {
-  id             String            @id @default(cuid())
-  pathname       String            @unique
-  productId      String?
-  title          String
-  description    String
-  canonicalUrl   String?
-  openGraphTitle String?
+  id                   String            @id @default(cuid())
+  pathname             String            @unique
+  productId            String?
+  title                String
+  description          String
+  canonicalUrl         String?
+  openGraphTitle       String?
   openGraphDescription String?
-  openGraphMediaId String?
-  robotsIndex    Boolean           @default(true)
-  targetKeyword  String?
-  status         PublicationStatus @default(DRAFT)
-  version        Int               @default(1)
-  publishedAt    DateTime?
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
-  product        Product?          @relation(fields: [productId], references: [id], onDelete: Cascade)
-  openGraphMedia MediaAsset?       @relation("SeoOgMedia", fields: [openGraphMediaId], references: [id], onDelete: SetNull)
+  openGraphMediaId     String?
+  robotsIndex          Boolean           @default(true)
+  targetKeyword        String?
+  status               PublicationStatus @default(DRAFT)
+  version              Int               @default(1)
+  publishedAt          DateTime?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  product              Product?          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  openGraphMedia       MediaAsset?       @relation("SeoOgMedia", fields: [openGraphMediaId], references: [id], onDelete: SetNull)
 
   @@index([status, robotsIndex])
   @@index([productId])
@@ -471,4 +472,40 @@ model SiteSetting {
   version   Int      @default(1)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model SitePage {
+  id               String            @id @default(cuid())
+  name             String
+  slug             String            @unique
+  pageType         String            @default("CUSTOM")
+  status           PublicationStatus @default(DRAFT)
+  draftContent     Json
+  publishedContent Json?
+  version          Int               @default(1)
+  publishedVersion Int?
+  publishedAt      DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  versions         PageVersion[]
+
+  @@index([status, updatedAt])
+  @@index([pageType, updatedAt])
+}
+
+model PageVersion {
+  id          String    @id @default(cuid())
+  pageId      String
+  version     Int
+  snapshot    Json
+  action      String
+  createdById String
+  createdAt   DateTime  @default(now())
+  publishedAt DateTime?
+  page        SitePage  @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  createdBy   User      @relation("PageVersionAuthor", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@unique([pageId, version])
+  @@index([pageId, createdAt])
+  @@index([createdById, createdAt])
 }
