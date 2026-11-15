@@ -12,13 +12,21 @@ type PublishedPageRow = {
   publishedContent: unknown;
 };
 
-export function parsePublishedPage(row: PublishedPageRow | null): PageDocument | null {
-  if (!row || row.status !== "PUBLISHED" || !row.publishedAt || !row.publishedContent) return null;
-  try { return parsePageDocument(row.publishedContent); }
-  catch { return null; }
+export function parsePublishedPage(
+  row: PublishedPageRow | null,
+): PageDocument | null {
+  if (!row || !row.publishedAt || !row.publishedContent) return null;
+  try {
+    return parsePageDocument(row.publishedContent);
+  } catch {
+    return null;
+  }
 }
 
-export async function getPublishedPageBySlug(slug: string, database: PrismaClient = db) {
+export async function getPublishedPageBySlug(
+  slug: string,
+  database: PrismaClient = db,
+) {
   const row = await database.sitePage.findUnique({
     where: { slug },
     select: { status: true, publishedAt: true, publishedContent: true },

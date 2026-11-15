@@ -103,8 +103,8 @@
 - Create: `components/site/ManagedWhyChoose.tsx`
 - Test: `tests/unit/page-builder/homepage-rendering.test.tsx`
 
-- [ ] Write failing tests proving published content wins and missing/invalid/draft data keeps exact fallback content.
-- [ ] Verify tests fail.
+- [x] Write failing tests proving published content wins and missing/invalid/draft data keeps exact fallback content.
+- [x] Verify tests fail.
 - [x] Integrate the two managed homepage modules and render additional valid published nodes in the managed region.
 - [x] Run homepage and full unit tests.
 
@@ -114,8 +114,8 @@
 - Create: `tests/e2e/admin-pages.spec.ts`
 - Update: `docs/zyron-cms/cms-2-audit-2026-11-15.md`
 
-- [ ] Add the real admin edit-preview-publish-public-rollback E2E flow.
-- [ ] Run Prisma validation/generation, typecheck, lint, unit, integration and Playwright.
-- [ ] Run production build and inspect desktop/mobile editor plus homepage in Browser.
-- [ ] Review diff for secrets, generated output, unrelated changes and production writes.
+- [x] Add the real admin edit-preview-publish-public-rollback E2E flow.
+- [x] Run Prisma validation/generation, typecheck, lint, unit, integration and Playwright.
+- [x] Run production build and inspect desktop/mobile editor plus homepage in Browser.
+- [x] Review diff for secrets, generated output, unrelated changes and production writes.
 - [ ] Commit the verified branch; create Preview only after code checks pass. Do not deploy Production.

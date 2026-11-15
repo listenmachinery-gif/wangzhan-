@@ -50,6 +50,16 @@ type Persist = (input: {
   mode: "manual" | "auto";
 }) => Promise<{ version: number } | void> | { version: number } | void;
 
+const previewSimulationCss = `
+  [data-device="mobile"] [data-page-component] { overflow-wrap: anywhere; }
+  [data-device="mobile"] [data-page-component] .grid { grid-template-columns: minmax(0, 1fr) !important; }
+  [data-device="mobile"] [data-page-component] h1 { font-size: 2.5rem !important; line-height: 1.05 !important; }
+  [data-device="mobile"] [data-page-component] h2 { font-size: 2.25rem !important; line-height: 1.08 !important; }
+  [data-device="mobile"] [data-page-component] h3 { font-size: 1.5rem !important; line-height: 1.15 !important; }
+  [data-device="tablet"] [data-page-component] h1,
+  [data-device="tablet"] [data-page-component] h2 { font-size: 3rem !important; line-height: 1.08 !important; }
+`;
+
 function clone<T>(value: T): T {
   return structuredClone(value);
 }
@@ -245,6 +255,10 @@ export function PageBuilder({
       createdBy: { name: string };
     }>
   >([]);
+  const versionRef = useRef(page.version);
+  const editRevisionRef = useRef(0);
+  const savedRevisionRef = useRef(0);
+  const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
 
   const selectedIndex = document.nodes.findIndex(
     (node) => node.id === selectedId,
@@ -256,6 +270,7 @@ export function PageBuilder({
 
   const commit = useCallback(
     (next: PageDocument, nextSelectedId?: string) => {
+      editRevisionRef.current += 1;
       setPast((items) => [...items.slice(-49), document]);
       setDocument(next);
       setFuture([]);
@@ -285,31 +300,67 @@ export function PageBuilder({
   );
 
   const persist = useCallback(
-    async (mode: "manual" | "auto") => {
+    (mode: "manual" | "auto") => {
+      const requestedRevision = editRevisionRef.current;
+      const requestedDocument = clone(document);
       setMessage(mode === "auto" ? "正在自动保存…" : "正在保存…");
-      try {
-        const result = onPersist
-          ? await onPersist({ document, version, mode })
-          : await fetch(`/api/admin/pages/${page.id}`, {
-              method: "PATCH",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify({ version, document }),
-            }).then(async (response) => {
-              const body = await response.json();
-              if (!response.ok) throw new Error(body.message ?? "保存失败");
-              return body as { version: number };
-            });
-        const savedVersion = result?.version ?? version;
-        if (result?.version) setVersion(result.version);
-        setDirty(false);
-        setMessage(mode === "auto" ? "已自动保存" : "草稿已保存");
-        return savedVersion;
-      } catch (error) {
-        setMessage(error instanceof Error ? error.message : "保存失败");
-        return undefined;
-      }
+      const task = saveQueueRef.current.then(async () => {
+        if (savedRevisionRef.current >= requestedRevision) {
+          setMessage(mode === "auto" ? "已自动保存" : "草稿已保存");
+          return versionRef.current;
+        }
+        try {
+          const requestVersion = versionRef.current;
+          const result = onPersist
+            ? await onPersist({
+                document: requestedDocument,
+                version: requestVersion,
+                mode,
+              })
+            : await fetch(`/api/admin/pages/${page.id}`, {
+                method: "PATCH",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                  version: requestVersion,
+                  document: requestedDocument,
+                }),
+              }).then(async (response) => {
+                const body = await response.json();
+                if (!response.ok) throw new Error(body.message ?? "保存失败");
+                return body as { version: number };
+              });
+          const savedVersion = result?.version ?? requestVersion;
+          if (result?.version) {
+            versionRef.current = result.version;
+            setVersion(result.version);
+          }
+          savedRevisionRef.current = Math.max(
+            savedRevisionRef.current,
+            requestedRevision,
+          );
+          const hasNewerChanges =
+            editRevisionRef.current > savedRevisionRef.current;
+          setDirty(hasNewerChanges);
+          setMessage(
+            hasNewerChanges
+              ? "有未保存更改"
+              : mode === "auto"
+                ? "已自动保存"
+                : "草稿已保存",
+          );
+          return savedVersion;
+        } catch (error) {
+          setMessage(error instanceof Error ? error.message : "保存失败");
+          return undefined;
+        }
+      });
+      saveQueueRef.current = task.then(
+        () => undefined,
+        () => undefined,
+      );
+      return task;
     },
-    [document, onPersist, page.id, version],
+    [document, onPersist, page.id],
   );
 
   useEffect(() => {
@@ -344,6 +395,7 @@ export function PageBuilder({
   function undo() {
     const previous = past.at(-1);
     if (!previous) return;
+    editRevisionRef.current += 1;
     setFuture((items) => [document, ...items]);
     setDocument(previous);
     setPast((items) => items.slice(0, -1));
@@ -353,6 +405,7 @@ export function PageBuilder({
   function redo() {
     const next = future[0];
     if (!next) return;
+    editRevisionRef.current += 1;
     setPast((items) => [...items, document]);
     setDocument(next);
     setFuture((items) => items.slice(1));
@@ -371,6 +424,7 @@ export function PageBuilder({
       });
       const body = await response.json();
       if (!response.ok) throw new Error(body.message ?? "发布失败");
+      versionRef.current = body.version;
       setVersion(body.version);
       setStatus("PUBLISHED");
       setMessage("已发布到前台");
@@ -395,8 +449,12 @@ export function PageBuilder({
       return;
     }
     setDocument(body.draftContent);
+    editRevisionRef.current += 1;
+    savedRevisionRef.current = editRevisionRef.current;
+    versionRef.current = body.version;
     setVersion(body.version);
     setStatus("DRAFT");
+    setDirty(false);
     setSelectedId(body.draftContent.nodes[0]?.id ?? "");
     setHistoryOpen(false);
     setMessage(`已恢复 v${targetVersion} 为新草稿`);
@@ -613,7 +671,8 @@ export function PageBuilder({
             className="mx-auto min-h-[720px] overflow-hidden bg-white shadow-[0_20px_60px_rgba(0,0,0,0.12)] transition-[width] duration-300"
             style={{ width: canvasWidth, maxWidth: "100%" }}
           >
-              <PageRenderer document={previewDocument} />
+            <style>{previewSimulationCss}</style>
+            <PageRenderer document={previewDocument} />
           </div>
         </section>
         <aside
