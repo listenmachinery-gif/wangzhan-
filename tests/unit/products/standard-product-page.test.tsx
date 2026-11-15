@@ -4,7 +4,11 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { StandardProductPage } from "@/components/products/StandardProductPage";
-import { SMALL_ELECTRIC_PRODUCT_MODULE_ORDER } from "@/lib/product-modules/small-electric-template";
+import {
+  SMALL_ELECTRIC_PRODUCT_LAYOUT_GROUPS,
+  SMALL_ELECTRIC_PRODUCT_MODULE_ORDER,
+} from "@/lib/product-modules/small-electric-template";
+import { PRODUCT_MODULE_TYPES } from "@/lib/product-modules/types";
 import { validProductModuleData } from "@/tests/fixtures/product-modules";
 
 describe("StandardProductPage", () => {
@@ -24,6 +28,19 @@ describe("StandardProductPage", () => {
     }} />);
 
     expect(container.querySelectorAll("[data-product-module]")).toHaveLength(24);
+    expect(Array.from(container.querySelectorAll("[data-product-layout-group]"), (element) => (
+      element.getAttribute("data-product-layout-group")
+    ))).toEqual([
+      "hero",
+      "advantages",
+      "applications",
+      "gallery",
+      "models",
+      "features",
+      "selection",
+      "faq",
+      "inquiry",
+    ]);
     expect(container.querySelector("[data-technical-table-scroll]")).toHaveClass("overflow-x-auto");
     expect(screen.getAllByRole("table", { name: "Title" })).toHaveLength(3);
     expect(screen.getByText("Which model fits?")).toBeInTheDocument();
@@ -49,5 +66,33 @@ describe("StandardProductPage", () => {
       }],
     }} />);
     expect(container.querySelector("[data-product-module]")).toBeNull();
+    expect(container.querySelector("[data-product-layout-group]")).toBeNull();
+  });
+
+  it("omits empty layout groups without changing the module renderer contract", () => {
+    const { container } = render(<StandardProductPage product={{
+      slug: "test",
+      name: "Test",
+      summary: "Test product",
+      registeredWidget: null,
+      modules: [{
+        type: "TECHNICAL",
+        position: 1,
+        visible: true,
+        data: validProductModuleData.TECHNICAL,
+      }],
+    }} />);
+
+    expect(container.querySelectorAll("[data-product-layout-group]")).toHaveLength(1);
+    expect(container.querySelector("[data-product-layout-group='models']")).not.toBeNull();
+    expect(container.querySelectorAll("[data-product-module='TECHNICAL']")).toHaveLength(1);
+  });
+
+  it("assigns every supported module type to exactly one layout group", () => {
+    const groupedTypes = SMALL_ELECTRIC_PRODUCT_LAYOUT_GROUPS.flatMap((group) => group.moduleTypes);
+
+    expect(groupedTypes).toHaveLength(PRODUCT_MODULE_TYPES.length);
+    expect(new Set(groupedTypes).size).toBe(PRODUCT_MODULE_TYPES.length);
+    expect([...groupedTypes].sort()).toEqual([...PRODUCT_MODULE_TYPES].sort());
   });
 });
