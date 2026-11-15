@@ -52,10 +52,10 @@
 - Create: `components/page-builder/renderers.tsx`
 - Test: `tests/unit/page-builder/registry.test.tsx`
 
-- [ ] Write failing tests requiring at least 25 registered, editable, renderable components and safe unknown-node fallback.
-- [ ] Verify tests fail.
-- [ ] Implement registry defaults, schemas and server renderers without raw HTML.
-- [ ] Run focused and full unit tests.
+- [x] Write failing tests requiring at least 25 registered, editable, renderable components and safe unknown-node fallback.
+- [x] Verify tests fail.
+- [x] Implement registry defaults, schemas and server renderers without raw HTML.
+- [x] Run focused and full unit tests.
 
 ### Task 3: Page service and APIs
 
