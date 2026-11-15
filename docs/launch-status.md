@@ -15,6 +15,7 @@
 - 手动 Preview：`dpl_J4TiML7JYXgVjL9crGGoKJijSKVz`，`READY`
 - Git Preview：`dpl_Bzx74cR18mWgv3mfnUf5LHVexTSQ`，`READY`
 - 最新 Git Preview：`dpl_Fw3Xx7JtBaeef1XpsotUKstUr1Gd`（提交 `01a6673`），构建 `READY`；因生产级数据库变量未配置，首页/产品页运行时返回 500
+- 产品模板/安全修复 Preview：`dpl_GVdaufg1JTBCQgV9bNvmrdjwhXsE`（提交 `202293f`），构建 `READY`；登录页 200、未登录管理 API 401、robots 200，首页/产品页/sitemap 因同一数据库阻塞返回 500
 - 正式域名：`https://www.zyroncnc.com`
 - 当前正式域名仍由旧生产部署提供服务，未切换到 CMS 版本
 
