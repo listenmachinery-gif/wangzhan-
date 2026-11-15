@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
 import {
   FileImage,
+  FilePenLine,
   Gauge,
   Images,
   KeyRound,
@@ -28,6 +29,7 @@ type NavigationItem = {
 
 const navigation: NavigationItem[] = [
   { href: "/admin", label: "数据总览", icon: Gauge },
+  { href: "/admin/pages", label: "页面设计", icon: FilePenLine, permission: "page.read" },
   { href: "/admin/banners", label: "Banner 管理", icon: FileImage, permission: "banner.read" },
   { href: "/admin/product-categories", label: "产品分类", icon: Tags, permission: "category.read" },
   { href: "/admin/products", label: "产品管理", icon: PackageSearch, permission: "product.read" },

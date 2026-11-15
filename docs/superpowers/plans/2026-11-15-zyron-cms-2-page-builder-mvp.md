@@ -89,10 +89,10 @@
 - Modify: `package-lock.json`
 - Test: `tests/unit/page-builder/editor.test.tsx`
 
-- [ ] Write failing navigation and editor-state tests for add, select, reorder, duplicate, delete, undo/redo and device mode.
-- [ ] Verify tests fail.
-- [ ] Add the maintained drag-and-drop dependency and implement the Chinese three-column editor with keyboard fallback.
-- [ ] Run focused UI tests, lint and typecheck.
+- [x] Write failing navigation and editor-state tests for add, select, reorder, duplicate, delete, undo/redo and device mode.
+- [x] Verify tests fail.
+- [x] Add the maintained drag-and-drop dependency and implement the Chinese three-column editor with keyboard fallback.
+- [x] Run focused UI tests, lint and typecheck.
 
 ### Task 5: Homepage published-content integration
 

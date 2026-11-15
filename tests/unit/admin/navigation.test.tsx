@@ -18,6 +18,13 @@ const productEditor: Principal = {
   roles: ["PRODUCT_EDITOR"],
 };
 
+const contentEditor: Principal = {
+  id: "content-editor",
+  email: "content@example.com",
+  name: "内容编辑",
+  roles: ["CONTENT_EDITOR"],
+};
+
 describe("admin navigation", () => {
   it("filters modules by server-provided principal permissions", () => {
     const labels = getAdminNavigation(productEditor).map((item) => item.label);
@@ -26,6 +33,11 @@ describe("admin navigation", () => {
     expect(labels).toContain("型号参数");
     expect(labels).not.toContain("询盘 CRM");
     expect(labels).not.toContain("用户与权限");
+  });
+
+  it("shows the page center only to principals with page permission", () => {
+    expect(getAdminNavigation(contentEditor).map((item) => item.label)).toContain("页面设计");
+    expect(getAdminNavigation(productEditor).map((item) => item.label)).not.toContain("页面设计");
   });
 
   it("marks the current page and hides labels when collapsed", () => {
