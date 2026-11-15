@@ -5,6 +5,8 @@ import { expect, test } from "@playwright/test";
 
 const email = "product-editor-e2e@example.com";
 const password = "e2e-product-editor-password";
+const salesEmail = "product-sales-e2e@example.com";
+const salesPassword = "e2e-product-sales-password";
 const productSlug = "e2e-admin-product";
 const categorySlug = "e2e-admin-category";
 
@@ -25,6 +27,13 @@ test.beforeAll(async () => {
     create: { email, name: "E2E Product Editor", passwordHash: await hash(password) },
   });
   await db.userRole.upsert({ where: { userId_roleId: { userId: user.id, roleId: role.id } }, update: {}, create: { userId: user.id, roleId: role.id } });
+  const salesRole = await db.role.upsert({ where: { key: "SALES" }, update: {}, create: { key: "SALES", name: "Sales" } });
+  const salesUser = await db.user.upsert({
+    where: { email: salesEmail },
+    update: { passwordHash: await hash(salesPassword), isActive: true },
+    create: { email: salesEmail, name: "E2E Product Sales", passwordHash: await hash(salesPassword) },
+  });
+  await db.userRole.upsert({ where: { userId_roleId: { userId: salesUser.id, roleId: salesRole.id } }, update: {}, create: { userId: salesUser.id, roleId: salesRole.id } });
   const category = await db.productCategory.create({ data: { name: "E2E Admin Category", slug: categorySlug, summary: "E2E", status: "PUBLISHED", publishedAt: new Date() } });
   await db.product.create({
     data: {
@@ -67,8 +76,8 @@ test.afterAll(async () => {
     await db.product.delete({ where: { id: product.id } });
   }
   await db.productCategory.deleteMany({ where: { slug: categorySlug } });
-  const user = await db.user.findUnique({ where: { email }, select: { id: true } });
-  if (user) {
+  const users = await db.user.findMany({ where: { email: { in: [email, salesEmail] } }, select: { id: true } });
+  for (const user of users) {
     await db.auditLog.updateMany({ where: { actorId: user.id }, data: { actorId: null } });
     await db.session.deleteMany({ where: { userId: user.id } });
     await db.userRole.deleteMany({ where: { userId: user.id } });
@@ -77,7 +86,7 @@ test.afterAll(async () => {
   await db.$disconnect();
 });
 
-test("edits, validates, reorders, hides, publishes, and updates the unchanged public URL", async ({ page }) => {
+test("edits, validates, reorders, hides, publishes, and updates the unchanged public URL", async ({ page, browser }) => {
   await page.goto("/admin/login");
   const unauthenticated = await page.evaluate(async () => (await fetch("/api/admin/products", {
     method: "POST",
@@ -90,6 +99,21 @@ test("edits, validates, reorders, hides, publishes, and updates the unchanged pu
     data: {},
   });
   expect(untrusted.status()).toBe(403);
+  const salesContext = await browser.newContext();
+  const salesPage = await salesContext.newPage();
+  await salesPage.goto("/admin/login");
+  await salesPage.getByLabel("管理员邮箱").fill(salesEmail);
+  await salesPage.getByLabel("密码").fill(salesPassword);
+  await salesPage.getByRole("button", { name: "登录 ZYRON CMS" }).click();
+  await expect(salesPage).toHaveURL(/\/admin$/);
+  await expect(salesPage.getByRole("heading", { name: "数据总览" })).toBeVisible();
+  const forbidden = await salesPage.evaluate(async () => (await fetch("/api/admin/products", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({}),
+  })).status);
+  expect(forbidden).toBe(403);
+  await salesContext.close();
   await page.getByLabel("管理员邮箱").fill(email);
   await page.getByLabel("密码").fill(password);
   await page.getByRole("button", { name: "登录 ZYRON CMS" }).click();

@@ -51,7 +51,7 @@ function StructuredFields({ type, value, media, path = [], onChange, onRemove }:
   }
   if (typeof value === "number") return <input aria-label={labelFor(String(path.at(-1) ?? "value"))} type="number" value={value} onChange={(event) => onChange(path, Number(event.target.value))} className="w-full rounded-md border px-3 py-2 text-sm" />;
   if (typeof value === "boolean") return <input aria-label={labelFor(String(path.at(-1) ?? "value"))} type="checkbox" checked={value} onChange={(event) => onChange(path, event.target.checked)} />;
-  if (Array.isArray(value)) return <div className="space-y-3">{value.map((item, index) => <div key={index} className="rounded-lg border border-neutral-200 p-3"><div className="mb-2 flex items-center justify-between"><p className="text-xs font-semibold text-neutral-500">项目 {index + 1}</p><button type="button" onClick={() => onChange(path, value.filter((_, itemIndex) => itemIndex !== index))} className="text-xs text-red-700">移除</button></div><StructuredFields type={type} value={item} media={media} path={[...path, index]} onChange={onChange} onRemove={onRemove} /></div>)}<button type="button" onClick={() => onChange(path, [...value, blankCopy(value.at(-1) ?? "")])} className="rounded border px-3 py-1.5 text-xs font-medium">添加项目</button></div>;
+  if (Array.isArray(value)) return <div className="space-y-3">{value.map((item, index) => <div key={index} className="rounded-lg border border-neutral-200 p-3"><div className="mb-2 flex items-center justify-between"><p className="text-xs font-semibold text-neutral-500">项目 {index + 1}</p><button type="button" onClick={() => onChange(path, value.filter((_, itemIndex) => itemIndex !== index))} className="text-xs text-red-700">移除</button></div><StructuredFields type={type} value={item} media={media} path={[...path, index]} onChange={onChange} onRemove={onRemove} /></div>)}<button type="button" onClick={() => onChange(path, [...value, type === "TECHNICAL" && path.join(".") === "columns" ? { key: `column_${value.length + 1}`, label: "" } : blankCopy(value.at(-1) ?? "")])} className="rounded border px-3 py-1.5 text-xs font-medium">添加项目</button></div>;
   if (value && typeof value === "object") {
     const available = Object.entries(optionalFields(type, path)).filter(([key]) => !(key in value));
     const optionalKeys = new Set(Object.keys(optionalFields(type, path)));
@@ -71,9 +71,12 @@ export function ModuleEditorRegistry({ type, value, media, onChange }: { type: P
     (cursor as Record<string | number, JsonValue>)[last] = nextValue;
     if (type === "TECHNICAL" && path.length === 3 && path[0] === "columns" && path[2] === "key" && typeof previous === "string" && typeof nextValue === "string") {
       const rows = (root as { rows?: Array<Record<string, JsonValue>> }).rows ?? [];
-      for (const row of rows) {
+      const columns = (root as { columns?: Array<{ key?: string }> }).columns ?? [];
+      const duplicate = columns.some((column, index) => index !== path[1] && column.key === nextValue);
+      if (!duplicate) for (const row of rows) {
         row[nextValue] = row[previous] ?? "";
-        if (nextValue !== previous) delete row[previous];
+        const previousStillUsed = columns.some((column, index) => index !== path[1] && column.key === previous);
+        if (nextValue !== previous && !previousStillUsed) delete row[previous];
       }
     }
     onChange(root);
