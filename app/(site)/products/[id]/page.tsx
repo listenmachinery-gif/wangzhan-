@@ -25,6 +25,7 @@ import TorsionBarCncPressBrakeSolutionPage from "@/components/TorsionBarCncPress
 import { StandardProductPage } from "@/components/products/StandardProductPage";
 import { getCategoryById, products } from "@/data/products";
 import { getPublishedProductBySlug } from "@/lib/repositories/product-repository";
+import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +35,7 @@ type ProductDetailProps = {
   }>;
 };
 
-export async function generateMetadata({ params }: ProductDetailProps): Promise<Metadata> {
+async function fallbackProductMetadata({ params }: ProductDetailProps): Promise<Metadata> {
   const { id } = await params;
   const published = await getPublishedProductBySlug(id, {
     allowLegacyFallback: process.env.ZYRON_ENABLE_LEGACY_PRODUCT_FALLBACK === "true",
@@ -952,6 +953,11 @@ export async function generateMetadata({ params }: ProductDetailProps): Promise<
       images: [product.image],
     },
   };
+}
+
+export async function generateMetadata(props: ProductDetailProps): Promise<Metadata> {
+  const { id } = await props.params;
+  return overlayPublishedSeo(`/products/${id}`, await fallbackProductMetadata(props));
 }
 
 export default async function ProductDetailPage({ params }: ProductDetailProps) {

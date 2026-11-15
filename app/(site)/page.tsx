@@ -6,10 +6,11 @@ import ExhibitionCarousel from "@/components/ExhibitionCarousel";
 import { HomeBannerCarousel } from "@/components/site/HomeBannerCarousel";
 import { getCategoryHref, productCategories } from "@/data/products";
 import { listActiveBanners } from "@/lib/repositories/banner-repository";
+import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+const fallbackMetadata: Metadata = {
   title: "ZYRON Heavy Industry | Industrial Sheet Metal & Duct Machinery Manufacturer",
   description:
     "ZYRON Heavy Industry manufactures shearing machines, bending machines, laser cutting machines, rolling machines, press machines, duct production equipment, and shredders for global B2B buyers.",
@@ -17,6 +18,10 @@ export const metadata: Metadata = {
     canonical: "/",
   },
 };
+
+export function generateMetadata() {
+  return overlayPublishedSeo("/", fallbackMetadata);
+}
 
 const factoryStats = [
   { value: "15+", label: "Years of Experience" },

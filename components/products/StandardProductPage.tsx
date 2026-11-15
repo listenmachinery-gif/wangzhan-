@@ -9,8 +9,27 @@ export function StandardProductPage({ product }: { product: {
   modules: ProductModule<unknown>[];
   registeredWidget: string | null;
 } }) {
+  const productUrl = `https://www.zyroncnc.com/products/${product.slug}`;
+  const serialize = (value: object) => JSON.stringify(value).replace(/</g, "\\u003c");
   return (
     <main data-standard-product={product.slug}>
+      <script type="application/ld+json" data-product-schema dangerouslySetInnerHTML={{ __html: serialize({
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name: product.name,
+        description: product.summary,
+        url: productUrl,
+        brand: { "@type": "Brand", name: "ZYRON" },
+      }) }} />
+      <script type="application/ld+json" data-breadcrumb-schema dangerouslySetInnerHTML={{ __html: serialize({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: "https://www.zyroncnc.com/" },
+          { "@type": "ListItem", position: 2, name: "Products", item: "https://www.zyroncnc.com/products" },
+          { "@type": "ListItem", position: 3, name: product.name, item: productUrl },
+        ],
+      }) }} />
       {[...product.modules]
         .filter((item) => item.visible)
         .sort((left, right) => left.position - right.position)

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { getCategoryHref } from "@/data/products";
 import { getPublishedCategoryBySlug } from "@/lib/repositories/category-repository";
+import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
 import { buildProductDirectory, toPublicCategory, toPublicProduct } from "@/lib/repositories/public-catalogue-view";
 
 export const dynamic = "force-dynamic";
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: ProductSeriesPageProps): Prom
   }
   const category = toPublicCategory(publishedCategory);
 
-  return {
+  const fallback: Metadata = {
     title: `${category.name} | ZYRON Heavy Industry`,
     description: category.description,
     alternates: {
@@ -57,6 +58,7 @@ export async function generateMetadata({ params }: ProductSeriesPageProps): Prom
       images: [category.heroImage],
     },
   };
+  return overlayPublishedSeo(getCategoryHref(category.id), fallback);
 }
 
 export default async function ProductSeriesPage({ params }: ProductSeriesPageProps) {

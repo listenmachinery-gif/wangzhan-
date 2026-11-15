@@ -1,13 +1,15 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { listPublishedCategories } from "@/lib/repositories/category-repository";
 import { buildPublicCatalogueView } from "@/lib/repositories/public-catalogue-view";
+import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+const fallbackMetadata: Metadata = {
   title: "Products | ZYRON Heavy Industry",
   description:
     "Explore shearing machines, bending machines, laser cutting machines, rolling machines, press machines, duct production equipment, and shredders from ZYRON Heavy Industry.",
@@ -15,6 +17,10 @@ export const metadata = {
     canonical: "/products",
   },
 };
+
+export function generateMetadata() {
+  return overlayPublishedSeo("/products", fallbackMetadata);
+}
 
 const heroStats = [
   { value: "0", label: "Machine Series" },

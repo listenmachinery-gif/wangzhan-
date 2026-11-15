@@ -1,15 +1,23 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Mail, MapPin, MessageCircle } from "lucide-react";
 import { InquiryForm } from "@/components/InquiryForm";
 import { productCategories } from "@/data/products";
+import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
 
-export const metadata = {
+export const dynamic = "force-dynamic";
+
+const fallbackMetadata: Metadata = {
   title: "Contact | ZYRON Heavy Industry",
   description: "Contact ZYRON Heavy Industry for machine selection, quotations, catalogs, and engineering support.",
   alternates: {
     canonical: "/contact",
   },
 };
+
+export function generateMetadata() {
+  return overlayPublishedSeo("/contact", fallbackMetadata);
+}
 
 const contactItems = [
   { icon: Mail, title: "Email", value: "info@zyroncnc.com" },

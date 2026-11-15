@@ -1,14 +1,22 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
 
-export const metadata = {
+export const dynamic = "force-dynamic";
+
+const fallbackMetadata: Metadata = {
   title: "Applications & Cases | ZYRON Heavy Industry",
   description: "Application examples for sheet metal fabrication, HVAC duct manufacturing, recycling, and industrial production.",
   alternates: {
     canonical: "/cases",
   },
 };
+
+export function generateMetadata() {
+  return overlayPublishedSeo("/cases", fallbackMetadata);
+}
 
 const cases = [
   {

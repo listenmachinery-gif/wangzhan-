@@ -1,13 +1,21 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
 
-export const metadata = {
+export const dynamic = "force-dynamic";
+
+const fallbackMetadata: Metadata = {
   title: "Insights | ZYRON Heavy Industry",
   description: "Buying guides and machinery selection insights for sheet metal, duct production, and recycling equipment.",
   alternates: {
     canonical: "/news",
   },
 };
+
+export function generateMetadata() {
+  return overlayPublishedSeo("/news", fallbackMetadata);
+}
 
 const articles = [
   {

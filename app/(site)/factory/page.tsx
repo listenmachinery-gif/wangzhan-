@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { CompanyPage } from "@/components/company/CompanyPage";
+import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
+
+export const dynamic = "force-dynamic";
 
 const title =
   "About ZYRON Heavy Industry | Sheet Metal Machinery Manufacturer";
@@ -7,7 +10,7 @@ const description =
   "Explore ZYRON Heavy Industry’s factory, product range, engineering support, quality control, export packing, and global machinery support.";
 const image = "/brand/factory-showcase.png";
 
-export const metadata: Metadata = {
+const fallbackMetadata: Metadata = {
   title,
   description,
   alternates: { canonical: "/factory" },
@@ -34,6 +37,10 @@ export const metadata: Metadata = {
     images: [image],
   },
 };
+
+export function generateMetadata() {
+  return overlayPublishedSeo("/factory", fallbackMetadata);
+}
 
 export default function FactoryPage() {
   return <CompanyPage />;

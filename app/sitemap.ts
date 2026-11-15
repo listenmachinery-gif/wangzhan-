@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getCategoryHref } from "@/data/products";
 import { listPublishedCategories } from "@/lib/repositories/category-repository";
+import { listNoindexSeoPaths } from "@/lib/repositories/seo-repository";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,7 @@ const staticRoutes = [
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const categories = await listPublishedCategories();
+  const noindex = await listNoindexSeoPaths();
 
   return [
     ...staticRoutes.map((route) => ({
@@ -38,5 +40,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly" as const,
       priority: 0.8,
     }))),
-  ];
+  ].filter((entry) => !noindex.has(new URL(entry.url).pathname));
 }
