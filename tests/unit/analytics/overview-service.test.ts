@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { generateKeyPairSync } from "node:crypto";
 
 import { readGoogleIntegrationConfig } from "@/lib/analytics/config";
 import { GoogleIntegrationError } from "@/lib/analytics/google-http";
@@ -10,6 +11,11 @@ const now = new Date("2026-11-16T02:00:00.000Z");
 const window = { startDate: "2026-11-09", endDate: "2026-11-15" };
 const previousWindow = { startDate: "2026-11-02", endDate: "2026-11-08" };
 const metric = { value: 1, previousValue: 0, changePercent: null };
+const { privateKey } = generateKeyPairSync("rsa", {
+  modulusLength: 1024,
+  publicKeyEncoding: { type: "spki", format: "pem" },
+  privateKeyEncoding: { type: "pkcs8", format: "pem" },
+});
 
 function configured() {
   return readGoogleIntegrationConfig({
@@ -18,7 +24,7 @@ function configured() {
     GOOGLE_ANALYTICS_PROPERTY_ID: "123456789",
     GOOGLE_SEARCH_CONSOLE_SITE_URL: "sc-domain:zyroncnc.com",
     GOOGLE_SERVICE_ACCOUNT_EMAIL: "reports@example.iam.gserviceaccount.com",
-    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\\ndGVzdA==\\n-----END PRIVATE KEY-----",
+    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: privateKey.replaceAll("\n", "\\n"),
   });
 }
 

@@ -1,4 +1,5 @@
 import "server-only";
+import { createPrivateKey } from "node:crypto";
 
 type EnvironmentVariable =
   | "NEXT_PUBLIC_GA4_MEASUREMENT_ID"
@@ -53,8 +54,17 @@ function credentialsSection(environment: NodeJS.ProcessEnv): GoogleIntegrationCo
     };
   }
 
-  const privateKey = rawPrivateKey!.replaceAll("\\n", "\n");
+  const privateKey = rawPrivateKey!.replaceAll("\\n", "\n").trim();
   if (!/^-----BEGIN PRIVATE KEY-----\n[\s\S]+\n-----END PRIVATE KEY-----$/.test(privateKey)) {
+    return {
+      state: "invalid",
+      issues: [{ code: "INVALID_ENV", variable: "GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY" }],
+    };
+  }
+
+  try {
+    createPrivateKey({ key: privateKey, format: "pem", type: "pkcs8" });
+  } catch {
     return {
       state: "invalid",
       issues: [{ code: "INVALID_ENV", variable: "GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY" }],

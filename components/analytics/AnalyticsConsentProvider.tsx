@@ -1,14 +1,13 @@
 "use client";
 
-import { GoogleAnalytics } from "@next/third-parties/google";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
+import { ConsentAwareGoogleAnalytics } from "@/components/analytics/ConsentAwareGoogleAnalytics";
 import { RoutePageView } from "@/components/analytics/RoutePageView";
 import { ContactClickTracker } from "@/components/analytics/ContactClickTracker";
 import {
   ANALYTICS_CONSENT_CHANGE_EVENT,
   ANALYTICS_PREFERENCES_EVENT,
-  ANALYTICS_TAG_READY_EVENT,
   readAnalyticsConsent,
   writeAnalyticsConsent,
   type AnalyticsConsent,
@@ -46,23 +45,10 @@ export function AnalyticsConsentProvider({ children }: { children?: ReactNode })
   }, [preferencesOpen]);
 
   useEffect(() => {
-    if (consent !== "accepted" || !measurementId) return;
-    let timeout: ReturnType<typeof setTimeout> | undefined;
-    let cancelled = false;
-    const startedAt = Date.now();
-    const announceWhenReady = () => {
-      if (cancelled) return;
-      if (typeof window.gtag === "function") {
-        window.dispatchEvent(new Event(ANALYTICS_TAG_READY_EVENT));
-        return;
-      }
-      if (Date.now() - startedAt < 10_000) timeout = setTimeout(announceWhenReady, 100);
-    };
-    announceWhenReady();
-    return () => {
-      cancelled = true;
-      if (timeout) clearTimeout(timeout);
-    };
+    if (!measurementId || !consent) return;
+    const disableKey = `ga-disable-${measurementId}`;
+    (window as unknown as Record<string, unknown>)[disableKey] = consent !== "accepted";
+    if (consent === "rejected") clearGoogleAnalyticsCookies();
   }, [consent, measurementId]);
 
   function choose(value: AnalyticsConsent) {
@@ -100,10 +86,27 @@ export function AnalyticsConsentProvider({ children }: { children?: ReactNode })
       <p role="status" aria-live="polite" className="sr-only">{announcement}</p>
       {consent === "accepted" && measurementId ? (
         <>
-          <GoogleAnalytics gaId={measurementId} />
+          <ConsentAwareGoogleAnalytics measurementId={measurementId} />
           <RoutePageView />
         </>
       ) : null}
     </>
   );
+}
+
+function clearGoogleAnalyticsCookies() {
+  const cookieNames = document.cookie
+    .split(";")
+    .map((part) => part.trim().split("=", 1)[0])
+    .filter((name) => /^_(?:ga(?:_|$)|gid$|gat(?:_|$)|gac_|gcl_au$)/i.test(name));
+  const hostname = window.location.hostname;
+  const labels = hostname.split(".");
+  const rootDomain = labels.length > 1 ? `.${labels.slice(-2).join(".")}` : null;
+  const domains = [null, hostname, `.${hostname}`, rootDomain];
+
+  for (const name of cookieNames) {
+    for (const domain of new Set(domains)) {
+      document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax${domain ? `; Domain=${domain}` : ""}`;
+    }
+  }
 }

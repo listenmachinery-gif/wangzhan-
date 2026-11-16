@@ -17,6 +17,13 @@ const ranges: Array<{ value: AnalyticsRange; label: string }> = [
 const number = new Intl.NumberFormat("zh-CN");
 const decimal = new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 1 });
 const percent = new Intl.NumberFormat("zh-CN", { style: "percent", maximumFractionDigits: 1 });
+const eventLabels = {
+  inquiry_start: "开始询盘",
+  inquiry_submit: "询盘提交",
+  whatsapp_click: "WhatsApp 点击",
+  email_click: "邮件点击",
+  catalog_download: "目录下载",
+} as const;
 
 function SourceNotice({ result }: { result: AnalyticsSourceResult<unknown> }) {
   const isHealthy = result.state.code === "CONNECTED" || result.state.code === "NO_DATA";
@@ -49,6 +56,10 @@ function Ga4Panel({ result }: { result: AnalyticsSourceResult<Ga4Report> }) {
           <ReportTable title="热门页面" columns={[{ key: "name", label: "页面" }, { key: "views", label: "浏览量", align: "right" }, { key: "users", label: "活跃用户", align: "right" }]} rows={result.data.topPages.map((item) => ({ id: item.path, name: <><span className="block font-medium">{item.title || item.path}</span><span className="block truncate text-xs text-neutral-500">{item.path}</span></>, views: number.format(item.pageViews), users: number.format(item.activeUsers) }))} />
           <ReportTable title="流量来源" columns={[{ key: "source", label: "来源 / 媒介" }, { key: "sessions", label: "会话", align: "right" }, { key: "users", label: "用户", align: "right" }]} rows={result.data.acquisition.map((item) => ({ id: `${item.source}/${item.medium}`, source: `${item.source} / ${item.medium}`, sessions: number.format(item.sessions), users: number.format(item.activeUsers) }))} />
         </div>
+        <div className="grid gap-4 xl:grid-cols-2">
+          <ReportTable title="访问国家 / 地区" columns={[{ key: "country", label: "国家 / 地区" }, { key: "users", label: "活跃用户", align: "right" }, { key: "sessions", label: "会话", align: "right" }]} rows={result.data.countries.map((item) => ({ id: item.country, country: item.country, users: number.format(item.activeUsers), sessions: number.format(item.sessions) }))} />
+          <ReportTable title="转化事件" columns={[{ key: "event", label: "事件" }, { key: "count", label: "次数", align: "right" }]} rows={Object.entries(eventLabels).map(([key, label]) => ({ id: key, event: label, count: number.format(result.data!.events[key as keyof typeof eventLabels]) }))} />
+        </div>
       </> : null}
     </section>
   );
@@ -74,6 +85,10 @@ function SearchConsolePanel({ result }: { result: AnalyticsSourceResult<SearchCo
         <div className="grid gap-4 xl:grid-cols-2">
           <ReportTable title="热门搜索词" columns={[{ key: "query", label: "搜索词" }, { key: "clicks", label: "点击", align: "right" }, { key: "impressions", label: "展示", align: "right" }, { key: "ctr", label: "CTR", align: "right" }, { key: "position", label: "排名", align: "right" }]} rows={result.data.queries.map((item) => ({ id: item.query, query: item.query, clicks: number.format(item.clicks), impressions: number.format(item.impressions), ctr: percent.format(item.ctr), position: decimal.format(item.position) }))} />
           <ReportTable title="自然搜索落地页" columns={[{ key: "page", label: "搜索页面" }, { key: "clicks", label: "点击", align: "right" }, { key: "impressions", label: "展示", align: "right" }]} rows={result.data.pages.map((item) => ({ id: item.page, page: <span className="block max-w-md truncate">{item.page}</span>, clicks: number.format(item.clicks), impressions: number.format(item.impressions) }))} />
+        </div>
+        <div className="grid gap-4 xl:grid-cols-2">
+          <ReportTable title="搜索设备" columns={[{ key: "device", label: "设备" }, { key: "clicks", label: "点击", align: "right" }, { key: "impressions", label: "展示", align: "right" }, { key: "ctr", label: "CTR", align: "right" }, { key: "position", label: "排名", align: "right" }]} rows={result.data.devices.map((item) => ({ id: item.device, device: item.device, clicks: number.format(item.clicks), impressions: number.format(item.impressions), ctr: percent.format(item.ctr), position: decimal.format(item.position) }))} />
+          <ReportTable title="搜索国家 / 地区" columns={[{ key: "country", label: "国家 / 地区" }, { key: "clicks", label: "点击", align: "right" }, { key: "impressions", label: "展示", align: "right" }, { key: "ctr", label: "CTR", align: "right" }, { key: "position", label: "排名", align: "right" }]} rows={result.data.countries.map((item) => ({ id: item.country, country: item.country, clicks: number.format(item.clicks), impressions: number.format(item.impressions), ctr: percent.format(item.ctr), position: decimal.format(item.position) }))} />
         </div>
       </> : null}
     </section>

@@ -41,6 +41,9 @@ export function TrendChart({
           return <circle key={`${points[index].label}-${index}`} cx={cx} cy={cy} r="4" fill="#0B0D10"><title>{points[index].label}: {values[index]}</title></circle>;
         })}
       </svg>
+      <ul aria-label={`${accessibleName}数据`} className="sr-only">
+        {points.map((point, index) => <li key={`${point.label}-summary-${index}`}>{point.label}: {values[index]}</li>)}
+      </ul>
     </section>
   );
 }

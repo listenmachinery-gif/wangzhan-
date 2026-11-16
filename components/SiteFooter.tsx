@@ -85,6 +85,7 @@ export function SiteFooter() {
       <div className="border-t border-white/10 px-5 py-5 text-xs text-zinc-500">
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-center gap-x-5 gap-y-2">
           <span>Copyright 2026 ZYRON Heavy Industry. All rights reserved.</span>
+          <Link href="/privacy" className="transition hover:text-white">Privacy Policy</Link>
           <CookiePreferencesButton />
         </div>
       </div>

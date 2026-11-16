@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
 export function ReportTable({
   title,
@@ -11,9 +11,10 @@ export function ReportTable({
   rows: Array<Record<string, ReactNode>>;
   emptyMessage?: string;
 }) {
+  const titleId = useId();
   return (
-    <section className="rounded-xl border border-neutral-200 bg-white">
-      <h3 className="px-5 pt-5 font-semibold">{title}</h3>
+    <section aria-labelledby={titleId} className="rounded-xl border border-neutral-200 bg-white">
+      <h3 id={titleId} className="px-5 pt-5 font-semibold">{title}</h3>
       <div data-mobile-scroll className="mt-3 overflow-x-auto">
         <table className="min-w-full text-left text-sm">
           <thead className="bg-neutral-50 text-neutral-600">

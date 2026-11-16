@@ -77,26 +77,32 @@ describe("client analytics events", () => {
     expect(window.gtag).not.toHaveBeenCalled();
   });
 
-  it("uses the Google config view for the first accepted URL and emits one event per later URL", async () => {
+  it("manually emits one sanitized page view for the first accepted URL and each later URL", async () => {
     writeAnalyticsConsent("accepted");
     const view = render(createElement(RoutePageView));
-    expect(window.gtag).not.toHaveBeenCalled();
+    await waitFor(() => expect(window.gtag).toHaveBeenCalledTimes(1));
+    expect(window.gtag).toHaveBeenLastCalledWith("event", "page_view", {
+      page_path: "/products",
+      page_location: "http://localhost:3000/products",
+    });
 
     route.pathname = "/products/small-electric-shear";
     view.rerender(createElement(RoutePageView));
-    await waitFor(() => expect(window.gtag).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(window.gtag).toHaveBeenCalledTimes(2));
     expect(window.gtag).toHaveBeenLastCalledWith("event", "page_view", {
       page_path: "/products/small-electric-shear",
+      page_location: "http://localhost:3000/products/small-electric-shear",
     });
 
     view.rerender(createElement(RoutePageView));
-    expect(window.gtag).toHaveBeenCalledTimes(1);
+    expect(window.gtag).toHaveBeenCalledTimes(2);
 
-    route.search = "model=Q11";
+    route.search = "utm_source=google";
     view.rerender(createElement(RoutePageView));
-    await waitFor(() => expect(window.gtag).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(window.gtag).toHaveBeenCalledTimes(3));
     expect(window.gtag).toHaveBeenLastCalledWith("event", "page_view", {
-      page_path: "/products/small-electric-shear?model=Q11",
+      page_path: "/products/small-electric-shear?utm_source=google",
+      page_location: "http://localhost:3000/products/small-electric-shear?utm_source=google",
     });
   });
 
@@ -109,16 +115,18 @@ describe("client analytics events", () => {
     expect(window.gtag).not.toHaveBeenCalled();
   });
 
-  it("removes sensitive search parameters from page paths", async () => {
+  it("allows only marketing parameters and removes sensitive names and PII-shaped values", async () => {
     writeAnalyticsConsent("accepted");
+    route.search = "utm_source=google";
     const view = render(createElement(RoutePageView));
     route.pathname = "/contact";
-    route.search = "email=buyer%40example.com&source=footer";
+    route.search = "email=buyer%40example.com&utm_source=buyer%40example.com&utm_medium=cpc&name=Alice&source=footer";
     view.rerender(createElement(RoutePageView));
 
-    await waitFor(() => expect(window.gtag).toHaveBeenCalledTimes(1));
-    expect(window.gtag).toHaveBeenCalledWith("event", "page_view", {
-      page_path: "/contact?source=footer",
+    await waitFor(() => expect(window.gtag).toHaveBeenCalledTimes(2));
+    expect(window.gtag).toHaveBeenLastCalledWith("event", "page_view", {
+      page_path: "/contact?utm_medium=cpc",
+      page_location: "http://localhost:3000/contact?utm_medium=cpc",
     });
   });
 });

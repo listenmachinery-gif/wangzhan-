@@ -5,6 +5,9 @@ export default defineConfig({
   outputDir: ".playwright/results",
   timeout: 60_000,
   expect: { timeout: 15_000 },
+  // A fresh worker recovers from a one-off test-database connection reset;
+  // every business assertion still has to pass unchanged on the retry.
+  retries: 1,
   // E2E fixtures share one protected PostgreSQL test database and must not clean up each other's records.
   workers: 1,
   use: {

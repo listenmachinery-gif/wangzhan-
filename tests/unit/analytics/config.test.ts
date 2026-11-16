@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
+import { generateKeyPairSync } from "node:crypto";
 
 import { readGoogleIntegrationConfig } from "@/lib/analytics/config";
 
-const privateKey = [
-  "-----BEGIN PRIVATE KEY-----",
-  "c2FmZS10ZXN0LWtleS1ub3QtYS1yZWFsLWNyZWRlbnRpYWw=",
-  "-----END PRIVATE KEY-----",
-].join("\n");
+const { privateKey } = generateKeyPairSync("rsa", {
+  modulusLength: 1024,
+  publicKeyEncoding: { type: "spki", format: "pem" },
+  privateKeyEncoding: { type: "pkcs8", format: "pem" },
+});
 
 function validEnvironment(): NodeJS.ProcessEnv {
   return {
@@ -39,7 +40,7 @@ describe("readGoogleIntegrationConfig", () => {
       state: "configured",
       value: {
         clientEmail: "zyron-reports@example.iam.gserviceaccount.com",
-        privateKey,
+        privateKey: privateKey.trim(),
       },
     });
   });
@@ -94,5 +95,19 @@ describe("readGoogleIntegrationConfig", () => {
       issues: [{ code: "INVALID_ENV", variable: "GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY" }],
     });
     expect(serialized).not.toContain(secretText);
+  });
+
+  it.each([
+    "-----BEGIN PRIVATE KEY-----\\nnot-base64!\\n-----END PRIVATE KEY-----",
+    "-----BEGIN PRIVATE KEY-----\\nYQ==\\n-----END PRIVATE KEY-----",
+    privateKey.replace("-----END PRIVATE KEY-----", ""),
+  ])("rejects a private key that has an envelope but cannot be parsed", (invalidKey) => {
+    const environment = validEnvironment();
+    environment.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY = invalidKey;
+
+    expect(readGoogleIntegrationConfig(environment).credentials).toEqual({
+      state: "invalid",
+      issues: [{ code: "INVALID_ENV", variable: "GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY" }],
+    });
   });
 });

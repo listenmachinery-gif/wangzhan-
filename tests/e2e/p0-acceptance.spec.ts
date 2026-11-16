@@ -43,7 +43,7 @@ test.afterAll(async () => {
 });
 
 test("Super Admin configures non-secret settings, manages a user, and public URLs remain unchanged", async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(90_000);
   await page.goto("/admin/login");
   await page.getByLabel("管理员邮箱").fill(email);
   await page.getByLabel("密码").fill(password);

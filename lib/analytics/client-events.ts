@@ -1,7 +1,7 @@
 import { readAnalyticsConsent } from "@/lib/analytics/consent";
 
 export type AnalyticsEventParams = {
-  page_view: { page_path: string };
+  page_view: { page_path: string; page_location: string };
   product_view: { product_slug: string; product_id?: string; product_name?: string; product_category?: string };
   inquiry_start: { form_id: string; product_slug?: string };
   inquiry_submit: { form_id: string; product_slug?: string };
@@ -19,7 +19,7 @@ declare global {
 }
 
 const allowedKeys: { [K in AnalyticsEventName]: ReadonlySet<keyof AnalyticsEventParams[K]> } = {
-  page_view: new Set(["page_path"]),
+  page_view: new Set(["page_path", "page_location"]),
   product_view: new Set(["product_slug", "product_id", "product_name", "product_category"]),
   inquiry_start: new Set(["form_id", "product_slug"]),
   inquiry_submit: new Set(["form_id", "product_slug"]),
@@ -29,7 +29,17 @@ const allowedKeys: { [K in AnalyticsEventName]: ReadonlySet<keyof AnalyticsEvent
 };
 
 const unsafeKey = /(?:^|_)(?:email|phone|message|lead|session|token|password)(?:_|$)/i;
-const unsafeQueryKey = /(?:email|phone|message|lead|session|token|password|name)/i;
+const allowedQueryKeys = new Set([
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_term",
+  "utm_content",
+  "gclid",
+  "gbraid",
+  "wbraid",
+]);
+const piiValue = /(?:[\w.+-]+@[\w.-]+\.[a-z]{2,}|(?:\+?\d[\d\s().-]{6,}\d))/i;
 
 function safeParams<K extends AnalyticsEventName>(name: K, params: AnalyticsEventParams[K]) {
   if (!params || typeof params !== "object" || Array.isArray(params)) return null;
@@ -63,8 +73,10 @@ export function trackAnalyticsEvent<K extends AnalyticsEventName>(
 
 export function createSafePagePath(pathname: string, rawSearch: string) {
   const search = new URLSearchParams(rawSearch);
-  for (const key of Array.from(search.keys())) {
-    if (unsafeQueryKey.test(key)) search.delete(key);
+  for (const [key, value] of Array.from(search.entries())) {
+    if (!allowedQueryKeys.has(key.toLowerCase()) || value.length > 128 || piiValue.test(value)) {
+      search.delete(key);
+    }
   }
   const query = search.toString();
   return `${pathname}${query ? `?${query}` : ""}`;

@@ -8,10 +8,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ googleAnalytics: vi.fn() }));
 
-vi.mock("@next/third-parties/google", () => ({
-  GoogleAnalytics: (props: { gaId: string }) => {
+vi.mock("@/components/analytics/ConsentAwareGoogleAnalytics", () => ({
+  ConsentAwareGoogleAnalytics: (props: { measurementId: string }) => {
     mocks.googleAnalytics(props);
-    return <div data-testid="google-analytics" data-ga-id={props.gaId} />;
+    return <div data-testid="google-analytics" data-ga-id={props.measurementId} />;
   },
 }));
 
@@ -36,12 +36,15 @@ describe("AnalyticsConsentProvider", () => {
     clearConsent();
     process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID = "G-TEST123";
     mocks.googleAnalytics.mockClear();
+    document.cookie = "_ga=GA1.1.123.456; Path=/";
+    document.cookie = "_ga_TEST123=GS1.1.123.1.0.0.0.0; Path=/";
   });
 
   afterEach(() => {
     cleanup();
     clearConsent();
     delete process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID;
+    delete (window as unknown as Record<string, unknown>)["ga-disable-G-TEST123"];
   });
 
   it("does not mount Google before a choice and persists rejection", async () => {
@@ -102,6 +105,44 @@ describe("AnalyticsConsentProvider", () => {
     expect(readAnalyticsConsent()).toBe("rejected");
     expect(screen.getByRole("dialog", { name: "Analytics cookie preferences" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Accept analytics" })).toHaveFocus();
+  });
+
+  it("stops collection and clears Google Analytics cookies after accepted consent is withdrawn", async () => {
+    const user = userEvent.setup();
+    render(
+      <AnalyticsConsentProvider>
+        <CookiePreferencesButton />
+      </AnalyticsConsentProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Accept analytics" }));
+    expect((window as unknown as Record<string, unknown>)["ga-disable-G-TEST123"]).toBe(false);
+
+    await user.click(screen.getByRole("button", { name: "Cookie preferences" }));
+    await user.click(screen.getByRole("button", { name: "Reject analytics" }));
+
+    expect((window as unknown as Record<string, unknown>)["ga-disable-G-TEST123"]).toBe(true);
+    expect(document.cookie).not.toContain("_ga=");
+    expect(document.cookie).not.toContain("_ga_TEST123=");
+    expect(screen.queryByTestId("google-analytics")).not.toBeInTheDocument();
+  });
+
+  it("re-enables collection after accepted consent is withdrawn and accepted again", async () => {
+    const user = userEvent.setup();
+    render(
+      <AnalyticsConsentProvider>
+        <CookiePreferencesButton />
+      </AnalyticsConsentProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Accept analytics" }));
+    await user.click(screen.getByRole("button", { name: "Cookie preferences" }));
+    await user.click(screen.getByRole("button", { name: "Reject analytics" }));
+    await user.click(screen.getByRole("button", { name: "Cookie preferences" }));
+    await user.click(screen.getByRole("button", { name: "Accept analytics" }));
+
+    expect((window as unknown as Record<string, unknown>)["ga-disable-G-TEST123"]).toBe(false);
+    expect(screen.getByTestId("google-analytics")).toBeInTheDocument();
   });
 
   it("uses only client document cookies", () => {

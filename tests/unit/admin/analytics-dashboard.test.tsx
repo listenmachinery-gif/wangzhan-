@@ -119,9 +119,37 @@ describe("AnalyticsDashboard", () => {
     expect(screen.getByRole("img", { name: "Search Console 每日点击趋势" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "页面" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "搜索词" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "访问国家 / 地区" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "转化事件" })).toBeInTheDocument();
+    expect(screen.getByText("United States")).toBeInTheDocument();
+    expect(screen.getByText("询盘提交")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "搜索设备" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "搜索国家 / 地区" })).toBeInTheDocument();
+    expect(screen.getByText("MOBILE")).toBeInTheDocument();
+    expect(screen.getByText("usa")).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "GA4 每日活跃用户趋势数据" })).toHaveTextContent("2026-11-15: 30");
+    expect(screen.getByRole("list", { name: "Search Console 每日点击趋势数据" })).toHaveTextContent("2026-11-12: 18");
     expect(document.querySelectorAll("[data-mobile-scroll]").length).toBeGreaterThan(0);
     expect(screen.getByText(/GA4 数据更新至 2026-11-15/)).toBeInTheDocument();
     expect(screen.getByText(/Search Console 数据更新至 2026-11-12/)).toBeInTheDocument();
+  });
+
+  it("keeps all five conversion event rows visible when their counts are zero", async () => {
+    const report = overview();
+    report.ga4.data!.events = {
+      inquiry_start: 0,
+      inquiry_submit: 0,
+      whatsapp_click: 0,
+      email_click: 0,
+      catalog_download: 0,
+    };
+    vi.mocked(fetch).mockImplementationOnce(() => jsonResponse(report));
+
+    render(<AnalyticsDashboard initialRange="28d" />);
+
+    const events = await screen.findByRole("region", { name: "转化事件" });
+    expect(within(events).getAllByRole("row")).toHaveLength(6);
+    expect(within(events).getAllByText("0")).toHaveLength(5);
   });
 
   it("updates the URL and fetches a selected range", async () => {
