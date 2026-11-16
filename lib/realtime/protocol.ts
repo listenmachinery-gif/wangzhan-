@@ -36,6 +36,7 @@ export const realtimeClientEventSchema = z.discriminatedUnion("type", [
 
 const messagePayload = z.strictObject({
   id,
+  clientMessageId: id.optional(),
   senderType: z.enum(["VISITOR", "AGENT", "SYSTEM"]),
   type: z.enum(["TEXT", "SYSTEM"]),
   body: z.string().max(5000),
