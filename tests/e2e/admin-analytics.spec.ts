@@ -55,6 +55,8 @@ test("protects analytics and renders truthful unconfigured Google states", async
 
   const api = await page.request.get("/api/admin/analytics/overview?range=28d");
   expect(api.status()).toBe(401);
+  const firstPartyApi = await page.request.get("/api/admin/analytics/first-party/overview");
+  expect(firstPartyApi.status()).toBe(401);
 
   await page.goto("/admin/analytics");
   await expect(page).toHaveURL(/\/admin\/login$/);
@@ -65,7 +67,24 @@ test("protects analytics and renders truthful unconfigured Google states", async
 
   await page.getByRole("link", { name: "数据分析" }).click();
   await expect(page.getByRole("heading", { name: "数据分析" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "第一方实时访客" })).toBeVisible();
   await expect(page.getByText("尚未配置")).toHaveCount(2);
+
+  const firstPartyStatus = await page.evaluate(async () => {
+    const response = await fetch("/api/admin/analytics/first-party/overview");
+    return { status: response.status, body: await response.json() };
+  });
+  expect(firstPartyStatus.status).toBe(200);
+  expect(firstPartyStatus.body).toMatchObject({
+    environment: "TEST",
+    summary: {
+      onlineVisitors: expect.any(Number),
+      activeVisitors: expect.any(Number),
+      visitorsToday: expect.any(Number),
+      sessionsToday: expect.any(Number),
+      pageViewsToday: expect.any(Number),
+    },
+  });
 
   const status = await page.evaluate(async () => {
     const response = await fetch("/api/admin/analytics/status");

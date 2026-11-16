@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { MetricCard } from "@/components/admin/analytics/MetricCard";
+import { RealtimeVisitorPanel, type FirstPartyOverview } from "@/components/admin/analytics/RealtimeVisitorPanel";
 import { ReportTable } from "@/components/admin/analytics/ReportTable";
 import { TrendChart } from "@/components/admin/analytics/TrendChart";
 import type { AnalyticsOverview, AnalyticsRange, AnalyticsSourceResult, Ga4Report, SearchConsoleReport } from "@/lib/analytics/types";
@@ -51,7 +52,6 @@ function Ga4Panel({ result }: { result: AnalyticsSourceResult<Ga4Report> }) {
           <MetricCard id="engagement-rate" label="互动率" metric={result.data.metrics.engagementRate} format="percent" />
           <MetricCard id="key-events" label="关键事件" metric={result.data.metrics.keyEvents} />
         </div>
-        <TrendChart title="访问趋势" accessibleName="GA4 每日活跃用户趋势" points={result.data.daily.map((item) => ({ label: item.date, value: item.activeUsers }))} />
         <div className="grid gap-4 xl:grid-cols-2">
           <ReportTable title="热门页面" columns={[{ key: "name", label: "页面" }, { key: "views", label: "浏览量", align: "right" }, { key: "users", label: "活跃用户", align: "right" }]} rows={result.data.topPages.map((item) => ({ id: item.path, name: <><span className="block font-medium">{item.title || item.path}</span><span className="block truncate text-xs text-neutral-500">{item.path}</span></>, views: number.format(item.pageViews), users: number.format(item.activeUsers) }))} />
           <ReportTable title="流量来源" columns={[{ key: "source", label: "来源 / 媒介" }, { key: "sessions", label: "会话", align: "right" }, { key: "users", label: "用户", align: "right" }]} rows={result.data.acquisition.map((item) => ({ id: `${item.source}/${item.medium}`, source: `${item.source} / ${item.medium}`, sessions: number.format(item.sessions), users: number.format(item.activeUsers) }))} />
@@ -100,6 +100,22 @@ export function AnalyticsDashboard({ initialRange }: { initialRange: AnalyticsRa
   const [range, setRange] = useState(initialRange);
   const [report, setReport] = useState<AnalyticsOverview | null>(null);
   const [error, setError] = useState(false);
+  const [firstParty, setFirstParty] = useState<FirstPartyOverview | null>(null);
+  const [firstPartyError, setFirstPartyError] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/admin/analytics/first-party/overview", { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("First-party analytics request failed");
+        return response.json() as Promise<FirstPartyOverview>;
+      })
+      .then(setFirstParty)
+      .catch((requestError: unknown) => {
+        if (!(requestError instanceof DOMException && requestError.name === "AbortError")) setFirstPartyError(true);
+      });
+    return () => controller.abort();
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -125,8 +141,38 @@ export function AnalyticsDashboard({ initialRange }: { initialRange: AnalyticsRa
 
   return (
     <div className="space-y-8">
-      <div role="group" aria-label="统计日期范围" className="flex flex-wrap gap-2">
+      <div className="grid gap-6 xl:grid-cols-12">
+        <div className="xl:col-span-8">
+          {report?.ga4.data ? (
+            <TrendChart title="GA4 访问趋势" accessibleName="GA4 每日活跃用户趋势" points={report.ga4.data.daily.map((item) => ({ label: item.date, value: item.activeUsers }))} />
+          ) : (
+            <section aria-label="数据源独立性说明" className="flex min-h-full flex-col justify-center rounded-admin border border-admin-border bg-white p-6 shadow-admin-card">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ignition">Measurement integrity</p>
+              <h2 className="mt-2 text-lg font-semibold tracking-tight text-admin-ink">三个数据源，各自独立校验</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-admin-muted">第一方数据用于实时运营，GA4 用于访问与转化趋势，Search Console 用于自然搜索表现。任何一个数据源异常，都不会阻断另外两个数据源。</p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-3" aria-label="数据源说明">
+                {["第一方实时数据", "GA4 访问分析", "Search Console 搜索分析"].map((source, index) => (
+                  <div key={source} className="rounded-admin-sm border border-admin-border bg-neutral-50 px-4 py-3">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-admin-muted">Source {index + 1}</span>
+                    <p className="mt-1 text-sm font-semibold text-admin-ink">{source}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+        <div className="xl:col-span-4">
+          <RealtimeVisitorPanel data={firstParty} error={firstPartyError} />
+        </div>
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-admin-border pb-5">
+        <div>
+          <p className="text-sm font-semibold text-admin-ink">Google 历史报表</p>
+          <p className="mt-1 text-xs text-admin-muted">日期范围只影响 GA4 与 Search Console，实时数据始终显示当前状态。</p>
+        </div>
+        <div role="group" aria-label="统计日期范围" className="flex flex-wrap gap-2">
         {ranges.map((option) => <button key={option.value} type="button" onClick={() => selectRange(option.value)} aria-pressed={range === option.value} className={`rounded-full px-4 py-2 text-sm font-semibold ${range === option.value ? "bg-[#0B0D10] text-white" : "border border-neutral-300 bg-white text-neutral-700"}`}>{option.label}</button>)}
+        </div>
       </div>
       {!report && !error ? <p role="status" className="rounded-xl border border-neutral-200 bg-white p-8 text-center text-sm text-neutral-600">正在读取 Google 报表…</p> : null}
       {error ? <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-800">暂时无法读取分析报表，请稍后重试。</p> : null}

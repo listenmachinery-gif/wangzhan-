@@ -6,7 +6,7 @@ import { analyticsErrorResponse } from "@/lib/http/analytics-response";
 
 export async function GET() {
   try {
-    await requirePermission("settings.write");
+    await requirePermission("analytics.read.summary");
     return NextResponse.json(await new AnalyticsOverviewService().getStatus());
   } catch (error) {
     return analyticsErrorResponse(error);

@@ -28,11 +28,11 @@ export function MetricCard({
   const positive = change !== null && (inverse ? change <= 0 : change >= 0);
 
   return (
-    <article data-testid={`metric-${id}`} className="rounded-xl border border-neutral-200 bg-white p-5">
-      <p className="text-sm text-neutral-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-neutral-950">{formatValue(metric.value, format)}</p>
+    <article data-testid={`metric-${id}`} className="rounded-admin border border-admin-border bg-white p-5 shadow-admin-card transition duration-admin hover:-translate-y-0.5 hover:shadow-md motion-reduce:transform-none">
+      <p className="text-xs font-medium text-admin-muted">{label}</p>
+      <p className="mt-2 text-2xl font-semibold tabular-nums tracking-[-0.03em] text-admin-ink">{formatValue(metric.value, format)}</p>
       {change === null ? (
-        <p className="mt-2 text-xs text-neutral-500">暂无可比数据</p>
+        <p className="mt-2 text-xs text-admin-muted">暂无可比数据</p>
       ) : (
         <p className={`mt-2 text-xs font-medium ${positive ? "text-emerald-700" : "text-red-700"}`}>
           较上一周期 {change >= 0 ? "+" : ""}{new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 1 }).format(change)}%

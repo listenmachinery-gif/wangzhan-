@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   requirePermission: vi.fn(),
   getOverview: vi.fn(),
   getStatus: vi.fn(),
+  getRealtimeSummary: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/guards", async (importOriginal) => ({
@@ -19,7 +20,14 @@ vi.mock("@/lib/analytics/overview-service", () => ({
   },
 }));
 
+vi.mock("@/lib/services/visitor-analytics-query-service", () => ({
+  VisitorAnalyticsQueryService: class {
+    getRealtimeSummary = mocks.getRealtimeSummary;
+  },
+}));
+
 import { GET as getOverview } from "@/app/api/admin/analytics/overview/route";
+import { GET as getFirstPartyOverview } from "@/app/api/admin/analytics/first-party/overview/route";
 import { GET as getStatus } from "@/app/api/admin/analytics/status/route";
 import { AuthenticationRequiredError, PermissionDeniedError } from "@/lib/auth/guards";
 
@@ -47,6 +55,13 @@ describe("analytics admin routes", () => {
       ga4: partialOverview.ga4.state,
       searchConsole: partialOverview.searchConsole.state,
     });
+    mocks.getRealtimeSummary.mockResolvedValue({
+      onlineVisitors: 3,
+      activeVisitors: 7,
+      visitorsToday: 12,
+      sessionsToday: 14,
+      pageViewsToday: 31,
+    });
   });
 
   it("returns 401 when no admin session exists", async () => {
@@ -58,7 +73,7 @@ describe("analytics admin routes", () => {
     await expect(response.json()).resolves.toEqual({ code: "UNAUTHENTICATED" });
   });
 
-  it("returns 403 when the principal lacks settings.write", async () => {
+  it("returns 403 when the principal lacks analytics.read.summary", async () => {
     mocks.requirePermission.mockRejectedValueOnce(new PermissionDeniedError("Permission denied."));
 
     const response = await getStatus();
@@ -82,8 +97,25 @@ describe("analytics admin routes", () => {
 
     expect(response.status).toBe(200);
     expect(body).toEqual(partialOverview);
-    expect(mocks.requirePermission).toHaveBeenCalledWith("settings.write");
+    expect(mocks.requirePermission).toHaveBeenCalledWith("analytics.read.summary");
     expect(mocks.getOverview).toHaveBeenCalledWith("28d");
     expect(serialized).not.toMatch(/private.?key|access.?token|client.?email|upstream/i);
+  });
+
+  it("returns an environment-scoped first-party summary without visitor identifiers", async () => {
+    vi.stubEnv("VERCEL_ENV", "preview");
+
+    const response = await getFirstPartyOverview();
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toMatchObject({
+      environment: "PREVIEW",
+      summary: { onlineVisitors: 3, activeVisitors: 7, visitorsToday: 12, sessionsToday: 14, pageViewsToday: 31 },
+    });
+    expect(body.generatedAt).toEqual(expect.any(String));
+    expect(mocks.requirePermission).toHaveBeenCalledWith("analytics.read.summary");
+    expect(mocks.getRealtimeSummary).toHaveBeenCalledWith(principal, expect.any(Date), "PREVIEW");
+    expect(JSON.stringify(body)).not.toMatch(/anonymousId|visitorId|cookie/i);
   });
 });

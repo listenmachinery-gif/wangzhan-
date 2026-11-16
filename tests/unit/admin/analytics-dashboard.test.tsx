@@ -98,6 +98,18 @@ function jsonResponse(body: unknown, ok = true) {
   return Promise.resolve({ ok, json: async () => body } as Response);
 }
 
+const firstPartyOverview = {
+  generatedAt: "2026-11-16T02:00:00.000Z",
+  environment: "TEST",
+  summary: { onlineVisitors: 2, activeVisitors: 4, visitorsToday: 8, sessionsToday: 10, pageViewsToday: 24 },
+};
+
+function analyticsFetch(report: AnalyticsOverview) {
+  return (input: RequestInfo | URL) => String(input).includes("first-party")
+    ? jsonResponse(firstPartyOverview)
+    : jsonResponse(report);
+}
+
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
@@ -106,7 +118,7 @@ afterEach(() => {
 
 describe("AnalyticsDashboard", () => {
   beforeEach(() => {
-    vi.stubGlobal("fetch", vi.fn(() => jsonResponse(overview())));
+    vi.stubGlobal("fetch", vi.fn(analyticsFetch(overview())));
   });
 
   it("loads the default 28-day report and renders both sources accessibly", async () => {
@@ -143,7 +155,7 @@ describe("AnalyticsDashboard", () => {
       email_click: 0,
       catalog_download: 0,
     };
-    vi.mocked(fetch).mockImplementationOnce(() => jsonResponse(report));
+    vi.mocked(fetch).mockImplementation(analyticsFetch(report));
 
     render(<AnalyticsDashboard initialRange="28d" />);
 
@@ -174,7 +186,7 @@ describe("AnalyticsDashboard", () => {
     const report = overview({
       [source]: { state: { code, message, checkedAt: "2026-11-16T02:00:00.000Z" }, data: null },
     });
-    vi.mocked(fetch).mockImplementationOnce(() => jsonResponse(report));
+    vi.mocked(fetch).mockImplementation(analyticsFetch(report));
 
     render(<AnalyticsDashboard initialRange="28d" />);
 
@@ -187,7 +199,7 @@ describe("AnalyticsDashboard", () => {
     report.ga4.state = { code: "NO_DATA", message: "已连接，所选日期暂无数据", checkedAt: report.generatedAt };
     report.ga4.data!.metrics.activeUsers = { value: 0, previousValue: 0, changePercent: null };
     report.ga4.data!.daily = [];
-    vi.mocked(fetch).mockImplementationOnce(() => jsonResponse(report));
+    vi.mocked(fetch).mockImplementation(analyticsFetch(report));
 
     render(<AnalyticsDashboard initialRange="28d" />);
 

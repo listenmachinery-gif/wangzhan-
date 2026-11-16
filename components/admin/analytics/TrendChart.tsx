@@ -9,8 +9,8 @@ export function TrendChart({
 }) {
   if (points.length === 0) {
     return (
-      <section className="rounded-xl border border-neutral-200 bg-white p-5">
-        <h3 className="font-semibold">{title}</h3>
+      <section className="rounded-admin border border-admin-border bg-white p-5 shadow-admin-card">
+        <h3 className="text-sm font-semibold text-admin-ink">{title}</h3>
         <p className="mt-8 text-center text-sm text-neutral-500">所选日期暂无趋势数据</p>
       </section>
     );
@@ -30,12 +30,15 @@ export function TrendChart({
   }).join(" ");
 
   return (
-    <section className="rounded-xl border border-neutral-200 bg-white p-5">
-      <h3 className="font-semibold">{title}</h3>
+    <section className="rounded-admin border border-admin-border bg-white p-5 shadow-admin-card">
+      <div className="flex items-center justify-between gap-4">
+        <h3 className="text-sm font-semibold text-admin-ink">{title}</h3>
+        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-admin-muted">Daily trend</span>
+      </div>
       <svg role="img" aria-label={accessibleName} viewBox={`0 0 ${width} ${height}`} className="mt-4 h-52 w-full">
         <title>{accessibleName}</title>
-        <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#d4d4d4" />
-        <polyline points={coordinates} fill="none" stroke="#5F9500" strokeWidth="4" strokeLinejoin="round" strokeLinecap="round" />
+        <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#e3e6e8" />
+        <polyline points={coordinates} fill="none" stroke="#76B900" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
         {coordinates.split(" ").map((coordinate, index) => {
           const [cx, cy] = coordinate.split(",");
           return <circle key={`${points[index].label}-${index}`} cx={cx} cy={cy} r="4" fill="#0B0D10"><title>{points[index].label}: {values[index]}</title></circle>;

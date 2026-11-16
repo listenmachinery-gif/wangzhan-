@@ -13,7 +13,7 @@ function parseRange(value: string | null): AnalyticsRange {
 
 export async function GET(request: NextRequest) {
   try {
-    await requirePermission("settings.write");
+    await requirePermission("analytics.read.summary");
     const range = parseRange(request.nextUrl.searchParams.get("range"));
     return NextResponse.json(await new AnalyticsOverviewService().getOverview(range));
   } catch (error) {

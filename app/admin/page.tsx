@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
   const principal = await getCurrentPrincipal();
-  const mayViewAnalytics = principal ? can(principal, "settings.write") : false;
+  const mayViewAnalytics = principal ? can(principal, "analytics.read.summary") : false;
   const statusPromise: Promise<AnalyticsConnectionOverview | null> = mayViewAnalytics
     ? new AnalyticsOverviewService().getStatus().catch(() => null)
     : Promise.resolve(null);
