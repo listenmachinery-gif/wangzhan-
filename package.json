@@ -39,7 +39,8 @@
     "verify:small-electric-shear-media": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types scripts/verify-small-electric-shear-media.mjs",
     "verify:small-electric-shear-selector": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types scripts/verify-small-electric-shear-selector.mjs",
     "verify:energy-saving-shear-seo": "node scripts/verify-energy-saving-electric-shear-page.mjs",
-    "verify:hydraulic-swing-beam-seo": "node scripts/verify-hydraulic-swing-beam-shear-page.mjs"
+    "verify:hydraulic-swing-beam-seo": "node scripts/verify-hydraulic-swing-beam-shear-page.mjs",
+    "db:backfill:crm": "tsx scripts/backfill-crm-foundation.ts"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^4.0.0",
