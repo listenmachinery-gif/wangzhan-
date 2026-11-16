@@ -250,6 +250,7 @@ describe("CMS PostgreSQL foundation", () => {
     });
 
     expect(analyticsPermissions.map(({ key }) => key)).toEqual([
+      "analytics.delete",
       "analytics.export",
       "analytics.read.summary",
       "analytics.read.visitors",
@@ -257,7 +258,7 @@ describe("CMS PostgreSQL foundation", () => {
     for (const permission of analyticsPermissions) {
       expect(permission.roles.map(({ role }) => role.key).sort()).toEqual(["ADMIN", "SUPER_ADMIN"]);
     }
-    expect(await db.permission.count({ where: { key: { startsWith: "analytics." } } })).toBe(3);
+    expect(await db.permission.count({ where: { key: { startsWith: "analytics." } } })).toBe(4);
   });
 
   it("persists chat conversations, idempotent messages, and assignment history", async () => {

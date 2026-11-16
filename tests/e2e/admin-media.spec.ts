@@ -76,9 +76,10 @@ test("uploads, searches, previews, edits alt text, and prevents referenced delet
 
   await page.getByLabel("搜索媒体").fill("e2e-shearing");
   await page.getByRole("button", { name: "搜索" }).click();
-  await expect(page.getByRole("listitem")).toHaveCount(1);
+  const mediaList = page.getByRole("list", { name: "媒体资源列表" });
+  await expect(mediaList.getByRole("listitem")).toHaveCount(1);
   await expect(page.getByText("e2e-shearing-machine.png")).toBeVisible();
-  await page.getByRole("listitem").getByRole("button", { name: "预览与编辑" }).click();
+  await mediaList.getByRole("listitem").getByRole("button", { name: "预览与编辑" }).click();
   await expect(page.getByRole("dialog", { name: "媒体预览" })).toBeVisible();
   await expect(
     page.getByRole("dialog", { name: "媒体预览" }).getByRole("img", { name: "E2E electric shearing machine" }),
@@ -98,7 +99,7 @@ test("uploads, searches, previews, edits alt text, and prevents referenced delet
   });
   await db.$disconnect();
 
-  await page.getByRole("listitem").getByRole("button", { name: "预览与编辑" }).click();
+  await mediaList.getByRole("listitem").getByRole("button", { name: "预览与编辑" }).click();
   await expect(page.getByText("引用警告")).toBeVisible();
   await page.getByRole("button", { name: "删除资源" }).click();
   await expect(page.getByRole("dialog", { name: "媒体预览" }).getByRole("status")).toContainText("无法删除");

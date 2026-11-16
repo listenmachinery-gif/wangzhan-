@@ -76,7 +76,7 @@ export function MediaLibrary({ initialItems, canDelete }: { initialItems: MediaL
         <button type="button" onClick={search} className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-4 text-sm font-medium"><Search className="h-4 w-4" />搜索</button>
       </div>
       {items.length ? (
-        <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <ul aria-label="媒体资源列表" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {items.map((item) => (
             <li key={item.id} className="rounded-xl border border-neutral-200 bg-white p-4">
               <div className="flex h-32 items-center justify-center rounded-lg bg-neutral-100 text-sm text-neutral-500">

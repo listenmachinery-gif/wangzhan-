@@ -19,6 +19,11 @@ test.afterAll(async () => {
 });
 
 test("anonymous chat persists messages and survives a page refresh in HTTP fallback mode", async ({ page }) => {
+  await page.route("**/api/chat/token", async (route) => route.fulfill({
+    status: 503,
+    contentType: "application/json",
+    body: JSON.stringify({ code: "REALTIME_UNAVAILABLE" }),
+  }));
   await page.goto("/");
   await page.getByRole("button", { name: "Reject analytics" }).click();
   await page.getByRole("button", { name: "Chat With Us" }).click();
