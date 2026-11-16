@@ -14,16 +14,28 @@ export async function seedRbac(db: PrismaClient) {
   }
 
   for (const roleKey of ROLES) {
-    const role = await db.role.upsert({
-      where: { key: roleKey },
-      update: { name: roleKey.replaceAll("_", " ") },
-      create: { key: roleKey, name: roleKey.replaceAll("_", " ") },
-    });
     const keys = Object.keys(ROLE_PERMISSIONS[roleKey]);
-    const permissions = await db.permission.findMany({ where: { key: { in: keys } } });
-    await db.rolePermission.createMany({
-      data: permissions.map((permission) => ({ roleId: role.id, permissionId: permission.id })),
-      skipDuplicates: true,
+    const permissions = await db.permission.findMany({
+      where: { key: { in: keys } },
+      select: { id: true },
+    });
+    if (permissions.length !== keys.length) {
+      throw new Error(`Cannot seed role ${roleKey} without all required permissions.`);
+    }
+
+    const roleData = {
+      name: roleKey.replaceAll("_", " "),
+      permissions: {
+        createMany: {
+          data: permissions.map(({ id }) => ({ permissionId: id })),
+          skipDuplicates: true,
+        },
+      },
+    };
+    await db.role.upsert({
+      where: { key: roleKey },
+      update: roleData,
+      create: { key: roleKey, ...roleData },
     });
   }
 }

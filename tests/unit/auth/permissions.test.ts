@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { can, type Permission, type Principal, ROLE_PERMISSIONS } from "@/lib/auth/permissions";
+import { can, PERMISSIONS, type Permission, type Principal, ROLE_PERMISSIONS } from "@/lib/auth/permissions";
 
 function principal(id: string, roles: Principal["roles"]): Principal {
   return { id, email: `${id}@example.com`, name: id, roles };
@@ -71,6 +71,82 @@ describe("ZYRON CMS role permissions", () => {
     expect(can(sales, "analytics.read.summary")).toBe(false);
     expect(can(sales, "analytics.read.visitors")).toBe(false);
     expect(can(sales, "analytics.export")).toBe(false);
+  });
+
+  it("gives Sales Managers team-scoped lead permissions and manual inquiry creation", () => {
+    const manager = principal("manager", ["SALES_MANAGER"]);
+
+    for (const permission of [
+      "lead.read.team",
+      "lead.update.team",
+      "lead.export.team",
+      "lead.assign.team",
+      "customer.read",
+      "customer.create",
+      "customer.update",
+      "inquiry.create",
+      "inquiry.update",
+      "inquiry.assign",
+    ] as const) {
+      expect(can(manager, permission), permission).toBe(true);
+    }
+
+    for (const permission of ["lead.read.all", "lead.update.all", "lead.export.all", "lead.assign"] as const) {
+      expect(can(manager, permission), permission).toBe(false);
+    }
+  });
+
+  it("grants CRM Viewers only team lead read and scoped customer read", () => {
+    const viewer = principal("viewer", ["CRM_VIEWER"]);
+
+    expect(PERMISSIONS.filter((permission) => can(viewer, permission)).sort()).toEqual([
+      "customer.read",
+      "lead.read.team",
+    ]);
+  });
+
+  it("preserves self-assigned Sales access without team access or manual inquiry creation", () => {
+    const sales = principal("sales", ["SALES"]);
+
+    expect(can(sales, "customer.read")).toBe(true);
+    expect(can(sales, "customer.update")).toBe(true);
+    expect(can(sales, "inquiry.update")).toBe(true);
+    for (const permission of [
+      "lead.read.team",
+      "lead.update.team",
+      "lead.export.team",
+      "lead.assign.team",
+      "inquiry.create",
+      "inquiry.assign",
+    ] as const) {
+      expect(can(sales, permission), permission).toBe(false);
+    }
+  });
+
+  it("grants Admin the customer and inquiry management permissions", () => {
+    const admin = principal("admin", ["ADMIN"]);
+
+    for (const permission of [
+      "customer.read",
+      "customer.create",
+      "customer.update",
+      "customer.delete",
+      "inquiry.create",
+      "inquiry.update",
+      "inquiry.assign",
+    ] as const) {
+      expect(can(admin, permission), permission).toBe(true);
+    }
+  });
+
+  it.each(["PRODUCT_EDITOR", "CONTENT_EDITOR"] as const)("denies CRM permissions to %s", (role) => {
+    const editor = principal("editor", [role]);
+    const crmPermissions = PERMISSIONS.filter((permission) => /^(lead|customer|inquiry)\./.test(permission));
+
+    expect(crmPermissions.filter((permission) => can(editor, permission, {
+      assigneeId: editor.id,
+      assignmentActive: true,
+    }))).toEqual([]);
   });
 
   it("limits Support Agents to their currently assigned conversations", () => {
