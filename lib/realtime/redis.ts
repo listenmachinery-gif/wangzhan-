@@ -81,6 +81,24 @@ export async function subscribeRealtimeChannel(channel: string, handler: Realtim
   };
 }
 
+export async function setRealtimeValue(key: string, value: string, ttlSeconds: number) {
+  const config = getRealtimeConfig();
+  if (!config.enabled || !config.redisUrl) return false;
+  assertNamespacedChannel(key, config.namespace);
+  publisher ??= connection(config.redisUrl);
+  await (await connected(publisher)).set(key, value, "EX", ttlSeconds);
+  return true;
+}
+
+export async function removeRealtimeValue(key: string) {
+  const config = getRealtimeConfig();
+  if (!config.enabled || !config.redisUrl) return false;
+  assertNamespacedChannel(key, config.namespace);
+  publisher ??= connection(config.redisUrl);
+  await (await connected(publisher)).del(key);
+  return true;
+}
+
 export async function closeRealtimeConnections() {
   handlers.clear();
   const clients = [publisher, subscriber].filter((client): client is Redis => client !== null);
