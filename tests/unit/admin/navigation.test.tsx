@@ -46,6 +46,23 @@ describe("admin navigation", () => {
     expect(labels).not.toContain("用户与权限");
   });
 
+  it.each(["/admin/leads", "/admin/leads/lead-1", "/admin/inquiries", "/admin/inquiries/new"])(
+    "uses one inquiry navigation item for a team viewer at %s",
+    (currentPath) => {
+      const viewer: Principal = { ...admin, roles: ["CRM_VIEWER"] };
+      render(<AdminSidebar principal={viewer} currentPath={currentPath} collapsed={false} />);
+      const inquiries = screen.getByRole("link", { name: "询盘 CRM" });
+      expect(inquiries).toHaveAttribute("href", "/admin/inquiries");
+      expect(inquiries).toHaveAttribute("aria-current", "page");
+    },
+  );
+
+  it("labels the manual inquiry breadcrumbs and returns to the new list URL", () => {
+    render(<AdminBreadcrumbs currentPath="/admin/inquiries/new" />);
+    expect(screen.getByRole("link", { name: "询盘 CRM" })).toHaveAttribute("href", "/admin/inquiries");
+    expect(screen.getByText("新增询盘")).toHaveAttribute("aria-current", "page");
+  });
+
   it("shows the page center only to principals with page permission", () => {
     expect(getAdminNavigation(contentEditor).map((item) => item.label)).toContain("页面设计");
     expect(getAdminNavigation(productEditor).map((item) => item.label)).not.toContain("页面设计");

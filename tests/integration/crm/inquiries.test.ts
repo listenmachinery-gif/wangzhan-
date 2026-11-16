@@ -88,6 +88,24 @@ describe("manual inquiries and CRM scope", () => {
     const created = await service.createManual(manager, { ...input, assigneeId: sales.id, contact: { fullName: "Buyer", email: input.email } });
     expect(created.inquiry.recordOrigin).toBe("MANUAL");
   });
+  it("projects the linked product name only for inquiries in scope", async () => {
+    const category = await db.productCategory.create({ data: { name: "Shears", slug: "shears" } });
+    const product = await db.product.create({ data: { categoryId: category.id, name: "CNC Shear", slug: "cnc-shear", summary: "Sheet metal shear" } });
+    await db.lead.create({ data: {
+      ...input, sourceChannel: "PHONE", interestedProductId: product.id,
+      assignments: { create: { assigneeId: sales.id, assignedById: admin.id } },
+    } });
+
+    expect((await service.list(sales, {})).items).toEqual([
+      expect.objectContaining({ interestedProduct: { name: "CNC Shear" } }),
+    ]);
+    expect((await service.list(other, {})).items).toEqual([]);
+  });
+  it("lists all readable sales, and assignment options only for managed teams", async () => {
+    expect(await service.listAssignees(manager, "read")).toEqual([{ id: other.id, name: other.name }, { id: sales.id, name: sales.name }]);
+    expect(await service.listAssignees(manager, "assign")).toEqual([{ id: sales.id, name: sales.name }]);
+    await expect(service.listAssignees(viewer, "assign")).rejects.toBeInstanceOf(LeadPermissionError);
+  });
   it("filters scoped lists/details/exports and customer summaries after reassignment and expiry", async () => {
     const created = await service.createManual(admin, { ...input, country: "US", customerLevel: "A", contact: { fullName: "Buyer", email: input.email } });
     const id = created.inquiry.id;

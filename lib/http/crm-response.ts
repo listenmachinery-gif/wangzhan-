@@ -19,7 +19,8 @@ export function crmErrorResponse(error: unknown) {
   if (error instanceof LeadNotFoundError || error instanceof CustomerNotFoundError) return NextResponse.json({ code: "NOT_FOUND" }, { status: 404 });
   if (error instanceof CustomerDuplicateConfirmationError) return NextResponse.json({ code: "DUPLICATE_CONFIRMATION_REQUIRED", duplicateCandidates: error.duplicateCandidates }, { status: 409 });
   if (error instanceof LeadConflictError || error instanceof CustomerConflictError) return NextResponse.json({ code: "VERSION_CONFLICT", message: error.message }, { status: 409 });
-  if (error instanceof LeadValidationError || error instanceof CustomerValidationError || error instanceof ZodError || error instanceof SyntaxError) return NextResponse.json({ code: "INVALID_LEAD", message: error instanceof SyntaxError ? "Malformed JSON body." : error.message }, { status: 400 });
+  if (error instanceof SyntaxError) return NextResponse.json({ code: "INVALID_LEAD", message: "Malformed JSON body." }, { status: 400 });
+  if (error instanceof LeadValidationError || error instanceof CustomerValidationError || error instanceof ZodError) return NextResponse.json({ code: "INVALID_LEAD", message: error.message }, { status: 400 });
   console.error("CRM administration API error", error);
   return NextResponse.json({ code: "LEAD_OPERATION_FAILED" }, { status: 500 });
 }

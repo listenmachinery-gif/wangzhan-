@@ -14,6 +14,7 @@ export type NavigationItem = {
   href: string;
   label: string;
   icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+  aliases?: string[];
   permission?: Permission;
   anyPermission?: Permission[];
 };
@@ -34,7 +35,7 @@ const navigationGroups: NavigationGroup[] = [
   {
     label: "客户增长",
     items: [
-      { href: "/admin/leads", label: "询盘 CRM", icon: Users, anyPermission: ["lead.read.all", "lead.read.assigned"] },
+      { href: "/admin/inquiries", aliases: ["/admin/leads"], label: "询盘 CRM", icon: Users, anyPermission: ["lead.read.all", "lead.read.assigned", "lead.read.team"] },
       { href: "/admin/chat", label: "在线客服", icon: MessageSquareText, anyPermission: ["chat.read.all", "chat.read.assigned"] },
     ],
   },
@@ -64,8 +65,8 @@ function mayViewItem(principal: Principal, item: NavigationItem) {
     && (!item.anyPermission || item.anyPermission.some((permission) => can(principal, permission, {
       assigneeId: principal.id,
       assignmentActive: true,
-    chatAssigneeId: principal.id,
-    chatAssignmentActive: true,
+      chatAssigneeId: principal.id,
+      chatAssignmentActive: true,
     })));
 }
 
@@ -107,7 +108,9 @@ export function AdminSidebar({ principal, currentPath, collapsed, onNavigate }: 
             </h2>
             <div className="space-y-1">
               {group.items.map((item) => {
-                const active = item.href === "/admin" ? activePath === item.href : activePath.startsWith(item.href);
+                const active = [item.href, ...(item.aliases ?? [])].some((href) =>
+                  activePath === href || (href !== "/admin" && activePath.startsWith(`${href}/`)),
+                );
                 const Icon = item.icon;
                 return (
                   <Link

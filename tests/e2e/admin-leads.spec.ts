@@ -86,9 +86,10 @@ test("persists a public inquiry and completes the authorized CRM workflow", asyn
   await page.getByRole("link", { name: "询盘 CRM" }).click();
   await expect(page.getByRole("heading", { name: "询盘 CRM" })).toBeVisible();
   const row = page.getByRole("row", { name: /CRM Browser Buyer/ });
-  await expect(row).toContainText("NEW");
-  await row.getByRole("link", { name: "查看" }).click();
-  await page.getByLabel("负责人").selectOption({ label: `E2E Lead Sales · ${salesEmail}` });
+  await expect(row).toContainText("新询盘");
+  await row.getByRole("link", { name: /^INQ-/ }).click();
+  await expect(page).toHaveURL(/\/admin\/leads\/[^/]+$/);
+  await page.getByRole("combobox", { name: "负责人", exact: true }).selectOption({ label: `E2E Lead Sales · ${salesEmail}` });
   await expect(page.getByText("已保存")).toBeVisible();
 
   const salesContext = await browser.newContext();
@@ -96,8 +97,9 @@ test("persists a public inquiry and completes the authorized CRM workflow", asyn
   await login(salesPage, salesEmail, salesPassword);
   await salesPage.getByRole("link", { name: "询盘 CRM" }).click();
   await expect(salesPage.getByRole("row", { name: /CRM Browser Buyer/ })).toBeVisible();
-  await salesPage.getByRole("row", { name: /CRM Browser Buyer/ }).getByRole("link", { name: "查看" }).click();
-  await salesPage.getByLabel("状态").selectOption("CONTACTED");
+  await salesPage.getByRole("row", { name: /CRM Browser Buyer/ }).getByRole("link", { name: /^INQ-/ }).click();
+  await expect(salesPage).toHaveURL(/\/admin\/leads\/[^/]+$/);
+  await salesPage.getByRole("combobox", { name: "状态", exact: true }).selectOption("CONTACTED");
   await expect(salesPage.getByText("已保存")).toBeVisible();
   await salesPage.getByPlaceholder("添加不可修改的跟进备注").fill("Buyer confirmed voltage and delivery port.");
   await salesPage.getByRole("button", { name: "添加" }).click();

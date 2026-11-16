@@ -190,6 +190,26 @@ export class LeadService {
     });
   }
 
+  async listAssignees(principal: Principal, mode: "read" | "assign") {
+    if (mode === "read") assertReadPermission(principal);
+    else if (!can(principal, "lead.assign") && !can(principal, "lead.assign.team")) throw new LeadPermissionError();
+
+    const scope = mode === "assign" && can(principal, "lead.assign")
+      ? { kind: "ALL" as const }
+      : await resolveCrmAccessScope(this.database, mode === "assign" ? { ...principal, roles: ["SALES_MANAGER"] } : principal);
+    if (scope.kind === "NONE") return [];
+
+    return this.database.user.findMany({
+      where: {
+        isActive: true,
+        roles: { some: { role: { key: "SALES" } } },
+        id: scope.kind === "ASSIGNEES" ? { in: scope.assigneeIds } : undefined,
+      },
+      select: { id: true, name: true },
+      orderBy: [{ name: "asc" }, { id: "asc" }],
+    });
+  }
+
   async list(principal: Principal, rawQuery: unknown) {
     assertReadPermission(principal);
     const query = inquiryListQuerySchema.parse(rawQuery);
@@ -198,7 +218,7 @@ export class LeadService {
       const [items, total] = await Promise.all([
         transaction.lead.findMany({
           where,
-          include: { stage: true, assignments: { where: { endedAt: null }, include: { assignee: { select: { id: true, name: true, email: true } } } } },
+          include: { interestedProduct: { select: { name: true } }, stage: true, assignments: { where: { endedAt: null }, include: { assignee: { select: { id: true, name: true, email: true } } } } },
           orderBy: [{ createdAt: "desc" }, { id: "desc" }], skip: (query.page - 1) * query.pageSize, take: query.pageSize,
         }),
         transaction.lead.count({ where }),
