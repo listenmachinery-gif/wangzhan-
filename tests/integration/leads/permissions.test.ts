@@ -8,6 +8,7 @@ import {
   LeadPermissionError,
   LeadService,
 } from "@/lib/services/lead-service";
+import { seedCrmStages } from "@/prisma/seed-crm";
 
 describe("LeadService CRM permissions and workflow", () => {
   let admin: Principal;
@@ -19,6 +20,7 @@ describe("LeadService CRM permissions and workflow", () => {
 
   beforeEach(async () => {
     await resetTestDatabase();
+    await seedCrmStages(db);
     const [adminUser, firstSalesUser, secondSalesUser, editorUser] = await Promise.all([
       db.user.create({ data: { email: "crm-admin@zyron.test", name: "CRM Admin", passwordHash: "test" } }),
       db.user.create({ data: { email: "sales-one@zyron.test", name: "Sales One", passwordHash: "test" } }),
@@ -83,7 +85,12 @@ describe("LeadService CRM permissions and workflow", () => {
     }
 
     const reopened = await service.update(admin, leadId, { version, status: "NEW" });
-    expect(reopened.status).toBe("NEW");
+    expect(reopened).toMatchObject({
+      status: "NEW",
+      stageId: "crm_stage_new_inquiry",
+      preSpamStageId: null,
+      version: 8,
+    });
     expect(reopened.nextFollowUpAt).toEqual(new Date("2026-12-01T09:00:00.000Z"));
     await expect(service.update(admin, leadId, { version, status: "QUOTED" })).rejects.toBeInstanceOf(LeadConflictError);
     await expect(db.auditLog.count({ where: { entityId: leadId, action: "lead.update" } })).resolves.toBe(7);
@@ -104,6 +111,84 @@ describe("LeadService CRM permissions and workflow", () => {
     await expect(db.leadActivity.findUniqueOrThrow({ where: { id: activity.id } })).resolves.toMatchObject({
       content: "Customer confirmed three-phase voltage.",
     });
+  });
+
+  it("keeps legacy follow-up changes separate from stage transitions", async () => {
+    const status = await service.update(admin, leadId, {
+      version: 1,
+      status: "CONTACTED",
+      nextFollowUpAt: "2026-12-01T09:00:00.000Z",
+    });
+    const cleared = await service.update(admin, leadId, { version: status.version, nextFollowUpAt: "" });
+
+    expect(cleared).toMatchObject({
+      status: "CONTACTED",
+      stageId: "crm_stage_contacted",
+      nextFollowUpAt: null,
+      version: 3,
+    });
+    await expect(db.leadStageHistory.count({ where: { leadId } })).resolves.toBe(1);
+    await expect(db.auditLog.count({ where: { entityId: leadId, action: "lead.update" } })).resolves.toBe(2);
+    await expect(db.auditLog.findFirst({
+      where: { entityId: leadId, action: "lead.update", after: { path: ["version"], equals: 2 } },
+    })).resolves.toMatchObject({
+      before: { nextFollowUpAt: null },
+      after: { nextFollowUpAt: "2026-12-01T09:00:00.000Z" },
+    });
+  });
+
+  it("keeps the legacy update payload strict", async () => {
+    await expect(service.update(admin, leadId, { version: 1, status: "CONTACTED", stageCode: "REQUIREMENT_CONFIRMED" }))
+      .rejects.toMatchObject({ issues: [expect.objectContaining({ code: "unrecognized_keys" })] });
+    await expect(db.lead.findUniqueOrThrow({ where: { id: leadId } })).resolves.toMatchObject({ version: 1 });
+  });
+
+  it("allows assigned Sales to advance stages and restricts them from rolling back", async () => {
+    const assigned = await service.assign(admin, leadId, { version: 1, assigneeId: salesOne.id });
+    const advanced = await service.updateStage(salesOne, leadId, {
+      version: assigned.version,
+      stageCode: "AWAITING_DECISION",
+    });
+
+    await expect(service.updateStage(salesTwo, leadId, { version: advanced.version, stageCode: "ORDER_CONFIRMED" }))
+      .rejects.toBeInstanceOf(LeadPermissionError);
+    await expect(service.updateStage(salesOne, leadId, { version: advanced.version, stageCode: "NEGOTIATION" }))
+      .rejects.toBeInstanceOf(LeadPermissionError);
+    await expect(service.update(salesOne, leadId, { version: advanced.version, status: "CONTACTED" }))
+      .rejects.toBeInstanceOf(LeadPermissionError);
+    await expect(db.lead.findUniqueOrThrow({ where: { id: leadId } })).resolves.toMatchObject({
+      stageId: "crm_stage_awaiting_decision",
+      version: advanced.version,
+    });
+    await expect(db.leadStageHistory.count({ where: { leadId } })).resolves.toBe(1);
+  });
+
+  it("allows managers to roll back only within a currently managed team", async () => {
+    const manager: Principal = { ...productEditor, roles: ["SALES_MANAGER", "CRM_VIEWER"] };
+    const assigned = await service.assign(admin, leadId, { version: 1, assigneeId: salesOne.id });
+    const advanced = await service.update(admin, leadId, { version: assigned.version, status: "QUOTED" });
+    const team = await db.crmTeam.create({ data: { name: "Stage permissions team" } });
+    await db.crmTeamMembership.createMany({ data: [
+      { teamId: team.id, userId: manager.id, role: "VIEWER" },
+      { teamId: team.id, userId: salesOne.id },
+    ] });
+
+    await expect(service.updateStage(manager, leadId, { version: advanced.version, stageCode: "CONTACTED" }))
+      .rejects.toBeInstanceOf(LeadPermissionError);
+    await db.crmTeamMembership.create({
+      data: { teamId: team.id, userId: manager.id, role: "MANAGER" },
+    });
+
+    await expect(service.updateStage(manager, leadId, {
+      version: advanced.version,
+      stageCode: "REQUIREMENT_CONFIRMED",
+    })).resolves.toMatchObject({
+      status: "CONTACTED",
+      stageId: "crm_stage_requirement_confirmed",
+      version: advanced.version + 1,
+    });
+    await expect(service.update(manager, leadId, { version: advanced.version + 1, status: "NEW" }))
+      .resolves.toMatchObject({ status: "NEW", stageId: "crm_stage_new_inquiry" });
   });
 
   it("filters assigned leads and exports only authorized rows with formula-safe CSV cells", async () => {

@@ -3,43 +3,32 @@ import "server-only";
 import { Prisma, type PrismaClient } from "@prisma/client";
 
 import { can, type Principal } from "@/lib/auth/permissions";
+import { stageToLegacyStatus } from "@/lib/crm/stages";
 import { db } from "@/lib/db/client";
+import {
+  LeadConflictError,
+  LeadNotFoundError,
+  LeadPermissionError,
+  LeadValidationError,
+  transitionLeadStage,
+  type LeadStageChange,
+} from "@/lib/services/crm-stage-service";
 import {
   escapeInquirySpreadsheetCell,
   leadActivitySchema,
   leadAssignmentSchema,
   leadListQuerySchema,
+  leadStageUpdateSchema,
   leadUpdateSchema,
   type LeadListQuery,
 } from "@/lib/validation/inquiries";
 
-export class LeadPermissionError extends Error {
-  constructor() {
-    super("Permission denied for this lead.");
-    this.name = "LeadPermissionError";
-  }
-}
-
-export class LeadNotFoundError extends Error {
-  constructor() {
-    super("Lead was not found.");
-    this.name = "LeadNotFoundError";
-  }
-}
-
-export class LeadConflictError extends Error {
-  constructor() {
-    super("The lead has changed. Reload before saving.");
-    this.name = "LeadConflictError";
-  }
-}
-
-export class LeadValidationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "LeadValidationError";
-  }
-}
+export {
+  LeadConflictError,
+  LeadNotFoundError,
+  LeadPermissionError,
+  LeadValidationError,
+};
 
 const leadDetailInclude = {
   interestedProduct: { select: { id: true, name: true, slug: true } },
@@ -81,6 +70,30 @@ function assertUpdate(principal: Principal, assignment: { assigneeId: string; en
     assignmentActive: assignment?.endedAt === null,
   })) return;
   throw new LeadPermissionError();
+}
+
+async function authorizeStageUpdate(
+  transaction: Prisma.TransactionClient,
+  principal: Principal,
+  assignment: { assigneeId: string; endedAt: Date | null } | null,
+): Promise<boolean> {
+  if (can(principal, "lead.update.all")) return true;
+  if (assignment && can(principal, "lead.update.team")) {
+    const now = new Date();
+    const activeMembership = { startsAt: { lte: now }, OR: [{ endsAt: null }, { endsAt: { gt: now } }] };
+    const managedTeam = await transaction.crmTeam.findFirst({
+      where: {
+        AND: [
+          { memberships: { some: { ...activeMembership, userId: principal.id, role: "MANAGER" } } },
+          { memberships: { some: { ...activeMembership, userId: assignment.assigneeId } } },
+        ],
+      },
+      select: { id: true },
+    });
+    if (managedTeam) return true;
+  }
+  assertUpdate(principal, assignment);
+  return false;
 }
 
 function queryWhere(principal: Principal, query: LeadListQuery): Prisma.LeadWhereInput {
@@ -213,36 +226,25 @@ export class LeadService {
 
   async update(principal: Principal, leadId: string, rawInput: unknown) {
     const input = leadUpdateSchema.parse(rawInput);
+    if (input.status !== undefined) {
+      return this.applyStageChange(principal, {
+        leadId,
+        expectedVersion: input.version,
+        legacyStatus: input.status,
+        nextFollowUpAt: input.nextFollowUpAt,
+        source: "LEGACY_API",
+      });
+    }
     return runLeadSerializable(this.database, async (transaction) => {
       const lead = await transaction.lead.findUnique({ where: { id: leadId }, include: { assignments: true } });
       if (!lead) throw new LeadNotFoundError();
-      const assignment = currentAssignment(lead);
-      assertUpdate(principal, assignment);
-      const assignedOnly = !can(principal, "lead.update.all");
-      if (assignedOnly && ["WON", "LOST", "SPAM"].includes(lead.status) && input.status && input.status !== lead.status) {
-        throw new LeadPermissionError();
-      }
+      assertUpdate(principal, currentAssignment(lead));
       const updatedCount = await transaction.lead.updateMany({
         where: { id: leadId, version: input.version },
-        data: {
-          status: input.status,
-          nextFollowUpAt: input.nextFollowUpAt,
-          version: { increment: 1 },
-        },
+        data: { nextFollowUpAt: input.nextFollowUpAt, version: { increment: 1 } },
       });
       if (updatedCount.count !== 1) throw new LeadConflictError();
       const updated = await transaction.lead.findUniqueOrThrow({ where: { id: leadId } });
-      if (input.status && input.status !== lead.status) {
-        await transaction.leadActivity.create({
-          data: {
-            leadId,
-            actorId: principal.id,
-            type: "STATUS_CHANGE",
-            content: `Status changed from ${lead.status} to ${input.status}.`,
-            metadata: { from: lead.status, to: input.status },
-          },
-        });
-      }
       await transaction.auditLog.create({
         data: {
           actorId: principal.id,
@@ -254,6 +256,35 @@ export class LeadService {
         },
       });
       return updated;
+    });
+  }
+
+  async updateStage(principal: Principal, leadId: string, rawInput: unknown) {
+    const { version, ...input } = leadStageUpdateSchema.parse(rawInput);
+    return this.applyStageChange(principal, {
+      ...input,
+      leadId,
+      expectedVersion: version,
+      source: "CRM_API",
+    });
+  }
+
+  private async applyStageChange(principal: Principal, input: LeadStageChange) {
+    return runLeadSerializable(this.database, async (transaction) => {
+      const lead = await transaction.lead.findUnique({
+        where: { id: input.leadId },
+        select: { status: true, version: true, assignments: { where: { endedAt: null } } },
+      });
+      if (!lead) throw new LeadNotFoundError();
+
+      const allowRollback = await authorizeStageUpdate(transaction, principal, currentAssignment(lead));
+      const status = input.source === "CRM_API" ? stageToLegacyStatus(input.stageCode) : input.legacyStatus;
+      if (!allowRollback && ["WON", "LOST", "SPAM"].includes(lead.status) && status !== lead.status) {
+        throw new LeadPermissionError();
+      }
+      if (lead.version !== input.expectedVersion) throw new LeadConflictError();
+
+      return transitionLeadStage(transaction, { ...input, actorId: principal.id, allowRollback });
     });
   }
 

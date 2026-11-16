@@ -1,3 +1,5 @@
+import { execFileSync } from "node:child_process";
+
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import { hash } from "argon2";
@@ -18,11 +20,20 @@ function database() {
   return new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 }
 
+async function removeTestInquiry(db: PrismaClient) {
+  const leads = await db.lead.findMany({ where: { email: buyerEmail }, select: { id: true } });
+  const leadIds = leads.map(({ id }) => id);
+  await db.$transaction([
+    db.leadStageHistory.deleteMany({ where: { leadId: { in: leadIds } } }),
+    db.auditLog.deleteMany({ where: { entityType: "Lead", entityId: { in: leadIds } } }),
+    db.lead.deleteMany({ where: { id: { in: leadIds } } }),
+  ]);
+}
+
 test.beforeAll(async () => {
   const db = database();
-  const oldLeads = await db.lead.findMany({ where: { email: buyerEmail }, select: { id: true } });
-  await db.auditLog.deleteMany({ where: { entityType: "Lead", entityId: { in: oldLeads.map(({ id }) => id) } } });
-  await db.lead.deleteMany({ where: { id: { in: oldLeads.map(({ id }) => id) } } });
+  await removeTestInquiry(db);
+  execFileSync("npm", ["run", "db:seed:crm"]);
   const [adminRole, salesRole] = await Promise.all([
     db.role.upsert({ where: { key: "ADMIN" }, update: {}, create: { key: "ADMIN", name: "Admin" } }),
     db.role.upsert({ where: { key: "SALES" }, update: {}, create: { key: "SALES", name: "Sales" } }),
@@ -40,9 +51,7 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
   const db = database();
-  const leads = await db.lead.findMany({ where: { email: buyerEmail }, select: { id: true } });
-  await db.auditLog.deleteMany({ where: { entityType: "Lead", entityId: { in: leads.map(({ id }) => id) } } });
-  await db.lead.deleteMany({ where: { id: { in: leads.map(({ id }) => id) } } });
+  await removeTestInquiry(db);
   await db.$disconnect();
 });
 

@@ -5,6 +5,7 @@ import {
   SMALL_ELECTRIC_SHEAR_MATERIALS,
   recommendSmallElectricShear,
 } from "@/data/small-electric-shear-selector";
+import { DEFAULT_CRM_STAGES } from "@/lib/crm/stages";
 
 export const MAX_INQUIRY_BODY_BYTES = 16_384;
 
@@ -204,6 +205,13 @@ export const leadUpdateSchema = z.object({
   (input) => input.status !== undefined || input.nextFollowUpAt !== undefined,
   "At least one lead field must be updated.",
 );
+
+export const leadStageUpdateSchema = z.object({
+  version: z.coerce.number().int().positive(),
+  stageCode: z.enum(DEFAULT_CRM_STAGES),
+  reasonCode: optionalText(200),
+  reasonNote: optionalText(5_000),
+}).strict();
 
 export const leadAssignmentSchema = z.object({
   version: z.coerce.number().int().positive(),
