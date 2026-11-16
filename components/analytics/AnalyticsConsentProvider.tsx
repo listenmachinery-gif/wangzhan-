@@ -8,10 +8,17 @@ import { ContactClickTracker } from "@/components/analytics/ContactClickTracker"
 import {
   ANALYTICS_CONSENT_CHANGE_EVENT,
   ANALYTICS_PREFERENCES_EVENT,
+  ANALYTICS_TAG_READY_EVENT,
   readAnalyticsConsent,
   writeAnalyticsConsent,
   type AnalyticsConsent,
 } from "@/lib/analytics/consent";
+
+declare global {
+  interface Window {
+    dataLayer?: unknown[];
+  }
+}
 
 export function AnalyticsConsentProvider({ children }: { children?: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
@@ -48,7 +55,18 @@ export function AnalyticsConsentProvider({ children }: { children?: ReactNode })
     if (!measurementId || !consent) return;
     const disableKey = `ga-disable-${measurementId}`;
     (window as unknown as Record<string, unknown>)[disableKey] = consent !== "accepted";
-    if (consent === "rejected") clearGoogleAnalyticsCookies();
+    if (consent === "rejected") {
+      clearGoogleAnalyticsCookies();
+      return;
+    }
+
+    window.dataLayer = window.dataLayer ?? [];
+    window.gtag = window.gtag ?? function gtag(...args: unknown[]) {
+      window.dataLayer?.push(args);
+    };
+    window.gtag("js", new Date());
+    window.gtag("config", measurementId, { send_page_view: false });
+    window.dispatchEvent(new Event(ANALYTICS_TAG_READY_EVENT));
   }, [consent, measurementId]);
 
   function choose(value: AnalyticsConsent) {

@@ -65,6 +65,10 @@ export function trackAnalyticsEvent<K extends AnalyticsEventName>(
   if (typeof window === "undefined" || readAnalyticsConsent() !== "accepted" || typeof window.gtag !== "function") {
     return false;
   }
+  const measurementId = process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID?.trim();
+  if (measurementId && (window as unknown as Record<string, unknown>)[`ga-disable-${measurementId}`] === true) {
+    return false;
+  }
   const sanitized = safeParams(name, params);
   if (!sanitized) return false;
   window.gtag("event", name, sanitized);

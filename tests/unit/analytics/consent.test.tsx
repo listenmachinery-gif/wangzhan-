@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -36,6 +36,8 @@ describe("AnalyticsConsentProvider", () => {
     clearConsent();
     process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID = "G-TEST123";
     mocks.googleAnalytics.mockClear();
+    delete window.gtag;
+    delete window.dataLayer;
     document.cookie = "_ga=GA1.1.123.456; Path=/";
     document.cookie = "_ga_TEST123=GS1.1.123.1.0.0.0.0; Path=/";
   });
@@ -44,6 +46,8 @@ describe("AnalyticsConsentProvider", () => {
     cleanup();
     clearConsent();
     delete process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID;
+    delete window.gtag;
+    delete window.dataLayer;
     delete (window as unknown as Record<string, unknown>)["ga-disable-G-TEST123"];
   });
 
@@ -78,6 +82,18 @@ describe("AnalyticsConsentProvider", () => {
     render(<AnalyticsConsentProvider><p>Website again</p></AnalyticsConsentProvider>);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.getByTestId("google-analytics")).toBeInTheDocument();
+  });
+
+  it("initializes the GA command queue immediately after consent is accepted", async () => {
+    const user = userEvent.setup();
+    render(<AnalyticsConsentProvider><p>Website</p></AnalyticsConsentProvider>);
+
+    await user.click(screen.getByRole("button", { name: "Accept analytics" }));
+
+    await waitFor(() => expect(typeof window.gtag).toBe("function"));
+    expect(window.dataLayer).toEqual(expect.arrayContaining([
+      ["config", "G-TEST123", { send_page_view: false }],
+    ]));
   });
 
   it("keeps Google absent when the public Measurement ID is missing", async () => {

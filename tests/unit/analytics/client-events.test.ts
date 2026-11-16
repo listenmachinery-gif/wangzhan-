@@ -35,12 +35,16 @@ describe("client analytics events", () => {
     clearConsent();
     route.pathname = "/products";
     route.search = "";
+    process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID = "G-TEST123";
+    delete (window as unknown as Record<string, unknown>)["ga-disable-G-TEST123"];
     window.gtag = vi.fn();
   });
 
   afterEach(() => {
     cleanup();
     clearConsent();
+    delete process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID;
+    delete (window as unknown as Record<string, unknown>)["ga-disable-G-TEST123"];
     delete window.gtag;
   });
 
@@ -67,6 +71,18 @@ describe("client analytics events", () => {
       product_name: "Small Electric Shearing Machine",
       product_category: "Shearing Machine",
     })).toBe(true);
+  });
+
+  it("does not report an event as sent until Google collection is re-enabled", () => {
+    writeAnalyticsConsent("accepted");
+    (window as unknown as Record<string, unknown>)["ga-disable-G-TEST123"] = true;
+
+    expect(trackAnalyticsEvent("inquiry_start", { form_id: "contact" })).toBe(false);
+    expect(window.gtag).not.toHaveBeenCalled();
+
+    (window as unknown as Record<string, unknown>)["ga-disable-G-TEST123"] = false;
+    expect(trackAnalyticsEvent("inquiry_start", { form_id: "contact" })).toBe(true);
+    expect(window.gtag).toHaveBeenCalledTimes(1);
   });
 
   it.each(["email", "phone", "message", "lead_id", "session_id"])("rejects the unsafe runtime key %s", (key) => {
