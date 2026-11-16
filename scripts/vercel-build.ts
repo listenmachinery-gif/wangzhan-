@@ -12,6 +12,7 @@ function run(command: string, args: string[]) {
 if (shouldRunProductionMigrations(process.env)) {
   console.log("Approved one-time Production migration gate is active.");
   run("npx", ["prisma", "migrate", "deploy"]);
+  run("npx", ["tsx", "prisma/seed-crm.ts"]);
   run("npx", ["tsx", "prisma/seed-rbac.ts"]);
 }
 

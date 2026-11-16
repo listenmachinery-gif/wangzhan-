@@ -30,6 +30,10 @@ export async function resetTestDatabase() {
     db.leadNotificationAttempt.deleteMany(),
     db.leadActivity.deleteMany(),
     db.leadAssignment.deleteMany(),
+    db.leadStageHistory.deleteMany(),
+    db.crmTeamMembership.deleteMany(),
+    db.contact.deleteMany(),
+    db.company.deleteMany(),
     db.lead.deleteMany(),
     db.seoRecord.deleteMany(),
     db.banner.deleteMany(),
@@ -51,5 +55,7 @@ export async function resetTestDatabase() {
     db.permission.deleteMany(),
     db.role.deleteMany(),
     db.user.deleteMany(),
+    db.crmStage.deleteMany(),
+    db.crmTeam.deleteMany(),
   ]);
 }

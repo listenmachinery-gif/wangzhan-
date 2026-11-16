@@ -55,6 +55,44 @@ enum LeadStatus {
   SPAM
 }
 
+enum CrmRecordOrigin {
+  WEBSITE_FORM
+  MANUAL
+  INTEGRATION
+}
+
+enum CrmSourceChannel {
+  WEBSITE
+  EMAIL
+  WHATSAPP
+  PHONE
+  FACEBOOK
+  LINKEDIN
+  TRADE_SHOW
+  REFERRAL
+  OTHER
+}
+
+enum CustomerLevel {
+  A
+  B
+  C
+  D
+}
+
+enum CrmTeamMembershipRole {
+  MEMBER
+  MANAGER
+  VIEWER
+}
+
+enum CrmStageTransitionSource {
+  SYSTEM
+  LEGACY_API
+  CRM_API
+  BACKFILL
+}
+
 enum LeadActivityType {
   NOTE
   STATUS_CHANGE
@@ -106,26 +144,40 @@ enum ChatMessageType {
 }
 
 model User {
-  id                   String           @id @default(cuid())
-  email                String           @unique
+  id                   String              @id @default(cuid())
+  email                String              @unique
   name                 String
   passwordHash         String
-  isActive             Boolean          @default(true)
-  twoFactorEnabled     Boolean          @default(false)
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
+  isActive             Boolean             @default(true)
+  twoFactorEnabled     Boolean             @default(false)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
   roles                UserRole[]
   sessions             Session[]
   loginAttempts        LoginAttempt[]
-  auditLogs            AuditLog[]       @relation("AuditActor")
-  uploadedMedia        MediaAsset[]     @relation("MediaUploader")
-  leadActivities       LeadActivity[]   @relation("LeadActivityActor")
-  assignedLeads        LeadAssignment[] @relation("LeadAssignee")
-  leadAssignmentsMade  LeadAssignment[] @relation("LeadAssignedBy")
-  authoredPageVersions PageVersion[]    @relation("PageVersionAuthor")
-  sentChatMessages     ChatMessage[]    @relation("ChatMessageSender")
-  chatAssignments      ChatAssignment[] @relation("ChatAssignee")
-  chatAssignmentsMade  ChatAssignment[] @relation("ChatAssignedBy")
+  auditLogs            AuditLog[]          @relation("AuditActor")
+  uploadedMedia        MediaAsset[]        @relation("MediaUploader")
+  leadActivities       LeadActivity[]      @relation("LeadActivityActor")
+  assignedLeads        LeadAssignment[]    @relation("LeadAssignee")
+  leadAssignmentsMade  LeadAssignment[]    @relation("LeadAssignedBy")
+  authoredPageVersions PageVersion[]       @relation("PageVersionAuthor")
+  sentChatMessages     ChatMessage[]       @relation("ChatMessageSender")
+  chatAssignments      ChatAssignment[]    @relation("ChatAssignee")
+  chatAssignmentsMade  ChatAssignment[]    @relation("ChatAssignedBy")
+  ownedCompanies       Company[]           @relation("CompanyOwner")
+  createdCompanies     Company[]           @relation("CompanyCreator")
+  updatedCompanies     Company[]           @relation("CompanyUpdater")
+  ownedContacts        Contact[]           @relation("ContactOwner")
+  createdContacts      Contact[]           @relation("ContactCreator")
+  updatedContacts      Contact[]           @relation("ContactUpdater")
+  createdLeads         Lead[]              @relation("LeadCreator")
+  updatedLeads         Lead[]              @relation("LeadUpdater")
+  leadStageChanges     LeadStageHistory[]  @relation("LeadStageHistoryActor")
+  createdCrmTeams      CrmTeam[]           @relation("CrmTeamCreator")
+  updatedCrmTeams      CrmTeam[]           @relation("CrmTeamUpdater")
+  crmMemberships       CrmTeamMembership[] @relation("CrmTeamMember")
+  createdMemberships   CrmTeamMembership[] @relation("CrmTeamMembershipCreator")
+  updatedMemberships   CrmTeamMembership[] @relation("CrmTeamMembershipUpdater")
 }
 
 model Role {
@@ -407,6 +459,142 @@ model Banner {
   @@index([status, enabled, startsAt, endsAt, position])
 }
 
+model Company {
+  id             String    @id @default(cuid())
+  companyCode    String    @unique
+  name           String
+  normalizedName String
+  website        String?
+  industry       String?
+  companySize    String?
+  countryCode    String?
+  state          String?
+  city           String?
+  postalCode     String?
+  address        String?
+  ownerId        String?
+  createdById    String?
+  updatedById    String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  version        Int       @default(1)
+  owner          User?     @relation("CompanyOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  createdBy      User?     @relation("CompanyCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy      User?     @relation("CompanyUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  contacts       Contact[]
+  leads          Lead[]
+
+  @@index([normalizedName, countryCode])
+  @@index([ownerId])
+  @@index([createdById])
+  @@index([updatedById])
+}
+
+model Contact {
+  id                     String         @id @default(cuid())
+  customerCode           String         @unique
+  companyId              String?
+  fullName               String
+  firstName              String?
+  lastName               String?
+  jobTitle               String?
+  department             String?
+  email                  String?
+  normalizedEmail        String?
+  phone                  String?
+  phoneE164              String?
+  whatsapp               String?
+  whatsappE164           String?
+  countryCode            String?
+  state                  String?
+  city                   String?
+  timezone               String?
+  preferredLanguage      String?
+  preferredContactMethod String?
+  preferredContactTime   String?
+  customerLevel          CustomerLevel?
+  customerStatus         String?
+  ownerId                String?
+  internalNotes          String?
+  firstInquiryAt         DateTime?
+  lastInquiryAt          DateTime?
+  lastFollowUpAt         DateTime?
+  nextFollowUpAt         DateTime?
+  createdById            String?
+  updatedById            String?
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+  version                Int            @default(1)
+  company                Company?       @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  owner                  User?          @relation("ContactOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  createdBy              User?          @relation("ContactCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy              User?          @relation("ContactUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  leads                  Lead[]
+
+  @@index([companyId])
+  @@index([ownerId])
+  @@index([createdById])
+  @@index([updatedById])
+  @@index([normalizedEmail])
+  @@index([phoneE164])
+  @@index([whatsappE164])
+}
+
+model CrmStage {
+  id             String             @id @default(cuid())
+  code           String             @unique
+  name           String
+  position       Int
+  color          String
+  isActive       Boolean            @default(true)
+  isTerminal     Boolean            @default(false)
+  requiresReason Boolean            @default(false)
+  leads          Lead[]             @relation("LeadCurrentStage")
+  spamLeads      Lead[]             @relation("LeadPreSpamStage")
+  transitionsOut LeadStageHistory[] @relation("LeadPreviousStage")
+  transitionsIn  LeadStageHistory[] @relation("LeadNewStage")
+
+  @@index([isActive, position])
+}
+
+model CrmTeam {
+  id          String              @id @default(cuid())
+  name        String
+  description String?
+  createdById String?
+  updatedById String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  createdBy   User?               @relation("CrmTeamCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy   User?               @relation("CrmTeamUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  memberships CrmTeamMembership[]
+
+  @@index([createdById])
+  @@index([updatedById])
+}
+
+model CrmTeamMembership {
+  id          String                @id @default(cuid())
+  teamId      String
+  userId      String
+  role        CrmTeamMembershipRole @default(MEMBER)
+  startsAt    DateTime              @default(now())
+  endsAt      DateTime?
+  createdById String?
+  updatedById String?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  team        CrmTeam               @relation(fields: [teamId], references: [id], onDelete: Restrict)
+  user        User                  @relation("CrmTeamMember", fields: [userId], references: [id], onDelete: Restrict)
+  createdBy   User?                 @relation("CrmTeamMembershipCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy   User?                 @relation("CrmTeamMembershipUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([teamId, startsAt, endsAt])
+  @@index([userId, role, startsAt, endsAt])
+  @@index([createdById])
+  @@index([updatedById])
+}
+
 model Lead {
   id                   String                    @id @default(cuid())
   name                 String?
@@ -427,6 +615,28 @@ model Lead {
   status               LeadStatus                @default(NEW)
   duplicateOfId        String?
   nextFollowUpAt       DateTime?
+  inquiryNumber        String?                   @unique
+  recordOrigin         CrmRecordOrigin?
+  sourceChannel        CrmSourceChannel?
+  companyId            String?
+  contactId            String?
+  stageId              String?
+  preSpamStageId       String?
+  customerLevel        CustomerLevel?
+  intentScore          Int?
+  estimatedDealAmount  Decimal?                  @db.Decimal(19, 4)
+  estimatedCurrency    String?
+  estimatedCloseDate   DateTime?
+  lastFollowUpAt       DateTime?
+  lastResultCode       String?
+  lostReasonCode       String?
+  lostReasonNote       String?
+  wonOrderNumber       String?
+  wonAmount            Decimal?                  @db.Decimal(19, 4)
+  wonCurrency          String?
+  attributionSnapshot  Json?
+  createdById          String?
+  updatedById          String?
   version              Int                       @default(1)
   createdAt            DateTime                  @default(now())
   updatedAt            DateTime                  @updatedAt
@@ -438,10 +648,46 @@ model Lead {
   notificationAttempts LeadNotificationAttempt[]
   analyticsVisitors    AnalyticsVisitor[]
   chatConversations    ChatConversation[]
+  crmCompany           Company?                  @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  contact              Contact?                  @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  stage                CrmStage?                 @relation("LeadCurrentStage", fields: [stageId], references: [id], onDelete: SetNull)
+  preSpamStage         CrmStage?                 @relation("LeadPreSpamStage", fields: [preSpamStageId], references: [id], onDelete: SetNull)
+  createdBy            User?                     @relation("LeadCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy            User?                     @relation("LeadUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  stageHistory         LeadStageHistory[]
 
   @@index([status, createdAt])
   @@index([email, createdAt])
   @@index([interestedProductId, createdAt])
+  @@index([companyId, createdAt])
+  @@index([contactId, createdAt])
+  @@index([stageId, createdAt])
+  @@index([preSpamStageId])
+  @@index([createdById])
+  @@index([updatedById])
+}
+
+model LeadStageHistory {
+  id              String                   @id @default(cuid())
+  leadId          String
+  previousStageId String?
+  newStageId      String
+  previousStatus  LeadStatus?
+  newStatus       LeadStatus
+  actorId         String?
+  reasonCode      String?
+  reasonNote      String?
+  source          CrmStageTransitionSource
+  createdAt       DateTime                 @default(now())
+  lead            Lead                     @relation(fields: [leadId], references: [id], onDelete: Restrict)
+  previousStage   CrmStage?                @relation("LeadPreviousStage", fields: [previousStageId], references: [id], onDelete: Restrict)
+  newStage        CrmStage                 @relation("LeadNewStage", fields: [newStageId], references: [id], onDelete: Restrict)
+  actor           User?                    @relation("LeadStageHistoryActor", fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([leadId, createdAt])
+  @@index([previousStageId])
+  @@index([newStageId])
+  @@index([actorId])
 }
 
 model LeadActivity {
