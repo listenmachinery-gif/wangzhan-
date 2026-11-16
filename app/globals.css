@@ -8,6 +8,10 @@
   --brand-black: #0b0d10;
   --brand-green: #76b900;
   --brand-green-hover: #8ddb00;
+  --admin-ink: #14171a;
+  --admin-muted: #646b73;
+  --admin-border: #e3e6e8;
+  --admin-canvas: #f4f5f6;
 }
 
 * {
@@ -63,4 +67,21 @@ img {
 
 .mobile-nav summary::-webkit-details-marker {
   display: none;
+}
+
+@layer components {
+  .admin-focus {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-ignition focus-visible:ring-offset-2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
