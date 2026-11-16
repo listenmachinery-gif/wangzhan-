@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { ConsentAwareGoogleAnalytics } from "@/components/analytics/ConsentAwareGoogleAnalytics";
 import { RoutePageView } from "@/components/analytics/RoutePageView";
@@ -82,7 +82,9 @@ export function AnalyticsConsentProvider({ children }: { children?: ReactNode })
     <>
       {children}
       <ContactClickTracker />
-      <FirstPartyAnalyticsTracker enabled={consent === "accepted"} />
+      <Suspense fallback={null}>
+        <FirstPartyAnalyticsTracker enabled={consent === "accepted"} />
+      </Suspense>
       {hydrated && preferencesOpen ? (
         <section
           role="dialog"
