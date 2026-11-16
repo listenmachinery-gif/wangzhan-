@@ -90,6 +90,35 @@ async function authorizeStageUpdate(
   return false;
 }
 
+/** Current-owner authorization is independent of destination user eligibility. */
+async function resolveAssignmentScope(
+  transaction: Prisma.TransactionClient,
+  principal: Principal,
+  assignment: { assigneeId: string; endedAt: Date | null } | null,
+) {
+  if (can(principal, "lead.assign")) return { kind: "ALL" as const };
+  if (!can(principal, "lead.assign.team") || !assignment) return { kind: "NONE" as const };
+  const scope = await resolveCrmAccessScope(transaction, { ...principal, roles: ["SALES_MANAGER"] });
+  return scope.kind === "ASSIGNEES" && scope.assigneeIds.includes(assignment.assigneeId)
+    ? scope : { kind: "NONE" as const };
+}
+
+async function mutationCapabilities(
+  transaction: Prisma.TransactionClient,
+  principal: Principal,
+  assignment: { assigneeId: string; endedAt: Date | null } | null,
+) {
+  const [canEditStage, assignmentScope] = await Promise.all([
+    authorizeStageUpdate(transaction, principal, assignment).then(() => true, (error: unknown) => {
+      if (error instanceof LeadPermissionError) return false;
+      throw error;
+    }),
+    resolveAssignmentScope(transaction, principal, assignment),
+  ]);
+  // Basic notes use the same authorizer as stage updates in addActivity.
+  return { canEditStage, canAddNote: canEditStage, canAssign: assignmentScope.kind !== "NONE" };
+}
+
 async function queryWhere(database: Pick<PrismaClient, "crmTeamMembership">, principal: Principal, query: InquiryListQuery): Promise<Prisma.LeadWhereInput> {
   const scope = await resolveCrmAccessScope(database, principal);
   const owner = query.ownerId ?? query.assigneeId;
@@ -236,7 +265,7 @@ export class LeadService {
         if (await transaction.lead.count({ where: { id: leadId } })) throw new LeadPermissionError();
         throw new LeadNotFoundError();
       }
-      return lead;
+      return { ...lead, capabilities: await mutationCapabilities(transaction, principal, currentAssignment(lead)) };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
   }
 
@@ -251,12 +280,9 @@ export class LeadService {
         }),
       ]);
       if (!lead) throw new LeadNotFoundError();
-      if (!can(principal, "lead.assign")) {
-        const scope = await resolveCrmAccessScope(transaction, { ...principal, roles: ["SALES_MANAGER"] });
-        const active = currentAssignment(lead);
-        if (scope.kind !== "ASSIGNEES" || !scope.assigneeIds.includes(input.assigneeId) ||
-          !active || !scope.assigneeIds.includes(active.assigneeId)) throw new LeadPermissionError();
-      }
+      const assignmentScope = await resolveAssignmentScope(transaction, principal, currentAssignment(lead));
+      if (assignmentScope.kind === "NONE" ||
+        (assignmentScope.kind === "ASSIGNEES" && !assignmentScope.assigneeIds.includes(input.assigneeId))) throw new LeadPermissionError();
       if (!assignee) throw new LeadValidationError("Assignee must be an active Sales user.");
       if (lead.version !== input.version) throw new LeadConflictError();
       const active = currentAssignment(lead);

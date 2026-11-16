@@ -199,6 +199,33 @@ describe("inquiry workspace", () => {
     render(<InquiryDetail {...props} />);
     expect(screen.getByRole("button", { name: "保存负责人" })).toBeDisabled();
   });
+  it.each([
+    { team: "managed", canEditStage: true, canAssign: true },
+    { team: "viewer-only", canEditStage: false, canAssign: false },
+  ])("uses service capabilities for an inactive current owner in a $team team", async ({ canEditStage, canAssign }) => {
+    getCurrentPrincipal.mockResolvedValue({ id: "manager", roles: ["SALES_MANAGER", "CRM_VIEWER"] });
+    listAssignees.mockResolvedValue([{ id: "replacement", name: "Active replacement" }]);
+    get.mockResolvedValue({
+      ...inquiry,
+      interestedProduct: null,
+      stage: { code: "NEW", name: "新询盘" },
+      assignments: [{ assigneeId: "inactive", endedAt: null, assignee: { id: "inactive", name: "Inactive owner" } }],
+      activities: [],
+      capabilities: { canEditStage, canAssign, canAddNote: false },
+    });
+    const Page = (await import("@/app/admin/inquiries/[id]/page")).default;
+    render(await Page({ params: Promise.resolve({ id: "lead-1" }) }));
+    if (canEditStage) {
+      expect(screen.getByLabelText("销售阶段")).toBeEnabled();
+      expect(screen.getByLabelText("负责人")).toHaveValue("inactive");
+      await userEvent.setup().selectOptions(screen.getByLabelText("负责人"), "replacement");
+      expect(screen.getByRole("button", { name: "保存负责人" })).toBeEnabled();
+    } else {
+      expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+      expect(screen.getByText(/只读/)).toBeInTheDocument();
+    }
+    expect(screen.queryByRole("button", { name: "添加基础备注" })).not.toBeInTheDocument();
+  });
   it("shares both route renderers and projects only displayed values to the client", async () => {
     const oldPage = (await import("@/app/admin/leads/[id]/page")).default;
     const newPage = (await import("@/app/admin/inquiries/[id]/page")).default;
@@ -215,6 +242,7 @@ describe("inquiry workspace", () => {
         },
       ],
       activities: [],
+      capabilities: { canEditStage: true, canAssign: true, canAddNote: true },
       notificationAttempts: [{ token: "secret" }],
       internalNotes: "hidden",
       ipAddress: "private",

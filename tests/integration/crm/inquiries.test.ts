@@ -132,6 +132,24 @@ describe("manual inquiries and CRM scope", () => {
     await db.crmTeamMembership.updateMany({ where: { userId: sales.id }, data: { endsAt: new Date("2020-01-01") } });
     await expect(service.assign(manager, inquiry.id, { version: 2, assigneeId: sales.id })).rejects.toBeInstanceOf(LeadPermissionError);
   });
+  it("keeps manager capabilities and mutations for inactive managed owners without widening viewer-only access", async () => {
+    const replacement = await db.user.create({ data: { id: "replacement", name: "Replacement", email: "replacement@example.com", passwordHash: "test" } });
+    await db.userRole.create({ data: { userId: replacement.id, roleId: (await db.role.findUniqueOrThrow({ where: { key: "SALES" } })).id } });
+    await db.crmTeamMembership.create({ data: { teamId: "north", userId: replacement.id, role: "MEMBER", startsAt: new Date("2000-01-01") } });
+    const managed = (await service.createManual(admin, { ...input, assigneeId: sales.id })).inquiry;
+    const viewed = (await service.createManual(admin, { ...input, assigneeId: other.id })).inquiry;
+    await db.user.updateMany({ where: { id: { in: [sales.id, other.id] } }, data: { isActive: false } });
+
+    expect(await service.listAssignees(manager, "assign")).toEqual([{ id: replacement.id, name: replacement.name }]);
+    expect((await service.get(manager, managed.id)).capabilities).toEqual({ canEditStage: true, canAssign: true, canAddNote: true });
+    expect((await service.get(manager, viewed.id)).capabilities).toEqual({ canEditStage: false, canAssign: false, canAddNote: false });
+    await expect(service.updateStage(manager, managed.id, { version: 1, stageCode: "CONTACTED" })).resolves.toMatchObject({ version: 2 });
+    await expect(service.assign(manager, managed.id, { version: 2, assigneeId: replacement.id })).resolves.toMatchObject({ version: 3 });
+    expect(await db.leadAssignment.findMany({ where: { leadId: managed.id, endedAt: null } })).toEqual([expect.objectContaining({ assigneeId: replacement.id })]);
+    await expect(service.updateStage(manager, viewed.id, { version: 1, stageCode: "CONTACTED" })).rejects.toBeInstanceOf(LeadPermissionError);
+    await expect(service.assign(manager, viewed.id, { version: 1, assigneeId: replacement.id })).rejects.toBeInstanceOf(LeadPermissionError);
+    expect((await db.lead.findUniqueOrThrow({ where: { id: viewed.id } })).version).toBe(1);
+  });
   it("requires scoped manager initial assignment and makes the created inquiry readable", async () => {
     await expect(service.createManual(manager, input)).rejects.toBeInstanceOf(LeadValidationError);
     await expect(service.createManual(manager, { ...input, assigneeId: other.id })).rejects.toBeInstanceOf(LeadPermissionError);

@@ -34,20 +34,7 @@ export async function InquiryDetailPage({
       assignPermission ? service.listAssignees(principal, "assign") : [],
     ]);
     const assignment = lead.assignments.find(({ endedAt }) => endedAt === null);
-    const canAddNote =
-      can(principal, "lead.update.all") ||
-      can(principal, "lead.update.assigned", {
-        assigneeId: assignment?.assigneeId,
-        assignmentActive: Boolean(assignment),
-      });
-    const managedAssignment = assignees.some(
-      (person) => person.id === assignment?.assigneeId,
-    );
-    const canEditStage =
-      canAddNote || (can(principal, "lead.update.team") && managedAssignment);
-    const canAssign =
-      can(principal, "lead.assign") ||
-      (can(principal, "lead.assign.team") && managedAssignment);
+    const { canEditStage, canAssign, canAddNote } = lead.capabilities;
     // Explicit projection keeps database metadata and delivery logs out of client props.
     const inquiry: InquiryDetailValue = {
       id: lead.id,
