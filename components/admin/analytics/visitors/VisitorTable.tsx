@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { VisitorTimelineDrawer } from "@/components/admin/analytics/visitors/VisitorTimelineDrawer";
 import { DataState } from "@/components/admin/ui/DataState";
@@ -47,14 +48,16 @@ function pageHref(baseQuery: string, page: number) {
   return `/admin/analytics/visitors?${query.toString()}`;
 }
 
-export function VisitorTable({ items, total, page, pageSize, now, baseQuery }: {
+export function VisitorTable({ items, total, page, pageSize, now, baseQuery, canDelete = false }: {
   items: VisitorListItem[];
   total: number;
   page: number;
   pageSize: number;
   now: Date;
   baseQuery: string;
+  canDelete?: boolean;
 }) {
+  const router = useRouter();
   const [selectedVisitorId, setSelectedVisitorId] = useState<string | null>(null);
   const [interactive, setInteractive] = useState(false);
   const returnFocusRef = useRef<HTMLButtonElement>(null);
@@ -99,7 +102,7 @@ export function VisitorTable({ items, total, page, pageSize, now, baseQuery }: {
           {page < totalPages ? <Link href={pageHref(baseQuery, page + 1)} className="rounded-admin-sm border border-admin-border bg-white px-3 py-2 text-xs font-semibold text-admin-ink outline-none hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-ignition">下一页</Link> : null}
         </div>
       </nav>
-      {selectedVisitorId ? <VisitorTimelineDrawer visitorId={selectedVisitorId} onClose={() => setSelectedVisitorId(null)} returnFocusRef={returnFocusRef} /> : null}
+      {selectedVisitorId ? <VisitorTimelineDrawer visitorId={selectedVisitorId} onClose={() => setSelectedVisitorId(null)} returnFocusRef={returnFocusRef} canDelete={canDelete} onDeleted={() => router.refresh()} /> : null}
     </section>
   );
 }

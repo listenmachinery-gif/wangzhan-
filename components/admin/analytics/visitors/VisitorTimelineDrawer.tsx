@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
-import { ArrowUpRight, CircleDot, Search, X } from "lucide-react";
+import { ArrowUpRight, CircleDot, Search, Trash2, X } from "lucide-react";
 
 import { DataState } from "@/components/admin/ui/DataState";
 import { StatusBadge } from "@/components/admin/ui/StatusBadge";
@@ -93,15 +93,34 @@ function formatTime(value: string) {
   return new Intl.DateTimeFormat("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).format(new Date(value));
 }
 
-export function VisitorTimelineDrawer({ visitorId, onClose, returnFocusRef }: {
+export function VisitorTimelineDrawer({ visitorId, onClose, returnFocusRef, canDelete = false, onDeleted }: {
   visitorId: string;
   onClose: () => void;
   returnFocusRef?: RefObject<HTMLElement | null>;
+  canDelete?: boolean;
+  onDeleted?: () => void;
 }) {
   const [detail, setDetail] = useState<VisitorDetail | null>(null);
   const [error, setError] = useState<"not-found" | "forbidden" | "unavailable" | null>(null);
   const dialogRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(false);
+
+  async function deleteVisitor() {
+    if (!window.confirm("确认删除该访客的匿名分析轨迹与聊天记录？已建立的询盘客户会被保留。此操作无法撤销。")) return;
+    setDeleting(true);
+    setDeleteError(false);
+    try {
+      const response = await fetch(`/api/admin/analytics/visitors/${encodeURIComponent(visitorId)}/delete`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Visitor deletion failed");
+      onClose();
+      onDeleted?.();
+    } catch {
+      setDeleteError(true);
+      setDeleting(false);
+    }
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -175,9 +194,13 @@ export function VisitorTimelineDrawer({ visitorId, onClose, returnFocusRef }: {
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ignition">Visitor journey</p>
             <h2 className="mt-1 truncate text-lg font-semibold text-admin-ink">{detail ? visitorLabel(detail.id) : "访客行为时间线"}</h2>
           </div>
-          <button ref={closeRef} type="button" aria-label="关闭访客时间线" onClick={onClose} className="rounded-admin-sm border border-admin-border bg-white p-2 text-admin-muted outline-none transition duration-admin hover:bg-neutral-50 hover:text-admin-ink focus-visible:ring-2 focus-visible:ring-ignition"><X aria-hidden className="size-5" /></button>
+          <div className="flex items-center gap-2">
+            {canDelete ? <button type="button" disabled={deleting} onClick={() => void deleteVisitor()} className="inline-flex items-center gap-2 rounded-admin-sm border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 outline-none transition hover:bg-red-100 focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-60"><Trash2 aria-hidden className="size-4" />{deleting ? "正在删除…" : "删除访客数据"}</button> : null}
+            <button ref={closeRef} type="button" aria-label="关闭访客时间线" onClick={onClose} className="rounded-admin-sm border border-admin-border bg-white p-2 text-admin-muted outline-none transition duration-admin hover:bg-neutral-50 hover:text-admin-ink focus-visible:ring-2 focus-visible:ring-ignition"><X aria-hidden className="size-5" /></button>
+          </div>
         </header>
         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          {deleteError ? <p role="alert" className="mb-4 rounded-admin-sm border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">删除失败，数据未被修改，请稍后重试。</p> : null}
           {!detail && !error ? <DataState kind="loading" title="正在读取访客旅程" description="正在汇总会话、页面浏览与关键事件。" /> : null}
           {error === "not-found" ? <DataState kind="empty" title="找不到该访客记录" description="记录可能已按数据保留策略清理。" /> : null}
           {error === "forbidden" ? <DataState kind="error" title="没有权限查看访客详情" description="请联系超级管理员检查数据分析权限。" /> : null}

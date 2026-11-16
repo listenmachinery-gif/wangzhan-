@@ -58,7 +58,7 @@ export default async function AdminVisitorsPage({ searchParams }: { searchParams
         }}
         products={products}
       />
-      <VisitorTable {...result} now={now} baseQuery={baseQuery} />
+      <VisitorTable {...result} now={now} baseQuery={baseQuery} canDelete={can(principal, "analytics.delete")} />
     </div>
   );
 }
