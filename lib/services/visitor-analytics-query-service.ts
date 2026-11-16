@@ -165,10 +165,10 @@ export class VisitorAnalyticsQueryService {
     return { items, total, page, pageSize };
   }
 
-  async getVisitorTimeline(principal: Principal, visitorId: string) {
+  async getVisitorTimeline(principal: Principal, visitorId: string, environment: AnalyticsEnvironment) {
     assertPermission(principal, "analytics.read.visitors");
     const visitor = await this.database.analyticsVisitor.findFirst({
-      where: { id: visitorId, isBot: false },
+      where: { id: visitorId, environment, isBot: false },
       select: {
         id: true,
         environment: true,

@@ -94,7 +94,7 @@ describe("visitor detail route", () => {
 
     expect(response.status).toBe(200);
     expect(mocks.requirePermission).toHaveBeenCalledWith("analytics.read.visitors");
-    expect(mocks.getVisitorTimeline).toHaveBeenCalledWith(principal, "visitor-abcdef");
+    expect(mocks.getVisitorTimeline).toHaveBeenCalledWith(principal, "visitor-abcdef", "TEST");
     expect(JSON.stringify(body)).not.toMatch(/anonymousId|sessionKey|pageViewKey|eventKey/);
   });
 

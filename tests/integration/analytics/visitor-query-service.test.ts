@@ -4,6 +4,7 @@ import type { Principal } from "@/lib/auth/permissions";
 import { db } from "@/lib/db/client";
 import { resetTestDatabase } from "@/lib/db/test-database";
 import {
+  VisitorAnalyticsNotFoundError,
   VisitorAnalyticsPermissionError,
   VisitorAnalyticsQueryService,
 } from "@/lib/services/visitor-analytics-query-service";
@@ -159,7 +160,9 @@ describe("visitor analytics query service", () => {
       },
     });
 
-    const timeline = await new VisitorAnalyticsQueryService(db).getVisitorTimeline(admin, created.id);
+    const service = new VisitorAnalyticsQueryService(db);
+    await expect(service.getVisitorTimeline(admin, created.id, "PREVIEW")).rejects.toBeInstanceOf(VisitorAnalyticsNotFoundError);
+    const timeline = await service.getVisitorTimeline(admin, created.id, "TEST");
 
     expect(timeline).toMatchObject({
       id: created.id,
@@ -173,6 +176,6 @@ describe("visitor analytics query service", () => {
 
     await expect(service.getRealtimeSummary(editor, now, "TEST")).rejects.toBeInstanceOf(VisitorAnalyticsPermissionError);
     await expect(service.listVisitors(editor, { environment: "TEST", page: 1, pageSize: 20 }, now)).rejects.toBeInstanceOf(VisitorAnalyticsPermissionError);
-    await expect(service.getVisitorTimeline(editor, "missing")).rejects.toBeInstanceOf(VisitorAnalyticsPermissionError);
+    await expect(service.getVisitorTimeline(editor, "missing", "TEST")).rejects.toBeInstanceOf(VisitorAnalyticsPermissionError);
   });
 });

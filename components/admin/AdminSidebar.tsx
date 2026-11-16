@@ -128,7 +128,7 @@ export function AdminSidebar({ principal, currentPath, collapsed, onNavigate }: 
         ))}
       </div>
       <div className={`border-t border-white/10 ${collapsed ? "p-3" : "px-5 py-4"}`}>
-        <p className={collapsed ? "sr-only" : "text-[10px] uppercase tracking-[0.12em] text-zinc-600"}>ZYRON CMS · Production</p>
+        <p className={collapsed ? "sr-only" : "text-[10px] uppercase tracking-[0.12em] text-zinc-600"}>ZYRON CMS · Secure workspace</p>
       </div>
     </nav>
   );
