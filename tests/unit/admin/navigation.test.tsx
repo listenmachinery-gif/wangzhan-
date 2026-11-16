@@ -67,6 +67,14 @@ describe("admin navigation", () => {
     expect(getAdminNavigation(contentEditor).map((item) => item.label)).toContain("页面设计");
     expect(getAdminNavigation(productEditor).map((item) => item.label)).not.toContain("页面设计");
   });
+  it("guards customer management by customer.read and marks nested customer URLs active", () => {
+    expect(getAdminNavigation(productEditor).map((item) => item.label)).not.toContain("客户管理");
+    expect(getAdminNavigation(contentEditor).map((item) => item.label)).not.toContain("客户管理");
+    const viewer: Principal = { ...admin, roles: ["CRM_VIEWER"] };
+    render(<AdminSidebar principal={viewer} currentPath="/admin/customers/customer-1" collapsed={false} />);
+    expect(screen.getAllByRole("link", { name: "客户管理" })).toHaveLength(1);
+    expect(screen.getByRole("link", { name: "客户管理" })).toHaveAttribute("aria-current", "page");
+  });
 
   it("shows analytics only to principals with analytics permission", () => {
     expect(getAdminNavigation(admin).map((item) => item.label)).toContain("数据分析");
@@ -79,7 +87,7 @@ describe("admin navigation", () => {
 
     expect(groups.map((group) => group.label)).toEqual(["经营概览", "客户增长", "内容运营", "系统管理"]);
     expect(groups[0].items.map((item) => item.label)).toEqual(["数据总览", "数据分析"]);
-    expect(groups[1].items.map((item) => item.label)).toEqual(["询盘 CRM", "在线客服"]);
+    expect(groups[1].items.map((item) => item.label)).toEqual(["询盘 CRM", "客户管理", "在线客服"]);
     expect(groups[2].items.map((item) => item.label)).toContain("产品管理");
   });
 

@@ -36,6 +36,7 @@ const navigationGroups: NavigationGroup[] = [
     label: "客户增长",
     items: [
       { href: "/admin/inquiries", aliases: ["/admin/leads"], label: "询盘 CRM", icon: Users, anyPermission: ["lead.read.all", "lead.read.assigned", "lead.read.team"] },
+      { href: "/admin/customers", label: "客户管理", icon: Users, permission: "customer.read" },
       { href: "/admin/chat", label: "在线客服", icon: MessageSquareText, anyPermission: ["chat.read.all", "chat.read.assigned"] },
     ],
   },
