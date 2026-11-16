@@ -68,3 +68,17 @@ export function leadWhereForScope(scope: CrmAccessScope): Prisma.LeadWhereInput 
       return { id: { in: [] } };
   }
 }
+
+/** Internal notes require the resource scope of a Sales/Manager/Admin role, never viewer membership. */
+export async function noteActivityWhere(
+  database: Pick<PrismaClient, "crmTeamMembership">,
+  principal: Principal,
+  now = new Date(),
+): Promise<Prisma.LeadActivityWhereInput> {
+  const scope = await resolveCrmAccessScope(database, {
+    ...principal, roles: principal.roles.filter((role) => role !== "CRM_VIEWER"),
+  }, now);
+  if (scope.kind === "ALL") return {};
+  if (scope.kind === "NONE") return { type: { not: "NOTE" } };
+  return { OR: [{ type: { not: "NOTE" } }, { lead: leadWhereForScope(scope) }] };
+}

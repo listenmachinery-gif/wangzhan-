@@ -125,6 +125,12 @@ export const customerListQuerySchema = z.strictObject({
   ownerId: optionalString(id),
 });
 
+export const inquiryCustomerOptionsQuerySchema = z.strictObject({
+  query: optionalText(200),
+  contactId: id.optional(),
+  companyId: id.optional(),
+});
+
 export type CustomerCreateInput = z.infer<typeof customerCreateSchema>;
 export type CustomerUpdateInput = z.infer<typeof customerUpdateSchema>;
 

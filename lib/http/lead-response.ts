@@ -18,6 +18,6 @@ export function leadErrorResponse(error: unknown) {
   if (error instanceof LeadConflictError) return NextResponse.json({ code: "VERSION_CONFLICT", message: error.message }, { status: 409 });
   if (error instanceof LeadValidationError || error instanceof ZodError) return NextResponse.json({ code: "INVALID_LEAD", message: error.message }, { status: 400 });
   if (error instanceof SyntaxError) return NextResponse.json({ code: "INVALID_LEAD", message: "Malformed JSON body." }, { status: 400 });
-  console.error("Lead administration API error", error);
+  console.error({ code: "LEAD_OPERATION_FAILED" });
   return NextResponse.json({ code: "LEAD_OPERATION_FAILED" }, { status: 500 });
 }

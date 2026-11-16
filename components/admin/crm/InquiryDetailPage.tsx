@@ -5,6 +5,7 @@ import {
 } from "@/components/admin/crm/InquiryDetail";
 import { AdminPageHeader } from "@/components/admin/ui/AdminPageHeader";
 import { DataState } from "@/components/admin/ui/DataState";
+import { DEFAULT_CRM_STAGES, stageToLegacyStatus } from "@/lib/crm/stages";
 import { can } from "@/lib/auth/permissions";
 import { getCurrentPrincipal } from "@/lib/auth/session";
 import {
@@ -34,7 +35,8 @@ export async function InquiryDetailPage({
       assignPermission ? service.listAssignees(principal, "assign") : [],
     ]);
     const assignment = lead.assignments.find(({ endedAt }) => endedAt === null);
-    const { canEditStage, canAssign, canAddNote } = lead.capabilities;
+    const { canEditStage, canUpdateFollowUp, canAssign, canAddNote, canMarkSpam, canRestoreSpam } = lead.capabilities;
+    const savedStageCode = DEFAULT_CRM_STAGES.find((code) => code === lead.preSpamStage?.code);
     // Explicit projection keeps database metadata and delivery logs out of client props.
     const inquiry: InquiryDetailValue = {
       id: lead.id,
@@ -54,6 +56,8 @@ export async function InquiryDetailPage({
       quantity: lead.quantity,
       voltage: lead.voltage,
       budget: lead.budget,
+      status: lead.status,
+      spamRecoveryStatus: savedStageCode ? stageToLegacyStatus(savedStageCode) : "NEW",
       stageCode: lead.stage?.code ?? "",
       stageName: lead.stage?.name ?? inquiryLegacyStatusLabels[lead.status],
       ownerId: assignment?.assignee.id ?? "",
@@ -84,6 +88,9 @@ export async function InquiryDetailPage({
           }))}
           assignees={canAssign ? assignees : []}
           canEditStage={canEditStage}
+          canUpdateFollowUp={canUpdateFollowUp}
+          canMarkSpam={canMarkSpam}
+          canRestoreSpam={canRestoreSpam}
           canAssign={canAssign}
           canAddNote={canAddNote}
         />

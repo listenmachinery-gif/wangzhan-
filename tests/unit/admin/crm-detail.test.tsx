@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -53,6 +53,8 @@ const inquiry: InquiryDetailValue = {
   quantity: "2",
   voltage: "380 V",
   budget: "$5000",
+  status: "NEW",
+  spamRecoveryStatus: "NEW",
   stageCode: "NEW",
   stageName: "新询盘",
   ownerId: "sales",
@@ -81,6 +83,9 @@ const props = {
     { id: "sales-2", name: "王销售" },
   ],
   canEditStage: true,
+  canUpdateFollowUp: true,
+  canMarkSpam: true,
+  canRestoreSpam: false,
   canAddNote: true,
   canAssign: true,
 };
@@ -187,6 +192,9 @@ describe("inquiry workspace", () => {
       <InquiryDetail
         {...props}
         canEditStage={false}
+        canUpdateFollowUp={false}
+        canMarkSpam={false}
+        canRestoreSpam={false}
         canAssign={false}
         canAddNote={false}
       />,
@@ -211,12 +219,13 @@ describe("inquiry workspace", () => {
       stage: { code: "NEW", name: "新询盘" },
       assignments: [{ assigneeId: "inactive", endedAt: null, assignee: { id: "inactive", name: "Inactive owner" } }],
       activities: [],
-      capabilities: { canEditStage, canAssign, canAddNote: false },
+      capabilities: { canEditStage, canUpdateFollowUp: canEditStage, canAssign, canAddNote: false },
     });
     const Page = (await import("@/app/admin/inquiries/[id]/page")).default;
     render(await Page({ params: Promise.resolve({ id: "lead-1" }) }));
     if (canEditStage) {
       expect(screen.getByLabelText("销售阶段")).toBeEnabled();
+      expect(screen.getByLabelText("下次跟进时间（本地时间）")).toBeEnabled();
       expect(screen.getByLabelText("负责人")).toHaveValue("inactive");
       await userEvent.setup().selectOptions(screen.getByLabelText("负责人"), "replacement");
       expect(screen.getByRole("button", { name: "保存负责人" })).toBeEnabled();
@@ -242,7 +251,7 @@ describe("inquiry workspace", () => {
         },
       ],
       activities: [],
-      capabilities: { canEditStage: true, canAssign: true, canAddNote: true },
+      capabilities: { canEditStage: true, canUpdateFollowUp: true, canAssign: true, canAddNote: true },
       notificationAttempts: [{ token: "secret" }],
       internalNotes: "hidden",
       ipAddress: "private",
@@ -257,5 +266,98 @@ describe("inquiry workspace", () => {
     expect(
       screen.getByText("Original request for a shear"),
     ).toBeInTheDocument();
+  });
+});
+
+
+describe("next follow-up compatibility editor", () => {
+  it("saves a local date/time with the optimistic version and refreshes", async () => {
+    const fetch = vi.fn().mockResolvedValue(Response.json({ version: 8 }));
+    vi.stubGlobal("fetch", fetch);
+    render(<InquiryDetail {...props} />);
+    fireEvent.change(screen.getByLabelText("下次跟进时间（本地时间）"), { target: { value: "2030-02-03T14:30" } });
+    await userEvent.setup().click(screen.getByRole("button", { name: "保存跟进时间" }));
+    expect(fetch.mock.calls[0][0]).toBe("/api/admin/inquiries/lead-1");
+    expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({ version: 7, nextFollowUpAt: new Date(2030, 1, 3, 14, 30).toISOString() });
+    expect(screen.getByRole("status")).toHaveTextContent("已保存");
+    expect(refresh).toHaveBeenCalledOnce();
+  });
+  it("clears an existing follow-up without creating tasks", async () => {
+    const fetch = vi.fn().mockResolvedValue(Response.json({ version: 8 }));
+    vi.stubGlobal("fetch", fetch);
+    render(<InquiryDetail {...props} inquiry={{ ...inquiry, nextFollowUpAt: new Date(2030, 1, 3, 14, 30).toISOString() }} />);
+    expect(screen.getByLabelText("下次跟进时间（本地时间）")).toHaveValue("2030-02-03T14:30");
+    await userEvent.setup().click(screen.getByRole("button", { name: "清除跟进时间" }));
+    expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({ version: 7, nextFollowUpAt: null });
+    expect(refresh).toHaveBeenCalledOnce();
+  });
+  it("locks the editor on conflict and offers reload recovery", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({}, { status: 409 })));
+    render(<InquiryDetail {...props} inquiry={{ ...inquiry, nextFollowUpAt: "2030-02-03T06:30:00.000Z" }} />);
+    await userEvent.setup().click(screen.getByRole("button", { name: "清除跟进时间" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("版本冲突");
+    expect(screen.getByLabelText("下次跟进时间（本地时间）")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "保存跟进时间" })).toBeDisabled();
+    await userEvent.setup().click(screen.getByRole("button", { name: "重新加载" }));
+    expect(refresh).toHaveBeenCalledOnce();
+  });
+  it("shows the read-only value without update capability even when stage editing is allowed", () => {
+    render(<InquiryDetail {...props} canUpdateFollowUp={false} inquiry={{ ...inquiry, nextFollowUpAt: "2030-02-03T06:30:00.000Z" }} />);
+    expect(screen.queryByLabelText("下次跟进时间（本地时间）")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "保存跟进时间" })).not.toBeInTheDocument();
+    expect(screen.getByText("下次跟进").nextElementSibling).toHaveAttribute("datetime", "2030-02-03T06:30:00.000Z");
+  });
+});
+
+
+describe("SPAM quarantine controls", () => {
+  const spam = { ...inquiry, status: "SPAM" as const, stageCode: "REQUIREMENT_CONFIRMED", stageName: "需求已确认", spamRecoveryStatus: "CONTACTED" as const };
+  it("prominently shows quarantine despite a preserved stage and removes stage selection", () => {
+    render(<InquiryDetail {...props} inquiry={spam} canMarkSpam={false} canRestoreSpam />);
+    expect(screen.getByRole("status")).toHaveTextContent("垃圾询盘（已隔离）");
+    expect(screen.getByText("需求已确认")).toBeInTheDocument();
+    expect(screen.queryByLabelText("销售阶段")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "保存阶段" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "标记垃圾询盘" })).not.toBeInTheDocument();
+  });
+  it.each([
+    { label: "mark", value: inquiry, restore: false, status: "SPAM", button: "标记垃圾询盘" },
+    { label: "restore detailed stage", value: spam, restore: true, status: "CONTACTED", button: "恢复询盘" },
+    { label: "restore without saved stage", value: { ...spam, spamRecoveryStatus: "NEW" as const }, restore: true, status: "NEW", button: "恢复询盘" },
+  ])("uses the versioned legacy-status path to $label", async ({ value, restore, status, button }) => {
+    const fetch = vi.fn().mockResolvedValue(Response.json({ version: 8 }));
+    vi.stubGlobal("fetch", fetch);
+    render(<InquiryDetail {...props} inquiry={value} canMarkSpam={!restore} canRestoreSpam={restore} />);
+    await userEvent.setup().click(screen.getByRole("button", { name: button }));
+    expect(fetch.mock.calls[0][0]).toBe("/api/admin/inquiries/lead-1");
+    expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({ version: 7, status });
+    expect(refresh).toHaveBeenCalledOnce();
+  });
+  it("blocks stale recovery and offers reload", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({}, { status: 409 })));
+    render(<InquiryDetail {...props} inquiry={spam} canMarkSpam={false} canRestoreSpam />);
+    await userEvent.setup().click(screen.getByRole("button", { name: "恢复询盘" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("版本冲突");
+    expect(screen.getByRole("button", { name: "恢复询盘" })).toBeDisabled();
+    await userEvent.setup().click(screen.getByRole("button", { name: "重新加载" }));
+    expect(refresh).toHaveBeenCalledOnce();
+  });
+  it("gives viewers quarantine visibility without mark or restore actions", () => {
+    render(<InquiryDetail {...props} inquiry={spam} canEditStage={false} canUpdateFollowUp={false} canAssign={false} canAddNote={false} canMarkSpam={false} canRestoreSpam={false} />);
+    expect(screen.getByRole("status")).toHaveTextContent("垃圾询盘（已隔离）");
+    expect(screen.queryByRole("button", { name: /标记垃圾询盘|恢复询盘/ })).not.toBeInTheDocument();
+  });
+  it.each([
+    { preSpamStage: { code: "REQUIREMENT_CONFIRMED" }, expected: "CONTACTED" },
+    { preSpamStage: null, expected: "NEW" },
+  ])("projects recovery from the saved stage only: $expected", async ({ preSpamStage, expected }) => {
+    get.mockResolvedValue({ ...spam, preSpamStage, stage: { code: spam.stageCode, name: spam.stageName }, assignments: [], activities: [],
+      capabilities: { canEditStage: true, canUpdateFollowUp: true, canAddNote: true, canAssign: true, canMarkSpam: false, canRestoreSpam: true } });
+    const fetch = vi.fn().mockResolvedValue(Response.json({ version: 8 }));
+    vi.stubGlobal("fetch", fetch);
+    const Page = (await import("@/app/admin/inquiries/[id]/page")).default;
+    render(await Page({ params: Promise.resolve({ id: inquiry.id }) }));
+    await userEvent.setup().click(screen.getByRole("button", { name: "恢复询盘" }));
+    expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({ version: 7, status: expected });
   });
 });

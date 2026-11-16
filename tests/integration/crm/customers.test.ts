@@ -4,6 +4,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import type { Principal } from "@/lib/auth/permissions";
 import { db } from "@/lib/db/client";
 import { resetTestDatabase } from "@/lib/db/test-database";
+import { LeadService } from "@/lib/services/lead-service";
 import {
   CustomerConflictError,
   CustomerDuplicateConfirmationError,
@@ -417,5 +418,58 @@ describe("CustomerService duplicate candidates", () => {
 
     expect(await service.findDuplicateCandidates(manager, { fullName: "New Jane", whatsapp: "0044 20 7123 4567" }))
       .toMatchObject({ contacts: [{ id: "shared-contact" }] });
+  });
+});
+
+
+describe("resource-scoped NOTE privacy on both detail paths", () => {
+  beforeEach(async () => {
+    await seedSharedCustomer();
+    await db.crmTeamMembership.create({ data: { teamId: "south", userId: salesNorth.id, role: "VIEWER", startsAt } });
+    await db.leadActivity.createMany({ data: ["north-lead", "south-lead"].map((leadId) => ({
+      leadId, type: "STATUS_CHANGE", content: `Public activity for ${leadId}`,
+    })) });
+  });
+
+  it.each([
+    { label: "pure viewer", actor: viewer, visible: ["north-lead"], notes: [] },
+    { label: "manager plus viewer", actor: manager, visible: ["north-lead", "south-lead"], notes: ["North activity"] },
+    { label: "Sales plus viewer", actor: { ...salesNorth, roles: ["SALES", "CRM_VIEWER"] as Principal["roles"] }, visible: ["north-lead", "south-lead"], notes: ["North activity"] },
+    { label: "Admin", actor: admin, visible: ["north-lead", "south-lead", "unassigned-lead"], notes: ["North activity", "South activity", "Unassigned activity"] },
+    { label: "Super Admin", actor: { ...admin, roles: ["SUPER_ADMIN"] as Principal["roles"] }, visible: ["north-lead", "south-lead", "unassigned-lead"], notes: ["North activity", "South activity", "Unassigned activity"] },
+  ])("returns only authorized notes for $label", async ({ actor, visible, notes }) => {
+    const leads = new LeadService(db);
+    const leadActivities = (await Promise.all(visible.map((id) => leads.get(actor, id)))).flatMap(({ activities }) => activities);
+    const customer = await service.get(actor, "shared-contact");
+    for (const activities of [leadActivities, customer.timeline]) {
+      expect.soft(activities.filter(({ type }) => type === "NOTE").map(({ content }) => content).sort()).toEqual(notes);
+      expect(activities.filter(({ type }) => type === "STATUS_CHANGE").map(({ content }) => content).sort())
+        .toEqual(visible.filter((id) => id !== "unassigned-lead").map((id) => `Public activity for ${id}`));
+    }
+  });
+});
+
+describe("scoped existing-customer inquiry options", () => {
+  beforeEach(seedSharedCustomer);
+  it("lists only visible customers/companies with an explicit minimal projection", async () => {
+    await db.company.create({ data: { id: "hidden-co", companyCode: "CO-HIDDEN", name: "Hidden company", normalizedName: "hidden company", ownerId: "outsider" } });
+    await db.contact.create({ data: { id: "hidden-contact", customerCode: "CU-HIDDEN", fullName: "Hidden contact", ownerId: "outsider", companyId: "hidden-co" } });
+    const options = await service.inquiryOptions(manager, {});
+    expect(options.contacts).toEqual([{ id: "shared-contact", customerCode: "CU-SHARED", fullName: "Jane Doe", email: "jane@example.com", phone: null, whatsapp: null, countryCode: null, companyId: "shared-company" }]);
+    expect(options.companies).toEqual([{ id: "shared-company", companyCode: "CO-SHARED", name: "Acme Tools" }]);
+    expect(JSON.stringify(options)).not.toMatch(/hidden|Private|internalNotes|ownerId|version|metadata/);
+    await expect(service.inquiryOptions(manager, { contactId: "hidden-contact" })).rejects.toBeInstanceOf(CustomerNotFoundError);
+    await expect(service.inquiryOptions(manager, { companyId: "hidden-co" })).rejects.toBeInstanceOf(CustomerNotFoundError);
+    await expect(service.inquiryOptions(viewer, {})).rejects.toBeInstanceOf(CustomerPermissionError);
+  });
+  it("searches scoped options, keeps explicit selections and redacts independently hidden companies", async () => {
+    expect(await service.inquiryOptions(manager, { query: "not found" })).toEqual({ contacts: [], companies: [] });
+    expect((await service.inquiryOptions(manager, { query: "jane" })).contacts.map(({ id }) => id)).toEqual(["shared-contact"]);
+    expect((await service.inquiryOptions(manager, { query: "not found", contactId: "shared-contact", companyId: "shared-company" })).contacts.map(({ id }) => id)).toEqual(["shared-contact"]);
+    await db.company.create({ data: { id: "hidden-co", companyCode: "CO-HIDDEN", name: "Hidden company", normalizedName: "hidden company", ownerId: "outsider" } });
+    await db.contact.update({ where: { id: "shared-contact" }, data: { companyId: "hidden-co" } });
+    const options = await service.inquiryOptions(manager, { contactId: "shared-contact" });
+    expect(options.contacts[0].companyId).toBeNull();
+    expect(JSON.stringify(options)).not.toContain("hidden-co");
   });
 });

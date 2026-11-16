@@ -1,9 +1,9 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const mocks = vi.hoisted(() => ({ principal: vi.fn(), list: vi.fn(), get: vi.fn(), createManual: vi.fn(), assign: vi.fn(), update: vi.fn(), updateStage: vi.fn(), listStages: vi.fn(), customerList: vi.fn(), customerGet: vi.fn(), customerCreate: vi.fn(), customerUpdate: vi.fn() }));
+const mocks = vi.hoisted(() => ({ principal: vi.fn(), list: vi.fn(), get: vi.fn(), createManual: vi.fn(), assign: vi.fn(), update: vi.fn(), updateStage: vi.fn(), listStages: vi.fn(), customerList: vi.fn(), customerGet: vi.fn(), customerCreate: vi.fn(), customerUpdate: vi.fn(), inquiryOptions: vi.fn() }));
 vi.mock("@/lib/auth/session", () => ({ getCurrentPrincipal: mocks.principal }));
 vi.mock("@/lib/services/lead-service", async (original) => ({ ...await original<typeof import("@/lib/services/lead-service")>(), LeadService: class { list = mocks.list; get = mocks.get; createManual = mocks.createManual; assign = mocks.assign; update = mocks.update; updateStage = mocks.updateStage; listStages = mocks.listStages; } }));
-vi.mock("@/lib/services/customer-service", async (original) => ({ ...await original<typeof import("@/lib/services/customer-service")>(), CustomerService: class { list = mocks.customerList; get = mocks.customerGet; create = mocks.customerCreate; update = mocks.customerUpdate; } }));
+vi.mock("@/lib/services/customer-service", async (original) => ({ ...await original<typeof import("@/lib/services/customer-service")>(), CustomerService: class { inquiryOptions = mocks.inquiryOptions; list = mocks.customerList; get = mocks.customerGet; create = mocks.customerCreate; update = mocks.customerUpdate; } }));
 import * as inquiries from "@/app/api/admin/inquiries/route";
 import * as inquiry from "@/app/api/admin/inquiries/[id]/route";
 import * as leads from "@/app/api/admin/leads/route";
@@ -110,4 +110,20 @@ describe("CRM routes", () => {
     expect((await inquiries.GET(new NextRequest("http://localhost/api/admin/inquiries?unknown=yes"))).status).toBe(400);
     expect((await customers.GET(new NextRequest("http://localhost/api/admin/customers?unknown=yes"))).status).toBe(400);
   });
+});
+
+
+it("protects and validates scoped inquiry customer options", async () => {
+  const { GET } = await import("@/app/api/admin/customers/inquiry-options/route");
+  mocks.principal.mockResolvedValue(null);
+  expect((await GET(request())).status).toBe(401);
+  mocks.principal.mockResolvedValue(principal);
+  expect((await GET(new NextRequest("http://localhost/api/admin/customers/inquiry-options?unknown=yes"))).status).toBe(400);
+  mocks.inquiryOptions.mockRejectedValueOnce(new CustomerPermissionError());
+  expect((await GET(request())).status).toBe(403);
+  mocks.inquiryOptions.mockRejectedValueOnce(new CustomerNotFoundError());
+  expect((await GET(new NextRequest("http://localhost/api/admin/customers/inquiry-options?contactId=hidden"))).status).toBe(404);
+  mocks.inquiryOptions.mockResolvedValue({ contacts: [], companies: [] });
+  expect(await (await GET(new NextRequest("http://localhost/api/admin/customers/inquiry-options?query=Buyer"))).json()).toEqual({ contacts: [], companies: [] });
+  expect(mocks.inquiryOptions).toHaveBeenLastCalledWith(principal, { query: "Buyer" });
 });

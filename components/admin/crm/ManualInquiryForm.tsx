@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, type ComponentPropsWithoutRef, type FormEvent, type ReactNode } from "react";
 
 import { inquiryCustomerLevels, inquirySourceLabels, type InquiryAssignee } from "@/components/admin/crm/inquiry-options";
-import type { CustomerDuplicateCandidates } from "@/lib/services/customer-service";
+import type { CustomerDuplicateCandidates, InquiryCustomerOptions } from "@/lib/services/customer-service";
 
 const control = "admin-focus block min-h-11 w-full min-w-0 rounded-admin-sm border border-admin-border bg-white px-3 text-sm text-admin-ink";
 const checkbox = "size-4 shrink-0 rounded border-admin-border accent-admin-ink admin-focus";
@@ -86,20 +86,48 @@ function responseError(status: number, code?: string) {
   return submitFailure;
 }
 
-export function ManualInquiryForm({ assignees, assigneeRequired }: {
+export function ManualInquiryForm({ assignees, assigneeRequired, customerOptions = { contacts: [], companies: [] }, initialContactId = "", initialCompanyId }: {
   assignees: InquiryAssignee[];
   assigneeRequired: boolean;
+  customerOptions?: InquiryCustomerOptions;
+  initialContactId?: string;
+  initialCompanyId?: string;
 }) {
   const router = useRouter();
   const requestInFlight = useRef(false);
+  const [options, setOptions] = useState(customerOptions);
+  const [contactId, setContactId] = useState(initialContactId);
+  const [companyId, setCompanyId] = useState(initialCompanyId ?? customerOptions.contacts.find(({ id }) => id === initialContactId)?.companyId ?? "");
+  const [search, setSearch] = useState("");
+  const [searching, setSearching] = useState(false);
+  const selectedContact = options.contacts.find(({ id }) => id === contactId);
+  const selectedCompany = options.companies.find(({ id }) => id === companyId);
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const noAssignableSales = assigneeRequired && assignees.length === 0;
 
+  async function searchCustomers() {
+    if (searching) return;
+    setSearching(true);
+    setFeedback(null);
+    try {
+      const query = new URLSearchParams({ query: search });
+      if (contactId) query.set("contactId", contactId);
+      if (companyId) query.set("companyId", companyId);
+      const response = await fetch(`/api/admin/customers/inquiry-options?${query}`);
+      if (!response.ok) throw new Error("Customer options unavailable");
+      const result: InquiryCustomerOptions = await response.json();
+      if (!Array.isArray(result.contacts) || !Array.isArray(result.companies)) throw new Error("Invalid options");
+      setOptions(result);
+    } catch {
+      setFeedback({ kind: "error", message: "无法加载已有客户，请重新加载页面核对权限后重试。" });
+    } finally { setSearching(false); }
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (requestInFlight.current || noAssignableSales || (feedback?.kind === "duplicates" && !confirmed)) return;
+    if (requestInFlight.current || searching || noAssignableSales || (feedback?.kind === "duplicates" && !confirmed)) return;
 
     const form = new FormData(event.currentTarget);
     const field = (name: string) => String(form.get(name) ?? "").trim() || undefined;
@@ -133,8 +161,10 @@ export function ManualInquiryForm({ assignees, assigneeRequired }: {
       customerLevel: field("customerLevel"),
       assigneeId: field("assigneeId"),
       nextFollowUpAt: nextFollowUpAt?.toISOString(),
-      contact: form.has("createContact") ? { fullName: name, email, phone, whatsapp } : undefined,
-      company: createCompany ? { name: companyName } : undefined,
+      contactId: contactId || undefined,
+      companyId: companyId || undefined,
+      contact: !contactId && form.has("createContact") ? { fullName: name, email, phone, whatsapp } : undefined,
+      company: !companyId && createCompany ? { name: companyName } : undefined,
       confirmDuplicateCreation: feedback?.kind === "duplicates" && confirmed,
     };
     requestInFlight.current = true;
@@ -175,20 +205,43 @@ export function ManualInquiryForm({ assignees, assigneeRequired }: {
         if (feedback) setFeedback(null);
         if (confirmed) setConfirmed(false);
       }}>
-        <FormSection label="客户信息">
-          <TextField label="客户姓名" name="name" autoComplete="name" maxLength={160} required />
-          <TextField label="电子邮箱" name="email" type="email" autoComplete="email" maxLength={254} required />
-          <TextField label="电话" name="phone" type="tel" autoComplete="tel" maxLength={40} />
-          <TextField label="WhatsApp" name="whatsapp" type="tel" maxLength={40} />
-          <TextField label="国家或地区" name="country" autoComplete="country-name" maxLength={100} />
+        <FormSection label="关联已有客户或公司">
+          <TextField label="搜索已有客户或公司" value={search} onChange={(event) => setSearch(event.target.value)} maxLength={200} />
+          <button type="button" disabled={searching} onClick={() => void searchCustomers()}
+            className="admin-focus min-h-11 self-end rounded-admin-sm border border-admin-border px-4 text-sm font-semibold disabled:opacity-50">
+            {searching ? "正在查询…" : "查询已有客户"}
+          </button>
+          <Field label="关联已有客户">
+            <select value={contactId} disabled={searching} className={control} onChange={(event) => {
+              setContactId(event.target.value);
+              setCompanyId(options.contacts.find(({ id }) => id === event.target.value)?.companyId ?? "");
+            }}>
+              <option value="">不关联已有客户</option>
+              {options.contacts.map((contact) => <option key={contact.id} value={contact.id}>{contact.fullName} · {contact.customerCode}</option>)}
+            </select>
+          </Field>
+          <Field label="关联已有公司">
+            <select value={companyId} disabled={searching} className={control} onChange={(event) => setCompanyId(event.target.value)}>
+              <option value="">默认使用客户关联公司</option>
+              {options.companies.map((company) => <option key={company.id} value={company.id}>{company.name} · {company.companyCode}</option>)}
+            </select>
+          </Field>
+          <p className="text-xs text-admin-muted sm:col-span-2">仅显示当前授权范围内的记录。可搜索姓名、编号、邮箱或公司名称；选择客户后填写本次需求即可。</p>
+        </FormSection>
+        <FormSection label="客户信息" key={`contact-${contactId}`}>
+          <TextField label="客户姓名" name="name" defaultValue={selectedContact?.fullName ?? ""} autoComplete="name" maxLength={160} required />
+          <TextField label="电子邮箱" name="email" defaultValue={selectedContact?.email ?? ""} type="email" autoComplete="email" maxLength={254} required />
+          <TextField label="电话" name="phone" defaultValue={selectedContact?.phone ?? ""} type="tel" autoComplete="tel" maxLength={40} />
+          <TextField label="WhatsApp" name="whatsapp" defaultValue={selectedContact?.whatsapp ?? ""} type="tel" maxLength={40} />
+          <TextField label="国家或地区" name="country" defaultValue={selectedContact?.countryCode ?? ""} autoComplete="country-name" maxLength={100} />
           <label className="inline-flex min-h-11 items-center gap-2 self-end text-sm text-admin-ink">
-            <input name="createContact" type="checkbox" className={checkbox} />同时新建联系人
+            <input name="createContact" disabled={Boolean(contactId)} type="checkbox" className={checkbox} />同时新建联系人
           </label>
         </FormSection>
-        <FormSection label="公司信息">
-          <TextField label="公司名称" name="companyName" autoComplete="organization" maxLength={200} />
+        <FormSection label="公司信息" key={`company-${companyId}`}>
+          <TextField label="公司名称" name="companyName" defaultValue={selectedCompany?.name ?? ""} autoComplete="organization" maxLength={200} />
           <label className="inline-flex min-h-11 items-center gap-2 self-end text-sm text-admin-ink">
-            <input name="createCompany" type="checkbox" className={checkbox} />同时新建公司
+            <input name="createCompany" disabled={Boolean(companyId)} type="checkbox" className={checkbox} />同时新建公司
           </label>
         </FormSection>
         <FormSection label="需求信息">
@@ -240,7 +293,7 @@ export function ManualInquiryForm({ assignees, assigneeRequired }: {
       ) : null}
       <div className="flex flex-wrap items-center justify-end gap-2 border-t border-admin-border pt-4">
         <Link href="/admin/inquiries" className="admin-focus inline-flex min-h-11 items-center rounded-admin-sm border border-admin-border bg-white px-4 text-sm font-semibold text-admin-ink hover:bg-neutral-50">返回询盘列表</Link>
-        <button type="submit" disabled={submitting || noAssignableSales || (feedback?.kind === "duplicates" && !confirmed)}
+        <button type="submit" disabled={submitting || searching || noAssignableSales || (feedback?.kind === "duplicates" && !confirmed)}
           className="admin-focus min-h-11 rounded-admin-sm bg-admin-ink px-4 text-sm font-semibold text-white hover:bg-graphite-700 disabled:cursor-not-allowed disabled:opacity-50">
           {submitting ? "正在创建…" : "创建询盘"}
         </button>

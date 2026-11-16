@@ -186,6 +186,12 @@ for (const actor of ["sales", "manager", "viewer"] as const) {
     if (actor === "sales") await expect(page.getByText(`Private note ${colleagueLead}`)).toHaveCount(0);
     await page.goto(`/admin/inquiries/${ownLead}`);
     if (actor === "viewer") {
+      expect(customer.timeline.filter((activity: { type: string }) => activity.type === "NOTE")).toEqual([]);
+      const leadDetail = await (await page.request.get(`/api/admin/inquiries/${ownLead}`)).json();
+      expect(leadDetail.activities.filter((activity: { type: string }) => activity.type === "NOTE")).toEqual([]);
+      await expect(page.getByText(`Private note ${ownLead}`, { exact: true })).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "标记垃圾询盘" })).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "保存跟进时间" })).toHaveCount(0);
       await expect(page.getByText("只读：当前权限无法修改此询盘。")).toBeVisible();
       await expect(page.getByRole("button", { name: "保存阶段" })).toHaveCount(0);
       await expect(page.getByRole("button", { name: "添加基础备注" })).toHaveCount(0);
@@ -245,4 +251,90 @@ test("real stale save shows 409 and preserves the winner, then reassignment revo
     const scoped = await salesPage.request.get(`/api/admin/customers/${customerId}`);
     expect(scoped.status()).toBe(404);
   } finally { await salesContext.close(); await stale.close(); }
+});
+
+// Regression: existing customer selections must reuse both IDs and never create another Contact.
+test("existing customer selection creates two inquiries and blocks hidden preselection", async ({ page }) => {
+  await login(page, "admin");
+  const created = await page.request.post("/api/admin/customers", { headers: origin, data: {
+    fullName: "E2E Reused Customer", email: `${prefix}-reused@example.com`, company: { name: "E2E Reused Company" },
+  } });
+  expect(created.status()).toBe(201);
+  const customer = (await created.json()).customer;
+  const db = await database();
+  try {
+    const before = await db.contact.count();
+    for (const number of [1, 2]) {
+      await page.goto(`/admin/customers/${customer.id}`);
+      await page.getByRole("link", { name: "新建询盘", exact: true }).click();
+      await expect(page.getByLabel("关联已有客户")).toHaveValue(customer.id);
+      await expect(page.getByLabel("关联已有公司")).toHaveValue(customer.company.id);
+      await expect(page.getByRole("textbox", { name: "客户姓名", exact: true })).toHaveValue("E2E Reused Customer");
+      await page.getByRole("textbox", { name: "需求描述", exact: true }).fill(`Additional machine ${number}`);
+      await page.getByRole("combobox", { name: "负责人", exact: true }).selectOption(actorId("sales"));
+      const submission = page.waitForRequest((request) => request.method() === "POST" && request.url().endsWith("/api/admin/inquiries"));
+      await page.getByRole("button", { name: "创建询盘", exact: true }).click();
+      const body = (await submission).postDataJSON();
+      expect(body).toMatchObject({ contactId: customer.id, companyId: customer.company.id });
+      expect(body).not.toHaveProperty("contact");
+      expect(body).not.toHaveProperty("company");
+      await expect(page).toHaveURL(/\/admin\/leads\/[^/]+$/);
+    }
+    expect(await db.contact.count()).toBe(before);
+    expect(await db.lead.count({ where: { contactId: customer.id, companyId: customer.company.id } })).toBe(2);
+    const hiddenResponse = await page.request.post("/api/admin/customers", { headers: origin, data: { fullName: "E2E Hidden Customer", email: `${prefix}-hidden@example.com` } });
+    expect(hiddenResponse.status()).toBe(201);
+    const hiddenId = (await hiddenResponse.json()).customer.id;
+    await page.context().clearCookies();
+    await login(page, "manager");
+    await page.goto("/admin/inquiries/new");
+    await page.getByLabel("搜索已有客户或公司").fill("E2E Hidden Customer");
+    await page.getByRole("button", { name: "查询已有客户", exact: true }).click();
+    await expect(page.getByRole("option", { name: /E2E Hidden Customer/ })).toHaveCount(0);
+    const options = await page.request.get(`/api/admin/customers/inquiry-options?contactId=${hiddenId}`);
+    expect(options.status()).toBe(404);
+    await page.goto(`/admin/inquiries/new?contactId=${hiddenId}`);
+    await expect(page.getByRole("button", { name: "创建询盘", exact: true })).toHaveCount(0);
+    await expect(page.getByText("E2E Hidden Customer", { exact: true })).toHaveCount(0);
+  } finally { await db.$disconnect(); }
+});
+
+// Regression: compatibility controls retain versions, clear dates, expose quarantine and recover explicitly.
+test("detail follow-up and quarantine actions preserve versions and recover conflicts", async ({ page }) => {
+  await login(page, "admin");
+  const response = await page.request.post("/api/admin/inquiries", { headers: origin, data: {
+    name: "E2E Compatibility Buyer", email: `${prefix}-compatibility@example.com`, message: "Compatibility controls",
+  } });
+  expect(response.status()).toBe(201);
+  const id = (await response.json()).inquiry.id;
+  const detail = async () => (await page.request.get(`/api/admin/inquiries/${id}`)).json();
+  await page.goto(`/admin/inquiries/${id}`);
+  const localTime = "2031-02-03T14:30";
+  const utcTime = await page.evaluate((value) => new Date(value).toISOString(), localTime);
+  await page.getByLabel("下次跟进时间（本地时间）").fill(localTime);
+  await page.getByRole("button", { name: "保存跟进时间", exact: true }).click();
+  await expect.poll(async () => (await detail()).nextFollowUpAt).toBe(utcTime);
+  await expect(page.getByRole("button", { name: "清除跟进时间", exact: true })).toBeEnabled();
+  await page.getByRole("button", { name: "清除跟进时间", exact: true }).click();
+  await expect.poll(async () => (await detail()).nextFollowUpAt).toBeNull();
+  await expect(page.getByLabel("下次跟进时间（本地时间）")).toHaveValue("");
+  await page.getByLabel("销售阶段").selectOption("REQUIREMENT_CONFIRMED");
+  await page.getByRole("button", { name: "保存阶段", exact: true }).click();
+  await expect.poll(async () => (await detail()).stage.code).toBe("REQUIREMENT_CONFIRMED");
+  await expect(page.getByRole("button", { name: "标记垃圾询盘", exact: true })).toBeEnabled();
+  await page.getByRole("button", { name: "标记垃圾询盘", exact: true }).click();
+  await expect(page.getByText("垃圾询盘（已隔离）", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("销售阶段")).toHaveCount(0);
+  const quarantined = await detail();
+  expect(quarantined).toMatchObject({ status: "SPAM", stage: { code: "REQUIREMENT_CONFIRMED" }, version: 5 });
+  expect((await page.request.patch(`/api/admin/inquiries/${id}`, { headers: origin, data: { version: quarantined.version, nextFollowUpAt: null } })).status()).toBe(200);
+  await page.getByRole("button", { name: "恢复询盘", exact: true }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "版本冲突" })).toContainText("版本冲突");
+  await expect(page.getByRole("button", { name: "恢复询盘", exact: true })).toBeDisabled();
+  await page.getByRole("button", { name: "重新加载", exact: true }).click();
+  await expect(page.getByRole("button", { name: "恢复询盘", exact: true })).toBeEnabled();
+  await page.getByRole("button", { name: "恢复询盘", exact: true }).click();
+  await expect(page.getByText("垃圾询盘（已隔离）", { exact: true })).toHaveCount(0);
+  await expect(page.getByLabel("销售阶段")).toHaveValue("REQUIREMENT_CONFIRMED");
+  expect(await detail()).toMatchObject({ status: "CONTACTED", version: 7 });
 });

@@ -188,7 +188,7 @@ describe("inquiry list routes", () => {
   it("rejects a direct request for manual entry without create permission", async () => {
     const { default: NewInquiryPage } = await import("@/app/admin/inquiries/new/page");
     getCurrentPrincipal.mockResolvedValue({ ...admin, roles: ["CRM_VIEWER"] });
-    render(await NewInquiryPage());
+    render(await NewInquiryPage({}));
 
     expect(screen.getByRole("alert")).toHaveTextContent("无权新增询盘");
     expect(listAssignees).not.toHaveBeenCalled();

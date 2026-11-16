@@ -1,12 +1,12 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
-import { Prisma, type PrismaClient } from "@prisma/client";
+import { Prisma, type LeadStatus, type PrismaClient } from "@prisma/client";
 
 import { can, type Principal } from "@/lib/auth/permissions";
 import { stageToLegacyStatus } from "@/lib/crm/stages";
 import { db } from "@/lib/db/client";
-import { leadWhereForScope, resolveCrmAccessScope } from "@/lib/services/crm-access-service";
+import { leadWhereForScope, noteActivityWhere, resolveCrmAccessScope } from "@/lib/services/crm-access-service";
 import { prepareInquiryCustomerLinks } from "@/lib/services/customer-service";
 import { inquiryListQuerySchema, manualInquirySchema, type InquiryListQuery } from "@/lib/validation/crm";
 import {
@@ -107,16 +107,25 @@ async function mutationCapabilities(
   transaction: Prisma.TransactionClient,
   principal: Principal,
   assignment: { assigneeId: string; endedAt: Date | null } | null,
+  status: LeadStatus,
 ) {
-  const [canEditStage, assignmentScope] = await Promise.all([
-    authorizeStageUpdate(transaction, principal, assignment).then(() => true, (error: unknown) => {
-      if (error instanceof LeadPermissionError) return false;
+  const [authorization, assignmentScope] = await Promise.all([
+    authorizeStageUpdate(transaction, principal, assignment).then((allowRollback) => ({ canUpdate: true, allowRollback }), (error: unknown) => {
+      if (error instanceof LeadPermissionError) return { canUpdate: false, allowRollback: false };
       throw error;
     }),
     resolveAssignmentScope(transaction, principal, assignment),
   ]);
-  // Basic notes use the same authorizer as stage updates in addActivity.
-  return { canEditStage, canAddNote: canEditStage, canAssign: assignmentScope.kind !== "NONE" };
+  const { canUpdate, allowRollback } = authorization;
+  // These actions share authorizeStageUpdate; terminal-status recovery additionally requires rollback authority.
+  return {
+    canEditStage: canUpdate,
+    canUpdateFollowUp: canUpdate,
+    canAddNote: canUpdate,
+    canAssign: assignmentScope.kind !== "NONE",
+    canMarkSpam: canUpdate && status !== "SPAM" && (allowRollback || !["WON", "LOST"].includes(status)),
+    canRestoreSpam: canUpdate && allowRollback && status === "SPAM",
+  };
 }
 
 async function queryWhere(database: Pick<PrismaClient, "crmTeamMembership">, principal: Principal, query: InquiryListQuery): Promise<Prisma.LeadWhereInput> {
@@ -125,7 +134,7 @@ async function queryWhere(database: Pick<PrismaClient, "crmTeamMembership">, pri
   if (owner && scope.kind !== "ALL" && (scope.kind === "NONE" || !scope.assigneeIds.includes(owner))) throw new LeadPermissionError();
   return { AND: [leadWhereForScope(scope), {
     status: query.status,
-    stage: query.stageCode ? { code: query.stageCode } : undefined,
+
     customerLevel: query.customerLevel,
     country: query.country ?? undefined,
     sourceChannel: query.sourceChannel,
@@ -138,7 +147,13 @@ async function queryWhere(database: Pick<PrismaClient, "crmTeamMembership">, pri
       { company: { contains: query.query, mode: "insensitive" } },
       { inquiryNumber: { contains: query.query, mode: "insensitive" } },
     ] : undefined,
-  }, query.overdue === undefined ? {} : query.overdue ? {
+  }, query.stageCode ? {
+    status: { not: "SPAM" },
+    OR: [
+      { stage: { code: query.stageCode } },
+      { stageId: null, status: stageToLegacyStatus(query.stageCode) },
+    ],
+  } : {}, query.overdue === undefined ? {} : query.overdue ? {
     nextFollowUpAt: { lt: new Date() }, status: { notIn: ["WON", "LOST", "SPAM"] },
   } : { OR: [{ nextFollowUpAt: null }, { nextFollowUpAt: { gte: new Date() } }, { status: { in: ["WON", "LOST", "SPAM"] } }] }] };
 }
@@ -260,12 +275,16 @@ export class LeadService {
     assertReadPermission(principal);
     return this.database.$transaction(async (transaction) => {
       const scope = await resolveCrmAccessScope(transaction, principal);
-      const lead = await transaction.lead.findFirst({ where: { AND: [{ id: leadId }, leadWhereForScope(scope)] }, include: { ...leadDetailInclude, stage: true } });
+      const activityWhere = await noteActivityWhere(transaction, principal);
+      const lead = await transaction.lead.findFirst({
+        where: { AND: [{ id: leadId }, leadWhereForScope(scope)] },
+        include: { ...leadDetailInclude, stage: true, preSpamStage: { select: { code: true } }, activities: { ...leadDetailInclude.activities, where: activityWhere } },
+      });
       if (!lead) {
         if (await transaction.lead.count({ where: { id: leadId } })) throw new LeadPermissionError();
         throw new LeadNotFoundError();
       }
-      return { ...lead, capabilities: await mutationCapabilities(transaction, principal, currentAssignment(lead)) };
+      return { ...lead, capabilities: await mutationCapabilities(transaction, principal, currentAssignment(lead), lead.status) };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
   }
 

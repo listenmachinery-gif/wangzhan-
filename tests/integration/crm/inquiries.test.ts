@@ -44,6 +44,9 @@ describe("manual inquiries and CRM scope", () => {
     const second = await service.createManual(admin, { ...input, contactId: lead.contactId });
     expect(second.inquiry).toMatchObject({ contactId: lead.contactId, companyId: lead.companyId });
     expect(second.inquiry.inquiryNumber).not.toBe(lead.inquiryNumber);
+    expect(await db.contact.count()).toBe(1);
+    expect(await db.company.count()).toBe(1);
+    expect(await db.lead.count({ where: { contactId: lead.contactId } })).toBe(2);
   });
   it("never creates or links a customer implicitly, and returns visible duplicate candidates", async () => {
     const existing = await customers.create(admin, { fullName: "Buyer", email: input.email });
@@ -141,8 +144,8 @@ describe("manual inquiries and CRM scope", () => {
     await db.user.updateMany({ where: { id: { in: [sales.id, other.id] } }, data: { isActive: false } });
 
     expect(await service.listAssignees(manager, "assign")).toEqual([{ id: replacement.id, name: replacement.name }]);
-    expect((await service.get(manager, managed.id)).capabilities).toEqual({ canEditStage: true, canAssign: true, canAddNote: true });
-    expect((await service.get(manager, viewed.id)).capabilities).toEqual({ canEditStage: false, canAssign: false, canAddNote: false });
+    expect((await service.get(manager, managed.id)).capabilities).toEqual({ canEditStage: true, canUpdateFollowUp: true, canMarkSpam: true, canRestoreSpam: false, canAssign: true, canAddNote: true });
+    expect((await service.get(manager, viewed.id)).capabilities).toEqual({ canEditStage: false, canUpdateFollowUp: false, canMarkSpam: false, canRestoreSpam: false, canAssign: false, canAddNote: false });
     await expect(service.updateStage(manager, managed.id, { version: 1, stageCode: "CONTACTED" })).resolves.toMatchObject({ version: 2 });
     await expect(service.assign(manager, managed.id, { version: 2, assigneeId: replacement.id })).resolves.toMatchObject({ version: 3 });
     expect(await db.leadAssignment.findMany({ where: { leadId: managed.id, endedAt: null } })).toEqual([expect.objectContaining({ assigneeId: replacement.id })]);
@@ -202,5 +205,62 @@ describe("manual inquiries and CRM scope", () => {
       expect(row.stageHistory).toHaveLength(1);
     }
     expect(await db.contact.count()).toBe(0);
+  });
+});
+
+describe("progressive stage filters", () => {
+  beforeEach(async () => {
+    await db.lead.createMany({ data: [
+      { id: "legacy-new", status: "NEW", stageId: null },
+      { id: "legacy-contacted", status: "CONTACTED", stageId: null },
+      { id: "normalized-new", status: "NEW", stageId: "crm_stage_new_inquiry" },
+      { id: "normalized-to-contact", status: "NEW", stageId: "crm_stage_to_contact" },
+      { id: "normalized-contacted", status: "CONTACTED", stageId: "crm_stage_contacted" },
+      { id: "normalized-requirement", status: "CONTACTED", stageId: "crm_stage_requirement_confirmed" },
+      { id: "spam-new", status: "SPAM", stageId: "crm_stage_new_inquiry" },
+      { id: "spam-requirement", status: "SPAM", stageId: "crm_stage_requirement_confirmed" },
+    ].map((row) => ({ ...row, status: row.status as "NEW" | "CONTACTED" | "SPAM", email: `${row.id}@example.com`, message: row.id })) });
+  });
+  it.each([
+    { stageCode: "NEW_INQUIRY", expected: ["legacy-new", "normalized-new"] },
+    { stageCode: "TO_CONTACT", expected: ["legacy-new", "normalized-to-contact"] },
+    { stageCode: "REQUIREMENT_CONFIRMED", expected: ["legacy-contacted", "normalized-requirement"] },
+    { stageCode: "SOLUTION_PREPARATION", expected: ["legacy-contacted"] },
+  ])("includes compatible legacy rows and excludes spam for $stageCode", async ({ stageCode, expected }) => {
+    const result = await service.list(admin, { stageCode });
+    expect(result.items.map(({ id }) => id).sort()).toEqual(expected);
+    expect(result.total).toBe(expected.length);
+    const csv = await service.exportCsv(admin, { stageCode });
+    expect(csv).not.toContain("spam-");
+    for (const id of expected) expect(csv).toContain(`${id}@example.com`);
+    expect((await service.list(admin, { stageCode, status: "SPAM" })).total).toBe(0);
+  });
+});
+
+
+describe("SPAM action capabilities preserve service authorization", () => {
+  it("offers mark/recovery only where the shared legacy-status service authorizes them", async () => {
+    const { inquiry } = await service.createManual(admin, { ...input, assigneeId: sales.id });
+    await service.updateStage(admin, inquiry.id, { version: 1, stageCode: "REQUIREMENT_CONFIRMED" });
+    for (const actor of [admin, manager, sales]) expect((await service.get(actor, inquiry.id)).capabilities).toMatchObject({ canMarkSpam: true, canRestoreSpam: false });
+    expect((await service.get(viewer, inquiry.id)).capabilities).toMatchObject({ canMarkSpam: false, canRestoreSpam: false });
+    await expect(service.update(viewer, inquiry.id, { version: 2, status: "SPAM" })).rejects.toBeInstanceOf(LeadPermissionError);
+    await service.update(manager, inquiry.id, { version: 2, status: "SPAM" });
+    for (const actor of [admin, manager]) expect((await service.get(actor, inquiry.id)).capabilities).toMatchObject({ canMarkSpam: false, canRestoreSpam: true });
+    for (const actor of [sales, viewer]) {
+      expect((await service.get(actor, inquiry.id)).capabilities).toMatchObject({ canMarkSpam: false, canRestoreSpam: false });
+      await expect(service.update(actor, inquiry.id, { version: 3, status: "CONTACTED" })).rejects.toBeInstanceOf(LeadPermissionError);
+    }
+    const before = { audits: await db.auditLog.count(), history: await db.leadStageHistory.count() };
+    await expect(service.update(manager, inquiry.id, { version: 2, status: "CONTACTED" })).rejects.toMatchObject({ name: "LeadConflictError" });
+    expect({ audits: await db.auditLog.count(), history: await db.leadStageHistory.count() }).toEqual(before);
+    await service.update(manager, inquiry.id, { version: 3, status: "CONTACTED" });
+    expect(await db.lead.findUniqueOrThrow({ where: { id: inquiry.id } })).toMatchObject({ status: "CONTACTED", stageId: "crm_stage_requirement_confirmed", preSpamStageId: null, version: 4 });
+    expect((await db.leadStageHistory.findMany({ where: { leadId: inquiry.id }, orderBy: { createdAt: "asc" } })).slice(-2)).toMatchObject([
+      { previousStatus: "CONTACTED", newStatus: "SPAM", source: "LEGACY_API" },
+      { previousStatus: "SPAM", newStatus: "CONTACTED", source: "LEGACY_API" },
+    ]);
+    await service.update(manager, inquiry.id, { version: 4, status: "WON" });
+    expect((await service.get(sales, inquiry.id)).capabilities).toMatchObject({ canMarkSpam: false, canRestoreSpam: false });
   });
 });

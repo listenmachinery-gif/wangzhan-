@@ -1,4 +1,5 @@
 "use client";
+import type { LeadStatus } from "@prisma/client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminCard } from "@/components/admin/ui/AdminCard";
@@ -22,6 +23,8 @@ export type InquiryDetailValue = {
   quantity: string | null;
   voltage: string | null;
   budget: string | null;
+  status: LeadStatus;
+  spamRecoveryStatus: LeadStatus;
   stageCode: string;
   stageName: string;
   ownerId: string;
@@ -41,11 +44,21 @@ const control =
 const button =
   "admin-focus inline-flex min-h-11 items-center justify-center rounded-admin-sm border border-admin-border px-4 text-sm font-semibold disabled:opacity-50";
 
+function localDateTime(value: string | null) {
+  if (!value) return "";
+  const date = new Date(value);
+  const pad = (part: number) => String(part).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 export function InquiryDetail({
   inquiry,
   stages,
   assignees,
   canEditStage,
+  canUpdateFollowUp,
+  canMarkSpam,
+  canRestoreSpam,
   canAssign,
   canAddNote,
 }: {
@@ -53,11 +66,15 @@ export function InquiryDetail({
   stages: Stage[];
   assignees: InquiryAssignee[];
   canEditStage: boolean;
+  canUpdateFollowUp: boolean;
+  canMarkSpam: boolean;
+  canRestoreSpam: boolean;
   canAssign: boolean;
   canAddNote: boolean;
 }) {
   const router = useRouter();
   const [stageCode, setStageCode] = useState(inquiry.stageCode);
+  const [followUp, setFollowUp] = useState(() => localDateTime(inquiry.nextFollowUpAt));
   const [ownerId, setOwnerId] = useState(inquiry.ownerId);
   const [busy, setBusy] = useState(false);
   const [conflict, setConflict] = useState(false);
@@ -122,6 +139,12 @@ export function InquiryDetail({
   ];
   return (
     <div className="grid min-w-0 grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.5fr)_minmax(260px,0.9fr)] [&>*]:min-w-0">
+      {inquiry.status === "SPAM" ? (
+        <div role="status" className="rounded-admin border border-red-300 bg-red-50 p-4 text-red-900 xl:col-span-3">
+          <p className="font-semibold">垃圾询盘（已隔离）</p>
+          <p className="mt-1 text-sm">此询盘已移出销售流程。恢复后可继续修改销售阶段。</p>
+        </div>
+      ) : null}
       <div className="space-y-5">
         <AdminCard title="客户与公司">
           <dl className="space-y-4 text-sm">
@@ -221,7 +244,7 @@ export function InquiryDetail({
       <aside className="space-y-5">
         <AdminCard title="销售流程">
           <div className="space-y-5">
-            {canEditStage ? (
+            {canEditStage && inquiry.status !== "SPAM" ? (
               <form
                 className="space-y-3"
                 onSubmit={(event) => {
@@ -333,7 +356,28 @@ export function InquiryDetail({
                 <p className="mt-1 text-sm">{inquiry.ownerName}</p>
               </div>
             )}
-            {inquiry.nextFollowUpAt ? (
+            {canUpdateFollowUp ? (
+              <form className="space-y-3" onSubmit={(event) => {
+                event.preventDefault();
+                const date = new Date(followUp);
+                if (!followUp || !Number.isFinite(date.getTime())) {
+                  setError("请填写有效的下次跟进时间。");
+                  return;
+                }
+                void mutate({ version: inquiry.version, nextFollowUpAt: date.toISOString() });
+              }}>
+                <label className="block space-y-2 text-sm font-medium">
+                  <span>下次跟进时间（本地时间）</span>
+                  <input type="datetime-local" required value={followUp} className={control}
+                    disabled={disabled} onChange={(event) => setFollowUp(event.target.value)} />
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  <button className={button} disabled={disabled || !followUp}>保存跟进时间</button>
+                  <button type="button" className={button} disabled={disabled || !inquiry.nextFollowUpAt}
+                    onClick={() => void mutate({ version: inquiry.version, nextFollowUpAt: null })}>清除跟进时间</button>
+                </div>
+              </form>
+            ) : inquiry.nextFollowUpAt ? (
               <div>
                 <p className="text-xs text-admin-muted">下次跟进</p>
                 <time className="text-sm" dateTime={inquiry.nextFollowUpAt}>
@@ -342,8 +386,8 @@ export function InquiryDetail({
                   })}
                 </time>
               </div>
-            ) : null}
-            {!canEditStage && !canAssign && !canAddNote ? (
+            ) : <p className="text-sm text-admin-muted">下次跟进：未安排</p>}
+            {!canUpdateFollowUp && !canEditStage && !canAssign && !canAddNote ? (
               <p className="text-sm text-admin-muted">
                 只读：当前权限无法修改此询盘。
               </p>
@@ -351,6 +395,14 @@ export function InquiryDetail({
           </div>
         </AdminCard>
         <AdminCard title="快捷操作">
+          {canMarkSpam && inquiry.status !== "SPAM" ? (
+            <button type="button" className={`${button} mb-3 w-full text-red-800`} disabled={disabled}
+              onClick={() => void mutate({ version: inquiry.version, status: "SPAM" })}>标记垃圾询盘</button>
+          ) : null}
+          {canRestoreSpam && inquiry.status === "SPAM" ? (
+            <button type="button" className={`${button} mb-3 w-full`} disabled={disabled}
+              onClick={() => void mutate({ version: inquiry.version, status: inquiry.spamRecoveryStatus })}>恢复询盘</button>
+          ) : null}
           <a href={`mailto:${inquiry.email}`} className={`${button} w-full`}>
             发送邮件
           </a>

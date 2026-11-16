@@ -173,3 +173,15 @@ describe("admin navigation", () => {
     expect(screen.queryByText(/访客|浏览量/)).not.toBeInTheDocument();
   });
 });
+
+
+it.each([
+  { path: "/admin/customers", current: "客户管理" },
+  { path: "/admin/customers/new", current: "新增客户" },
+  { path: "/admin/customers/customer-1", current: "客户详情" },
+])("labels customer breadcrumbs at $path in Chinese", ({ path, current }) => {
+  render(<AdminBreadcrumbs currentPath={path} />);
+  expect(screen.getByText(current)).toHaveAttribute("aria-current", "page");
+  if (path !== "/admin/customers") expect(screen.getByRole("link", { name: "客户管理" })).toHaveAttribute("href", "/admin/customers");
+  expect(screen.queryByText("customers")).not.toBeInTheDocument();
+});

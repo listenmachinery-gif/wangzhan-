@@ -21,7 +21,7 @@ export function crmErrorResponse(error: unknown) {
   if (error instanceof LeadConflictError || error instanceof CustomerConflictError) return NextResponse.json({ code: "VERSION_CONFLICT", message: error.message }, { status: 409 });
   if (error instanceof SyntaxError) return NextResponse.json({ code: "INVALID_LEAD", message: "Malformed JSON body." }, { status: 400 });
   if (error instanceof LeadValidationError || error instanceof CustomerValidationError || error instanceof ZodError) return NextResponse.json({ code: "INVALID_LEAD", message: error.message }, { status: 400 });
-  console.error("CRM administration API error", error);
+  console.error({ code: "LEAD_OPERATION_FAILED" });
   return NextResponse.json({ code: "LEAD_OPERATION_FAILED" }, { status: 500 });
 }
 

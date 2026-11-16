@@ -6,11 +6,12 @@ import { Prisma, type PrismaClient } from "@prisma/client";
 import { can, type Principal } from "@/lib/auth/permissions";
 import { normalizeCompanyName, normalizePhoneCandidate } from "@/lib/crm/normalization";
 import { db } from "@/lib/db/client";
-import { leadWhereForScope, resolveCrmAccessScope } from "@/lib/services/crm-access-service";
+import { leadWhereForScope, noteActivityWhere, resolveCrmAccessScope } from "@/lib/services/crm-access-service";
 import {
   customerCreateSchema,
   customerListQuerySchema,
   customerUpdateSchema,
+  inquiryCustomerOptionsQuerySchema,
   type CustomerCreateInput,
   type ManualInquiryInput,
   type CustomerUpdateInput,
@@ -108,10 +109,19 @@ const timelineSelect = {
 const contactCandidateSelect = { id: true, customerCode: true, fullName: true } as const;
 const companyCandidateSelect = { id: true, companyCode: true, name: true } as const;
 const candidateLimit = 10;
+const inquiryContactSelect = {
+  id: true, customerCode: true, fullName: true, email: true,
+  phone: true, whatsapp: true, countryCode: true, companyId: true,
+} satisfies Prisma.ContactSelect;
+export type InquiryCustomerOptions = {
+  contacts: Prisma.ContactGetPayload<{ select: typeof inquiryContactSelect }>[];
+  companies: Prisma.CompanyGetPayload<{ select: typeof companyCandidateSelect }>[];
+};
 
 type ContactRow = Prisma.ContactGetPayload<{ select: typeof contactSelect }>;
 type CompanyRow = Prisma.CompanyGetPayload<{ select: typeof companySelect }>;
 type CustomerScope = {
+  activityWhere: Prisma.LeadActivityWhereInput;
   leadWhere: Prisma.LeadWhereInput;
   editAll: boolean;
   editOwnerIds: string[];
@@ -164,11 +174,12 @@ async function resolveCustomerScope(transaction: Transaction, principal: Princip
   const now = new Date();
   const leadScope = await resolveCrmAccessScope(transaction, principal, now);
   const leadWhere = leadWhereForScope(leadScope);
+  const activityWhere = await noteActivityWhere(transaction, principal, now);
   if (!can(principal, "customer.update")) {
-    return { leadWhere, editAll: false, editOwnerIds: [] };
+    return { leadWhere, activityWhere, editAll: false, editOwnerIds: [] };
   }
   if (principal.roles.includes("ADMIN") || principal.roles.includes("SUPER_ADMIN")) {
-    return { leadWhere, editAll: true, editOwnerIds: [] };
+    return { leadWhere, activityWhere, editAll: true, editOwnerIds: [] };
   }
 
   const editOwnerIds = new Set([principal.id]);
@@ -181,7 +192,7 @@ async function resolveCustomerScope(transaction: Transaction, principal: Princip
       for (const id of managerScope.assigneeIds) editOwnerIds.add(id);
     }
   }
-  return { leadWhere, editAll: false, editOwnerIds: [...editOwnerIds] };
+  return { leadWhere, activityWhere, editAll: false, editOwnerIds: [...editOwnerIds] };
 }
 
 function visibleCustomerWhere(scope: CustomerScope): Prisma.ContactWhereInput & Prisma.CompanyWhereInput {
@@ -258,7 +269,7 @@ async function readDetail(
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     }),
     transaction.leadActivity.findMany({
-      where: { lead: inquiryWhere },
+      where: { AND: [{ lead: inquiryWhere }, scope.activityWhere] },
       select: timelineSelect,
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     }),
@@ -466,6 +477,52 @@ export async function prepareInquiryCustomerLinks(transaction: Transaction, prin
 
 export class CustomerService {
   constructor(private readonly database: PrismaClient = db) {}
+
+  async inquiryOptions(principal: Principal, rawQuery: unknown): Promise<InquiryCustomerOptions> {
+    if (!can(principal, "customer.read") || !can(principal, "inquiry.create")) throw new CustomerPermissionError();
+    const { query, contactId, companyId } = inquiryCustomerOptionsQuerySchema.parse(rawQuery);
+    return this.database.$transaction(async (transaction) => {
+      const scope = await resolveCustomerScope(transaction, principal);
+      const visible = visibleCustomerWhere(scope);
+      const selectedContact = contactId ? await transaction.contact.findFirst({
+        where: { AND: [visible, { id: contactId }] }, select: inquiryContactSelect,
+      }) : null;
+      if (contactId && !selectedContact) throw new CustomerNotFoundError();
+      const selectedCompany = companyId ? await transaction.company.findFirst({
+        where: { AND: [visible, { id: companyId }] }, select: companyCandidateSelect,
+      }) : null;
+      if (companyId && !selectedCompany) throw new CustomerNotFoundError();
+      const contacts = await transaction.contact.findMany({
+        where: { AND: [visible, query ? { OR: [
+          { fullName: { contains: query, mode: "insensitive" } },
+          { customerCode: { contains: query, mode: "insensitive" } },
+          { email: { contains: query, mode: "insensitive" } },
+        ] } : {}] },
+        select: inquiryContactSelect, orderBy: [{ fullName: "asc" }, { id: "asc" }], take: 50,
+      });
+      if (selectedContact && !contacts.some(({ id }) => id === selectedContact.id)) contacts.unshift(selectedContact);
+      const companies = await transaction.company.findMany({
+        where: { AND: [visible, query ? { OR: [
+          { normalizedName: { contains: normalizeCompanyName(query) } },
+          { companyCode: { contains: query, mode: "insensitive" } },
+        ] } : {}] },
+        select: companyCandidateSelect, orderBy: [{ name: "asc" }, { id: "asc" }], take: 50,
+      });
+      const relatedCompanies = await transaction.company.findMany({
+        where: { AND: [visible, { id: { in: contacts.flatMap(({ companyId }) => companyId ? [companyId] : []) } }] },
+        select: companyCandidateSelect,
+      });
+      const companyMap = new Map([...companies, ...relatedCompanies, ...(selectedCompany ? [selectedCompany] : [])].map((company) => [company.id, company]));
+      return {
+        contacts: contacts.map((contact) => ({
+          id: contact.id, customerCode: contact.customerCode, fullName: contact.fullName,
+          email: contact.email, phone: contact.phone, whatsapp: contact.whatsapp, countryCode: contact.countryCode,
+          companyId: contact.companyId && companyMap.has(contact.companyId) ? contact.companyId : null,
+        })),
+        companies: [...companyMap.values()],
+      };
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
+  }
 
   async list(principal: Principal, rawQuery: unknown) {
     if (!can(principal, "customer.read")) throw new CustomerPermissionError();

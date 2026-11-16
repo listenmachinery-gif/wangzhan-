@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { can } from "@/lib/auth/permissions";
 import { notFound, redirect } from "next/navigation";
 import { CustomerDetail } from "@/components/admin/crm/CustomerDetail";
 import { AdminPageHeader } from "@/components/admin/ui/AdminPageHeader";
@@ -27,6 +29,12 @@ export default async function CustomerPage({
           title={customer.fullName}
           eyebrow="客户详情"
           description={customer.customerCode}
+          actions={can(principal, "inquiry.create") ? (
+            <Link className="admin-focus inline-flex min-h-11 items-center rounded-admin-sm bg-admin-ink px-4 text-sm font-semibold text-white"
+              href={`/admin/inquiries/new?${new URLSearchParams({ contactId: customer.id, ...(customer.company?.id ? { companyId: customer.company.id } : {}) })}`}>
+              新建询盘
+            </Link>
+          ) : null}
         />
         <CustomerDetail customer={customer} />
       </div>
