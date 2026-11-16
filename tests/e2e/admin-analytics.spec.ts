@@ -76,7 +76,7 @@ test("protects analytics and renders truthful unconfigured Google states", async
   });
   expect(firstPartyStatus.status).toBe(200);
   expect(firstPartyStatus.body).toMatchObject({
-    environment: "TEST",
+    environment: "DEVELOPMENT",
     summary: {
       onlineVisitors: expect.any(Number),
       activeVisitors: expect.any(Number),

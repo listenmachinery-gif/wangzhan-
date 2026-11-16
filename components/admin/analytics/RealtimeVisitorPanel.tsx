@@ -1,10 +1,11 @@
+import Link from "next/link";
 import { Activity, Clock3, Eye, Radio, Users } from "lucide-react";
 
 import { DataState } from "@/components/admin/ui/DataState";
 
 export type FirstPartyOverview = {
   generatedAt: string;
-  environment: "PRODUCTION" | "PREVIEW" | "TEST";
+  environment: "PRODUCTION" | "PREVIEW" | "DEVELOPMENT" | "TEST";
   summary: {
     onlineVisitors: number;
     activeVisitors: number;
@@ -47,7 +48,7 @@ export function RealtimeVisitorPanel({ data, error = false }: { data: FirstParty
             <span aria-hidden className="size-2 rounded-full bg-neon shadow-[0_0_0_4px_rgba(141,219,0,0.12)]" />
             <h2 className="text-sm font-semibold">第一方实时访客</h2>
           </div>
-          <p className="mt-1 text-xs text-zinc-500">{data.environment === "PRODUCTION" ? "生产环境" : data.environment === "PREVIEW" ? "预览环境" : "测试环境"}</p>
+          <p className="mt-1 text-xs text-zinc-500">{data.environment === "PRODUCTION" ? "生产环境" : data.environment === "PREVIEW" ? "预览环境" : data.environment === "DEVELOPMENT" ? "开发环境" : "测试环境"}</p>
         </div>
         <time dateTime={data.generatedAt} className="text-[10px] uppercase tracking-[0.08em] text-zinc-500">
           {new Intl.DateTimeFormat("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(data.generatedAt))}
@@ -61,7 +62,10 @@ export function RealtimeVisitorPanel({ data, error = false }: { data: FirstParty
           </div>
         ))}
       </dl>
-      <p className="border-t border-white/10 px-5 py-3 text-[11px] leading-5 text-zinc-500">仅统计已同意分析的匿名访问；不会与 Google 用户数据合并。</p>
+      <div className="flex items-center justify-between gap-3 border-t border-white/10 px-5 py-3">
+        <p className="text-[11px] leading-5 text-zinc-500">仅统计已同意分析的匿名访问；不会与 Google 用户数据合并。</p>
+        <Link href="/admin/analytics/visitors" className="shrink-0 rounded-md text-xs font-semibold text-neon outline-none hover:text-white focus-visible:ring-2 focus-visible:ring-ignition">查看明细</Link>
+      </div>
     </section>
   );
 }

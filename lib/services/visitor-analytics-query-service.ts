@@ -26,6 +26,8 @@ export type VisitorListQuery = {
   environment: AnalyticsEnvironment;
   page: number;
   pageSize: number;
+  from?: Date;
+  to?: Date;
   source?: string;
   countryCode?: string;
   deviceType?: string;
@@ -52,22 +54,47 @@ function activeCutoff(now: Date) {
 }
 
 function visitorWhere(query: VisitorListQuery, now: Date): Prisma.AnalyticsVisitorWhereInput {
-  const statusWhere: Prisma.AnalyticsVisitorWhereInput = query.status === "online"
-    ? { lastSeenAt: { gte: onlineCutoff(now) } }
-    : query.status === "active"
-      ? { lastActiveAt: { gte: activeCutoff(now) } }
-      : query.status === "offline"
-        ? { lastSeenAt: { lt: onlineCutoff(now) } }
-        : {};
+  const lastSeenAt: Prisma.DateTimeFilter = {
+    gte: query.from,
+    lte: query.to,
+  };
+  if (query.status === "online") {
+    const cutoff = onlineCutoff(now);
+    lastSeenAt.gte = query.from && query.from > cutoff ? query.from : cutoff;
+  }
+  if (query.status === "offline") lastSeenAt.lt = onlineCutoff(now);
   return {
     environment: query.environment,
     isBot: false,
-    ...statusWhere,
+    lastSeenAt,
+    lastActiveAt: query.status === "active" ? { gte: activeCutoff(now) } : undefined,
     countryCode: query.countryCode,
     deviceType: query.deviceType,
     firstSource: query.source ? { path: ["source"], equals: query.source } : undefined,
     pageViews: query.productId ? { some: { productId: query.productId } } : undefined,
   };
+}
+
+function sourceName(value: Prisma.JsonValue | null) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return "direct";
+  const source = (value as Record<string, Prisma.JsonValue>)["source"];
+  return typeof source === "string" ? source : "direct";
+}
+
+function spreadsheetCell(value: unknown) {
+  const text = value === null || value === undefined ? "" : String(value);
+  const safe = /^\s*[=+\-@]/.test(text) ? `'${text}` : text;
+  return /[",\r\n]/.test(safe) ? `"${safe.replaceAll('"', '""')}"` : safe;
+}
+
+function visitorLabel(id: string) {
+  return `访客-${id.slice(-6).toUpperCase()}`;
+}
+
+function visitorStatus(visitor: { lastSeenAt: Date; lastActiveAt: Date | null }, now: Date) {
+  if (isOnline(visitor.lastSeenAt, now)) return "online";
+  if (visitor.lastActiveAt && isActive(visitor.lastActiveAt, now)) return "active";
+  return "offline";
 }
 
 export class VisitorAnalyticsQueryService {
@@ -210,5 +237,48 @@ export class VisitorAnalyticsQueryService {
     });
     if (!visitor) throw new VisitorAnalyticsNotFoundError();
     return visitor;
+  }
+
+  async exportCsv(principal: Principal, query: VisitorListQuery, now = new Date()) {
+    assertPermission(principal, "analytics.export");
+    const visitors = await this.database.analyticsVisitor.findMany({
+      where: visitorWhere(query, now),
+      select: {
+        id: true,
+        firstSeenAt: true,
+        lastSeenAt: true,
+        lastActiveAt: true,
+        firstSource: true,
+        countryCode: true,
+        region: true,
+        city: true,
+        deviceType: true,
+        browser: true,
+        operatingSystem: true,
+        linkedLead: { select: { company: true } },
+        _count: { select: { sessions: true, pageViews: true, events: true } },
+      },
+      orderBy: [{ lastSeenAt: "desc" }, { id: "desc" }],
+      take: 10_000,
+    });
+    const header = ["visitor", "firstSeenAt", "lastSeenAt", "status", "source", "country", "region", "city", "device", "browser", "operatingSystem", "sessions", "pageViews", "events", "leadCompany"];
+    const rows = visitors.map((visitor) => [
+      visitorLabel(visitor.id),
+      visitor.firstSeenAt.toISOString(),
+      visitor.lastSeenAt.toISOString(),
+      visitorStatus(visitor, now),
+      sourceName(visitor.firstSource),
+      visitor.countryCode,
+      visitor.region,
+      visitor.city,
+      visitor.deviceType,
+      visitor.browser,
+      visitor.operatingSystem,
+      visitor._count.sessions,
+      visitor._count.pageViews,
+      visitor._count.events,
+      visitor.linkedLead?.company,
+    ].map(spreadsheetCell).join(","));
+    return [header.join(","), ...rows].join("\r\n");
   }
 }

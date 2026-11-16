@@ -1,6 +1,6 @@
-import type { AnalyticsEnvironment } from "@prisma/client";
 import { NextResponse } from "next/server";
 
+import { currentAnalyticsEnvironment } from "@/lib/analytics/first-party/environment";
 import { readOrCreateAnalyticsIdentity } from "@/lib/analytics/first-party/identity";
 import { hashNetworkKey } from "@/lib/analytics/first-party/rules";
 import { assertSameOriginMutation } from "@/lib/auth/request-security";
@@ -21,13 +21,6 @@ function cookieValue(request: Request, name: string) {
     if (cookieName === name) return value.join("=");
   }
   return undefined;
-}
-
-function environment(): AnalyticsEnvironment {
-  if (process.env.NODE_ENV === "test") return "TEST";
-  if (process.env.VERCEL_ENV === "production") return "PRODUCTION";
-  if (process.env.VERCEL_ENV === "preview") return "PREVIEW";
-  return "DEVELOPMENT";
 }
 
 function boundedHeader(request: Request, name: string, maximum: number) {
@@ -75,7 +68,7 @@ export async function POST(request: Request) {
     const identity = readOrCreateAnalyticsIdentity(request, now);
     const userAgent = request.headers.get("user-agent") ?? "";
     const result = await new FirstPartyAnalyticsService().collectAnalyticsBatch(identity, batch, {
-      environment: environment(),
+      environment: currentAnalyticsEnvironment(),
       now,
       countryCode: boundedHeader(request, "x-vercel-ip-country", 2)?.toUpperCase(),
       region: boundedHeader(request, "x-vercel-ip-country-region", 100),
