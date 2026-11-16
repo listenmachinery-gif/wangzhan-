@@ -69,6 +69,24 @@ enum NotificationStatus {
   FAILED
 }
 
+enum AnalyticsEnvironment {
+  DEVELOPMENT
+  TEST
+  PREVIEW
+  PRODUCTION
+}
+
+enum AnalyticsEventType {
+  PRODUCT_VIEW
+  INQUIRY_START
+  INQUIRY_SUBMIT
+  WHATSAPP_CLICK
+  EMAIL_CLICK
+  CATALOG_DOWNLOAD
+  CHAT_STARTED
+  CHAT_MESSAGE_SENT
+}
+
 model User {
   id                   String           @id @default(cuid())
   email                String           @unique
@@ -196,26 +214,28 @@ model ProductCategory {
 }
 
 model Product {
-  id               String            @id @default(cuid())
-  categoryId       String
-  name             String
-  slug             String            @unique
-  summary          String
-  description      String?
-  status           PublicationStatus @default(DRAFT)
-  position         Int               @default(0)
-  version          Int               @default(1)
-  slugLocked       Boolean           @default(true)
-  registeredWidget String?
-  publishedAt      DateTime?
-  archivedAt       DateTime?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  category         ProductCategory   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  sections         ProductSection[]
-  models           ProductModel[]
-  leads            Lead[]
-  seoRecords       SeoRecord[]
+  id                 String              @id @default(cuid())
+  categoryId         String
+  name               String
+  slug               String              @unique
+  summary            String
+  description        String?
+  status             PublicationStatus   @default(DRAFT)
+  position           Int                 @default(0)
+  version            Int                 @default(1)
+  slugLocked         Boolean             @default(true)
+  registeredWidget   String?
+  publishedAt        DateTime?
+  archivedAt         DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  category           ProductCategory     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  sections           ProductSection[]
+  models             ProductModel[]
+  leads              Lead[]
+  seoRecords         SeoRecord[]
+  analyticsPageViews AnalyticsPageView[]
+  analyticsEvents    AnalyticsEvent[]
 
   @@index([categoryId, status, position])
   @@index([status, publishedAt])
@@ -395,6 +415,7 @@ model Lead {
   activities           LeadActivity[]
   assignments          LeadAssignment[]
   notificationAttempts LeadNotificationAttempt[]
+  analyticsVisitors    AnalyticsVisitor[]
 
   @@index([status, createdAt])
   @@index([email, createdAt])
@@ -508,4 +529,164 @@ model PageVersion {
   @@unique([pageId, version])
   @@index([pageId, createdAt])
   @@index([createdById, createdAt])
+}
+
+model AnalyticsVisitor {
+  id              String               @id @default(cuid())
+  anonymousId     String
+  environment     AnalyticsEnvironment
+  firstSeenAt     DateTime
+  lastSeenAt      DateTime
+  lastActiveAt    DateTime?
+  firstSource     Json?
+  lastSource      Json?
+  countryCode     String?
+  region          String?
+  city            String?
+  deviceType      String?
+  browser         String?
+  operatingSystem String?
+  isBot           Boolean              @default(false)
+  linkedLeadId    String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  linkedLead      Lead?                @relation(fields: [linkedLeadId], references: [id], onDelete: SetNull)
+  sessions        AnalyticsSession[]
+  pageViews       AnalyticsPageView[]
+  events          AnalyticsEvent[]
+  siteSearches    SiteSearchEvent[]
+
+  @@unique([environment, anonymousId])
+  @@index([environment, lastSeenAt, id])
+  @@index([linkedLeadId, lastSeenAt])
+}
+
+model AnalyticsSession {
+  id              String               @id @default(cuid())
+  visitorId       String
+  sessionKey      String
+  environment     AnalyticsEnvironment
+  startedAt       DateTime
+  lastSeenAt      DateTime
+  lastActiveAt    DateTime?
+  endedAt         DateTime?
+  landingPath     String
+  exitPath        String?
+  referrer        String?
+  source          String?
+  medium          String?
+  campaign        String?
+  term            String?
+  content         String?
+  countryCode     String?
+  region          String?
+  city            String?
+  deviceType      String?
+  browser         String?
+  operatingSystem String?
+  ipHash          String?
+  isBot           Boolean              @default(false)
+  pageViewCount   Int                  @default(0)
+  eventCount      Int                  @default(0)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  visitor         AnalyticsVisitor     @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  pageViews       AnalyticsPageView[]
+  events          AnalyticsEvent[]
+  siteSearches    SiteSearchEvent[]
+
+  @@unique([environment, sessionKey])
+  @@index([visitorId, startedAt])
+  @@index([environment, lastSeenAt, id])
+}
+
+model AnalyticsPageView {
+  id              String               @id @default(cuid())
+  visitorId       String
+  sessionId       String
+  productId       String?
+  environment     AnalyticsEnvironment
+  pageViewKey     String
+  path            String
+  title           String?
+  referrer        String?
+  startedAt       DateTime
+  lastHeartbeatAt DateTime?
+  exitedAt        DateTime?
+  activeSeconds   Int                  @default(0)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  visitor         AnalyticsVisitor     @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  session         AnalyticsSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  product         Product?             @relation(fields: [productId], references: [id], onDelete: SetNull)
+  events          AnalyticsEvent[]
+  siteSearches    SiteSearchEvent[]
+
+  @@unique([environment, pageViewKey])
+  @@index([sessionId, startedAt])
+  @@index([visitorId, startedAt])
+  @@index([productId, startedAt])
+  @@index([environment, startedAt])
+}
+
+model AnalyticsEvent {
+  id          String               @id @default(cuid())
+  visitorId   String
+  sessionId   String
+  pageViewId  String?
+  productId   String?
+  environment AnalyticsEnvironment
+  eventKey    String
+  type        AnalyticsEventType
+  path        String?
+  properties  Json?
+  occurredAt  DateTime
+  createdAt   DateTime             @default(now())
+  visitor     AnalyticsVisitor     @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  session     AnalyticsSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  pageView    AnalyticsPageView?   @relation(fields: [pageViewId], references: [id], onDelete: SetNull)
+  product     Product?             @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@unique([environment, eventKey])
+  @@index([sessionId, occurredAt])
+  @@index([visitorId, occurredAt])
+  @@index([type, occurredAt])
+  @@index([productId, occurredAt])
+}
+
+model SiteSearchEvent {
+  id          String               @id @default(cuid())
+  visitorId   String
+  sessionId   String
+  pageViewId  String?
+  environment AnalyticsEnvironment
+  eventKey    String
+  query       String
+  resultCount Int?
+  path        String?
+  occurredAt  DateTime
+  createdAt   DateTime             @default(now())
+  visitor     AnalyticsVisitor     @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  session     AnalyticsSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  pageView    AnalyticsPageView?   @relation(fields: [pageViewId], references: [id], onDelete: SetNull)
+
+  @@unique([environment, eventKey])
+  @@index([sessionId, occurredAt])
+  @@index([visitorId, occurredAt])
+  @@index([query, occurredAt])
+}
+
+model AnalyticsDailySummary {
+  id             String               @id @default(cuid())
+  environment    AnalyticsEnvironment
+  date           DateTime
+  dimension      String
+  dimensionValue String
+  metrics        Json
+  version        Int                  @default(1)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  @@unique([environment, date, dimension, dimensionValue])
+  @@index([environment, date])
 }

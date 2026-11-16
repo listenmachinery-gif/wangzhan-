@@ -36,6 +36,9 @@ export const PERMISSIONS = [
   "lead.assign",
   "lead.export.all",
   "lead.export.assigned",
+  "analytics.read.summary",
+  "analytics.read.visitors",
+  "analytics.export",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -95,6 +98,9 @@ export const ROLE_PERMISSIONS: Record<RoleKey, Partial<Record<Permission, true>>
     "lead.update.all",
     "lead.assign",
     "lead.export.all",
+    "analytics.read.summary",
+    "analytics.read.visitors",
+    "analytics.export",
   ),
   PRODUCT_EDITOR: allow(
     "category.read",

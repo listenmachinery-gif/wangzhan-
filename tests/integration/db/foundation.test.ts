@@ -2,6 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 
 import { db } from "@/lib/db/client";
 import { resetTestDatabase } from "@/lib/db/test-database";
+import { seedRbac } from "@/prisma/seed-rbac";
 
 describe("CMS PostgreSQL foundation", () => {
   beforeEach(async () => {
@@ -129,5 +130,133 @@ describe("CMS PostgreSQL foundation", () => {
         },
       }),
     ).rejects.toMatchObject({ code: "P2003" });
+  });
+
+  it("persists the analytics graph with idempotency and query indexes", async () => {
+    const category = await db.productCategory.create({
+      data: { name: "Shearing Machines", slug: "analytics-shearing-machines" },
+    });
+    const product = await db.product.create({
+      data: {
+        categoryId: category.id,
+        name: "Analytics Test Shear",
+        slug: "analytics-test-shear",
+        summary: "Analytics relation target.",
+      },
+    });
+    const lead = await db.lead.create({
+      data: { email: "analytics-buyer@example.com", message: "Please contact me." },
+    });
+    const visitor = await db.analyticsVisitor.create({
+      data: {
+        anonymousId: "visitor_public_1",
+        environment: "TEST",
+        firstSeenAt: new Date("2026-11-16T08:00:00Z"),
+        lastSeenAt: new Date("2026-11-16T08:05:00Z"),
+        linkedLeadId: lead.id,
+      },
+    });
+    const session = await db.analyticsSession.create({
+      data: {
+        visitorId: visitor.id,
+        sessionKey: "session_public_1",
+        environment: "TEST",
+        startedAt: new Date("2026-11-16T08:00:00Z"),
+        lastSeenAt: new Date("2026-11-16T08:05:00Z"),
+        landingPath: "/products/analytics-test-shear",
+      },
+    });
+    const pageView = await db.analyticsPageView.create({
+      data: {
+        visitorId: visitor.id,
+        sessionId: session.id,
+        productId: product.id,
+        environment: "TEST",
+        pageViewKey: "page_view_public_1",
+        path: "/products/analytics-test-shear",
+        startedAt: new Date("2026-11-16T08:00:00Z"),
+      },
+    });
+    await db.analyticsEvent.create({
+      data: {
+        visitorId: visitor.id,
+        sessionId: session.id,
+        pageViewId: pageView.id,
+        productId: product.id,
+        environment: "TEST",
+        eventKey: "event_public_1",
+        type: "PRODUCT_VIEW",
+        path: "/products/analytics-test-shear",
+        occurredAt: new Date("2026-11-16T08:00:01Z"),
+      },
+    });
+    await db.siteSearchEvent.create({
+      data: {
+        visitorId: visitor.id,
+        sessionId: session.id,
+        pageViewId: pageView.id,
+        environment: "TEST",
+        eventKey: "search_public_1",
+        query: "electric shear",
+        resultCount: 1,
+        path: "/search",
+        occurredAt: new Date("2026-11-16T08:00:02Z"),
+      },
+    });
+    await db.analyticsDailySummary.create({
+      data: {
+        environment: "TEST",
+        date: new Date("2026-11-16T00:00:00Z"),
+        dimension: "source",
+        dimensionValue: "direct",
+        metrics: { visitors: 1, sessions: 1, pageViews: 1 },
+      },
+    });
+
+    await expect(db.analyticsEvent.create({
+      data: {
+        visitorId: visitor.id,
+        sessionId: session.id,
+        environment: "TEST",
+        eventKey: "event_public_1",
+        type: "PRODUCT_VIEW",
+        occurredAt: new Date("2026-11-16T08:00:03Z"),
+      },
+    })).rejects.toMatchObject({ code: "P2002" });
+
+    const indexes = await db.$queryRaw<Array<{ indexname: string }>>`
+      SELECT indexname FROM pg_indexes
+      WHERE schemaname = current_schema()
+        AND tablename IN ('AnalyticsVisitor', 'AnalyticsSession', 'AnalyticsPageView', 'AnalyticsEvent')
+    `;
+    const indexNames = indexes.map(({ indexname }) => indexname);
+    expect(indexNames.some((name) => name.includes("environment_lastSeenAt_id"))).toBe(true);
+    expect(indexNames.some((name) => name.includes("visitorId_startedAt"))).toBe(true);
+    expect(indexNames.some((name) => name.includes("sessionId_startedAt"))).toBe(true);
+    expect(indexNames.some((name) => name.includes("sessionId_occurredAt"))).toBe(true);
+
+    expect(await db.analyticsVisitor.count({ where: { linkedLeadId: lead.id } })).toBe(1);
+    expect(await db.analyticsPageView.count({ where: { productId: product.id } })).toBe(1);
+  });
+
+  it("seeds analytics permissions idempotently for administrators only", async () => {
+    await seedRbac(db);
+    await seedRbac(db);
+
+    const analyticsPermissions = await db.permission.findMany({
+      where: { key: { startsWith: "analytics." } },
+      orderBy: { key: "asc" },
+      include: { roles: { include: { role: true } } },
+    });
+
+    expect(analyticsPermissions.map(({ key }) => key)).toEqual([
+      "analytics.export",
+      "analytics.read.summary",
+      "analytics.read.visitors",
+    ]);
+    for (const permission of analyticsPermissions) {
+      expect(permission.roles.map(({ role }) => role.key).sort()).toEqual(["ADMIN", "SUPER_ADMIN"]);
+    }
+    expect(await db.permission.count({ where: { key: { startsWith: "analytics." } } })).toBe(3);
   });
 });

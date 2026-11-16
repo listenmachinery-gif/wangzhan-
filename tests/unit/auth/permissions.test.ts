@@ -21,6 +21,9 @@ describe("ZYRON CMS role permissions", () => {
 
     expect(can(admin, "product.publish")).toBe(true);
     expect(can(admin, "lead.assign")).toBe(true);
+    expect(can(admin, "analytics.read.summary")).toBe(true);
+    expect(can(admin, "analytics.read.visitors")).toBe(true);
+    expect(can(admin, "analytics.export")).toBe(true);
     expect(can(admin, "user.manage", { targetRoles: ["SALES"] })).toBe(true);
     expect(can(admin, "user.manage", { targetRoles: ["SUPER_ADMIN"] })).toBe(false);
     expect(can(admin, "role.manage")).toBe(false);
@@ -37,6 +40,9 @@ describe("ZYRON CMS role permissions", () => {
     expect(can(editor, "lead.read.all")).toBe(false);
     expect(can(editor, "seo.write.global")).toBe(false);
     expect(can(editor, "user.manage")).toBe(false);
+    expect(can(editor, "analytics.read.summary")).toBe(false);
+    expect(can(editor, "analytics.read.visitors")).toBe(false);
+    expect(can(editor, "analytics.export")).toBe(false);
   });
 
   it("limits Content Editor to banners, shared media, and SEO", () => {
@@ -48,6 +54,9 @@ describe("ZYRON CMS role permissions", () => {
     expect(can(editor, "seo.write.global")).toBe(true);
     expect(can(editor, "product.write")).toBe(false);
     expect(can(editor, "lead.read.all")).toBe(false);
+    expect(can(editor, "analytics.read.summary")).toBe(false);
+    expect(can(editor, "analytics.read.visitors")).toBe(false);
+    expect(can(editor, "analytics.export")).toBe(false);
   });
 
   it("allows Sales to access only currently assigned leads", () => {
@@ -59,6 +68,9 @@ describe("ZYRON CMS role permissions", () => {
     expect(can(sales, "lead.read.assigned", { assigneeId: "sales-2", assignmentActive: true })).toBe(false);
     expect(can(sales, "lead.read.assigned", { assigneeId: "sales-1", assignmentActive: false })).toBe(false);
     expect(can(sales, "lead.assign")).toBe(false);
+    expect(can(sales, "analytics.read.summary")).toBe(false);
+    expect(can(sales, "analytics.read.visitors")).toBe(false);
+    expect(can(sales, "analytics.export")).toBe(false);
   });
 
   it("denies unknown permissions by default", () => {
