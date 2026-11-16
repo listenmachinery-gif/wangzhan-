@@ -1,10 +1,14 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
 import { Prisma, type PrismaClient } from "@prisma/client";
 
 import { can, type Principal } from "@/lib/auth/permissions";
 import { stageToLegacyStatus } from "@/lib/crm/stages";
 import { db } from "@/lib/db/client";
+import { leadWhereForScope, resolveCrmAccessScope } from "@/lib/services/crm-access-service";
+import { prepareInquiryCustomerLinks } from "@/lib/services/customer-service";
+import { inquiryListQuerySchema, manualInquirySchema, type InquiryListQuery } from "@/lib/validation/crm";
 import {
   LeadConflictError,
   LeadNotFoundError,
@@ -17,10 +21,8 @@ import {
   escapeInquirySpreadsheetCell,
   leadActivitySchema,
   leadAssignmentSchema,
-  leadListQuerySchema,
   leadStageUpdateSchema,
   leadUpdateSchema,
-  type LeadListQuery,
 } from "@/lib/validation/inquiries";
 
 export {
@@ -50,17 +52,9 @@ function currentAssignment(lead: { assignments: Array<{ assigneeId: string; ende
   return lead.assignments.find(({ endedAt }) => endedAt === null) ?? null;
 }
 
-function assignedWhere(principal: Principal): Prisma.LeadWhereInput {
-  return { assignments: { some: { assigneeId: principal.id, endedAt: null } } };
-}
-
-function assertRead(principal: Principal, assignment: { assigneeId: string; endedAt: Date | null } | null) {
-  if (can(principal, "lead.read.all")) return;
-  if (can(principal, "lead.read.assigned", {
-    assigneeId: assignment?.assigneeId,
-    assignmentActive: assignment?.endedAt === null,
-  })) return;
-  throw new LeadPermissionError();
+function assertReadPermission(principal: Principal) {
+  if (!can(principal, "lead.read.all") && !can(principal, "lead.read.team") &&
+    !can(principal, "lead.read.assigned", { assigneeId: principal.id, assignmentActive: true })) throw new LeadPermissionError();
 }
 
 function assertUpdate(principal: Principal, assignment: { assigneeId: string; endedAt: Date | null } | null) {
@@ -96,21 +90,28 @@ async function authorizeStageUpdate(
   return false;
 }
 
-function queryWhere(principal: Principal, query: LeadListQuery): Prisma.LeadWhereInput {
-  const scope = can(principal, "lead.read.all") ? {} : assignedWhere(principal);
-  return {
-    ...scope,
+async function queryWhere(database: Pick<PrismaClient, "crmTeamMembership">, principal: Principal, query: InquiryListQuery): Promise<Prisma.LeadWhereInput> {
+  const scope = await resolveCrmAccessScope(database, principal);
+  const owner = query.ownerId ?? query.assigneeId;
+  if (owner && scope.kind !== "ALL" && (scope.kind === "NONE" || !scope.assigneeIds.includes(owner))) throw new LeadPermissionError();
+  return { AND: [leadWhereForScope(scope), {
     status: query.status,
+    stage: query.stageCode ? { code: query.stageCode } : undefined,
+    customerLevel: query.customerLevel,
+    country: query.country ?? undefined,
+    sourceChannel: query.sourceChannel,
     createdAt: query.createdFrom || query.createdTo ? { gte: query.createdFrom, lte: query.createdTo } : undefined,
-    assignments: query.assigneeId
-      ? { some: { assigneeId: query.assigneeId, endedAt: null } }
-      : scope.assignments,
+    nextFollowUpAt: query.nextFollowUpFrom || query.nextFollowUpTo ? { gte: query.nextFollowUpFrom, lte: query.nextFollowUpTo } : undefined,
+    assignments: owner ? { some: { assigneeId: owner, endedAt: null } } : undefined,
     OR: query.query ? [
       { name: { contains: query.query, mode: "insensitive" } },
       { email: { contains: query.query, mode: "insensitive" } },
       { company: { contains: query.query, mode: "insensitive" } },
+      { inquiryNumber: { contains: query.query, mode: "insensitive" } },
     ] : undefined,
-  };
+  }, query.overdue === undefined ? {} : query.overdue ? {
+    nextFollowUpAt: { lt: new Date() }, status: { notIn: ["WON", "LOST", "SPAM"] },
+  } : { OR: [{ nextFollowUpAt: null }, { nextFollowUpAt: { gte: new Date() } }, { status: { in: ["WON", "LOST", "SPAM"] } }] }] };
 }
 
 function csvCell(value: unknown) {
@@ -138,43 +139,89 @@ async function runLeadSerializable<T>(
 export class LeadService {
   constructor(private readonly database: PrismaClient = db) {}
 
+  async createManual(principal: Principal, rawInput: unknown) {
+    if (!can(principal, "inquiry.create")) throw new LeadPermissionError();
+    const input = manualInquirySchema.parse(rawInput);
+    if (!can(principal, "lead.read.all") && !input.assigneeId) throw new LeadValidationError("Choose an initial assignee.");
+    return runLeadSerializable(this.database, async (transaction) => {
+      if (input.assigneeId) {
+        if (!can(principal, "lead.assign")) {
+          const scope = await resolveCrmAccessScope(transaction, { ...principal, roles: ["SALES_MANAGER"] });
+          if (scope.kind !== "ASSIGNEES" || !scope.assigneeIds.includes(input.assigneeId)) throw new LeadPermissionError();
+        }
+        const assignee = await transaction.user.findFirst({
+          where: { id: input.assigneeId, isActive: true, roles: { some: { role: { key: "SALES" } } } },
+          select: { id: true },
+        });
+        if (!assignee) throw new LeadValidationError("Assignee must be an active Sales user.");
+      }
+      const links = await prepareInquiryCustomerLinks(transaction, principal, input);
+      const stage = await transaction.crmStage.findFirst({ where: { code: "NEW_INQUIRY", isActive: true }, select: { id: true } });
+      if (!stage) throw new LeadValidationError("Default inquiry stage is unavailable.");
+      const inquiry = await transaction.lead.create({ data: {
+        name: input.name, email: input.email, message: input.message,
+        phone: input.phone, whatsapp: input.whatsapp, country: input.country,
+        company: input.companyName ?? input.company?.name,
+        inquiryNumber: `INQ-${randomUUID().toUpperCase()}`,
+        recordOrigin: "MANUAL", sourceChannel: input.sourceChannel,
+        customerLevel: input.customerLevel, nextFollowUpAt: input.nextFollowUpAt,
+        contactId: links.contactId, companyId: links.companyId, stageId: stage.id,
+        createdById: principal.id, updatedById: principal.id,
+      } });
+      if (input.assigneeId) await transaction.leadAssignment.create({ data: {
+        leadId: inquiry.id, assigneeId: input.assigneeId, assignedById: principal.id,
+      } });
+      await transaction.leadStageHistory.create({ data: {
+        leadId: inquiry.id, newStageId: stage.id, newStatus: "NEW", source: "CRM_API", actorId: principal.id,
+      } });
+      await transaction.auditLog.create({ data: {
+        actorId: principal.id, action: "inquiry.create", entityType: "Lead", entityId: inquiry.id,
+        after: { version: inquiry.version, stageId: stage.id, contactId: inquiry.contactId, companyId: inquiry.companyId, assigneeId: input.assigneeId ?? null },
+      } });
+      return { inquiry, duplicateCandidates: links.duplicateCandidates };
+    });
+  }
+
+  async listStages(principal: Principal) {
+    assertReadPermission(principal);
+    return this.database.crmStage.findMany({
+      where: { isActive: true }, orderBy: [{ position: "asc" }, { id: "asc" }],
+      select: { id: true, code: true, name: true, color: true, position: true, isTerminal: true, requiresReason: true },
+    });
+  }
+
   async list(principal: Principal, rawQuery: unknown) {
-    if (!can(principal, "lead.read.all") && !can(principal, "lead.read.assigned", {
-      assigneeId: principal.id,
-      assignmentActive: true,
-    })) throw new LeadPermissionError();
-    const query = leadListQuerySchema.parse(rawQuery);
-    if (!can(principal, "lead.read.all") && query.assigneeId && query.assigneeId !== principal.id) {
-      throw new LeadPermissionError();
-    }
-    const where = queryWhere(principal, query);
-    const [items, total] = await this.database.$transaction([
-      this.database.lead.findMany({
-        where,
-        include: {
-          assignments: {
-            where: { endedAt: null },
-            include: { assignee: { select: { id: true, name: true, email: true } } },
-          },
-        },
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-        skip: (query.page - 1) * query.pageSize,
-        take: query.pageSize,
-      }),
-      this.database.lead.count({ where }),
-    ]);
-    return { items, total, page: query.page, pageSize: query.pageSize };
+    assertReadPermission(principal);
+    const query = inquiryListQuerySchema.parse(rawQuery);
+    return this.database.$transaction(async (transaction) => {
+      const where = await queryWhere(transaction, principal, query);
+      const [items, total] = await Promise.all([
+        transaction.lead.findMany({
+          where,
+          include: { stage: true, assignments: { where: { endedAt: null }, include: { assignee: { select: { id: true, name: true, email: true } } } } },
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }], skip: (query.page - 1) * query.pageSize, take: query.pageSize,
+        }),
+        transaction.lead.count({ where }),
+      ]);
+      return { items, total, page: query.page, pageSize: query.pageSize };
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
   }
 
   async get(principal: Principal, leadId: string) {
-    const lead = await this.database.lead.findUnique({ where: { id: leadId }, include: leadDetailInclude });
-    if (!lead) throw new LeadNotFoundError();
-    assertRead(principal, currentAssignment(lead));
-    return lead;
+    assertReadPermission(principal);
+    return this.database.$transaction(async (transaction) => {
+      const scope = await resolveCrmAccessScope(transaction, principal);
+      const lead = await transaction.lead.findFirst({ where: { AND: [{ id: leadId }, leadWhereForScope(scope)] }, include: { ...leadDetailInclude, stage: true } });
+      if (!lead) {
+        if (await transaction.lead.count({ where: { id: leadId } })) throw new LeadPermissionError();
+        throw new LeadNotFoundError();
+      }
+      return lead;
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
   }
 
   async assign(principal: Principal, leadId: string, rawInput: unknown) {
-    if (!can(principal, "lead.assign")) throw new LeadPermissionError();
+    if (!can(principal, "lead.assign") && !can(principal, "lead.assign.team")) throw new LeadPermissionError();
     const input = leadAssignmentSchema.parse(rawInput);
     return runLeadSerializable(this.database, async (transaction) => {
       const [lead, assignee] = await Promise.all([
@@ -184,6 +231,12 @@ export class LeadService {
         }),
       ]);
       if (!lead) throw new LeadNotFoundError();
+      if (!can(principal, "lead.assign")) {
+        const scope = await resolveCrmAccessScope(transaction, { ...principal, roles: ["SALES_MANAGER"] });
+        const active = currentAssignment(lead);
+        if (scope.kind !== "ASSIGNEES" || !scope.assigneeIds.includes(input.assigneeId) ||
+          !active || !scope.assigneeIds.includes(active.assigneeId)) throw new LeadPermissionError();
+      }
       if (!assignee) throw new LeadValidationError("Assignee must be an active Sales user.");
       if (lead.version !== input.version) throw new LeadConflictError();
       const active = currentAssignment(lead);
@@ -238,7 +291,7 @@ export class LeadService {
     return runLeadSerializable(this.database, async (transaction) => {
       const lead = await transaction.lead.findUnique({ where: { id: leadId }, include: { assignments: true } });
       if (!lead) throw new LeadNotFoundError();
-      assertUpdate(principal, currentAssignment(lead));
+      await authorizeStageUpdate(transaction, principal, currentAssignment(lead));
       const updatedCount = await transaction.lead.updateMany({
         where: { id: leadId, version: input.version },
         data: { nextFollowUpAt: input.nextFollowUpAt, version: { increment: 1 } },
@@ -293,7 +346,7 @@ export class LeadService {
     return runLeadSerializable(this.database, async (transaction) => {
       const lead = await transaction.lead.findUnique({ where: { id: leadId }, include: { assignments: true } });
       if (!lead) throw new LeadNotFoundError();
-      assertUpdate(principal, currentAssignment(lead));
+      await authorizeStageUpdate(transaction, principal, currentAssignment(lead));
       const activity = await transaction.leadActivity.create({ data: { leadId, actorId: principal.id, ...input } });
       await transaction.auditLog.create({
         data: {
@@ -311,10 +364,12 @@ export class LeadService {
   async exportCsv(principal: Principal, rawQuery: unknown) {
     const all = can(principal, "lead.export.all");
     const assigned = can(principal, "lead.export.assigned", { assigneeId: principal.id, assignmentActive: true });
-    if (!all && !assigned) throw new LeadPermissionError();
-    const query = leadListQuerySchema.parse({ ...(rawQuery as object), page: 1, pageSize: 100 });
-    if (!all && query.assigneeId && query.assigneeId !== principal.id) throw new LeadPermissionError();
-    const where = queryWhere(principal, query);
+    if (!all && !assigned && !can(principal, "lead.export.team")) throw new LeadPermissionError();
+    const query = inquiryListQuerySchema.parse({ ...(rawQuery as object), page: 1, pageSize: 100 });
+    // Export action scope excludes viewer-only teams even when the principal also holds CRM_VIEWER.
+    const exportPrincipal = !all
+      ? { ...principal, roles: principal.roles.filter((role) => role !== "CRM_VIEWER") } : principal;
+    const where = await queryWhere(this.database, exportPrincipal, query);
     const leads = await this.database.lead.findMany({
       where,
       include: { assignments: { where: { endedAt: null }, include: { assignee: { select: { email: true } } } } },

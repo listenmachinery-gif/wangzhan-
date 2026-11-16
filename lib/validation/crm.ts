@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { leadListQuerySchema } from "@/lib/validation/inquiries";
+import { DEFAULT_CRM_STAGES } from "@/lib/crm/stages";
 import { normalizeEmail, normalizePhoneCandidate } from "@/lib/crm/normalization";
 
 // Assigned ISO 3166-1 alpha-2 codes, including territories.
@@ -124,3 +126,41 @@ export const customerListQuerySchema = z.strictObject({
 
 export type CustomerCreateInput = z.infer<typeof customerCreateSchema>;
 export type CustomerUpdateInput = z.infer<typeof customerUpdateSchema>;
+
+const sourceChannel = z.enum(["WEBSITE", "EMAIL", "WHATSAPP", "PHONE", "FACEBOOK", "LINKEDIN", "TRADE_SHOW", "REFERRAL", "OTHER"]);
+export const manualInquirySchema = z.strictObject({
+  name: text(160),
+  email,
+  message: text(10_000),
+  phone: optionalString(phone),
+  whatsapp: optionalString(phone),
+  country: optionalText(100),
+  companyName: optionalText(200),
+  sourceChannel: sourceChannel.default("OTHER"),
+  customerLevel: customerLevel.optional(),
+  nextFollowUpAt: z.iso.datetime().transform((value) => new Date(value)).optional(),
+  assigneeId: id.optional(),
+  contactId: id.optional(),
+  companyId: id.optional(),
+  contact: z.strictObject(contactFields).omit({ companyId: true }).refine(
+    ({ email, phone, whatsapp }) => Boolean(email || phone || whatsapp),
+    "Provide an email, phone or WhatsApp number.",
+  ).optional(),
+  company: companyCreateSchema.optional(),
+  confirmDuplicateCreation: z.boolean().default(false),
+}).refine(({ contactId, contact }) => !(contactId && contact), "Choose one contact operation.")
+  .refine(({ companyId, company }) => !(companyId && company), "Choose one company operation.");
+
+export const inquiryListQuerySchema = leadListQuerySchema.extend({
+  stageCode: z.enum(DEFAULT_CRM_STAGES).optional(),
+  customerLevel: customerLevel.optional(),
+  country: optionalText(100),
+  sourceChannel: sourceChannel.optional(),
+  ownerId: optionalString(id),
+  nextFollowUpFrom: z.coerce.date().optional(),
+  nextFollowUpTo: z.coerce.date().optional(),
+  overdue: z.enum(["true", "false"]).transform((value) => value === "true").optional(),
+}).refine(({ createdFrom, createdTo }) => !createdFrom || !createdTo || createdFrom <= createdTo, "Invalid created date range.")
+  .refine(({ nextFollowUpFrom, nextFollowUpTo }) => !nextFollowUpFrom || !nextFollowUpTo || nextFollowUpFrom <= nextFollowUpTo, "Invalid follow-up date range.");
+export type ManualInquiryInput = z.infer<typeof manualInquirySchema>;
+export type InquiryListQuery = z.infer<typeof inquiryListQuerySchema>;

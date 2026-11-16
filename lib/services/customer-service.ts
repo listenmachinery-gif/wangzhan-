@@ -12,6 +12,7 @@ import {
   customerListQuerySchema,
   customerUpdateSchema,
   type CustomerCreateInput,
+  type ManualInquiryInput,
   type CustomerUpdateInput,
 } from "@/lib/validation/crm";
 
@@ -412,6 +413,52 @@ async function runCustomerWrite<T>(database: PrismaClient, work: (transaction: T
       await new Promise((resolve) => setTimeout(resolve, (attempt + 1) * 5));
     }
   }
+}
+
+export class CustomerDuplicateConfirmationError extends Error {
+  constructor(public readonly duplicateCandidates: CustomerDuplicateCandidates) {
+    super("Confirm creation of a distinct customer or company matching existing records.");
+    this.name = "CustomerDuplicateConfirmationError";
+  }
+}
+
+/** Runs inside the caller's transaction so customer links, creation and inquiry remain atomic. */
+export async function prepareInquiryCustomerLinks(transaction: Transaction, principal: Principal, input: ManualInquiryInput) {
+  if (!can(principal, "inquiry.create")) throw new CustomerPermissionError();
+  const scope = await resolveCustomerScope(transaction, principal);
+  const contact = input.contactId ? await requireVisibleContact(transaction, scope, input.contactId) : null;
+  let companyId = input.companyId;
+  if (companyId) await requireVisibleCompany(transaction, scope, companyId);
+  if (!companyId && !input.company && contact?.companyId) {
+    try {
+      await requireVisibleCompany(transaction, scope, contact.companyId);
+      companyId = contact.companyId;
+    } catch (error) {
+      if (!(error instanceof CustomerNotFoundError)) throw error;
+    }
+  }
+  const duplicateCandidates = await findCandidates(transaction, scope, {
+    fullName: input.name, email: input.email, ...input.contact, company: input.company,
+  });
+  if (!input.confirmDuplicateCreation && (
+    (input.contact && duplicateCandidates.contacts.length > 0) ||
+    (input.company && duplicateCandidates.companies.length > 0)
+  )) throw new CustomerDuplicateConfirmationError(duplicateCandidates);
+
+  if (input.company) companyId = await createCompany(transaction, scope, principal.id, input.company);
+  let contactId = contact?.id;
+  if (input.contact) {
+    if (!can(principal, "customer.create")) throw new CustomerPermissionError();
+    await validateOwner(transaction, scope, input.contact.ownerId);
+    const data = { ...input.contact, companyId, ownerId: input.contact.ownerId === undefined ? principal.id : input.contact.ownerId };
+    const row = await transaction.contact.create({
+      data: { ...contactData(data), customerCode: `CU-${randomUUID().toUpperCase()}`, createdById: principal.id, updatedById: principal.id },
+      select: { id: true },
+    });
+    contactId = row.id;
+    await writeAudit(transaction, principal.id, "Contact", row.id, data);
+  }
+  return { contactId, companyId, duplicateCandidates };
 }
 
 export class CustomerService {

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { Prisma, type Lead, type PrismaClient } from "@prisma/client";
 
 import { db } from "@/lib/db/client";
@@ -86,6 +86,8 @@ export class InquiryService {
         orderBy: { createdAt: "desc" },
         select: { id: true },
       });
+      const stage = await transaction.crmStage.findFirst({ where: { code: "NEW_INQUIRY", isActive: true }, select: { id: true } });
+      const suspicious = looksSuspicious(message);
       const lead = await transaction.lead.create({
         data: {
           name: input.name,
@@ -100,10 +102,18 @@ export class InquiryService {
           thickness: input.thickness,
           workingLength: input.workingLength,
           quantity: input.quantity,
-          status: looksSuspicious(message) ? "SPAM" : "NEW",
+          inquiryNumber: `INQ-${randomUUID().toUpperCase()}`,
+          recordOrigin: "WEBSITE_FORM",
+          sourceChannel: "WEBSITE",
+          stageId: stage?.id,
+          preSpamStageId: suspicious ? stage?.id : undefined,
+          status: suspicious ? "SPAM" : "NEW",
           duplicateOfId: duplicate?.id,
         },
       });
+      if (stage) await transaction.leadStageHistory.create({ data: {
+        leadId: lead.id, newStageId: stage.id, newStatus: lead.status, source: "SYSTEM",
+      } });
       const notification = await transaction.leadNotificationAttempt.create({
         data: { leadId: lead.id, status: "PENDING" },
       });
