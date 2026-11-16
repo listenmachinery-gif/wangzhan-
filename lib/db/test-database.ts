@@ -21,6 +21,12 @@ export async function resetTestDatabase() {
   await db.$transaction([
     db.pageVersion.deleteMany(),
     db.sitePage.deleteMany(),
+    db.siteSearchEvent.deleteMany(),
+    db.analyticsEvent.deleteMany(),
+    db.analyticsPageView.deleteMany(),
+    db.analyticsSession.deleteMany(),
+    db.analyticsVisitor.deleteMany(),
+    db.analyticsDailySummary.deleteMany(),
     db.leadNotificationAttempt.deleteMany(),
     db.leadActivity.deleteMany(),
     db.leadAssignment.deleteMany(),
