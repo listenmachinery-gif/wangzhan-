@@ -131,6 +131,53 @@ export class VisitorAnalyticsQueryService {
     return { onlineVisitors, activeVisitors, visitorsToday, sessionsToday, pageViewsToday };
   }
 
+  async getRealtimeOverview(
+    principal: Principal,
+    now: Date,
+    environment: AnalyticsEnvironment,
+    since?: Date,
+  ) {
+    const summary = await this.getRealtimeSummary(principal, now, environment);
+    if (!since) return { summary, arrivals: [] };
+
+    const earliest = now.getTime() - 5 * 60_000;
+    const boundedSince = new Date(Math.min(now.getTime(), Math.max(earliest, since.getTime())));
+    const visitors = await this.database.analyticsVisitor.findMany({
+      where: {
+        environment,
+        isBot: false,
+        firstSeenAt: { gt: boundedSince, lte: now },
+      },
+      select: {
+        id: true,
+        firstSeenAt: true,
+        countryCode: true,
+        city: true,
+        deviceType: true,
+        pageViews: {
+          orderBy: [{ startedAt: "desc" }, { id: "desc" }],
+          take: 1,
+          select: { path: true },
+        },
+      },
+      orderBy: [{ firstSeenAt: "desc" }, { id: "desc" }],
+      take: 20,
+    });
+
+    return {
+      summary,
+      arrivals: visitors.reverse().map((visitor) => ({
+        id: visitor.id,
+        label: visitorLabel(visitor.id),
+        firstSeenAt: visitor.firstSeenAt.toISOString(),
+        countryCode: visitor.countryCode,
+        city: visitor.city,
+        deviceType: visitor.deviceType,
+        path: visitor.pageViews[0]?.path ?? null,
+      })),
+    };
+  }
+
   async listVisitors(principal: Principal, query: VisitorListQuery, now = new Date()) {
     assertPermission(principal, "analytics.read.visitors");
     const page = Math.max(1, Math.trunc(query.page));

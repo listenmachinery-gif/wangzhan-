@@ -26,10 +26,12 @@ const now = new Date("2026-11-16T12:00:00.000Z");
 async function visitor(input: {
   id: string;
   environment?: "TEST" | "PREVIEW";
+  firstSeenAt?: Date;
   lastSeenAt: Date;
   lastActiveAt?: Date;
   source?: string;
   countryCode?: string;
+  city?: string;
   deviceType?: string;
   isBot?: boolean;
 }) {
@@ -38,12 +40,13 @@ async function visitor(input: {
       id: input.id,
       anonymousId: `anonymous-${input.id}`,
       environment: input.environment ?? "TEST",
-      firstSeenAt: new Date("2026-11-16T08:00:00.000Z"),
+      firstSeenAt: input.firstSeenAt ?? new Date("2026-11-16T08:00:00.000Z"),
       lastSeenAt: input.lastSeenAt,
       lastActiveAt: input.lastActiveAt,
       firstSource: { source: input.source ?? "direct", medium: input.source ? "referral" : "none" },
       lastSource: { source: input.source ?? "direct", medium: input.source ? "referral" : "none" },
       countryCode: input.countryCode,
+      city: input.city,
       deviceType: input.deviceType,
       isBot: input.isBot ?? false,
     },
@@ -107,6 +110,65 @@ describe("visitor analytics query service", () => {
       sessionsToday: 2,
       pageViewsToday: 1,
     });
+  });
+
+  it("returns only bounded first-time arrivals with safe display fields and latest paths", async () => {
+    const recent = await visitor({
+      id: "visitor-recent-arrival",
+      firstSeenAt: new Date("2026-11-16T11:59:40.000Z"),
+      lastSeenAt: now,
+      countryCode: "US",
+      city: "Chicago",
+      deviceType: "mobile",
+    });
+    const recentSession = await session(recent.id, "session-recent", new Date("2026-11-16T11:59:40.000Z"));
+    await db.analyticsPageView.createMany({
+      data: [
+        { visitorId: recent.id, sessionId: recentSession.id, environment: "TEST", pageViewKey: "recent-page-1", path: "/products", startedAt: new Date("2026-11-16T11:59:41.000Z") },
+        { visitorId: recent.id, sessionId: recentSession.id, environment: "TEST", pageViewKey: "recent-page-2", path: "/products/small-electric-shear", startedAt: new Date("2026-11-16T11:59:45.000Z") },
+      ],
+    });
+    await visitor({ id: "visitor-before-cursor", firstSeenAt: new Date("2026-11-16T11:58:59.999Z"), lastSeenAt: now });
+    await visitor({ id: "visitor-bot-arrival", firstSeenAt: new Date("2026-11-16T11:59:50.000Z"), lastSeenAt: now, isBot: true });
+    await visitor({ id: "visitor-preview-arrival", environment: "PREVIEW", firstSeenAt: new Date("2026-11-16T11:59:50.000Z"), lastSeenAt: now });
+
+    const result = await new VisitorAnalyticsQueryService(db).getRealtimeOverview(
+      admin,
+      now,
+      "TEST",
+      new Date("2026-11-16T11:59:00.000Z"),
+    );
+
+    expect(result.arrivals).toEqual([{
+      id: recent.id,
+      label: "访客-RRIVAL",
+      firstSeenAt: "2026-11-16T11:59:40.000Z",
+      countryCode: "US",
+      city: "Chicago",
+      deviceType: "mobile",
+      path: "/products/small-electric-shear",
+    }]);
+    expect(JSON.stringify(result.arrivals)).not.toMatch(/anonymousId|visitorId|cookie/i);
+  });
+
+  it("clamps stale cursors to five minutes, caps arrivals at twenty, and keeps baseline silent", async () => {
+    for (let index = 0; index < 23; index += 1) {
+      await visitor({
+        id: `visitor-capped-${String(index).padStart(2, "0")}`,
+        firstSeenAt: new Date(now.getTime() - 4 * 60_000 + index * 1_000),
+        lastSeenAt: now,
+      });
+    }
+    await visitor({ id: "visitor-too-old", firstSeenAt: new Date(now.getTime() - 5 * 60_000 - 1), lastSeenAt: now });
+
+    const service = new VisitorAnalyticsQueryService(db);
+    const result = await service.getRealtimeOverview(admin, now, "TEST", new Date("2026-11-16T00:00:00.000Z"));
+    const baseline = await service.getRealtimeOverview(admin, now, "TEST");
+
+    expect(result.arrivals).toHaveLength(20);
+    expect(result.arrivals.at(-1)?.id).toBe("visitor-capped-22");
+    expect(result.arrivals.some(({ id }) => id === "visitor-too-old")).toBe(false);
+    expect(baseline.arrivals).toEqual([]);
   });
 
   it("returns stable pages and applies source, country, device, and status filters", async () => {
@@ -175,6 +237,7 @@ describe("visitor analytics query service", () => {
     const service = new VisitorAnalyticsQueryService(db);
 
     await expect(service.getRealtimeSummary(editor, now, "TEST")).rejects.toBeInstanceOf(VisitorAnalyticsPermissionError);
+    await expect(service.getRealtimeOverview(editor, now, "TEST", new Date(now.getTime() - 1_000))).rejects.toBeInstanceOf(VisitorAnalyticsPermissionError);
     await expect(service.listVisitors(editor, { environment: "TEST", page: 1, pageSize: 20 }, now)).rejects.toBeInstanceOf(VisitorAnalyticsPermissionError);
     await expect(service.getVisitorTimeline(editor, "missing", "TEST")).rejects.toBeInstanceOf(VisitorAnalyticsPermissionError);
   });

@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({
   requirePermission: vi.fn(),
   getOverview: vi.fn(),
   getStatus: vi.fn(),
-  getRealtimeSummary: vi.fn(),
+  getRealtimeOverview: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/guards", async (importOriginal) => ({
@@ -22,7 +22,7 @@ vi.mock("@/lib/analytics/overview-service", () => ({
 
 vi.mock("@/lib/services/visitor-analytics-query-service", () => ({
   VisitorAnalyticsQueryService: class {
-    getRealtimeSummary = mocks.getRealtimeSummary;
+    getRealtimeOverview = mocks.getRealtimeOverview;
   },
 }));
 
@@ -55,12 +55,15 @@ describe("analytics admin routes", () => {
       ga4: partialOverview.ga4.state,
       searchConsole: partialOverview.searchConsole.state,
     });
-    mocks.getRealtimeSummary.mockResolvedValue({
-      onlineVisitors: 3,
-      activeVisitors: 7,
-      visitorsToday: 12,
-      sessionsToday: 14,
-      pageViewsToday: 31,
+    mocks.getRealtimeOverview.mockResolvedValue({
+      summary: {
+        onlineVisitors: 3,
+        activeVisitors: 7,
+        visitorsToday: 12,
+        sessionsToday: 14,
+        pageViewsToday: 31,
+      },
+      arrivals: [],
     });
   });
 
@@ -105,7 +108,7 @@ describe("analytics admin routes", () => {
   it("returns an environment-scoped first-party summary without visitor identifiers", async () => {
     vi.stubEnv("VERCEL_ENV", "preview");
 
-    const response = await getFirstPartyOverview();
+    const response = await getFirstPartyOverview(new NextRequest("http://localhost/api/admin/analytics/first-party/overview"));
     const body = await response.json();
 
     expect(response.status).toBe(200);
@@ -115,7 +118,7 @@ describe("analytics admin routes", () => {
     });
     expect(body.generatedAt).toEqual(expect.any(String));
     expect(mocks.requirePermission).toHaveBeenCalledWith("analytics.read.summary");
-    expect(mocks.getRealtimeSummary).toHaveBeenCalledWith(principal, expect.any(Date), "PREVIEW");
+    expect(mocks.getRealtimeOverview).toHaveBeenCalledWith(principal, expect.any(Date), "PREVIEW", undefined);
     expect(JSON.stringify(body)).not.toMatch(/anonymousId|visitorId|cookie/i);
   });
 });
