@@ -73,6 +73,20 @@ describe("CRM routes", () => {
     expect(first.status).toBe(409); expect(await first.json()).toMatchObject({ code: "DUPLICATE_CONFIRMATION_REQUIRED", duplicateCandidates: candidates });
     expect((await inquiries.POST(request("POST", { ...payload, confirmDuplicateCreation: true }))).status).toBe(201);
   });
+  it.each(["contact", "company"])("requires customer POST confirmation for a %s duplicate", async (kind) => {
+    const candidates = kind === "contact"
+      ? { contacts: [{ id: "c1", customerCode: "CU-1", fullName: "Buyer" }], companies: [] }
+      : { contacts: [], companies: [{ id: "co1", companyCode: "CO-1", name: "Acme" }] };
+    const body = { fullName: "Buyer", email: payload.email, ...(kind === "company" ? { company: { name: "Acme" } } : {}) };
+    mocks.customerCreate.mockRejectedValueOnce(new CustomerDuplicateConfirmationError(candidates));
+    const first = await customers.POST(request("POST", body));
+    expect(first.status).toBe(409);
+    expect(await first.json()).toEqual({ code: "DUPLICATE_CONFIRMATION_REQUIRED", duplicateCandidates: candidates });
+    const confirmed = await customers.POST(request("POST", { ...body, confirmDuplicateCreation: true }));
+    expect(confirmed.status).toBe(201);
+    expect(mocks.customerCreate).toHaveBeenLastCalledWith(principal, { ...body, confirmDuplicateCreation: true });
+    expect((await customers.POST(request("POST", { ...body, confirmDuplicateCreation: "true" }))).status).toBe(400);
+  });
   it("keeps old/new aliases on identical service methods and safe compatible DTOs", async () => {
     for (const route of [inquiries, leads]) {
       const list = await (await route.GET(request())).json();

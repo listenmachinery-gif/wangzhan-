@@ -438,7 +438,10 @@ export async function prepareInquiryCustomerLinks(transaction: Transaction, prin
     }
   }
   const duplicateCandidates = await findCandidates(transaction, scope, {
-    fullName: input.name, email: input.email, ...input.contact, company: input.company,
+    // Explicit Contact creation must match only the identity that will be stored.
+    // Inquiry email suggestions are used only when no new Contact was requested.
+    ...(input.contact ?? { fullName: input.name, email: input.email }),
+    company: input.company,
   });
   if (!input.confirmDuplicateCreation && (
     (input.contact && duplicateCandidates.contacts.length > 0) ||
@@ -551,13 +554,16 @@ export class CustomerService {
   async create(principal: Principal, rawInput: unknown) {
     if (!can(principal, "customer.create")) throw new CustomerPermissionError();
     const input = customerCreateSchema.parse(rawInput);
-    const { company, ...fields } = input;
+    const { company, confirmDuplicateCreation, ...fields } = input;
     return runCustomerWrite(this.database, async (transaction) => {
       const scope = await resolveCustomerScope(transaction, principal);
       await validateOwner(transaction, scope, fields.ownerId);
       if (fields.companyId) await requireVisibleCompany(transaction, scope, fields.companyId);
 
       const duplicateCandidates = await findCandidates(transaction, scope, input);
+      if (!confirmDuplicateCreation && (duplicateCandidates.contacts.length > 0 || duplicateCandidates.companies.length > 0)) {
+        throw new CustomerDuplicateConfirmationError(duplicateCandidates);
+      }
       const companyId = company ? await createCompany(transaction, scope, principal.id, company) : fields.companyId;
       const data = { ...fields, companyId, ownerId: fields.ownerId === undefined ? principal.id : fields.ownerId };
       const contact = await transaction.contact.create({

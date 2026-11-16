@@ -62,6 +62,15 @@ describe("manual inquiries and CRM scope", () => {
     expect(confirmed.inquiry.contactId).not.toBe(existing.customer.id);
     expect(confirmed.inquiry.companyId).not.toBe(existing.customer.companyId);
   });
+  it.each(["phone", "whatsapp"] as const)("does not borrow inquiry email for an explicit %s-only Contact", async (method) => {
+    const existing = await customers.create(admin, { fullName: "Existing customer", email: input.email });
+    const created = await service.createManual(admin, { ...input, contact: { fullName: "Distinct phone customer", [method]: "+14155550123" } });
+    expect(created.duplicateCandidates.contacts).toEqual([]);
+    expect(created.inquiry.contactId).not.toBe(existing.customer.id);
+    expect(await db.contact.findUniqueOrThrow({ where: { id: created.inquiry.contactId! } })).toMatchObject({ email: null, normalizedEmail: null, [method]: "+14155550123" });
+    expect(await db.contact.count()).toBe(2);
+    expect(await db.lead.count()).toBe(1);
+  });
   it("enforces create roles, strict required email and atomic rollback", async () => {
     await expect(service.createManual(sales, input)).rejects.toBeInstanceOf(LeadPermissionError);
     await expect(service.createManual(admin, { name: "Buyer", message: "Requirement" })).rejects.toThrow();

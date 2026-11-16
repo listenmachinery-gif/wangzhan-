@@ -96,6 +96,7 @@ const companyUpdateSchema = companyCreateSchema.partial().extend({ version })
 
 export const customerCreateSchema = z.strictObject({
   ...contactFields,
+  confirmDuplicateCreation: z.boolean().optional(),
   company: companyCreateSchema.optional(),
 }).refine(
   ({ email, phone, whatsapp }) => Boolean(email || phone || whatsapp),

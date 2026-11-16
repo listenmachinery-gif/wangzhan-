@@ -6,6 +6,7 @@ import { db } from "@/lib/db/client";
 import { resetTestDatabase } from "@/lib/db/test-database";
 import {
   CustomerConflictError,
+  CustomerDuplicateConfirmationError,
   CustomerNotFoundError,
   CustomerPermissionError,
   CustomerService,
@@ -371,16 +372,41 @@ describe("CustomerService duplicate candidates", () => {
     expect(await db.company.count()).toBe(2);
     expect(await db.auditLog.count()).toBe(0);
 
-    const result = await service.create(manager, input);
+    await expect(service.create(manager, input)).rejects.toBeInstanceOf(CustomerDuplicateConfirmationError);
+    expect(await db.contact.count()).toBe(2);
+    expect(await db.company.count()).toBe(2);
+    expect(await db.auditLog.count()).toBe(0);
+    const result = await service.create(manager, { ...input, confirmDuplicateCreation: true });
     expect(result.duplicateCandidates).toEqual(expected);
     expect(result.customer.id).not.toBe("shared-contact");
     expect(result.customer.companyId).not.toBe("shared-company");
     expect(await db.contact.count()).toBe(3);
     expect(await db.company.count()).toBe(3);
 
-    const noCompany = await service.create(manager, { fullName: "New contact", email: "jane@example.com" });
+    const noCompany = await service.create(manager, { fullName: "New contact", email: "jane@example.com", confirmDuplicateCreation: true });
     expect(noCompany.customer).toMatchObject({ companyId: null, company: null });
     expect(await db.lead.count({ where: { contactId: "shared-contact" } })).toBe(3);
+  });
+
+  it.each([
+    { kind: "contact", input: { fullName: "Another Jane", email: "jane@example.com" } },
+    { kind: "company", input: { fullName: "Different buyer", email: "different@example.com", company: { name: " ACME   TOOLS " } } },
+  ])("requires confirmation for a $kind duplicate with zero initial writes", async ({ kind, input }) => {
+    const counts = async () => ({ contacts: await db.contact.count(), companies: await db.company.count(), audits: await db.auditLog.count(), inquiries: await db.lead.count() });
+    const before = await counts();
+    await expect(service.create(manager, input)).rejects.toMatchObject({
+      name: "CustomerDuplicateConfirmationError",
+      duplicateCandidates: kind === "contact"
+        ? { contacts: [expect.objectContaining({ id: "shared-contact" })], companies: [] }
+        : { contacts: [], companies: [expect.objectContaining({ id: "shared-company" })] },
+    });
+    expect(await counts()).toEqual(before);
+    const confirmed = await service.create(manager, { ...input, confirmDuplicateCreation: true });
+    expect(confirmed.customer.id).not.toBe("shared-contact");
+    expect(confirmed.customer.companyId).toEqual(kind === "contact" ? null : expect.any(String));
+    if (kind === "company") expect(confirmed.customer.companyId).not.toBe("shared-company");
+    expect(await counts()).toEqual({ contacts: before.contacts + 1, companies: before.companies + (kind === "company" ? 1 : 0), audits: before.audits + (kind === "company" ? 2 : 1), inquiries: before.inquiries });
+    expect(await db.contact.findUniqueOrThrow({ where: { id: "shared-contact" } })).toMatchObject({ email: "jane@example.com", companyId: "shared-company", version: 1 });
   });
 
   it("matches a visible international phone across phone and WhatsApp fields", async () => {
