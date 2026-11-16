@@ -93,6 +93,47 @@ describe("inquiry list routes", () => {
     }
   });
 
+  it("shows status from a legacy URL and clears it independently of other filters", async () => {
+    list.mockResolvedValue({ items: [lead], total: 45, page: 1, pageSize: 20 });
+    render(await LegacyInquiryPage({ searchParams: Promise.resolve({ status: "NEW", query: "Jane" }) }));
+
+    const filters = screen.getByRole("search", { name: "询盘筛选" }) as HTMLFormElement;
+    const status = within(filters).getByRole("combobox", { name: "旧版状态" });
+    expect(status).toHaveValue("NEW");
+    expect(within(status).getByRole("option", { name: "新询盘" })).toHaveProperty("selected", true);
+    expect(screen.getByRole("link", { name: "下一页" })).toHaveAttribute("href", expect.stringContaining("status=NEW"));
+
+    await userEvent.setup().selectOptions(status, "");
+    const form = new FormData(filters);
+    expect(form.get("status")).toBe("");
+    expect(form.get("query")).toBe("Jane");
+  });
+
+  it("drops an incompatible legacy status when the sales stage changes", async () => {
+    listStages.mockResolvedValue([{ code: "WON", name: "已成交" }]);
+    render(await LegacyInquiryPage({ searchParams: Promise.resolve({ status: "NEW", query: "Jane" }) }));
+
+    const filters = screen.getByRole("search", { name: "询盘筛选" }) as HTMLFormElement;
+    await userEvent.setup().selectOptions(within(filters).getByRole("combobox", { name: "销售阶段" }), "WON");
+    const submitted = Object.fromEntries(Array.from(new FormData(filters), ([key, value]) => [key, String(value)]));
+    await LegacyInquiryPage({ searchParams: Promise.resolve(submitted) });
+
+    expect(list).toHaveBeenLastCalledWith(admin, { stageCode: "WON", query: "Jane" });
+  });
+
+  it("submits the legacy SPAM filter independently of the current sales stage", async () => {
+    render(await LegacyInquiryPage({ searchParams: Promise.resolve({ stageCode: "QUOTATION_SENT" }) }));
+
+    const filters = screen.getByRole("search", { name: "询盘筛选" }) as HTMLFormElement;
+    const status = within(filters).getByRole("combobox", { name: "旧版状态" });
+    expect(within(status).getByRole("option", { name: "垃圾询盘" })).toHaveValue("SPAM");
+    await userEvent.setup().selectOptions(status, "SPAM");
+    const submitted = Object.fromEntries(Array.from(new FormData(filters), ([key, value]) => [key, String(value)]));
+    await LegacyInquiryPage({ searchParams: Promise.resolve(submitted) });
+
+    expect(list).toHaveBeenLastCalledWith(admin, { status: "SPAM" });
+  });
+
   it("shows the empty state and hides export and creation from a team viewer", async () => {
     getCurrentPrincipal.mockResolvedValue({ ...admin, roles: ["CRM_VIEWER"] });
     list.mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 });

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Download, Plus } from "lucide-react";
 
 import { InquiryList, type InquiryListPath, type InquiryListRow } from "@/components/admin/crm/InquiryList";
-import { inquirySourceLabels } from "@/components/admin/crm/inquiry-options";
+import { inquiryLegacyStatusLabels, inquirySourceLabels } from "@/components/admin/crm/inquiry-options";
 import { AdminPageHeader } from "@/components/admin/ui/AdminPageHeader";
 import { DataState } from "@/components/admin/ui/DataState";
 import { can } from "@/lib/auth/permissions";
@@ -14,21 +14,12 @@ import { inquiryListQuerySchema } from "@/lib/validation/crm";
 export type InquiryListSearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 const filterKeys = Object.keys(inquiryListQuerySchema.shape);
-const legacyStageLabels = {
-  NEW: "新询盘",
-  CONTACTED: "已联系",
-  IN_DISCUSSION: "商务谈判",
-  QUOTED: "已发送报价",
-  WON: "已成交",
-  LOST: "已流失",
-  SPAM: "垃圾询盘",
-};
 
 type LeadRow = Awaited<ReturnType<LeadService["list"]>>["items"][number];
 
 function projectRow(lead: LeadRow, now: number): InquiryListRow {
   const isSpam = lead.status === "SPAM";
-  const stage = isSpam ? legacyStageLabels.SPAM : lead.stage?.name ?? legacyStageLabels[lead.status];
+  const stage = isSpam ? inquiryLegacyStatusLabels.SPAM : lead.stage?.name ?? inquiryLegacyStatusLabels[lead.status];
   const stageTone = isSpam || lead.status === "LOST" ? "danger"
     : lead.status === "WON" ? "success"
     : lead.stage?.code === "ON_HOLD" ? "neutral"

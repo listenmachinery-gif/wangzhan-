@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { InquiryStageFilters } from "@/components/admin/crm/InquiryStageFilters";
+import { inquiryFilterControl, InquirySelectFilter } from "@/components/admin/crm/InquirySelectFilter";
 import { DataState } from "@/components/admin/ui/DataState";
 import { StatusBadge } from "@/components/admin/ui/StatusBadge";
 import { TableShell } from "@/components/admin/ui/TableShell";
@@ -37,30 +39,10 @@ const dateFormat = new Intl.DateTimeFormat("zh-CN", {
   year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
   hourCycle: "h23",
 });
-const filterControl = "admin-focus h-11 w-full min-w-0 rounded-admin-sm border border-admin-border bg-white px-3 text-sm text-admin-ink";
 const neutralButton = "admin-focus inline-flex min-h-11 items-center justify-center rounded-admin-sm border border-admin-border bg-white px-3 text-sm font-semibold text-admin-ink hover:bg-neutral-50";
 
 function InquiryTime({ value }: { value: string | null }) {
   return value ? <time dateTime={value}>{dateFormat.format(new Date(value))}</time> : "—";
-}
-
-function SelectFilter({ name, label, placeholder, options, value }: {
-  name: string;
-  label: string;
-  placeholder: string;
-  options: { label: string; value: string }[];
-  value?: string;
-}) {
-  return (
-    <label className="block text-xs font-semibold text-admin-ink">
-      <span className="mb-1.5 block">{label}</span>
-      <select name={name} defaultValue={value ?? ""} className={filterControl}>
-        <option value="">{placeholder}</option>
-        {value && !options.some((option) => option.value === value) ? <option value={value}>当前筛选项</option> : null}
-        {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-      </select>
-    </label>
-  );
 }
 
 export function InquiryList({ path, rows, stages, assignees, query, total, page, pageSize, error }: {
@@ -84,21 +66,26 @@ export function InquiryList({ path, rows, stages, assignees, query, total, page,
 
   return (
     <>
-      <form action={path} method="get" role="search" aria-label="询盘筛选" className="grid min-w-0 grid-cols-1 gap-3 rounded-admin border border-admin-border bg-white p-4 sm:grid-cols-2 xl:grid-cols-4">
-        <label className="block text-xs font-semibold text-admin-ink">
+      <form action={path} method="get" role="search" aria-label="询盘筛选" className="grid min-w-0 grid-cols-1 gap-3 rounded-admin border border-admin-border bg-white p-4 sm:grid-cols-2 xl:grid-cols-5">
+        <label className="block text-xs font-semibold text-admin-ink xl:col-span-2">
           <span className="mb-1.5 block">搜索询盘</span>
-          <input type="search" name="query" maxLength={200} defaultValue={query.query} placeholder="编号、姓名、公司或邮箱" className={filterControl} />
+          <input type="search" name="query" maxLength={200} defaultValue={query.query} placeholder="编号、姓名、公司或邮箱" className={inquiryFilterControl} />
         </label>
-        <SelectFilter name="stageCode" label="销售阶段" placeholder="全部阶段" value={query.stageCode} options={stages.map(({ code, name }) => ({ value: code, label: name }))} />
-        <SelectFilter name="customerLevel" label="客户等级" placeholder="全部等级" value={query.customerLevel} options={inquiryCustomerLevels.map((level) => ({ value: level, label: level }))} />
-        <SelectFilter name="sourceChannel" label="来源渠道" placeholder="全部来源" value={query.sourceChannel} options={Object.entries(inquirySourceLabels).map(([value, label]) => ({ value, label }))} />
+        <InquiryStageFilters
+          key={`${query.stageCode ?? ""}:${query.status ?? ""}`}
+          stages={stages}
+          stageCode={query.stageCode}
+          status={query.status}
+        />
+        <InquirySelectFilter name="customerLevel" label="客户等级" placeholder="全部等级" value={query.customerLevel} options={inquiryCustomerLevels.map((level) => ({ value: level, label: level }))} />
+        <InquirySelectFilter name="sourceChannel" label="来源渠道" placeholder="全部来源" value={query.sourceChannel} options={Object.entries(inquirySourceLabels).map(([value, label]) => ({ value, label }))} />
         <label className="block text-xs font-semibold text-admin-ink">
           <span className="mb-1.5 block">国家或地区</span>
-          <input name="country" maxLength={100} defaultValue={query.country} placeholder="按记录中的国家或地区筛选" className={filterControl} />
+          <input name="country" maxLength={100} defaultValue={query.country} placeholder="按记录中的国家或地区筛选" className={inquiryFilterControl} />
         </label>
-        <SelectFilter name="ownerId" label="负责人" placeholder="全部负责人" value={query.ownerId ?? query.assigneeId} options={assignees.map(({ id, name }) => ({ value: id, label: name }))} />
-        <SelectFilter name="overdue" label="逾期状态" placeholder="全部状态" value={query.overdue} options={[{ value: "true", label: "已逾期" }, { value: "false", label: "未逾期" }]} />
-        {(["status", "pageSize", "createdFrom", "createdTo", "nextFollowUpFrom", "nextFollowUpTo"] as const).map((name) => (
+        <InquirySelectFilter name="ownerId" label="负责人" placeholder="全部负责人" value={query.ownerId ?? query.assigneeId} options={assignees.map(({ id, name }) => ({ value: id, label: name }))} />
+        <InquirySelectFilter name="overdue" label="逾期状态" placeholder="全部状态" value={query.overdue} options={[{ value: "true", label: "已逾期" }, { value: "false", label: "未逾期" }]} />
+        {(["pageSize", "createdFrom", "createdTo", "nextFollowUpFrom", "nextFollowUpTo"] as const).map((name) => (
           query[name] ? <input key={name} type="hidden" name={name} value={query[name]} /> : null
         ))}
         <div className="flex flex-wrap items-end gap-2">
