@@ -67,6 +67,8 @@ test("protects analytics and renders truthful unconfigured Google states", async
 
   await page.getByRole("link", { name: "数据分析" }).click();
   await expect(page.getByRole("heading", { name: "数据分析" })).toBeVisible();
+  await expect(page.getByLabel("网站实时在线访客")).toBeVisible();
+  await expect(page.getByRole("button", { name: "开启访客提示音" })).toBeVisible();
   await expect(page.getByRole("region", { name: "第一方实时访客" })).toBeVisible();
   await expect(page.getByText("尚未配置")).toHaveCount(2);
 
@@ -77,6 +79,7 @@ test("protects analytics and renders truthful unconfigured Google states", async
   expect(firstPartyStatus.status).toBe(200);
   expect(firstPartyStatus.body).toMatchObject({
     environment: "DEVELOPMENT",
+    arrivals: [],
     summary: {
       onlineVisitors: expect.any(Number),
       activeVisitors: expect.any(Number),

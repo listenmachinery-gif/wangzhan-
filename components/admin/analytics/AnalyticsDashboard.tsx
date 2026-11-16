@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { MetricCard } from "@/components/admin/analytics/MetricCard";
-import { RealtimeVisitorPanel, type FirstPartyOverview } from "@/components/admin/analytics/RealtimeVisitorPanel";
+import { RealtimeVisitorPanel } from "@/components/admin/analytics/RealtimeVisitorPanel";
 import { ReportTable } from "@/components/admin/analytics/ReportTable";
 import { TrendChart } from "@/components/admin/analytics/TrendChart";
 import type { AnalyticsOverview, AnalyticsRange, AnalyticsSourceResult, Ga4Report, SearchConsoleReport } from "@/lib/analytics/types";
+import { getLatestLiveOverview, LIVE_OVERVIEW_EVENT } from "@/lib/analytics/first-party/live-alerts";
+import type { FirstPartyOverview } from "@/lib/analytics/first-party/types";
 
 const ranges: Array<{ value: AnalyticsRange; label: string }> = [
   { value: "7d", label: "7 天" },
@@ -100,21 +102,14 @@ export function AnalyticsDashboard({ initialRange }: { initialRange: AnalyticsRa
   const [range, setRange] = useState(initialRange);
   const [report, setReport] = useState<AnalyticsOverview | null>(null);
   const [error, setError] = useState(false);
-  const [firstParty, setFirstParty] = useState<FirstPartyOverview | null>(null);
-  const [firstPartyError, setFirstPartyError] = useState(false);
+  const [firstParty, setFirstParty] = useState<FirstPartyOverview | null>(() => getLatestLiveOverview());
 
   useEffect(() => {
-    const controller = new AbortController();
-    fetch("/api/admin/analytics/first-party/overview", { signal: controller.signal })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("First-party analytics request failed");
-        return response.json() as Promise<FirstPartyOverview>;
-      })
-      .then(setFirstParty)
-      .catch((requestError: unknown) => {
-        if (!(requestError instanceof DOMException && requestError.name === "AbortError")) setFirstPartyError(true);
-      });
-    return () => controller.abort();
+    const receiveOverview = (event: Event) => {
+      setFirstParty((event as CustomEvent<FirstPartyOverview>).detail);
+    };
+    window.addEventListener(LIVE_OVERVIEW_EVENT, receiveOverview);
+    return () => window.removeEventListener(LIVE_OVERVIEW_EVENT, receiveOverview);
   }, []);
 
   useEffect(() => {
@@ -162,7 +157,7 @@ export function AnalyticsDashboard({ initialRange }: { initialRange: AnalyticsRa
           )}
         </div>
         <div className="xl:col-span-4">
-          <RealtimeVisitorPanel data={firstParty} error={firstPartyError} />
+          <RealtimeVisitorPanel data={firstParty} />
         </div>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-admin-border pb-5">

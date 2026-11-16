@@ -2,18 +2,7 @@ import Link from "next/link";
 import { Activity, Clock3, Eye, Radio, Users } from "lucide-react";
 
 import { DataState } from "@/components/admin/ui/DataState";
-
-export type FirstPartyOverview = {
-  generatedAt: string;
-  environment: "PRODUCTION" | "PREVIEW" | "DEVELOPMENT" | "TEST";
-  summary: {
-    onlineVisitors: number;
-    activeVisitors: number;
-    visitorsToday: number;
-    sessionsToday: number;
-    pageViewsToday: number;
-  };
-};
+import type { FirstPartyOverview } from "@/lib/analytics/first-party/types";
 
 const metrics = [
   { key: "onlineVisitors", label: "当前在线", icon: Radio },
@@ -50,9 +39,12 @@ export function RealtimeVisitorPanel({ data, error = false }: { data: FirstParty
           </div>
           <p className="mt-1 text-xs text-zinc-500">{data.environment === "PRODUCTION" ? "生产环境" : data.environment === "PREVIEW" ? "预览环境" : data.environment === "DEVELOPMENT" ? "开发环境" : "测试环境"}</p>
         </div>
-        <time dateTime={data.generatedAt} className="text-[10px] uppercase tracking-[0.08em] text-zinc-500">
-          {new Intl.DateTimeFormat("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(data.generatedAt))}
-        </time>
+        <div className="text-right text-[10px] uppercase tracking-[0.08em] text-zinc-500">
+          <span className="block">10 秒自动更新</span>
+          <time dateTime={data.generatedAt} className="mt-1 block">
+            {new Intl.DateTimeFormat("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(data.generatedAt))}
+          </time>
+        </div>
       </div>
       <dl className="grid grid-cols-2 gap-px bg-white/10 sm:grid-cols-5 xl:grid-cols-1">
         {metrics.map(({ key, label, icon: Icon }) => (

@@ -5,9 +5,9 @@ import { Radio, Volume2, VolumeX, WifiOff } from "lucide-react";
 
 import {
   buildLiveOverviewUrl,
-  LIVE_OVERVIEW_EVENT,
   playVisitorChime,
   prepareVisitorAudio,
+  publishLiveOverview,
   reconcileLiveArrivals,
   VISITOR_SOUND_STORAGE_KEY,
 } from "@/lib/analytics/first-party/live-alerts";
@@ -81,7 +81,7 @@ export function LiveVisitorMonitor({ enabled }: { enabled: boolean }) {
         cursor = laterCursor(cursor, next.generatedAt);
         setOverview(next);
         setConnection("live");
-        window.dispatchEvent(new CustomEvent<FirstPartyOverview>(LIVE_OVERVIEW_EVENT, { detail: next }));
+        publishLiveOverview(next);
       } catch (error) {
         if (!cancelled && !(error instanceof DOMException && error.name === "AbortError")) {
           setConnection("retrying");

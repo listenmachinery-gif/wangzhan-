@@ -1,7 +1,17 @@
-import type { LiveVisitorArrival } from "@/lib/analytics/first-party/types";
+import type { FirstPartyOverview, LiveVisitorArrival } from "@/lib/analytics/first-party/types";
 
 export const LIVE_OVERVIEW_EVENT = "zyron-live-overview";
 export const VISITOR_SOUND_STORAGE_KEY = "zyron-visitor-sound-enabled";
+let latestOverview: FirstPartyOverview | null = null;
+
+export function publishLiveOverview(overview: FirstPartyOverview) {
+  latestOverview = overview;
+  window.dispatchEvent(new CustomEvent<FirstPartyOverview>(LIVE_OVERVIEW_EVENT, { detail: overview }));
+}
+
+export function getLatestLiveOverview() {
+  return latestOverview;
+}
 
 export function buildLiveOverviewUrl(cursor?: string) {
   if (!cursor) return "/api/admin/analytics/first-party/overview";
