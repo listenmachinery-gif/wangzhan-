@@ -8,6 +8,7 @@ import { AdminPageHeader } from "@/components/admin/ui/AdminPageHeader";
 import { DataState } from "@/components/admin/ui/DataState";
 import { can } from "@/lib/auth/permissions";
 import { getCurrentPrincipal } from "@/lib/auth/session";
+import { stageToLegacyStatus } from "@/lib/crm/stages";
 import { LeadPermissionError, LeadService } from "@/lib/services/lead-service";
 import { inquiryListQuerySchema } from "@/lib/validation/crm";
 
@@ -62,6 +63,14 @@ export async function InquiryListPage({ path, searchParams }: { path: InquiryLis
     if (typeof value === "string" && value.trim()) query[key] = value.trim();
   }
   const parsed = inquiryListQuerySchema.safeParse(query);
+  if (parsed.success) {
+    const { stageCode, status } = parsed.data;
+    if (stageCode && status && stageToLegacyStatus(stageCode) !== status) {
+      const filters = new URLSearchParams(query);
+      filters.delete(status === "SPAM" ? "stageCode" : "status");
+      redirect(`${path}?${filters.toString()}`);
+    }
+  }
 
   const service = new LeadService();
   const [stages, assignees, loaded] = await Promise.all([

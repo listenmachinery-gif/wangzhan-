@@ -134,6 +134,46 @@ describe("inquiry list routes", () => {
     expect(list).toHaveBeenLastCalledWith(admin, { status: "SPAM" });
   });
 
+  it.each([
+    { path: "/admin/leads", rawStatus: "NEW", status: "", stageCode: "WON" },
+    { path: "/admin/inquiries", rawStatus: "SPAM", status: "SPAM", stageCode: "" },
+  ])("normalizes a raw $rawStatus/WON conflict at $path before reading inquiries", async ({ path, rawStatus, status, stageCode }) => {
+    const { default: InquiryPage } = await import("@/app/admin/inquiries/page");
+    const Page = path === "/admin/leads" ? LegacyInquiryPage : InquiryPage;
+    const raw = { status: rawStatus, stageCode: "WON", query: "Jane & Sons", page: "2" };
+    listStages.mockResolvedValue([{ code: "WON", name: "已成交" }]);
+
+    await expect(Page({ searchParams: Promise.resolve(raw) })).rejects.toThrow("Redirect:");
+    expect(list).not.toHaveBeenCalled();
+    expect(redirect).toHaveBeenCalledOnce();
+
+    const destination = new URL(redirect.mock.calls[0][0], "http://localhost");
+    const normalized = Object.fromEntries(destination.searchParams);
+    expect(destination.pathname).toBe(path);
+    expect(normalized).toEqual({
+      query: "Jane & Sons", page: "2", ...(status ? { status } : { stageCode }),
+    });
+
+    list.mockResolvedValue({ items: [lead], total: 61, page: 2, pageSize: 20 });
+    render(await Page({ searchParams: Promise.resolve(normalized) }));
+    expect(list).toHaveBeenCalledWith(admin, normalized);
+    expect(screen.getByRole("combobox", { name: "旧版状态" })).toHaveValue(status);
+    expect(screen.getByRole("combobox", { name: "销售阶段" })).toHaveValue(stageCode);
+    const next = new URL(screen.getByRole("link", { name: "下一页" }).getAttribute("href")!, "http://localhost");
+    expect(Object.fromEntries(next.searchParams)).toEqual({ ...normalized, page: "3" });
+  });
+
+  it("retains compatible legacy status and stage filters on a direct request", async () => {
+    const query = { stageCode: "ORDER_CONFIRMED", status: "WON" };
+    listStages.mockResolvedValue([{ code: "ORDER_CONFIRMED", name: "订单已确认" }]);
+    render(await LegacyInquiryPage({ searchParams: Promise.resolve(query) }));
+
+    expect(redirect).not.toHaveBeenCalled();
+    expect(list).toHaveBeenCalledWith(admin, query);
+    expect(screen.getByRole("combobox", { name: "旧版状态" })).toHaveValue("WON");
+    expect(screen.getByRole("combobox", { name: "销售阶段" })).toHaveValue("ORDER_CONFIRMED");
+  });
+
   it("shows the empty state and hides export and creation from a team viewer", async () => {
     getCurrentPrincipal.mockResolvedValue({ ...admin, roles: ["CRM_VIEWER"] });
     list.mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 });

@@ -25,7 +25,7 @@ export function InquiryStageFilters({ stages, stageCode, status }: {
 
   return (
     <>
-      <span id={hintId} className="sr-only">销售阶段与旧版状态冲突时，以最近一次选择为准。</span>
+      <span id={hintId} className="sr-only">销售阶段与旧版状态冲突时，可将不需要的条件设为全部。</span>
       <InquirySelectFilter
         name="stageCode"
         label="销售阶段"
