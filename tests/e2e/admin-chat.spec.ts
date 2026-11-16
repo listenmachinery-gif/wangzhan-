@@ -18,6 +18,7 @@ function database() {
 
 test.beforeAll(async () => {
   const db = database();
+  await db.lead.deleteMany({ where: { email: "buyer-e2e@example.com" } });
   const [adminRole, agentRole] = await Promise.all([
     db.role.upsert({ where: { key: "ADMIN" }, update: {}, create: { key: "ADMIN", name: "Admin" } }),
     db.role.upsert({ where: { key: "SUPPORT_AGENT" }, update: {}, create: { key: "SUPPORT_AGENT", name: "Support Agent" } }),
@@ -55,6 +56,7 @@ test.afterAll(async () => {
   await db.session.deleteMany({ where: { userId: { in: users.map(({ id }) => id) } } });
   await db.userRole.deleteMany({ where: { userId: { in: users.map(({ id }) => id) } } });
   await db.user.deleteMany({ where: { id: { in: users.map(({ id }) => id) } } });
+  await db.lead.deleteMany({ where: { email: "buyer-e2e@example.com" } });
   await db.$disconnect();
 });
 
@@ -76,12 +78,15 @@ test("admin assigns, replies, and closes a live chat conversation", async ({ pag
   await page.getByRole("textbox", { name: "Message", exact: true }).fill("We can prepare the quotation today.");
   await page.getByRole("button", { name: "Send message" }).click();
   await expect(page.getByText("We can prepare the quotation today.")).toHaveCount(1);
+  await page.getByRole("button", { name: "创建或关联询盘客户" }).click();
+  await expect(page.getByRole("link", { name: /E2E Machinery Buyer/ })).toBeVisible();
   await page.getByRole("button", { name: "关闭", exact: true }).click();
   await expect(page.getByText("该会话已关闭，重新打开后才能回复。")).toBeVisible();
 
   const db = database();
   expect(await db.chatAssignment.count({ where: { conversationId, endedAt: null } })).toBe(1);
   expect(await db.chatMessage.count({ where: { conversationId, body: "We can prepare the quotation today." } })).toBe(1);
+  expect(await db.lead.count({ where: { email: "buyer-e2e@example.com" } })).toBe(1);
   expect((await db.chatConversation.findUniqueOrThrow({ where: { id: conversationId } })).status).toBe("CLOSED");
   await db.$disconnect();
 });

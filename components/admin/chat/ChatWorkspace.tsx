@@ -168,6 +168,20 @@ export function ChatWorkspace({ principal, agents }: { principal: Principal; age
     setConversations((current) => current.map((item) => item.id === updated.id ? updated : item));
   }
 
+  async function createOrLinkLead() {
+    if (!selected?.contactEmail) return;
+    const response = await fetch(`/api/admin/chat/conversations/${encodeURIComponent(selected.id)}/lead`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "create_or_link", email: selected.contactEmail, ...(selected.contactName ? { name: selected.contactName } : {}) }),
+    });
+    if (!response.ok) return;
+    const lead = await response.json() as NonNullable<AdminConversation["lead"]>;
+    const updated = { ...selected, lead };
+    setSelected(updated);
+    setConversations((current) => current.map((item) => item.id === updated.id ? updated : item));
+  }
+
   return (
     <div data-testid="chat-workspace" data-mobile-flow="list-to-conversation" className="flex h-[calc(100dvh-12.5rem)] min-h-[560px] overflow-hidden rounded-admin border border-admin-border bg-white shadow-admin">
       <div className={`${mobileConversationOpen ? "hidden" : "flex"} w-full lg:flex lg:w-auto`}>
@@ -175,7 +189,7 @@ export function ChatWorkspace({ principal, agents }: { principal: Principal; age
       </div>
       <div className={`${mobileConversationOpen ? "flex" : "hidden"} min-w-0 flex-1 lg:flex`}>
         <AgentConversation conversation={selected} messages={messages} deliveryDegraded={deliveryDegraded} onBack={() => setMobileConversationOpen(false)} onSend={send} />
-        <VisitorContextPanel conversation={selected} agents={agents} canAssign={can(principal, "chat.assign")} canManage={can(principal, "chat.manage")} onAssign={assign} onStatus={updateStatus} />
+        <VisitorContextPanel conversation={selected} agents={agents} canAssign={can(principal, "chat.assign")} canManage={can(principal, "chat.manage")} onAssign={assign} onStatus={updateStatus} onCreateLead={createOrLinkLead} />
       </div>
     </div>
   );

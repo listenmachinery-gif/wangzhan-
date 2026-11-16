@@ -62,7 +62,7 @@ describe("admin navigation", () => {
 
     expect(groups.map((group) => group.label)).toEqual(["经营概览", "客户增长", "内容运营", "系统管理"]);
     expect(groups[0].items.map((item) => item.label)).toEqual(["数据总览", "数据分析"]);
-    expect(groups[1].items.map((item) => item.label)).toEqual(["询盘 CRM"]);
+    expect(groups[1].items.map((item) => item.label)).toEqual(["询盘 CRM", "在线客服"]);
     expect(groups[2].items.map((item) => item.label)).toContain("产品管理");
   });
 

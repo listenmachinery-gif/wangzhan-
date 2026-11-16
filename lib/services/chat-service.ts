@@ -14,6 +14,7 @@ import {
   chatAssignmentInputSchema,
   chatConversationInputSchema,
   chatMessageInputSchema,
+  chatLeadLinkInputSchema,
   chatMessageListQuerySchema,
   chatStatusInputSchema,
   type AdminChatListQuery,
@@ -555,6 +556,84 @@ export class ChatService {
     const active = await this.database.chatAssignment.findFirst({ where: { conversationId, endedAt: null } });
     await this.publishConversationUpdate(conversationId, environment, active?.assigneeId ?? null, updated.status).catch(() => undefined);
     return updated;
+  }
+
+  async linkConversationLead(
+    principal: Principal,
+    conversationId: string,
+    rawInput: unknown,
+    environment: AnalyticsEnvironment = currentAnalyticsEnvironment(),
+  ) {
+    if (!can(principal, "chat.manage")) throw new ChatPermissionError();
+    const input = chatLeadLinkInputSchema.parse(rawInput);
+    return runChatSerializable(this.database, async (transaction) => {
+      const conversation = await transaction.chatConversation.findFirst({
+        where: { id: conversationId, environment },
+        include: {
+          messages: { where: { senderType: "VISITOR" }, orderBy: [{ sentAt: "desc" }, { id: "desc" }], take: 1 },
+        },
+      });
+      if (!conversation) throw new ChatNotFoundError();
+
+      if (conversation.leadId) {
+        const linked = await transaction.lead.findUniqueOrThrow({ where: { id: conversation.leadId } });
+        const sameRequestedLead = input.action === "link_existing"
+          ? input.leadId === linked.id
+          : input.email === linked.email.trim().toLowerCase();
+        if (!sameRequestedLead) throw new ChatConflictError("Conversation is already linked to another Lead.");
+        return linked;
+      }
+
+      let lead;
+      let createdFromChat = false;
+      if (input.action === "link_existing") {
+        lead = await transaction.lead.findUnique({ where: { id: input.leadId } });
+        if (!lead) throw new ChatNotFoundError();
+      } else {
+        lead = await transaction.lead.findFirst({
+          where: { email: { equals: input.email, mode: "insensitive" } },
+          orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+        });
+        if (!lead) {
+          lead = await transaction.lead.create({
+            data: {
+              email: input.email,
+              name: input.name ?? conversation.contactName,
+              company: input.company,
+              whatsapp: conversation.contactWhatsapp,
+              message: conversation.messages[0]?.body ?? "Live chat conversation initiated by the visitor.",
+              sourcePage: "Live chat",
+            },
+          });
+          createdFromChat = true;
+        }
+      }
+
+      await Promise.all([
+        transaction.chatConversation.update({ where: { id: conversationId }, data: { leadId: lead.id } }),
+        transaction.analyticsVisitor.update({ where: { id: conversation.visitorId }, data: { linkedLeadId: lead.id } }),
+        transaction.leadActivity.create({
+          data: {
+            leadId: lead.id,
+            actorId: principal.id,
+            type: "NOTE",
+            content: "Linked to a live chat conversation.",
+            metadata: { conversationId, createdFromChat },
+          },
+        }),
+        transaction.auditLog.create({
+          data: {
+            actorId: principal.id,
+            action: "chat.lead.link",
+            entityType: "ChatConversation",
+            entityId: conversationId,
+            before: { leadId: null },
+            after: { leadId: lead.id, createdFromChat },
+          },
+        }),
+      ]);
+      return lead;
+    });
   }
 
   private async publishConversationUpdate(

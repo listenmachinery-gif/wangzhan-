@@ -47,6 +47,19 @@ export const chatStatusInputSchema = z.strictObject({
   status: z.enum(["OPEN", "PENDING", "CLOSED", "SPAM"]),
 });
 
+export const chatLeadLinkInputSchema = z.discriminatedUnion("action", [
+  z.strictObject({
+    action: z.literal("create_or_link"),
+    email: z.string().trim().toLowerCase().email().max(254),
+    name: optionalTrimmed(120),
+    company: optionalTrimmed(160),
+  }),
+  z.strictObject({
+    action: z.literal("link_existing"),
+    leadId: z.string().trim().min(1).max(128),
+  }),
+]);
+
 export type ChatConversationInput = z.infer<typeof chatConversationInputSchema>;
 export type ChatMessageInput = z.infer<typeof chatMessageInputSchema>;
 export type ChatMessageListQuery = z.infer<typeof chatMessageListQuerySchema>;
