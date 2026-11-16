@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ConsentAwareGoogleAnalytics } from "@/components/analytics/ConsentAwareGoogleAnalytics";
 import { RoutePageView } from "@/components/analytics/RoutePageView";
 import { ContactClickTracker } from "@/components/analytics/ContactClickTracker";
+import { FirstPartyAnalyticsTracker } from "@/components/analytics/FirstPartyAnalyticsTracker";
 import {
   ANALYTICS_CONSENT_CHANGE_EVENT,
   ANALYTICS_PREFERENCES_EVENT,
@@ -81,6 +82,7 @@ export function AnalyticsConsentProvider({ children }: { children?: ReactNode })
     <>
       {children}
       <ContactClickTracker />
+      <FirstPartyAnalyticsTracker enabled={consent === "accepted"} />
       {hydrated && preferencesOpen ? (
         <section
           role="dialog"

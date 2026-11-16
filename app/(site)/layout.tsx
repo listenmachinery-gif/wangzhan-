@@ -4,11 +4,10 @@ import { AnalyticsConsentProvider } from "@/components/analytics/AnalyticsConsen
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <AnalyticsConsentProvider />
+    <AnalyticsConsentProvider>
       <SiteHeader />
       {children}
       <SiteFooter />
-    </>
+    </AnalyticsConsentProvider>
   );
 }
