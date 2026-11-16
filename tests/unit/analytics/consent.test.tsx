@@ -91,7 +91,9 @@ describe("AnalyticsConsentProvider", () => {
     await user.click(screen.getByRole("button", { name: "Accept analytics" }));
 
     await waitFor(() => expect(typeof window.gtag).toBe("function"));
-    expect(window.dataLayer).toEqual(expect.arrayContaining([
+    expect(window.dataLayer?.every((command) => !Array.isArray(command))).toBe(true);
+    const commands = window.dataLayer?.map((command) => Array.from(command as ArrayLike<unknown>));
+    expect(commands).toEqual(expect.arrayContaining([
       ["config", "G-TEST123", { send_page_view: false }],
     ]));
   });

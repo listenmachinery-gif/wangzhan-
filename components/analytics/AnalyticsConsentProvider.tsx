@@ -61,8 +61,9 @@ export function AnalyticsConsentProvider({ children }: { children?: ReactNode })
     }
 
     window.dataLayer = window.dataLayer ?? [];
-    window.gtag = window.gtag ?? function gtag(...args: unknown[]) {
-      window.dataLayer?.push(args);
+    window.gtag = window.gtag ?? function gtag() {
+      // eslint-disable-next-line prefer-rest-params -- Google tag commands must use the official arguments-object queue shape.
+      window.dataLayer?.push(arguments);
     };
     window.gtag("js", new Date());
     window.gtag("config", measurementId, { send_page_view: false });
