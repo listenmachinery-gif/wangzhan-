@@ -17,3 +17,4 @@ playwright-report/
 .google-credentials/
 google-service-account*.json
 service-account*.json
+.env*
