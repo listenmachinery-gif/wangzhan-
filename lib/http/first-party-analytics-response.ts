@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
 import { UntrustedOriginError } from "@/lib/auth/request-security";
+import { AnalyticsEventTimeError } from "@/lib/services/first-party-analytics-service";
 import {
   AnalyticsPayloadTooLargeError,
   MalformedAnalyticsJsonError,
@@ -14,7 +15,7 @@ export function firstPartyAnalyticsErrorResponse(error: unknown) {
   if (error instanceof AnalyticsPayloadTooLargeError) {
     return NextResponse.json({ code: "ANALYTICS_BATCH_TOO_LARGE" }, { status: 413 });
   }
-  if (error instanceof MalformedAnalyticsJsonError || error instanceof ZodError) {
+  if (error instanceof MalformedAnalyticsJsonError || error instanceof AnalyticsEventTimeError || error instanceof ZodError) {
     return NextResponse.json({ code: "INVALID_ANALYTICS_BATCH" }, { status: 400 });
   }
   console.error("First-party analytics collection failed.", error instanceof Error ? error.name : "UnknownError");

@@ -111,6 +111,55 @@ describe("first-party analytics ingestion", () => {
     await expect(db.analyticsSession.findFirstOrThrow()).resolves.toMatchObject({ pageViewCount: 1, eventCount: 1 });
   });
 
+  it("serializes concurrent retries without duplicate rows or inflated counters", async () => {
+    const category = await db.productCategory.create({ data: { name: "Concurrent Shearing", slug: "concurrent-shearing" } });
+    await db.product.create({
+      data: {
+        categoryId: category.id,
+        name: "Small Electric Shearing Machine",
+        slug: "small-electric-shearing-machine",
+        summary: "Compact electric shear.",
+      },
+    });
+    const service = new FirstPartyAnalyticsService(db);
+
+    const results = await Promise.all(Array.from({ length: 5 }, () => (
+      service.collectAnalyticsBatch(identity, batch(), context)
+    )));
+
+    expect(results.filter(({ accepted }) => accepted === 2)).toHaveLength(1);
+    expect(results.filter(({ duplicates }) => duplicates === 2)).toHaveLength(4);
+    await expect(db.analyticsPageView.count()).resolves.toBe(1);
+    await expect(db.analyticsEvent.count()).resolves.toBe(1);
+    await expect(db.analyticsSession.findFirstOrThrow()).resolves.toMatchObject({ pageViewCount: 1, eventCount: 1 });
+  });
+
+  it("rejects client timestamps outside the accepted retry window without writing data", async () => {
+    const stale = parseAnalyticsBatch({ events: [{
+      kind: "page_view",
+      eventId: "stale_event",
+      pageViewId: "stale_page",
+      path: "/",
+      occurredAt: "2026-11-15T07:59:59.999Z",
+    }] });
+    const future = parseAnalyticsBatch({ events: [{
+      kind: "page_view",
+      eventId: "future_event",
+      pageViewId: "future_page",
+      path: "/",
+      occurredAt: "2026-11-16T08:05:02.001Z",
+    }] });
+    const service = new FirstPartyAnalyticsService(db);
+
+    await expect(service.collectAnalyticsBatch(identity, stale, context)).rejects.toMatchObject({
+      name: "AnalyticsEventTimeError",
+    });
+    await expect(service.collectAnalyticsBatch(identity, future, context)).rejects.toMatchObject({
+      name: "AnalyticsEventTimeError",
+    });
+    await expect(db.analyticsVisitor.count()).resolves.toBe(0);
+  });
+
   it("isolates environments and marks bot sessions for later exclusion", async () => {
     const service = new FirstPartyAnalyticsService(db);
     const previewBatch = parseAnalyticsBatch({ events: [{

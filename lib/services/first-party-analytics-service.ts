@@ -23,6 +23,13 @@ export type AnalyticsCollectionContext = {
   isBot: boolean;
 };
 
+export class AnalyticsEventTimeError extends Error {
+  constructor() {
+    super("Analytics event time is outside the accepted retry window.");
+    this.name = "AnalyticsEventTimeError";
+  }
+}
+
 type Source = {
   source: string;
   medium: string;
@@ -90,6 +97,11 @@ export class FirstPartyAnalyticsService {
     batch: AnalyticsBatch,
     context: AnalyticsCollectionContext,
   ) {
+    const earliest = context.now.getTime() - 24 * 60 * 60 * 1_000;
+    const latest = context.now.getTime() + 5 * 60 * 1_000;
+    if (batch.events.some(({ occurredAt }) => occurredAt.getTime() < earliest || occurredAt.getTime() > latest)) {
+      throw new AnalyticsEventTimeError();
+    }
     return serializable(this.database, async (transaction) => {
       const landingEvent = firstPageView(batch);
       const source = extractSource(landingEvent?.path ?? "/", landingEvent?.referrer);

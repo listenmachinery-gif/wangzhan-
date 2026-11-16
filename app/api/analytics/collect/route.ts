@@ -47,8 +47,8 @@ function deviceMetadata(userAgent: string) {
         : /firefox|fxios/i.test(userAgent) ? "Firefox" : "Other";
   const operatingSystem = /windows/i.test(userAgent)
     ? "Windows"
-    : /mac os|macintosh/i.test(userAgent) ? "macOS"
-      : /iphone|ipad|ios/i.test(userAgent) ? "iOS"
+    : /iphone|ipad|ios/i.test(userAgent) ? "iOS"
+      : /mac os|macintosh/i.test(userAgent) ? "macOS"
         : /android/i.test(userAgent) ? "Android"
           : /linux/i.test(userAgent) ? "Linux" : "Other";
   return { isBot, deviceType, browser, operatingSystem };
