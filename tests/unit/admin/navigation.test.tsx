@@ -7,7 +7,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("next/navigation", () => ({ usePathname: () => "/admin" }));
 
 import { AdminShell } from "@/components/admin/AdminShell";
-import { AdminSidebar, getAdminNavigation } from "@/components/admin/AdminSidebar";
+import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
+import { AdminSidebar, getAdminNavigation, getAdminNavigationGroups } from "@/components/admin/AdminSidebar";
+import { AdminTopbar } from "@/components/admin/AdminTopbar";
 import { ConnectionStatus } from "@/components/admin/ConnectionStatus";
 import type { Principal } from "@/lib/auth/permissions";
 
@@ -49,10 +51,19 @@ describe("admin navigation", () => {
     expect(getAdminNavigation(productEditor).map((item) => item.label)).not.toContain("页面设计");
   });
 
-  it("shows analytics only to principals with settings permission", () => {
+  it("shows analytics only to principals with analytics permission", () => {
     expect(getAdminNavigation(admin).map((item) => item.label)).toContain("数据分析");
     expect(getAdminNavigation(productEditor).map((item) => item.label)).not.toContain("数据分析");
     expect(getAdminNavigation(contentEditor).map((item) => item.label)).not.toContain("数据分析");
+  });
+
+  it("groups visible modules in the approved business order", () => {
+    const groups = getAdminNavigationGroups(admin);
+
+    expect(groups.map((group) => group.label)).toEqual(["经营概览", "客户增长", "内容运营", "系统管理"]);
+    expect(groups[0].items.map((item) => item.label)).toEqual(["数据总览", "数据分析"]);
+    expect(groups[1].items.map((item) => item.label)).toEqual(["询盘 CRM"]);
+    expect(groups[2].items.map((item) => item.label)).toContain("产品管理");
   });
 
   it("marks the current page and hides labels when collapsed", () => {
@@ -76,8 +87,43 @@ describe("admin navigation", () => {
     const mobile = screen.getByRole("button", { name: "打开导航" });
     await user.click(mobile);
     expect(screen.getByRole("dialog", { name: "后台导航" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "关闭移动导航" })).toHaveFocus();
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog", { name: "后台导航" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "打开导航" }));
     await user.click(screen.getByRole("button", { name: "关闭导航" }));
     expect(screen.queryByRole("dialog", { name: "后台导航" })).not.toBeInTheDocument();
+  });
+
+  it("renders route-aware breadcrumbs", () => {
+    render(<AdminBreadcrumbs currentPath="/admin/products/new" />);
+
+    expect(screen.getByRole("navigation", { name: "面包屑" })).toHaveTextContent("数据总览产品管理新建产品");
+    expect(screen.getByRole("link", { name: "产品管理" })).toHaveAttribute("href", "/admin/products");
+    expect(screen.getByText("新建产品")).toHaveAttribute("aria-current", "page");
+  });
+
+  it("opens and closes the accessible administrator menu from the keyboard", async () => {
+    const user = userEvent.setup();
+    render(
+      <AdminTopbar
+        principal={admin}
+        collapsed={false}
+        mobileOpen={false}
+        onToggleCollapsed={vi.fn()}
+        onToggleMobile={vi.fn()}
+      />,
+    );
+
+    const menuButton = screen.getByRole("button", { name: "打开管理员菜单" });
+    menuButton.focus();
+    expect(menuButton).toHaveFocus();
+    await user.keyboard("{Enter}");
+    expect(screen.getByRole("dialog", { name: "管理员账户" })).toHaveTextContent(admin.email);
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog", { name: "管理员账户" })).not.toBeInTheDocument();
+    expect(menuButton).toHaveFocus();
   });
 
   it.each([
