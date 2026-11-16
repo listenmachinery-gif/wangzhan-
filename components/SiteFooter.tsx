@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { CookiePreferencesButton } from "@/components/analytics/CookiePreferencesButton";
 import { getCategoryHref, productCategories } from "@/data/products";
 
 const supportLinks = [
@@ -81,8 +82,11 @@ export function SiteFooter() {
           </div>
         </div>
       </div>
-      <div className="border-t border-white/10 px-5 py-5 text-center text-xs text-zinc-500">
-        Copyright 2026 ZYRON Heavy Industry. All rights reserved.
+      <div className="border-t border-white/10 px-5 py-5 text-xs text-zinc-500">
+        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-center gap-x-5 gap-y-2">
+          <span>Copyright 2026 ZYRON Heavy Industry. All rights reserved.</span>
+          <CookiePreferencesButton />
+        </div>
       </div>
     </footer>
   );

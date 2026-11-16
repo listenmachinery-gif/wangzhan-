@@ -1,0 +1,116 @@
+// @vitest-environment jsdom
+
+import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({ googleAnalytics: vi.fn() }));
+
+vi.mock("@next/third-parties/google", () => ({
+  GoogleAnalytics: (props: { gaId: string }) => {
+    mocks.googleAnalytics(props);
+    return <div data-testid="google-analytics" data-ga-id={props.gaId} />;
+  },
+}));
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/products",
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+import { AnalyticsConsentProvider } from "@/components/analytics/AnalyticsConsentProvider";
+import { CookiePreferencesButton } from "@/components/analytics/CookiePreferencesButton";
+import {
+  ANALYTICS_CONSENT_COOKIE,
+  readAnalyticsConsent,
+} from "@/lib/analytics/consent";
+
+function clearConsent() {
+  document.cookie = `${ANALYTICS_CONSENT_COOKIE}=; Max-Age=0; Path=/`;
+}
+
+describe("AnalyticsConsentProvider", () => {
+  beforeEach(() => {
+    clearConsent();
+    process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID = "G-TEST123";
+    mocks.googleAnalytics.mockClear();
+  });
+
+  afterEach(() => {
+    cleanup();
+    clearConsent();
+    delete process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID;
+  });
+
+  it("does not mount Google before a choice and persists rejection", async () => {
+    const user = userEvent.setup();
+    render(<AnalyticsConsentProvider><p>Website</p></AnalyticsConsentProvider>);
+
+    const dialog = screen.getByRole("dialog", { name: "Analytics cookie preferences" });
+    expect(dialog).toBeInTheDocument();
+    expect(screen.queryByTestId("google-analytics")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Accept analytics" })).toHaveFocus();
+
+    await user.click(screen.getByRole("button", { name: "Reject analytics" }));
+
+    expect(readAnalyticsConsent()).toBe("rejected");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("google-analytics")).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Analytics cookies rejected");
+  });
+
+  it("mounts Google only after acceptance and restores the persisted choice", async () => {
+    const user = userEvent.setup();
+    const view = render(<AnalyticsConsentProvider><p>Website</p></AnalyticsConsentProvider>);
+
+    await user.click(screen.getByRole("button", { name: "Accept analytics" }));
+
+    expect(readAnalyticsConsent()).toBe("accepted");
+    expect(screen.getByTestId("google-analytics")).toHaveAttribute("data-ga-id", "G-TEST123");
+    expect(screen.getByRole("status")).toHaveTextContent("Analytics cookies accepted");
+
+    view.unmount();
+    render(<AnalyticsConsentProvider><p>Website again</p></AnalyticsConsentProvider>);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByTestId("google-analytics")).toBeInTheDocument();
+  });
+
+  it("keeps Google absent when the public Measurement ID is missing", async () => {
+    delete process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID;
+    const user = userEvent.setup();
+    render(<AnalyticsConsentProvider><p>Website</p></AnalyticsConsentProvider>);
+
+    await user.click(screen.getByRole("button", { name: "Accept analytics" }));
+
+    expect(readAnalyticsConsent()).toBe("accepted");
+    expect(screen.queryByTestId("google-analytics")).not.toBeInTheDocument();
+  });
+
+  it("reopens preferences from the footer without changing consent", async () => {
+    const user = userEvent.setup();
+    render(
+      <AnalyticsConsentProvider>
+        <CookiePreferencesButton />
+      </AnalyticsConsentProvider>,
+    );
+    await user.click(screen.getByRole("button", { name: "Reject analytics" }));
+
+    await user.click(screen.getByRole("button", { name: "Cookie preferences" }));
+
+    expect(readAnalyticsConsent()).toBe("rejected");
+    expect(screen.getByRole("dialog", { name: "Analytics cookie preferences" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Accept analytics" })).toHaveFocus();
+  });
+
+  it("uses only client document cookies", () => {
+    const sources = [
+      "lib/analytics/consent.ts",
+      "components/analytics/AnalyticsConsentProvider.tsx",
+    ].map((file) => readFileSync(resolve(process.cwd(), file), "utf8")).join("\n");
+
+    expect(sources).not.toContain("next/headers");
+    expect(sources).not.toContain("cookies()");
+  });
+});
