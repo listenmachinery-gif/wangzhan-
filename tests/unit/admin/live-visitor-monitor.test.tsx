@@ -4,6 +4,8 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { LiveVisitorMonitor } from "@/components/admin/analytics/LiveVisitorMonitor";
+import { LIVE_OVERVIEW_EVENT } from "@/lib/analytics/first-party/live-alerts";
+import type { FirstPartyOverview } from "@/lib/analytics/first-party/types";
 
 const summary = { onlineVisitors: 1, activeVisitors: 1, visitorsToday: 1, sessionsToday: 1, pageViewsToday: 1 };
 
@@ -122,6 +124,60 @@ describe("global live visitor monitor", () => {
 
     await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
     await waitFor(() => expect(screen.getByText("3 人在线")).toBeVisible());
+  });
+
+  it("establishes a silent baseline after returning to a visible tab", async () => {
+    const hiddenArrival = {
+      id: "visitor-hidden", label: "访客-HIDDEN", firstSeenAt: "2026-11-16T12:00:05.000Z",
+      countryCode: "DE", city: "Berlin", deviceType: "desktop", path: "/products",
+    };
+    const fetchMock = vi.fn()
+      .mockImplementationOnce(() => response(overview("2026-11-16T12:00:00.000Z")))
+      .mockImplementationOnce(() => response(overview("2026-11-16T12:00:20.000Z", [hiddenArrival], 2)));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<LiveVisitorMonitor enabled />);
+    await screen.findByText("1 人在线");
+
+    Object.defineProperty(document, "hidden", { configurable: true, value: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+    Object.defineProperty(document, "hidden", { configurable: true, value: false });
+    document.dispatchEvent(new Event("visibilitychange"));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(String(fetchMock.mock.calls[1]?.[0])).not.toContain("since=");
+    expect(await screen.findByText("2 人在线")).toBeVisible();
+    expect(screen.queryByRole("status", { name: "新访客提醒" })).not.toBeInTheDocument();
+  });
+
+  it("ignores a request that finishes after the tab was hidden", async () => {
+    let finishPending!: (value: Response) => void;
+    const pending = new Promise<Response>((resolve) => { finishPending = resolve; });
+    const hiddenArrival = {
+      id: "visitor-pending", label: "访客-ENDING", firstSeenAt: "2026-11-16T12:00:05.000Z",
+      countryCode: "US", city: null, deviceType: "mobile", path: "/contact",
+    };
+    const snapshots: FirstPartyOverview[] = [];
+    const receiveSnapshot = (event: Event) => snapshots.push((event as CustomEvent<FirstPartyOverview>).detail);
+    window.addEventListener(LIVE_OVERVIEW_EVENT, receiveSnapshot);
+    const fetchMock = vi.fn()
+      .mockImplementationOnce(() => response(overview("2026-11-16T12:00:00.000Z")))
+      .mockImplementationOnce(() => pending)
+      .mockImplementationOnce(() => response(overview("2026-11-16T12:00:20.000Z", [], 3)));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<LiveVisitorMonitor enabled />);
+    await screen.findByText("1 人在线");
+    await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
+
+    Object.defineProperty(document, "hidden", { configurable: true, value: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+    Object.defineProperty(document, "hidden", { configurable: true, value: false });
+    document.dispatchEvent(new Event("visibilitychange"));
+    finishPending(await response(overview("2026-11-16T12:00:10.000Z", [hiddenArrival], 2)));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(screen.getByText("3 人在线")).toBeVisible());
+    expect(snapshots.some(({ arrivals }) => arrivals.some(({ id }) => id === hiddenArrival.id))).toBe(false);
+    window.removeEventListener(LIVE_OVERVIEW_EVENT, receiveSnapshot);
   });
 
   it("keeps visual alerts working when browser audio cannot start", async () => {

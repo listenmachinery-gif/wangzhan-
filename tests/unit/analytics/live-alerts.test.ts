@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import type { LiveVisitorArrival } from "@/lib/analytics/first-party/types";
 import {
   buildLiveOverviewUrl,
+  enqueueLiveAlerts,
   getLatestLiveOverview,
   LIVE_OVERVIEW_EVENT,
   publishLiveOverview,
@@ -31,6 +32,18 @@ describe("live visitor alert state", () => {
     expect(first.newArrivals.map(({ id }) => id)).toEqual(["new-a", "new-b"]);
     expect(second.newArrivals.map(({ id }) => id)).toEqual(["new-c"]);
     expect(second.seenIds).toEqual(["new-a", "new-b", "new-c"]);
+  });
+
+  it("bounds burst alerts while keeping the displayed visitor and newest arrivals", () => {
+    const queued = [arrival("showing"), arrival("old-a"), arrival("old-b")];
+    const incoming = [arrival("new-a"), arrival("new-b"), arrival("new-c")];
+
+    expect(enqueueLiveAlerts(queued, incoming, 4).map(({ id }) => id)).toEqual([
+      "showing",
+      "new-a",
+      "new-b",
+      "new-c",
+    ]);
   });
 
   it("caches and broadcasts the latest overview so newly mounted dashboards render immediately", () => {

@@ -100,6 +100,16 @@ describe("visitor analytics query service", () => {
         startedAt: now,
       },
     });
+    await db.analyticsPageView.create({
+      data: {
+        visitorId: offline.id,
+        sessionId: "session-offline",
+        environment: "TEST",
+        pageViewKey: "page-offline",
+        path: "/contact",
+        startedAt: now,
+      },
+    });
 
     const result = await new VisitorAnalyticsQueryService(db).getRealtimeSummary(admin, now, "TEST");
 
@@ -108,7 +118,7 @@ describe("visitor analytics query service", () => {
       activeVisitors: 1,
       visitorsToday: 2,
       sessionsToday: 2,
-      pageViewsToday: 1,
+      pageViewsToday: 2,
     });
   });
 
@@ -131,6 +141,8 @@ describe("visitor analytics query service", () => {
     await visitor({ id: "visitor-before-cursor", firstSeenAt: new Date("2026-11-16T11:58:59.999Z"), lastSeenAt: now });
     await visitor({ id: "visitor-bot-arrival", firstSeenAt: new Date("2026-11-16T11:59:50.000Z"), lastSeenAt: now, isBot: true });
     await visitor({ id: "visitor-preview-arrival", environment: "PREVIEW", firstSeenAt: new Date("2026-11-16T11:59:50.000Z"), lastSeenAt: now });
+    const chatOnly = await visitor({ id: "visitor-chat-only", firstSeenAt: new Date("2026-11-16T11:59:50.000Z"), lastSeenAt: now });
+    await session(chatOnly.id, "session-chat-only", new Date("2026-11-16T11:59:50.000Z"));
 
     const result = await new VisitorAnalyticsQueryService(db).getRealtimeOverview(
       admin,
@@ -149,14 +161,57 @@ describe("visitor analytics query service", () => {
       path: "/products/small-electric-shear",
     }]);
     expect(JSON.stringify(result.arrivals)).not.toMatch(/anonymousId|visitorId|cookie/i);
+    expect(result.summary.visitorsToday).toBe(1);
+    expect(result.summary.sessionsToday).toBe(1);
+  });
+
+  it("uses an indexed overlapping window so late commits are found without scanning stale visitors", async () => {
+    const lateCommit = await visitor({
+      id: "visitor-late-commit",
+      firstSeenAt: new Date(now.getTime() - 15_000),
+      lastSeenAt: now,
+    });
+    const lateSession = await session(lateCommit.id, "session-late-commit", new Date(now.getTime() - 15_000));
+    await db.analyticsPageView.create({
+      data: { visitorId: lateCommit.id, sessionId: lateSession.id, environment: "TEST", pageViewKey: "page-late-commit", path: "/products", startedAt: now },
+    });
+    const stale = await visitor({
+      id: "visitor-stale-last-seen",
+      firstSeenAt: new Date(now.getTime() - 5_000),
+      lastSeenAt: new Date(now.getTime() - 10 * 60_000),
+    });
+    const staleSession = await session(stale.id, "session-stale-last-seen", new Date(now.getTime() - 5_000));
+    await db.analyticsPageView.create({
+      data: { visitorId: stale.id, sessionId: staleSession.id, environment: "TEST", pageViewKey: "page-stale-last-seen", path: "/stale", startedAt: now },
+    });
+
+    const result = await new VisitorAnalyticsQueryService(db).getRealtimeOverview(
+      admin,
+      now,
+      "TEST",
+      new Date(now.getTime() - 10_000),
+    );
+
+    expect(result.arrivals.map(({ id }) => id)).toEqual(["visitor-late-commit"]);
   });
 
   it("clamps stale cursors to five minutes, caps arrivals at twenty, and keeps baseline silent", async () => {
     for (let index = 0; index < 23; index += 1) {
-      await visitor({
+      const created = await visitor({
         id: `visitor-capped-${String(index).padStart(2, "0")}`,
         firstSeenAt: new Date(now.getTime() - 4 * 60_000 + index * 1_000),
         lastSeenAt: now,
+      });
+      const createdSession = await session(created.id, `session-capped-${String(index).padStart(2, "0")}`);
+      await db.analyticsPageView.create({
+        data: {
+          visitorId: created.id,
+          sessionId: createdSession.id,
+          environment: "TEST",
+          pageViewKey: `page-capped-${String(index).padStart(2, "0")}`,
+          path: "/",
+          startedAt: now,
+        },
       });
     }
     await visitor({ id: "visitor-too-old", firstSeenAt: new Date(now.getTime() - 5 * 60_000 - 1), lastSeenAt: now });

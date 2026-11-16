@@ -5,6 +5,7 @@ import { Radio, Volume2, VolumeX, WifiOff } from "lucide-react";
 
 import {
   buildLiveOverviewUrl,
+  enqueueLiveAlerts,
   playVisitorChime,
   prepareVisitorAudio,
   publishLiveOverview,
@@ -51,6 +52,8 @@ export function LiveVisitorMonitor({ enabled }: { enabled: boolean }) {
     let cursor: string | undefined;
     let timer: number | undefined;
     let controller: AbortController | null = null;
+    let visibilityEpoch = 0;
+    let refreshAfterRequest = false;
 
     const schedule = () => {
       if (!cancelled) timer = window.setTimeout(() => { void poll(); }, POLL_MS);
@@ -63,6 +66,7 @@ export function LiveVisitorMonitor({ enabled }: { enabled: boolean }) {
         return;
       }
       inFlight = true;
+      const requestEpoch = visibilityEpoch;
       controller = new AbortController();
       try {
         const response = await fetch(buildLiveOverviewUrl(cursor), {
@@ -71,12 +75,12 @@ export function LiveVisitorMonitor({ enabled }: { enabled: boolean }) {
         });
         if (!response.ok) throw new Error("Live visitor request failed");
         const next = await response.json() as FirstPartyOverview;
-        if (cancelled) return;
+        if (cancelled || requestEpoch !== visibilityEpoch) return;
 
         const reconciled = reconcileLiveArrivals(seenIds.current, next.arrivals);
         seenIds.current = reconciled.seenIds;
         if (cursor && reconciled.newArrivals.length > 0) {
-          setAlerts((current) => [...current, ...reconciled.newArrivals]);
+          setAlerts((current) => enqueueLiveAlerts(current, reconciled.newArrivals));
         }
         cursor = laterCursor(cursor, next.generatedAt);
         setOverview(next);
@@ -89,13 +93,30 @@ export function LiveVisitorMonitor({ enabled }: { enabled: boolean }) {
       } finally {
         inFlight = false;
         controller = null;
-        schedule();
+        if (refreshAfterRequest && !document.hidden) {
+          refreshAfterRequest = false;
+          void poll();
+        } else if (!document.hidden) {
+          schedule();
+        }
       }
     };
 
     const refreshWhenVisible = () => {
-      if (document.hidden || inFlight) return;
+      visibilityEpoch += 1;
       if (timer !== undefined) window.clearTimeout(timer);
+      timer = undefined;
+      cursor = undefined;
+      setAlerts([]);
+      if (document.hidden) {
+        controller?.abort();
+        return;
+      }
+      if (inFlight) {
+        refreshAfterRequest = true;
+        controller?.abort();
+        return;
+      }
       void poll();
     };
 

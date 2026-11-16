@@ -37,6 +37,17 @@ export function reconcileLiveArrivals(
   return { newArrivals, seenIds: remembered.slice(-Math.max(1, limit)) };
 }
 
+export function enqueueLiveAlerts(
+  current: readonly LiveVisitorArrival[],
+  incoming: readonly LiveVisitorArrival[],
+  limit = 5,
+) {
+  const boundedLimit = Math.max(1, limit);
+  const displayed = current[0] ? [current[0]] : [];
+  const waiting = [...current.slice(1), ...incoming];
+  return [...displayed, ...waiting.slice(-(boundedLimit - displayed.length))];
+}
+
 type BrowserAudioContext = AudioContext & { close(): Promise<void> };
 
 function audioContextConstructor() {

@@ -53,6 +53,14 @@ function activeCutoff(now: Date) {
   return isActive(boundary, now) ? boundary : new Date(boundary.getTime() + 1);
 }
 
+function analyticsVisitorWhere(environment: AnalyticsEnvironment): Prisma.AnalyticsVisitorWhereInput {
+  return {
+    environment,
+    isBot: false,
+    pageViews: { some: { environment } },
+  };
+}
+
 function visitorWhere(query: VisitorListQuery, now: Date): Prisma.AnalyticsVisitorWhereInput {
   const lastSeenAt: Prisma.DateTimeFilter = {
     gte: query.from,
@@ -109,16 +117,16 @@ export class VisitorAnalyticsQueryService {
     const dayStart = utcDayStart(now);
     const [onlineVisitors, activeVisitors, visitorsToday, sessionsToday, pageViewsToday] = await this.database.$transaction([
       this.database.analyticsVisitor.count({
-        where: { environment, isBot: false, lastSeenAt: { gte: onlineCutoff(now) } },
+        where: { ...analyticsVisitorWhere(environment), lastSeenAt: { gte: onlineCutoff(now) } },
       }),
       this.database.analyticsVisitor.count({
-        where: { environment, isBot: false, lastActiveAt: { gte: activeCutoff(now) } },
+        where: { ...analyticsVisitorWhere(environment), lastActiveAt: { gte: activeCutoff(now) } },
       }),
       this.database.analyticsVisitor.count({
-        where: { environment, isBot: false, firstSeenAt: { gte: dayStart, lte: now } },
+        where: { ...analyticsVisitorWhere(environment), firstSeenAt: { gte: dayStart, lte: now } },
       }),
       this.database.analyticsSession.count({
-        where: { environment, isBot: false, startedAt: { gte: dayStart, lte: now } },
+        where: { environment, isBot: false, startedAt: { gte: dayStart, lte: now }, pageViews: { some: { environment } } },
       }),
       this.database.analyticsPageView.count({
         where: {
@@ -141,12 +149,13 @@ export class VisitorAnalyticsQueryService {
     if (!since) return { summary, arrivals: [] };
 
     const earliest = now.getTime() - 5 * 60_000;
-    const boundedSince = new Date(Math.min(now.getTime(), Math.max(earliest, since.getTime())));
+    const normalizedCursor = Math.min(now.getTime(), since.getTime());
+    const boundedSince = new Date(Math.max(earliest, normalizedCursor - 30_000));
     const visitors = await this.database.analyticsVisitor.findMany({
       where: {
-        environment,
-        isBot: false,
+        ...analyticsVisitorWhere(environment),
         firstSeenAt: { gt: boundedSince, lte: now },
+        lastSeenAt: { gt: boundedSince, lte: now },
       },
       select: {
         id: true,
