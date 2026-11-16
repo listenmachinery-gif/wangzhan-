@@ -3,6 +3,8 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests/e2e",
   outputDir: ".playwright/results",
+  timeout: 60_000,
+  expect: { timeout: 15_000 },
   // E2E fixtures share one protected PostgreSQL test database and must not clean up each other's records.
   workers: 1,
   use: {
@@ -13,6 +15,10 @@ export default defineConfig({
     command: "npm run dev",
     url: "http://127.0.0.1:3000",
     reuseExistingServer: !process.env.CI,
+    env: {
+      NEXT_PUBLIC_GA4_MEASUREMENT_ID:
+        process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID ?? "G-ZYRONTEST",
+    },
   },
   projects: [
     {

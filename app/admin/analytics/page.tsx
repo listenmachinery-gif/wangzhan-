@@ -1,6 +1,8 @@
 import { AnalyticsDashboard } from "@/components/admin/analytics/AnalyticsDashboard";
 import { ANALYTICS_RANGES, type AnalyticsRange } from "@/lib/analytics/types";
-import { requirePermission } from "@/lib/auth/guards";
+import { can } from "@/lib/auth/permissions";
+import { getCurrentPrincipal } from "@/lib/auth/session";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +11,9 @@ export default async function AdminAnalyticsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  await requirePermission("settings.write");
+  const principal = await getCurrentPrincipal();
+  if (!principal) redirect("/admin/login");
+  if (!can(principal, "settings.write")) redirect("/admin");
   const params = await searchParams;
   const requested = typeof params.range === "string" ? params.range : "28d";
   const range = ANALYTICS_RANGES.includes(requested as AnalyticsRange) ? requested as AnalyticsRange : "28d";
