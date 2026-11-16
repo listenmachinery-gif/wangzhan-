@@ -52,7 +52,7 @@ export function AdminTopbar({ principal, collapsed, mobileOpen, onToggleCollapse
         <AdminBreadcrumbs />
       </div>
       <div className="flex shrink-0 items-center gap-3">
-        {status ? <div className="hidden items-center text-xs text-admin-muted md:flex">{status}</div> : null}
+        {status ? <div className="flex items-center text-xs text-admin-muted">{status}</div> : null}
         <div className="relative">
           <button
             ref={menuButtonRef}

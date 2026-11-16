@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminTopbar } from "@/components/admin/AdminTopbar";
-import type { Principal } from "@/lib/auth/permissions";
+import { LiveVisitorMonitor } from "@/components/admin/analytics/LiveVisitorMonitor";
+import { can, type Principal } from "@/lib/auth/permissions";
 
 export function AdminShell({ principal, children }: { principal: Principal; children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -55,6 +56,7 @@ export function AdminShell({ principal, children }: { principal: Principal; chil
           mobileOpen={mobileOpen}
           onToggleCollapsed={() => setCollapsed((value) => !value)}
           onToggleMobile={() => setMobileOpen((value) => !value)}
+          status={<LiveVisitorMonitor enabled={can(principal, "analytics.read.summary")} />}
         />
         <main className="p-4 sm:p-6 lg:p-8 xl:p-10">{children}</main>
       </div>
