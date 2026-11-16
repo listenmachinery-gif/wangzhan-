@@ -1,13 +1,23 @@
 import { ConnectionStatus } from "@/components/admin/ConnectionStatus";
+import { AnalyticsOverviewService } from "@/lib/analytics/overview-service";
+import type { AnalyticsConnectionOverview } from "@/lib/analytics/types";
+import { can } from "@/lib/auth/permissions";
+import { getCurrentPrincipal } from "@/lib/auth/session";
 import { db } from "@/lib/db/client";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
-  const [products, publishedProducts, newLeads] = await Promise.all([
+  const principal = await getCurrentPrincipal();
+  const mayViewAnalytics = principal ? can(principal, "settings.write") : false;
+  const statusPromise: Promise<AnalyticsConnectionOverview | null> = mayViewAnalytics
+    ? new AnalyticsOverviewService().getStatus().catch(() => null)
+    : Promise.resolve(null);
+  const [products, publishedProducts, newLeads, analyticsStatus] = await Promise.all([
     db.product.count(),
     db.product.count({ where: { status: "PUBLISHED" } }),
     db.lead.count({ where: { status: "NEW" } }),
+    statusPromise,
   ]);
 
   return (
@@ -29,10 +39,12 @@ export default async function AdminDashboardPage() {
           </article>
         ))}
       </section>
-      <section aria-label="外部数据连接" className="grid gap-4 sm:grid-cols-2">
-        <ConnectionStatus service="Google Analytics 4" connected={false} />
-        <ConnectionStatus service="Google Search Console" connected={false} />
-      </section>
+      {analyticsStatus ? (
+        <section aria-label="外部数据连接" className="grid gap-4 sm:grid-cols-2">
+          <ConnectionStatus service="Google Analytics 4" state={analyticsStatus.ga4.code} message={analyticsStatus.ga4.message} checkedAt={analyticsStatus.ga4.checkedAt} href="/admin/analytics" />
+          <ConnectionStatus service="Google Search Console" state={analyticsStatus.searchConsole.code} message={analyticsStatus.searchConsole.message} checkedAt={analyticsStatus.searchConsole.checkedAt} href="/admin/analytics" />
+        </section>
+      ) : null}
     </div>
   );
 }

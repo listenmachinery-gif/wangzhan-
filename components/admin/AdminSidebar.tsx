@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
 import {
+  ChartNoAxesCombined,
   FileImage,
   FilePenLine,
   Gauge,
@@ -29,6 +30,7 @@ type NavigationItem = {
 
 const navigation: NavigationItem[] = [
   { href: "/admin", label: "数据总览", icon: Gauge },
+  { href: "/admin/analytics", label: "数据分析", icon: ChartNoAxesCombined, permission: "settings.write" },
   { href: "/admin/pages", label: "页面设计", icon: FilePenLine, permission: "page.read" },
   { href: "/admin/banners", label: "Banner 管理", icon: FileImage, permission: "banner.read" },
   { href: "/admin/product-categories", label: "产品分类", icon: Tags, permission: "category.read" },
