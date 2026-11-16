@@ -112,7 +112,7 @@ export class RealtimeGateway {
 
     const assertConversation = (conversationId: string) => {
       if (!claims) throw new Error("UNAUTHENTICATED");
-      if (claims.subjectType === "visitor" && claims.conversationId !== conversationId) {
+      if (claims.conversationId && claims.conversationId !== conversationId) {
         throw new Error("FORBIDDEN_CONVERSATION");
       }
     };

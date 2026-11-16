@@ -38,6 +38,15 @@ export const chatTokenRequestSchema = z.strictObject({
   conversationId: z.string().trim().min(1).max(128),
 });
 
+export const chatAssignmentInputSchema = z.strictObject({
+  assigneeId: z.string().trim().min(1).max(128),
+  currentAssignmentId: z.string().trim().min(1).max(128).nullable(),
+});
+
+export const chatStatusInputSchema = z.strictObject({
+  status: z.enum(["OPEN", "PENDING", "CLOSED", "SPAM"]),
+});
+
 export type ChatConversationInput = z.infer<typeof chatConversationInputSchema>;
 export type ChatMessageInput = z.infer<typeof chatMessageInputSchema>;
 export type ChatMessageListQuery = z.infer<typeof chatMessageListQuerySchema>;

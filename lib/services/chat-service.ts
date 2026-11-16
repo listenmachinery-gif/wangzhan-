@@ -11,9 +11,11 @@ import type { RealtimeEvent } from "@/lib/realtime/protocol";
 import { publishRealtimeEvent } from "@/lib/realtime/redis";
 import {
   adminChatListQuerySchema,
+  chatAssignmentInputSchema,
   chatConversationInputSchema,
   chatMessageInputSchema,
   chatMessageListQuerySchema,
+  chatStatusInputSchema,
   type AdminChatListQuery,
   type ChatConversationInput,
   type ChatMessageInput,
@@ -53,6 +55,30 @@ export class ChatRateLimitError extends Error {
     super("Too many chat messages. Please wait before retrying.");
     this.name = "ChatRateLimitError";
   }
+}
+
+export class ChatAssignmentConflictError extends Error {
+  constructor() {
+    super("Conversation assignment changed. Reload before retrying.");
+    this.name = "ChatAssignmentConflictError";
+  }
+}
+
+async function runChatSerializable<T>(
+  database: PrismaClient,
+  work: (transaction: Prisma.TransactionClient) => Promise<T>,
+) {
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      return await database.$transaction(work, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    } catch (error) {
+      const retryable = (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034")
+        || (error instanceof Error && error.message.includes("TransactionWriteConflict"));
+      if (!retryable || attempt === 3) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 5 * (attempt + 1)));
+    }
+  }
+  throw new Error("Serializable chat transaction exhausted retries.");
 }
 
 const conversationAccessInclude = {
@@ -444,5 +470,111 @@ export class ChatService {
     const hasMore = rows.length > 50;
     const items = rows.slice(0, 50);
     return { items, nextCursor: hasMore ? items.at(-1)?.id ?? null : null };
+  }
+
+  async assignConversation(
+    principal: Principal,
+    conversationId: string,
+    rawInput: unknown,
+    environment: AnalyticsEnvironment = currentAnalyticsEnvironment(),
+  ) {
+    if (!can(principal, "chat.assign")) throw new ChatPermissionError();
+    const input = chatAssignmentInputSchema.parse(rawInput);
+    const now = this.clock();
+    const assignment = await runChatSerializable(this.database, async (transaction) => {
+      const [conversation, assignee] = await Promise.all([
+        transaction.chatConversation.findFirst({
+          where: { id: conversationId, environment },
+          include: { assignments: { where: { endedAt: null }, orderBy: { assignedAt: "desc" }, take: 1 } },
+        }),
+        transaction.user.findFirst({
+          where: {
+            id: input.assigneeId,
+            isActive: true,
+            roles: { some: { role: { key: { in: ["SUPPORT_AGENT", "SUPPORT_SUPERVISOR"] } } } },
+          },
+        }),
+      ]);
+      if (!conversation) throw new ChatNotFoundError();
+      if (!assignee) throw new ChatConflictError("Assignee must be an active support user.");
+      const current = conversation.assignments[0] ?? null;
+      if (current?.assigneeId === assignee.id) return current;
+      if ((current?.id ?? null) !== input.currentAssignmentId) throw new ChatAssignmentConflictError();
+
+      await transaction.chatAssignment.updateMany({
+        where: { conversationId, endedAt: null },
+        data: { endedAt: now },
+      });
+      const created = await transaction.chatAssignment.create({
+        data: { conversationId, assigneeId: assignee.id, assignedById: principal.id, assignedAt: now },
+      });
+      await transaction.auditLog.create({
+        data: {
+          actorId: principal.id,
+          action: "chat.assignment.change",
+          entityType: "ChatConversation",
+          entityId: conversationId,
+          before: { assignmentId: current?.id ?? null, assigneeId: current?.assigneeId ?? null },
+          after: { assignmentId: created.id, assigneeId: created.assigneeId },
+        },
+      });
+      return created;
+    });
+    await this.publishConversationUpdate(conversationId, environment, assignment.assigneeId).catch(() => undefined);
+    return assignment;
+  }
+
+  async updateConversationStatus(
+    principal: Principal,
+    conversationId: string,
+    rawInput: unknown,
+    environment: AnalyticsEnvironment = currentAnalyticsEnvironment(),
+  ) {
+    if (!can(principal, "chat.manage")) throw new ChatPermissionError();
+    const input = chatStatusInputSchema.parse(rawInput);
+    const updated = await this.database.$transaction(async (transaction) => {
+      const conversation = await transaction.chatConversation.findFirst({ where: { id: conversationId, environment } });
+      if (!conversation) throw new ChatNotFoundError();
+      if (conversation.status === input.status) return conversation;
+      const result = await transaction.chatConversation.update({
+        where: { id: conversationId },
+        data: { status: input.status },
+      });
+      await transaction.auditLog.create({
+        data: {
+          actorId: principal.id,
+          action: "chat.status.change",
+          entityType: "ChatConversation",
+          entityId: conversationId,
+          before: { status: conversation.status },
+          after: { status: result.status },
+        },
+      });
+      return result;
+    });
+    const active = await this.database.chatAssignment.findFirst({ where: { conversationId, endedAt: null } });
+    await this.publishConversationUpdate(conversationId, environment, active?.assigneeId ?? null, updated.status).catch(() => undefined);
+    return updated;
+  }
+
+  private async publishConversationUpdate(
+    conversationId: string,
+    environment: AnalyticsEnvironment,
+    assigneeId: string | null,
+    status?: "OPEN" | "PENDING" | "CLOSED" | "SPAM",
+  ) {
+    const conversation = status ? null : await this.database.chatConversation.findFirst({
+      where: { id: conversationId, environment },
+      select: { status: true },
+    });
+    const config = getRealtimeConfig();
+    return this.publisher(buildRealtimeChannel(config, "conversation", conversationId), {
+      v: 1,
+      id: randomUUID(),
+      type: "conversation.updated",
+      serverTime: this.clock().toISOString(),
+      conversationId,
+      payload: { status: status ?? conversation?.status ?? "OPEN", assigneeId },
+    });
   }
 }

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
 import {
   ChartNoAxesCombined, FileImage, FilePenLine, Gauge, Images, KeyRound,
-  PackageSearch, SearchCheck, Settings, SlidersHorizontal, Tags, Users,
+  MessageSquareText, PackageSearch, SearchCheck, Settings, SlidersHorizontal, Tags, Users,
 } from "lucide-react";
 
 import { can, type Permission, type Principal } from "@/lib/auth/permissions";
@@ -35,6 +35,7 @@ const navigationGroups: NavigationGroup[] = [
     label: "客户增长",
     items: [
       { href: "/admin/leads", label: "询盘 CRM", icon: Users, anyPermission: ["lead.read.all", "lead.read.assigned"] },
+      { href: "/admin/chat", label: "在线客服", icon: MessageSquareText, anyPermission: ["chat.read.all", "chat.read.assigned"] },
     ],
   },
   {
@@ -63,6 +64,8 @@ function mayViewItem(principal: Principal, item: NavigationItem) {
     && (!item.anyPermission || item.anyPermission.some((permission) => can(principal, permission, {
       assigneeId: principal.id,
       assignmentActive: true,
+    chatAssigneeId: principal.id,
+    chatAssignmentActive: true,
     })));
 }
 
