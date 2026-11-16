@@ -87,6 +87,24 @@ enum AnalyticsEventType {
   CHAT_MESSAGE_SENT
 }
 
+enum ChatConversationStatus {
+  OPEN
+  PENDING
+  CLOSED
+  SPAM
+}
+
+enum ChatSenderType {
+  VISITOR
+  AGENT
+  SYSTEM
+}
+
+enum ChatMessageType {
+  TEXT
+  SYSTEM
+}
+
 model User {
   id                   String           @id @default(cuid())
   email                String           @unique
@@ -105,6 +123,9 @@ model User {
   assignedLeads        LeadAssignment[] @relation("LeadAssignee")
   leadAssignmentsMade  LeadAssignment[] @relation("LeadAssignedBy")
   authoredPageVersions PageVersion[]    @relation("PageVersionAuthor")
+  sentChatMessages     ChatMessage[]    @relation("ChatMessageSender")
+  chatAssignments      ChatAssignment[] @relation("ChatAssignee")
+  chatAssignmentsMade  ChatAssignment[] @relation("ChatAssignedBy")
 }
 
 model Role {
@@ -416,6 +437,7 @@ model Lead {
   assignments          LeadAssignment[]
   notificationAttempts LeadNotificationAttempt[]
   analyticsVisitors    AnalyticsVisitor[]
+  chatConversations    ChatConversation[]
 
   @@index([status, createdAt])
   @@index([email, createdAt])
@@ -532,29 +554,30 @@ model PageVersion {
 }
 
 model AnalyticsVisitor {
-  id              String               @id @default(cuid())
-  anonymousId     String
-  environment     AnalyticsEnvironment
-  firstSeenAt     DateTime
-  lastSeenAt      DateTime
-  lastActiveAt    DateTime?
-  firstSource     Json?
-  lastSource      Json?
-  countryCode     String?
-  region          String?
-  city            String?
-  deviceType      String?
-  browser         String?
-  operatingSystem String?
-  isBot           Boolean              @default(false)
-  linkedLeadId    String?
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  linkedLead      Lead?                @relation(fields: [linkedLeadId], references: [id], onDelete: SetNull)
-  sessions        AnalyticsSession[]
-  pageViews       AnalyticsPageView[]
-  events          AnalyticsEvent[]
-  siteSearches    SiteSearchEvent[]
+  id                String               @id @default(cuid())
+  anonymousId       String
+  environment       AnalyticsEnvironment
+  firstSeenAt       DateTime
+  lastSeenAt        DateTime
+  lastActiveAt      DateTime?
+  firstSource       Json?
+  lastSource        Json?
+  countryCode       String?
+  region            String?
+  city              String?
+  deviceType        String?
+  browser           String?
+  operatingSystem   String?
+  isBot             Boolean              @default(false)
+  linkedLeadId      String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  linkedLead        Lead?                @relation(fields: [linkedLeadId], references: [id], onDelete: SetNull)
+  sessions          AnalyticsSession[]
+  pageViews         AnalyticsPageView[]
+  events            AnalyticsEvent[]
+  siteSearches      SiteSearchEvent[]
+  chatConversations ChatConversation[]
 
   @@unique([environment, anonymousId])
   @@index([environment, lastSeenAt, id])
@@ -562,42 +585,105 @@ model AnalyticsVisitor {
 }
 
 model AnalyticsSession {
-  id              String               @id @default(cuid())
-  visitorId       String
-  sessionKey      String
-  environment     AnalyticsEnvironment
-  startedAt       DateTime
-  lastSeenAt      DateTime
-  lastActiveAt    DateTime?
-  endedAt         DateTime?
-  landingPath     String
-  exitPath        String?
-  referrer        String?
-  source          String?
-  medium          String?
-  campaign        String?
-  term            String?
-  content         String?
-  countryCode     String?
-  region          String?
-  city            String?
-  deviceType      String?
-  browser         String?
-  operatingSystem String?
-  ipHash          String?
-  isBot           Boolean              @default(false)
-  pageViewCount   Int                  @default(0)
-  eventCount      Int                  @default(0)
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  visitor         AnalyticsVisitor     @relation(fields: [visitorId], references: [id], onDelete: Cascade)
-  pageViews       AnalyticsPageView[]
-  events          AnalyticsEvent[]
-  siteSearches    SiteSearchEvent[]
+  id                String               @id @default(cuid())
+  visitorId         String
+  sessionKey        String
+  environment       AnalyticsEnvironment
+  startedAt         DateTime
+  lastSeenAt        DateTime
+  lastActiveAt      DateTime?
+  endedAt           DateTime?
+  landingPath       String
+  exitPath          String?
+  referrer          String?
+  source            String?
+  medium            String?
+  campaign          String?
+  term              String?
+  content           String?
+  countryCode       String?
+  region            String?
+  city              String?
+  deviceType        String?
+  browser           String?
+  operatingSystem   String?
+  ipHash            String?
+  isBot             Boolean              @default(false)
+  pageViewCount     Int                  @default(0)
+  eventCount        Int                  @default(0)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  visitor           AnalyticsVisitor     @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  pageViews         AnalyticsPageView[]
+  events            AnalyticsEvent[]
+  siteSearches      SiteSearchEvent[]
+  chatConversations ChatConversation[]
 
   @@unique([environment, sessionKey])
   @@index([visitorId, startedAt])
   @@index([environment, lastSeenAt, id])
+}
+
+model ChatConversation {
+  id                 String                 @id @default(cuid())
+  visitorId          String
+  sessionId          String?
+  leadId             String?
+  environment        AnalyticsEnvironment
+  status             ChatConversationStatus @default(OPEN)
+  contactName        String?
+  contactEmail       String?
+  contactWhatsapp    String?
+  lastMessageAt      DateTime?
+  visitorUnreadCount Int                    @default(0)
+  agentUnreadCount   Int                    @default(0)
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  visitor            AnalyticsVisitor       @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  session            AnalyticsSession?      @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  lead               Lead?                  @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  messages           ChatMessage[]
+  assignments        ChatAssignment[]
+
+  @@index([environment, status, lastMessageAt, id])
+  @@index([visitorId, updatedAt])
+  @@index([leadId, updatedAt])
+}
+
+model ChatMessage {
+  id              String           @id @default(cuid())
+  conversationId  String
+  senderType      ChatSenderType
+  senderUserId    String?
+  type            ChatMessageType  @default(TEXT)
+  clientMessageId String
+  body            String
+  metadata        Json?
+  sentAt          DateTime         @default(now())
+  deliveredAt     DateTime?
+  readAt          DateTime?
+  conversation    ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderUser      User?            @relation("ChatMessageSender", fields: [senderUserId], references: [id], onDelete: SetNull)
+
+  @@unique([conversationId, clientMessageId])
+  @@index([conversationId, sentAt, id])
+  @@index([senderUserId, sentAt])
+}
+
+model ChatAssignment {
+  id             String           @id @default(cuid())
+  conversationId String
+  assigneeId     String
+  assignedById   String
+  assignedAt     DateTime         @default(now())
+  endedAt        DateTime?
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  assignee       User             @relation("ChatAssignee", fields: [assigneeId], references: [id], onDelete: Restrict)
+  assignedBy     User             @relation("ChatAssignedBy", fields: [assignedById], references: [id], onDelete: Restrict)
+
+  @@index([conversationId, endedAt])
+  @@index([assigneeId, endedAt])
+  @@index([assignedById, assignedAt])
 }
 
 model AnalyticsPageView {

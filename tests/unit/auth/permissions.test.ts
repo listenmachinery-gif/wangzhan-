@@ -73,6 +73,39 @@ describe("ZYRON CMS role permissions", () => {
     expect(can(sales, "analytics.export")).toBe(false);
   });
 
+  it("limits Support Agents to their currently assigned conversations", () => {
+    const agent = principal("agent-1", ["SUPPORT_AGENT"]);
+
+    expect(can(agent, "chat.read.assigned", { chatAssigneeId: "agent-1", chatAssignmentActive: true })).toBe(true);
+    expect(can(agent, "chat.reply.assigned", { chatAssigneeId: "agent-1", chatAssignmentActive: true })).toBe(true);
+    expect(can(agent, "chat.read.assigned", { chatAssigneeId: "agent-2", chatAssignmentActive: true })).toBe(false);
+    expect(can(agent, "chat.reply.assigned", { chatAssigneeId: "agent-1", chatAssignmentActive: false })).toBe(false);
+    expect(can(agent, "chat.read.all")).toBe(false);
+    expect(can(agent, "chat.assign")).toBe(false);
+    expect(can(agent, "chat.manage")).toBe(false);
+  });
+
+  it("lets Support Supervisors view, reply, assign, and manage every conversation", () => {
+    const supervisor = principal("supervisor-1", ["SUPPORT_SUPERVISOR"]);
+
+    expect(can(supervisor, "chat.read.all")).toBe(true);
+    expect(can(supervisor, "chat.reply.all")).toBe(true);
+    expect(can(supervisor, "chat.assign")).toBe(true);
+    expect(can(supervisor, "chat.manage")).toBe(true);
+    expect(can(supervisor, "user.manage")).toBe(false);
+    expect(can(supervisor, "lead.read.all")).toBe(false);
+  });
+
+  it("gives administrators all chat permissions without expanding editor access", () => {
+    const admin = principal("admin", ["ADMIN"]);
+    const editor = principal("content", ["CONTENT_EDITOR"]);
+
+    for (const permission of ["chat.read.all", "chat.reply.all", "chat.assign", "chat.manage"] as const) {
+      expect(can(admin, permission)).toBe(true);
+      expect(can(editor, permission)).toBe(false);
+    }
+  });
+
   it("denies unknown permissions by default", () => {
     const admin = principal("admin", ["ADMIN"]);
 

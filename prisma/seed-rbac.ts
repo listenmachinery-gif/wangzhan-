@@ -21,7 +21,6 @@ export async function seedRbac(db: PrismaClient) {
     });
     const keys = Object.keys(ROLE_PERMISSIONS[roleKey]);
     const permissions = await db.permission.findMany({ where: { key: { in: keys } } });
-    await db.rolePermission.deleteMany({ where: { roleId: role.id } });
     await db.rolePermission.createMany({
       data: permissions.map((permission) => ({ roleId: role.id, permissionId: permission.id })),
       skipDuplicates: true,

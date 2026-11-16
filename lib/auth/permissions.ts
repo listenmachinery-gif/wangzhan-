@@ -1,4 +1,12 @@
-export const ROLES = ["SUPER_ADMIN", "ADMIN", "PRODUCT_EDITOR", "CONTENT_EDITOR", "SALES"] as const;
+export const ROLES = [
+  "SUPER_ADMIN",
+  "ADMIN",
+  "PRODUCT_EDITOR",
+  "CONTENT_EDITOR",
+  "SALES",
+  "SUPPORT_AGENT",
+  "SUPPORT_SUPERVISOR",
+] as const;
 
 export type RoleKey = (typeof ROLES)[number];
 
@@ -39,6 +47,12 @@ export const PERMISSIONS = [
   "analytics.read.summary",
   "analytics.read.visitors",
   "analytics.export",
+  "chat.read.assigned",
+  "chat.read.all",
+  "chat.reply.assigned",
+  "chat.reply.all",
+  "chat.assign",
+  "chat.manage",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -53,6 +67,8 @@ export type Principal = {
 export type PermissionResource = {
   assigneeId?: string | null;
   assignmentActive?: boolean;
+  chatAssigneeId?: string | null;
+  chatAssignmentActive?: boolean;
   targetRoles?: RoleKey[];
 };
 
@@ -101,6 +117,10 @@ export const ROLE_PERMISSIONS: Record<RoleKey, Partial<Record<Permission, true>>
     "analytics.read.summary",
     "analytics.read.visitors",
     "analytics.export",
+    "chat.read.all",
+    "chat.reply.all",
+    "chat.assign",
+    "chat.manage",
   ),
   PRODUCT_EDITOR: allow(
     "category.read",
@@ -134,6 +154,18 @@ export const ROLE_PERMISSIONS: Record<RoleKey, Partial<Record<Permission, true>>
     "lead.read.assigned",
     "lead.update.assigned",
     "lead.export.assigned",
+    "chat.read.assigned",
+    "chat.reply.assigned",
+  ),
+  SUPPORT_AGENT: allow(
+    "chat.read.assigned",
+    "chat.reply.assigned",
+  ),
+  SUPPORT_SUPERVISOR: allow(
+    "chat.read.all",
+    "chat.reply.all",
+    "chat.assign",
+    "chat.manage",
   ),
 };
 
@@ -141,6 +173,11 @@ const assignedLeadPermissions = new Set<Permission>([
   "lead.read.assigned",
   "lead.update.assigned",
   "lead.export.assigned",
+]);
+
+const assignedChatPermissions = new Set<Permission>([
+  "chat.read.assigned",
+  "chat.reply.assigned",
 ]);
 
 export function can(principal: Principal, permission: Permission, resource: PermissionResource = {}) {
@@ -160,6 +197,10 @@ export function can(principal: Principal, permission: Permission, resource: Perm
 
   if (assignedLeadPermissions.has(permission) && !principal.roles.includes("SUPER_ADMIN")) {
     return resource.assignmentActive === true && resource.assigneeId === principal.id;
+  }
+
+  if (assignedChatPermissions.has(permission) && !principal.roles.includes("SUPER_ADMIN")) {
+    return resource.chatAssignmentActive === true && resource.chatAssigneeId === principal.id;
   }
 
   return true;

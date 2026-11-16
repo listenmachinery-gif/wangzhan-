@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -17,5 +18,12 @@ describe("RBAC seed CLI entrypoint", () => {
 
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("DATABASE_URL is required.");
+  });
+
+  it("adds declared grants idempotently without deleting existing role grants", () => {
+    const source = readFileSync(path.resolve("prisma/seed-rbac.ts"), "utf8");
+
+    expect(source).not.toContain("rolePermission.deleteMany");
+    expect(source).toContain("skipDuplicates: true");
   });
 });

@@ -259,4 +259,121 @@ describe("CMS PostgreSQL foundation", () => {
     }
     expect(await db.permission.count({ where: { key: { startsWith: "analytics." } } })).toBe(3);
   });
+
+  it("persists chat conversations, idempotent messages, and assignment history", async () => {
+    const agent = await db.user.create({
+      data: { email: "support@example.com", name: "Support Agent", passwordHash: "argon2id:test" },
+    });
+    const supervisor = await db.user.create({
+      data: { email: "support-supervisor@example.com", name: "Support Supervisor", passwordHash: "argon2id:test" },
+    });
+    const lead = await db.lead.create({
+      data: { email: "chat-buyer@example.com", message: "Created from chat." },
+    });
+    const visitor = await db.analyticsVisitor.create({
+      data: {
+        anonymousId: "chat_visitor_1",
+        environment: "TEST",
+        firstSeenAt: new Date("2026-11-16T09:00:00Z"),
+        lastSeenAt: new Date("2026-11-16T09:05:00Z"),
+      },
+    });
+    const session = await db.analyticsSession.create({
+      data: {
+        visitorId: visitor.id,
+        sessionKey: "chat_session_1",
+        environment: "TEST",
+        startedAt: new Date("2026-11-16T09:00:00Z"),
+        lastSeenAt: new Date("2026-11-16T09:05:00Z"),
+        landingPath: "/products/compact-electric-shearing-machine",
+      },
+    });
+    const conversation = await db.chatConversation.create({
+      data: {
+        visitorId: visitor.id,
+        sessionId: session.id,
+        leadId: lead.id,
+        environment: "TEST",
+        status: "OPEN",
+        contactName: "Buyer",
+        contactEmail: "chat-buyer@example.com",
+        contactWhatsapp: "+8613800000000",
+        lastMessageAt: new Date("2026-11-16T09:02:00Z"),
+      },
+    });
+    await db.chatMessage.create({
+      data: {
+        conversationId: conversation.id,
+        senderType: "VISITOR",
+        type: "TEXT",
+        clientMessageId: "visitor-message-1",
+        body: "Can you quote this machine?",
+        sentAt: new Date("2026-11-16T09:02:00Z"),
+      },
+    });
+    await db.chatAssignment.create({
+      data: {
+        conversationId: conversation.id,
+        assigneeId: agent.id,
+        assignedById: supervisor.id,
+      },
+    });
+
+    await expect(db.chatMessage.create({
+      data: {
+        conversationId: conversation.id,
+        senderType: "VISITOR",
+        type: "TEXT",
+        clientMessageId: "visitor-message-1",
+        body: "Duplicate retry",
+      },
+    })).rejects.toMatchObject({ code: "P2002" });
+
+    const saved = await db.chatConversation.findUniqueOrThrow({
+      where: { id: conversation.id },
+      include: { visitor: true, session: true, lead: true, messages: true, assignments: true },
+    });
+    expect(saved.lead?.email).toBe("chat-buyer@example.com");
+    expect(saved.messages).toHaveLength(1);
+    expect(saved.assignments[0]?.endedAt).toBeNull();
+
+    const indexes = await db.$queryRaw<Array<{ indexname: string }>>`
+      SELECT indexname FROM pg_indexes
+      WHERE schemaname = current_schema()
+        AND tablename IN ('ChatConversation', 'ChatMessage', 'ChatAssignment')
+    `;
+    const indexNames = indexes.map(({ indexname }) => indexname);
+    expect(indexNames.some((name) => name.includes("environment_status_lastMessageAt"))).toBe(true);
+    expect(indexNames.some((name) => name.includes("conversationId_sentAt_id"))).toBe(true);
+    expect(indexNames.some((name) => name.includes("assigneeId_endedAt"))).toBe(true);
+  });
+
+  it("seeds chat permissions idempotently while preserving custom grants", async () => {
+    const customPermission = await db.permission.create({
+      data: { key: "custom.retained", description: "Must survive RBAC seed updates" },
+    });
+    const adminRole = await db.role.create({ data: { key: "ADMIN", name: "Administrator" } });
+    await db.rolePermission.create({ data: { roleId: adminRole.id, permissionId: customPermission.id } });
+
+    await seedRbac(db);
+    await seedRbac(db);
+
+    const chatPermissions = await db.permission.findMany({
+      where: { key: { startsWith: "chat." } },
+      orderBy: { key: "asc" },
+      include: { roles: { include: { role: true } } },
+    });
+    expect(chatPermissions.map(({ key }) => key)).toEqual([
+      "chat.assign",
+      "chat.manage",
+      "chat.read.all",
+      "chat.read.assigned",
+      "chat.reply.all",
+      "chat.reply.assigned",
+    ]);
+    expect(await db.rolePermission.count({
+      where: { roleId: adminRole.id, permissionId: customPermission.id },
+    })).toBe(1);
+    expect(await db.permission.count({ where: { key: { startsWith: "chat." } } })).toBe(6);
+  });
 });
