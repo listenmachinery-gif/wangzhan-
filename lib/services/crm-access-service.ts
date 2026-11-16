@@ -10,7 +10,7 @@ export type CrmAccessScope =
 
 /** Resolves read scope. Mutations and exports also require their action-specific permissions and scope. */
 export async function resolveCrmAccessScope(
-  database: PrismaClient,
+  database: Pick<PrismaClient, "crmTeamMembership">,
   principal: Principal,
   now = new Date(),
 ): Promise<CrmAccessScope> {
