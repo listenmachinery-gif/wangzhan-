@@ -14,6 +14,7 @@ vi.mock("@/lib/auth/guards", async (importOriginal) => ({
 
 vi.mock("@/lib/services/visitor-analytics-query-service", () => ({
   VisitorAnalyticsPermissionError: class VisitorAnalyticsPermissionError extends Error {},
+  VisitorAnalyticsNotFoundError: class VisitorAnalyticsNotFoundError extends Error {},
   VisitorAnalyticsQueryService: class {
     listVisitors = mocks.listVisitors;
     exportCsv = mocks.exportCsv;

@@ -44,6 +44,31 @@ test.beforeAll(async () => {
       countryCode: "DE", deviceType: "mobile", browser: "Safari", operatingSystem: "iOS", isBot: false,
     },
   });
+  const session = await db.analyticsSession.upsert({
+    where: { environment_sessionKey: { environment: "DEVELOPMENT", sessionKey: "visitor-e2e-session" } },
+    update: { visitorId: visitorIds[0], lastSeenAt: new Date(now - 590_000), lastActiveAt: new Date(now - 590_000) },
+    create: {
+      id: "visitor-e2e-session", visitorId: visitorIds[0], sessionKey: "visitor-e2e-session", environment: "DEVELOPMENT",
+      startedAt: new Date(now - 900_000), lastSeenAt: new Date(now - 590_000), lastActiveAt: new Date(now - 590_000), landingPath: "/products/example",
+      source: "google", medium: "organic",
+    },
+  });
+  const pageView = await db.analyticsPageView.upsert({
+    where: { environment_pageViewKey: { environment: "DEVELOPMENT", pageViewKey: "visitor-e2e-page" } },
+    update: { visitorId: visitorIds[0], sessionId: session.id },
+    create: {
+      id: "visitor-e2e-page", visitorId: visitorIds[0], sessionId: session.id, environment: "DEVELOPMENT", pageViewKey: "visitor-e2e-page",
+      path: "/products/example-machine", title: "Example Machine", startedAt: new Date(now - 850_000),
+    },
+  });
+  await db.analyticsEvent.upsert({
+    where: { environment_eventKey: { environment: "DEVELOPMENT", eventKey: "visitor-e2e-event" } },
+    update: { visitorId: visitorIds[0], sessionId: session.id, pageViewId: pageView.id },
+    create: {
+      id: "visitor-e2e-event", visitorId: visitorIds[0], sessionId: session.id, pageViewId: pageView.id, environment: "DEVELOPMENT", eventKey: "visitor-e2e-event",
+      type: "INQUIRY_START", path: "/products/example-machine", occurredAt: new Date(now - 800_000), properties: { form_kind: "product" },
+    },
+  });
   await db.$disconnect();
 });
 
@@ -80,6 +105,14 @@ test("persists visitor filters in the URL and exports the same result", async ({
   await expect(page.getByText("访客-000001")).toBeVisible();
   await expect(page.getByText("访客-000002")).toHaveCount(0);
   await expect(page.locator("body")).not.toContainText("secret-cookie-google");
+
+  const journeyButton = page.getByRole("button", { name: "查看 访客-000001 的行为时间线" });
+  await journeyButton.click();
+  await expect(page.getByRole("dialog", { name: "访客行为时间线" })).toBeVisible();
+  await expect(page.getByText("/products/example-machine", { exact: true }).first()).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "访客行为时间线" })).toHaveCount(0);
+  await expect(journeyButton).toBeFocused();
 
   const csv = await page.evaluate(async () => {
     const response = await fetch("/api/admin/analytics/visitors/export?source=google&countryCode=US&deviceType=desktop");

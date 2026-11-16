@@ -43,3 +43,5 @@ export const visitorListQuerySchema = z.object({
 });
 
 export type ValidatedVisitorListQuery = z.infer<typeof visitorListQuerySchema>;
+
+export const visitorAnalyticsIdSchema = z.string().trim().min(1).max(200).regex(/^[A-Za-z0-9_-]+$/);
