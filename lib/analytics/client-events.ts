@@ -39,6 +39,7 @@ function safeParams<K extends AnalyticsEventName>(name: K, params: AnalyticsEven
   const output: Record<string, string | number | boolean> = {};
   for (const [key, value] of entries) {
     if (unsafeKey.test(key) || !permitted.has(key)) return null;
+    if (value === undefined) continue;
     if (!["string", "number", "boolean"].includes(typeof value)) return null;
     if (typeof value === "string" && value.length > 300) return null;
     if (typeof value === "number" && !Number.isFinite(value)) return null;

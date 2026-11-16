@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
+import { ProductViewTracker } from "@/components/analytics/ProductViewTracker";
 import ElectricTwoRollPlateRollingMachineSolutionPage from "@/components/ElectricTwoRollPlateRollingMachineSolutionPage";
 import ElectricFoldingMachineSolutionPage from "@/components/ElectricFoldingMachineSolutionPage";
 import ElectroHydraulicServoCncPressBrakeSolutionPage from "@/components/ElectroHydraulicServoCncPressBrakeSolutionPage";
@@ -34,6 +36,18 @@ type ProductDetailProps = {
     id: string;
   }>;
 };
+
+function trackedProduct(
+  identity: { productId?: string; productSlug: string; productName: string; productCategory: string },
+  content: ReactNode,
+) {
+  return (
+    <>
+      <ProductViewTracker {...identity} />
+      {content}
+    </>
+  );
+}
 
 async function fallbackProductMetadata({ params }: ProductDetailProps): Promise<Metadata> {
   const { id } = await params;
@@ -966,7 +980,12 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
     allowLegacyFallback: process.env.ZYRON_ENABLE_LEGACY_PRODUCT_FALLBACK === "true",
   });
   if (published?.source === "database") {
-    return <StandardProductPage product={published} />;
+    return trackedProduct({
+      productId: published.id,
+      productSlug: published.slug,
+      productName: published.name,
+      productCategory: published.categoryName,
+    }, <StandardProductPage product={published} />);
   }
   if (!published) notFound();
 
@@ -976,88 +995,94 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
     notFound();
   }
 
+  const track = (content: ReactNode) => trackedProduct({
+    productSlug: product.id,
+    productName: product.name,
+    productCategory: product.categoryName,
+  }, content);
+
   if (product.id === "electric-sheet-metal-folding-machine") {
-    return <ElectricFoldingMachineSolutionPage product={product} />;
+    return track(<ElectricFoldingMachineSolutionPage product={product} />);
   }
 
   if (product.id === "manual-sheet-metal-folding-machine") {
-    return <ManualFoldingMachineSolutionPage product={product} />;
+    return track(<ManualFoldingMachineSolutionPage product={product} />);
   }
 
   if (product.id === "pneumatic-sheet-metal-folding-machine") {
-    return <PneumaticFoldingMachineSolutionPage product={product} />;
+    return track(<PneumaticFoldingMachineSolutionPage product={product} />);
   }
 
   if (product.id === "hydraulic-sheet-metal-folding-machine") {
-    return <HydraulicFoldingMachineSolutionPage product={product} />;
+    return track(<HydraulicFoldingMachineSolutionPage product={product} />);
   }
 
   if (product.id === "electro-hydraulic-servo-cnc-press-brake") {
-    return <ElectroHydraulicServoCncPressBrakeSolutionPage product={product} />;
+    return track(<ElectroHydraulicServoCncPressBrakeSolutionPage product={product} />);
   }
 
   if (product.id === "exchange-table-fiber-laser-cutting-machine") {
-    return <ExchangeTableFiberLaserCuttingMachineSolutionPage product={product} />;
+    return track(<ExchangeTableFiberLaserCuttingMachineSolutionPage product={product} />);
   }
 
   if (product.id === "fiber-tube-laser-cutting-machine") {
-    return <FiberTubeLaserCuttingMachineSolutionPage product={product} />;
+    return track(<FiberTubeLaserCuttingMachineSolutionPage product={product} />);
   }
 
   if (product.id === "nc-hydraulic-press-brake") {
-    return <NcHydraulicPressBrakeSolutionPage product={product} />;
+    return track(<NcHydraulicPressBrakeSolutionPage product={product} />);
   }
 
   if (product.id === "torsion-bar-cnc-press-brake") {
-    return <TorsionBarCncPressBrakeSolutionPage product={product} />;
+    return track(<TorsionBarCncPressBrakeSolutionPage product={product} />);
   }
 
   if (product.id === "foot-shear") {
-    return <FootShearSolutionPage product={product} />;
+    return track(<FootShearSolutionPage product={product} />);
   }
 
   if (product.id === "compact-electric-shearing-machine") {
-    return <SmallElectricShearSolutionPage product={product} />;
+    return track(<SmallElectricShearSolutionPage product={product} />);
   }
 
   if (product.id === "energy-saving-electric-shearing-machine") {
-    return <EnergySavingElectricShearSolutionPage product={product} />;
+    return track(<EnergySavingElectricShearSolutionPage product={product} />);
   }
 
   if (product.id === "hydraulic-swing-beam-shear") {
-    return <HydraulicSwingBeamShearSolutionPage product={product} />;
+    return track(<HydraulicSwingBeamShearSolutionPage product={product} />);
   }
 
   if (product.id === "hydraulic-guillotine-shear") {
-    return <HydraulicGuillotineShearSolutionPage product={product} />;
+    return track(<HydraulicGuillotineShearSolutionPage product={product} />);
   }
 
   if (product.id === "reel-shear-beading-machine") {
-    return <ReelShearBeadingSolutionPage product={product} />;
+    return track(<ReelShearBeadingSolutionPage product={product} />);
   }
 
   if (product.id === "single-table-fiber-laser-cutting-machine") {
-    return <SingleTableFiberLaserCuttingMachineSolutionPage product={product} />;
+    return track(<SingleTableFiberLaserCuttingMachineSolutionPage product={product} />);
   }
 
   if (product.id === "electric-two-roll-plate-rolling-machine") {
-    return <ElectricTwoRollPlateRollingMachineSolutionPage product={product} />;
+    return track(<ElectricTwoRollPlateRollingMachineSolutionPage product={product} />);
   }
 
   if (product.id === "semi-automatic-three-roll-plate-rolling-machine") {
-    return <SemiAutomaticThreeRollPlateRollingMachineSolutionPage product={product} />;
+    return track(<SemiAutomaticThreeRollPlateRollingMachineSolutionPage product={product} />);
   }
 
   if (product.id === "fully-automatic-three-roll-plate-rolling-machine") {
-    return <FullyAutomaticThreeRollPlateRollingMachineSolutionPage product={product} />;
+    return track(<FullyAutomaticThreeRollPlateRollingMachineSolutionPage product={product} />);
   }
 
   if (product.id === "hydraulic-four-roll-plate-rolling-machine") {
-    return <HydraulicFourRollPlateRollingMachineSolutionPage product={product} />;
+    return track(<HydraulicFourRollPlateRollingMachineSolutionPage product={product} />);
   }
 
   if (product.id === "sheet-and-tube-fiber-laser-cutting-machine") {
-    return <SheetAndTubeFiberLaserCuttingMachineSolutionPage product={product} />;
+    return track(<SheetAndTubeFiberLaserCuttingMachineSolutionPage product={product} />);
   }
 
   const category = getCategoryById(product.categoryId);
@@ -1069,11 +1094,11 @@ export default async function ProductDetailPage({ params }: ProductDetailProps) 
     notFound();
   }
 
-  return (
+  return track(
     <ProductSolutionPage
       product={product}
       category={category}
       relatedProducts={relatedProducts}
-    />
+    />,
   );
 }

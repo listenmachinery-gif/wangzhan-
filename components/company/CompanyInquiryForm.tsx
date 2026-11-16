@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { Send } from "lucide-react";
+import { useInquiryTracking } from "@/components/analytics/useInquiryTracking";
 
 type ProductOption = {
   value: string;
@@ -48,6 +49,7 @@ export function CompanyInquiryForm({
 }: CompanyInquiryFormProps) {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [message, setMessage] = useState("");
+  const { trackStart, trackSuccessfulSubmit } = useInquiryTracking("company-engineering-inquiry");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -55,6 +57,7 @@ export function CompanyInquiryForm({
     const formData = new FormData(form);
     const payload = Object.fromEntries(formData.entries());
     const fallbackMailto = buildMailto(formData);
+    const honeypot = getText(formData, "website");
 
     setSubmitState("sending");
     setMessage("");
@@ -73,6 +76,7 @@ export function CompanyInquiryForm({
 
       setSubmitState("success");
       setMessage(result.message || "Inquiry sent successfully. Our team will reply soon.");
+      trackSuccessfulSubmit(honeypot);
       form.reset();
     } catch {
       setSubmitState("error");
@@ -86,6 +90,7 @@ export function CompanyInquiryForm({
   return (
     <form
       onSubmit={handleSubmit}
+      onFocusCapture={trackStart}
       noValidate={false}
       className="border border-white/10 bg-[#111417] p-5 sm:p-7 lg:p-9"
     >

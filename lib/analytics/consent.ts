@@ -1,6 +1,7 @@
 export const ANALYTICS_CONSENT_COOKIE = "zyron_analytics_consent";
 export const ANALYTICS_CONSENT_CHANGE_EVENT = "zyron:analytics-consent-change";
 export const ANALYTICS_PREFERENCES_EVENT = "zyron:analytics-consent-preferences";
+export const ANALYTICS_TAG_READY_EVENT = "zyron:analytics-tag-ready";
 
 export type AnalyticsConsent = "accepted" | "rejected";
 

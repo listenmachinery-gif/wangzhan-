@@ -4,9 +4,11 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { RoutePageView } from "@/components/analytics/RoutePageView";
+import { ContactClickTracker } from "@/components/analytics/ContactClickTracker";
 import {
   ANALYTICS_CONSENT_CHANGE_EVENT,
   ANALYTICS_PREFERENCES_EVENT,
+  ANALYTICS_TAG_READY_EVENT,
   readAnalyticsConsent,
   writeAnalyticsConsent,
   type AnalyticsConsent,
@@ -43,6 +45,26 @@ export function AnalyticsConsentProvider({ children }: { children?: ReactNode })
     if (preferencesOpen) acceptButton.current?.focus();
   }, [preferencesOpen]);
 
+  useEffect(() => {
+    if (consent !== "accepted" || !measurementId) return;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    let cancelled = false;
+    const startedAt = Date.now();
+    const announceWhenReady = () => {
+      if (cancelled) return;
+      if (typeof window.gtag === "function") {
+        window.dispatchEvent(new Event(ANALYTICS_TAG_READY_EVENT));
+        return;
+      }
+      if (Date.now() - startedAt < 10_000) timeout = setTimeout(announceWhenReady, 100);
+    };
+    announceWhenReady();
+    return () => {
+      cancelled = true;
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [consent, measurementId]);
+
   function choose(value: AnalyticsConsent) {
     writeAnalyticsConsent(value);
     setConsent(value);
@@ -53,6 +75,7 @@ export function AnalyticsConsentProvider({ children }: { children?: ReactNode })
   return (
     <>
       {children}
+      <ContactClickTracker />
       {hydrated && preferencesOpen ? (
         <section
           role="dialog"

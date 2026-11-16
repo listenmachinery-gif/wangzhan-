@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { Send } from "lucide-react";
+import { useInquiryTracking } from "@/components/analytics/useInquiryTracking";
 import {
   SMALL_ELECTRIC_SHEAR_BACKGAUGES,
   SMALL_ELECTRIC_SHEAR_MATERIALS,
@@ -45,6 +46,10 @@ export default function SmallElectricShearSelector() {
   const [destinationCountry, setDestinationCountry] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [submitMessage, setSubmitMessage] = useState("");
+  const { trackStart, trackSuccessfulSubmit } = useInquiryTracking(
+    "small-electric-shear-selector",
+    "compact-electric-shearing-machine",
+  );
 
   const thickness = Number(thicknessInput);
   const width = Number(widthInput);
@@ -55,6 +60,8 @@ export default function SmallElectricShearSelector() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const honeypot = String(formData.get("website") ?? "");
     setSubmitState("sending");
     setSubmitMessage("");
 
@@ -84,7 +91,7 @@ export default function SmallElectricShearSelector() {
           email,
           whatsapp,
           destinationCountry,
-          website: "",
+          website: honeypot,
         }),
       });
       const result = (await response.json()) as { message?: string };
@@ -95,6 +102,7 @@ export default function SmallElectricShearSelector() {
 
       setSubmitState("success");
       setSubmitMessage(result.message || "Inquiry sent successfully. Our team will reply soon.");
+      trackSuccessfulSubmit(honeypot);
       setEmail("");
       setWhatsapp("");
       setDestinationCountry("");
@@ -127,7 +135,7 @@ export default function SmallElectricShearSelector() {
         </p>
       </div>
 
-      <form data-selector-grid onSubmit={handleSubmit} className="mt-8 grid gap-5 lg:grid-cols-2 lg:gap-x-6">
+      <form data-selector-grid onSubmit={handleSubmit} onFocusCapture={trackStart} className="mt-8 grid gap-5 lg:grid-cols-2 lg:gap-x-6">
         <label className={labelClass}>
           Cutting Material
           <select

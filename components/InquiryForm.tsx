@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { Send } from "lucide-react";
+import { useInquiryTracking } from "@/components/analytics/useInquiryTracking";
 import type { ProductCategory } from "@/data/products";
 
 type InquiryFormProps = {
@@ -39,6 +40,7 @@ function buildMailto(formData: FormData) {
 export function InquiryForm({ productCategories }: InquiryFormProps) {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [message, setMessage] = useState("");
+  const { trackStart, trackSuccessfulSubmit } = useInquiryTracking("general-inquiry");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -49,6 +51,7 @@ export function InquiryForm({ productCategories }: InquiryFormProps) {
     const formData = new FormData(form);
     const payload = Object.fromEntries(formData.entries());
     const fallbackMailto = buildMailto(formData);
+    const honeypot = getText(formData.get("website") ?? undefined);
 
     try {
       const response = await fetch("/api/inquiry", {
@@ -66,6 +69,7 @@ export function InquiryForm({ productCategories }: InquiryFormProps) {
 
       setSubmitState("success");
       setMessage(result.message || "Inquiry sent successfully. Our team will reply soon.");
+      trackSuccessfulSubmit(honeypot);
       form.reset();
     } catch {
       setSubmitState("error");
@@ -77,7 +81,7 @@ export function InquiryForm({ productCategories }: InquiryFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-md bg-white p-7 shadow-sm lg:p-9">
+    <form onSubmit={handleSubmit} onFocusCapture={trackStart} className="rounded-md bg-white p-7 shadow-sm lg:p-9">
       <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ignition">Inquiry Form</p>
       <h2 className="mt-3 text-3xl font-semibold text-neutral-950">Tell us what you need.</h2>
       <div className="mt-7 grid gap-4 md:grid-cols-2">
@@ -136,6 +140,9 @@ export function InquiryForm({ productCategories }: InquiryFormProps) {
             placeholder="Material, thickness, working length, daily output, voltage, and any optional configuration."
           />
         </label>
+      </div>
+      <div className="absolute -left-[10000px] h-px w-px overflow-hidden" aria-hidden="true">
+        <label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label>
       </div>
       <button
         type="submit"
