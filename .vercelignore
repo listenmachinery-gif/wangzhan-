@@ -14,3 +14,9 @@ test-results/
 playwright-report/
 .storage-test/
 .worktrees/
+.codex/
+.superpowers/
+docs/
+tests/
+coverage/
+public/**/SOURCES.md

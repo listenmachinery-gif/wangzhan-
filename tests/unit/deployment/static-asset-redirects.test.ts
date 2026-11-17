@@ -1,4 +1,4 @@
-import { access } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -41,5 +41,27 @@ describe("static asset deployment footprint", () => {
     const redirects = await nextConfig.redirects?.();
 
     expect(redirects).toEqual(expect.arrayContaining([...staticAssetRedirects]));
+  });
+
+  it("excludes developer-only build inputs without excluding production scripts", async () => {
+    const projectRoot = process.cwd();
+    const ignoreLines = (await readFile(path.join(projectRoot, ".vercelignore"), "utf8"))
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    expect(ignoreLines).toEqual(
+      expect.arrayContaining([
+        ".codex/",
+        "docs/",
+        "tests/",
+        "public/**/SOURCES.md",
+      ]),
+    );
+    expect(ignoreLines).not.toContain("scripts/");
+    await expect(fileExists(path.join(projectRoot, "scripts/vercel-build.ts"))).resolves.toBe(true);
+    await expect(fileExists(path.join(projectRoot, "scripts/reset-admin-password.ts"))).resolves.toBe(true);
+    await expect(fileExists(path.join(projectRoot, "prisma/seed-crm.ts"))).resolves.toBe(true);
+    await expect(fileExists(path.join(projectRoot, "prisma/seed-rbac.ts"))).resolves.toBe(true);
   });
 });
