@@ -4,6 +4,7 @@ import type { Principal } from "@/lib/auth/permissions";
 import { db } from "@/lib/db/client";
 import { resetTestDatabase } from "@/lib/db/test-database";
 import type { ShippingHighlightDocument } from "@/lib/shipping/schema";
+import { getPublishedShippingHighlightBySlug } from "@/lib/repositories/shipping-highlight-repository";
 import {
   isShippingTransactionConflict,
   ShippingConflictError,
@@ -120,6 +121,7 @@ describe("ShippingHighlightService", () => {
     const saved = await service.saveDraft(editor, created.id, { version: 2, slug: "renamed-after-publish", document: draft });
     expect(saved).toMatchObject({ slug: "germany-shipment", status: "DRAFT", version: 3, publishedCountryCode: "DE" });
     expect(saved.publishedContent).toEqual(shippingDocument());
+    await expect(getPublishedShippingHighlightBySlug("germany-shipment")).resolves.toMatchObject({ document: shippingDocument() });
     await expect(service.saveDraft(editor, created.id, { version: 2, document: draft })).rejects.toBeInstanceOf(ShippingConflictError);
 
     const rolledBack = await service.rollback(editor, created.id, { version: 3, targetVersion: 1 });
@@ -129,6 +131,7 @@ describe("ShippingHighlightService", () => {
 
     const archived = await service.archive(editor, created.id, { version: 4 });
     expect(archived).toMatchObject({ status: "ARCHIVED", version: 5 });
+    await expect(getPublishedShippingHighlightBySlug("germany-shipment")).resolves.toBeNull();
     await expect(service.versions(editor, created.id)).resolves.toEqual(expect.arrayContaining([
       expect.objectContaining({ action: "ARCHIVE", version: 5 }),
       expect.objectContaining({ action: "ROLLBACK", version: 4 }),

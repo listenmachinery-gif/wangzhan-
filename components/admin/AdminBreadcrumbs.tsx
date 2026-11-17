@@ -7,7 +7,7 @@ import { ChevronRight } from "lucide-react";
 const labels: Record<string, string> = {
   customers: "客户管理", analytics: "数据分析", banners: "Banner 管理", leads: "询盘 CRM", inquiries: "询盘 CRM", media: "媒体资源", navigation: "导航管理",
   pages: "页面设计", "product-categories": "产品分类", products: "产品管理",
-  seo: "SEO 管理", settings: "系统设置", specifications: "型号参数", users: "用户与权限", visitors: "访客分析",
+  seo: "SEO 管理", settings: "系统设置", "shipping-highlights": "发货集锦", specifications: "型号参数", users: "用户与权限", visitors: "访客分析",
 };
 
 function getSegmentLabel(segment: string, index: number, segments: string[]) {
@@ -18,6 +18,7 @@ function getSegmentLabel(segment: string, index: number, segments: string[]) {
     if (parent === "products") return "新建产品";
     if (parent === "pages") return "新建页面";
     if (parent === "seo") return "新建 SEO 页面";
+    if (parent === "shipping-highlights") return "新建发货记录";
   }
   if (index > 0 && segments[index - 1] === "customers") return "客户详情";
   return labels[segment] ?? (index > 0 ? "详情" : segment);

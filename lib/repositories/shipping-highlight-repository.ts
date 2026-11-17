@@ -78,7 +78,7 @@ export async function listPublishedShippingHighlights(rawOptions: {
   const direction = options.sort === "oldest" ? "asc" : "desc";
   const rows = await db.shippingHighlight.findMany({
     where: {
-      status: "PUBLISHED",
+      status: { not: "ARCHIVED" },
       publishedAt: { not: null },
       publishedContent: { not: Prisma.DbNull },
       publishedCountryCode: options.countryCode,
@@ -98,7 +98,7 @@ export async function listPublishedShippingHighlights(rawOptions: {
 
 export async function getPublishedShippingHighlightBySlug(slug: string) {
   const row = await db.shippingHighlight.findFirst({
-    where: { slug, status: "PUBLISHED", publishedAt: { not: null }, publishedContent: { not: Prisma.DbNull } },
+    where: { slug, status: { not: "ARCHIVED" }, publishedAt: { not: null }, publishedContent: { not: Prisma.DbNull } },
     select: publicSelect,
   });
   return row ? parseRow(row) : null;

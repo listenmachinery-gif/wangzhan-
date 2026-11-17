@@ -73,6 +73,12 @@ describe("admin navigation", () => {
     expect(getAdminNavigation(admin).map((item) => item.label)).toContain("导航管理");
     expect(getAdminNavigation(productEditor).map((item) => item.label)).not.toContain("导航管理");
   });
+
+  it("shows shipping highlights only to principals with shipping.read", () => {
+    expect(getAdminNavigation(contentEditor).map((item) => item.label)).toContain("发货集锦");
+    expect(getAdminNavigation(admin).map((item) => item.label)).toContain("发货集锦");
+    expect(getAdminNavigation(productEditor).map((item) => item.label)).not.toContain("发货集锦");
+  });
   it("guards customer management by customer.read and marks nested customer URLs active", () => {
     expect(getAdminNavigation(productEditor).map((item) => item.label)).not.toContain("客户管理");
     expect(getAdminNavigation(contentEditor).map((item) => item.label)).not.toContain("客户管理");

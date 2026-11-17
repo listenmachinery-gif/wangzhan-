@@ -64,7 +64,7 @@ describe("published shipping highlight repository", () => {
     const result = await listPublishedShippingHighlights({ countryCode: "de", categorySlug: "shearing-machines", sort: "oldest", limit: 2, cursor: "cursor-1" });
 
     expect(databaseMocks.findMany).toHaveBeenCalledWith(expect.objectContaining({
-      where: { status: "PUBLISHED", publishedAt: { not: null }, publishedContent: { not: Prisma.DbNull }, publishedCountryCode: "DE", publishedCategorySlug: "shearing-machines" },
+      where: { status: { not: "ARCHIVED" }, publishedAt: { not: null }, publishedContent: { not: Prisma.DbNull }, publishedCountryCode: "DE", publishedCategorySlug: "shearing-machines" },
       cursor: { id: "cursor-1" }, skip: 1, take: 3,
       orderBy: [{ publishedShipmentDate: "asc" }, { id: "asc" }],
     }));
@@ -86,7 +86,7 @@ describe("published shipping highlight repository", () => {
   it("returns only a valid published detail and preserves an empty state", async () => {
     databaseMocks.findFirst.mockResolvedValueOnce(row("germany-shipment"));
     await expect(getPublishedShippingHighlightBySlug("germany-shipment")).resolves.toMatchObject({ slug: "germany-shipment", document });
-    expect(databaseMocks.findFirst).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ slug: "germany-shipment", status: "PUBLISHED", publishedAt: { not: null } }) }));
+    expect(databaseMocks.findFirst).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ slug: "germany-shipment", status: { not: "ARCHIVED" }, publishedAt: { not: null } }) }));
 
     databaseMocks.findFirst.mockResolvedValueOnce(row("bad", { publishedContent: {} }));
     await expect(getPublishedShippingHighlightBySlug("bad")).resolves.toBeNull();

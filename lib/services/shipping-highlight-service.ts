@@ -139,17 +139,14 @@ export class ShippingHighlightService {
   async list(principal: Principal, rawQuery: unknown = {}) {
     assertPermission(principal, "shipping.read");
     const query = listSchema.parse(rawQuery);
-    const start = query.dateFrom ? new Date(`${query.dateFrom}T00:00:00.000Z`) : undefined;
-    const end = query.dateTo ? new Date(`${query.dateTo}T23:59:59.999Z`) : undefined;
-    return this.database.shippingHighlight.findMany({
+    const records = await this.database.shippingHighlight.findMany({
       where: {
         status: query.status,
         categoryId: query.categoryId,
-        publishedCountryCode: query.countryCode,
-        publishedShipmentDate: start || end ? { gte: start, lte: end } : undefined,
         OR: query.query ? [
           { slug: { contains: query.query, mode: "insensitive" } },
           { draftContent: { path: ["title"], string_contains: query.query } },
+          { draftContent: { path: ["equipmentName"], string_contains: query.query } },
         ] : undefined,
       },
       select: {
@@ -158,6 +155,17 @@ export class ShippingHighlightService {
         categoryId: true, productId: true, coverMediaId: true, draftContent: true, updatedAt: true,
       },
       orderBy: { updatedAt: "desc" },
+    });
+    return records.filter((record) => {
+      if (!query.countryCode && !query.dateFrom && !query.dateTo) return true;
+      const draft = record.draftContent && typeof record.draftContent === "object" && !Array.isArray(record.draftContent)
+        ? record.draftContent as Record<string, unknown>
+        : {};
+      const countryCode = typeof draft.countryCode === "string" ? draft.countryCode : record.publishedCountryCode;
+      const shipmentDate = typeof draft.shipmentDate === "string" ? draft.shipmentDate : record.publishedShipmentDate?.toISOString().slice(0, 10);
+      return (!query.countryCode || countryCode === query.countryCode)
+        && (!query.dateFrom || Boolean(shipmentDate && shipmentDate >= query.dateFrom))
+        && (!query.dateTo || Boolean(shipmentDate && shipmentDate <= query.dateTo));
     });
   }
 

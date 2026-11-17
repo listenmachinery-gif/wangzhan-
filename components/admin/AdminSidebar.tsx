@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
 import {
   ChartNoAxesCombined, FileImage, FilePenLine, Gauge, Images, KeyRound,
-  MessageSquareText, PackageSearch, PanelTop, SearchCheck, Settings, SlidersHorizontal, Tags, Users,
+  MessageSquareText, PackageSearch, PanelTop, SearchCheck, Settings, Ship, SlidersHorizontal, Tags, Users,
 } from "lucide-react";
 
 import { can, type Permission, type Principal } from "@/lib/auth/permissions";
@@ -45,6 +45,7 @@ const navigationGroups: NavigationGroup[] = [
     items: [
       { href: "/admin/pages", label: "页面设计", icon: FilePenLine, permission: "page.read" },
       { href: "/admin/navigation", label: "导航管理", icon: PanelTop, permission: "navigation.read" },
+      { href: "/admin/shipping-highlights", label: "发货集锦", icon: Ship, permission: "shipping.read" },
       { href: "/admin/banners", label: "Banner 管理", icon: FileImage, permission: "banner.read" },
       { href: "/admin/product-categories", label: "产品分类", icon: Tags, permission: "category.read" },
       { href: "/admin/products", label: "产品管理", icon: PackageSearch, permission: "product.read" },
