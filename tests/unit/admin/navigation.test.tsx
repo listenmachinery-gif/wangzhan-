@@ -67,6 +67,12 @@ describe("admin navigation", () => {
     expect(getAdminNavigation(contentEditor).map((item) => item.label)).toContain("页面设计");
     expect(getAdminNavigation(productEditor).map((item) => item.label)).not.toContain("页面设计");
   });
+
+  it("shows navigation management only to principals with navigation.read", () => {
+    expect(getAdminNavigation(contentEditor).map((item) => item.label)).toContain("导航管理");
+    expect(getAdminNavigation(admin).map((item) => item.label)).toContain("导航管理");
+    expect(getAdminNavigation(productEditor).map((item) => item.label)).not.toContain("导航管理");
+  });
   it("guards customer management by customer.read and marks nested customer URLs active", () => {
     expect(getAdminNavigation(productEditor).map((item) => item.label)).not.toContain("客户管理");
     expect(getAdminNavigation(contentEditor).map((item) => item.label)).not.toContain("客户管理");
