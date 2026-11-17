@@ -83,13 +83,13 @@ function google(state: "CONNECTED" | "NOT_CONFIGURED" = "CONNECTED"): AnalyticsO
 
 describe("global intelligence dashboard model", () => {
   it.each([
-    ["7d", "2026-11-11"],
-    ["28d", "2026-10-21"],
-    ["90d", "2026-08-20"],
+    ["7d", "2026-11-10"],
+    ["28d", "2026-10-20"],
+    ["90d", "2026-08-19"],
   ] as const)("builds an inclusive %s first-party date window", (range, from) => {
     expect(dashboardDateWindow(range, new Date("2026-11-17T13:00:00.000Z"))).toEqual({
       from,
-      to: "2026-11-17",
+      to: "2026-11-16",
     });
   });
 

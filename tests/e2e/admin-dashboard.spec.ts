@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
 
 const email = "dashboard-admin-e2e@example.com";
 const password = "e2e-dashboard-secure-password";
-const day = new Date(`${new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai" }).format(new Date())}T00:00:00.000Z`);
+const day = new Date(new Date(`${new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai" }).format(new Date())}T00:00:00.000Z`).getTime() - 24 * 60 * 60 * 1_000);
 const seededDimensions = [
   { dimension: "total", dimensionValue: "dashboard-e2e-total", metrics: { visitors: 18, sessions: 22, pageViews: 48, events: 5, inquiries: 2 } },
   { dimension: "country", dimensionValue: "USA", metrics: { visitors: 9, sessions: 11, pageViews: 24, events: 3, inquiries: 1 } },

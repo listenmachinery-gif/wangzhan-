@@ -52,7 +52,7 @@ export function ConversionFunnel({ funnel }: { funnel: DashboardFirstPartyReport
       <div className="space-y-3 p-5">
         {steps.map((step, index) => {
           const ratio = step.value / maximum;
-          return <div key={step.label} className="grid grid-cols-[8rem_1fr_4rem] items-center gap-3"><span className="text-xs text-[#A5AEB7]">{step.label}</span><div className="h-8 overflow-hidden rounded-md bg-white/[0.05]"><div className="flex h-full items-center rounded-md px-3 text-[10px] font-semibold text-[#0B0D10]" style={{ width: `${Math.max(8, ratio * 100)}%`, backgroundColor: `rgba(118,185,0,${1 - index * 0.16})` }}>{percent.format(ratio)}</div></div><strong className="text-right text-sm tabular-nums text-white">{number.format(step.value)}</strong></div>;
+          return <div key={step.label} className="grid grid-cols-[8rem_1fr_4rem] items-center gap-3"><span className="text-xs text-[#A5AEB7]">{step.label}</span><div className="h-8 overflow-hidden rounded-md bg-white/[0.05]"><div className="flex h-full items-center rounded-md px-3 text-[10px] font-semibold text-[#0B0D10]" style={{ width: `${Math.min(100, Math.max(8, ratio * 100))}%`, backgroundColor: `rgba(118,185,0,${1 - index * 0.16})` }}>{percent.format(ratio)}</div></div><strong className="text-right text-sm tabular-nums text-white">{number.format(step.value)}</strong></div>;
         })}
       </div>
     </DashboardPanel>

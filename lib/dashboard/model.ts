@@ -33,7 +33,7 @@ function safeNumber(value: number) {
 
 export function dashboardDateWindow(range: DashboardRange, now = new Date()) {
   const { year, month, day } = dateParts(now);
-  const end = new Date(Date.UTC(year, month - 1, day));
+  const end = new Date(Date.UTC(year, month - 1, day) - 24 * 60 * 60 * 1_000);
   const start = new Date(end.getTime() - (RANGE_DAYS[range] - 1) * 24 * 60 * 60 * 1_000);
   return { from: isoDay(start), to: isoDay(end) };
 }

@@ -15,6 +15,7 @@ import { DataSourceHealth, type DashboardHealthSource } from "@/components/admin
 import { InquiryPulse } from "@/components/admin/dashboard/InquiryPulse";
 import { MultiSeriesTrendChart } from "@/components/admin/dashboard/MultiSeriesTrendChart";
 import { SearchPerformance } from "@/components/admin/dashboard/SearchPerformance";
+import { formatDeviceType } from "@/lib/admin/localization";
 import { WorldTrafficMap } from "@/components/admin/dashboard/WorldTrafficMap";
 import { buildDashboardKpis, buildDashboardTrend, dashboardDateWindow } from "@/lib/dashboard/model";
 import type { DashboardContentStats, DashboardFirstPartyReport, DashboardInquiry, DashboardRange } from "@/lib/dashboard/types";
@@ -122,7 +123,7 @@ export function GlobalIntelligenceDashboard({ initialRange, content, canExport, 
     { label: "Search Console", status: google.loading ? "loading" : google.data?.searchConsole.state.code === "CONNECTED" || google.data?.searchConsole.state.code === "NO_DATA" ? "healthy" : "unavailable", message: google.error ?? google.data?.searchConsole.state.message ?? "等待连接状态", href: "/admin/analytics" },
     { label: "询盘 CRM", status: !canViewInquiries ? "restricted" : inquiries.loading ? "loading" : inquiries.data ? "healthy" : "unavailable", message: !canViewInquiries ? "当前账号无询盘读取权限" : inquiries.loading ? "正在读取询盘" : inquiries.data ? `权限范围内共 ${inquiries.data.total} 条` : inquiries.error ?? "暂不可用", href: "/admin/inquiries" },
   ];
-  const healthySources = sourceStates.filter((source) => source.status === "healthy" || source.status === "restricted").length;
+  const healthySources = sourceStates.filter((source) => source.status === "healthy").length;
   const refreshing = firstParty.loading || google.loading || inquiries.loading;
 
   function selectRange(next: DashboardRange) {
@@ -178,7 +179,7 @@ export function GlobalIntelligenceDashboard({ initialRange, content, canExport, 
           <div className="space-y-4 xl:col-span-4">
             <ChannelDistribution rows={firstParty.data?.firstParty.sources ?? []} />
             <DashboardPanel title="设备结构" description="仅影响设备维度；不改写全局指标">
-              {visibleDevices.length === 0 ? <p className="px-5 py-10 text-center text-sm text-[#89939E]">所选周期暂无设备数据</p> : <ul className="divide-y divide-white/[0.07] px-5">{visibleDevices.map((row) => <li key={row.value} className="flex items-center justify-between py-3 text-xs"><span className="uppercase text-[#A5AEB7]">{row.value}</span><strong className="tabular-nums text-white">{row.visitors.toLocaleString("zh-CN")}</strong></li>)}</ul>}
+              {visibleDevices.length === 0 ? <p className="px-5 py-10 text-center text-sm text-[#89939E]">所选周期暂无设备数据</p> : <ul className="divide-y divide-white/[0.07] px-5">{visibleDevices.map((row) => <li key={row.value} className="flex items-center justify-between py-3 text-xs"><span className="text-[#A5AEB7]">{formatDeviceType(row.value)}</span><strong className="tabular-nums text-white">{row.visitors.toLocaleString("zh-CN")}</strong></li>)}</ul>}
             </DashboardPanel>
           </div>
         </div>

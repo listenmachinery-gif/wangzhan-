@@ -24,7 +24,7 @@ export function WorldTrafficMap({ countries, selectedCountry, onSelectCountry }:
       {rows.length === 0 ? <p className="px-5 py-16 text-center text-sm text-[#89939E]">所选周期暂无数据</p> : (
         <div className="grid min-h-[22rem] lg:grid-cols-[minmax(0,1.5fr)_minmax(16rem,.8fr)]">
           <div className="min-h-64 border-b border-white/[0.08] p-2 lg:border-b-0 lg:border-r">
-            <WorldMapCanvas rows={rows} selectedCountry={selectedCountry} onSelectCountry={onSelectCountry} />
+            <WorldMapCanvas rows={countries} selectedCountry={selectedCountry} onSelectCountry={onSelectCountry} />
           </div>
           <ol aria-label="国家访问排名" className="divide-y divide-white/[0.07] p-3">
             {rows.map((row, index) => (

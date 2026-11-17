@@ -67,4 +67,11 @@ describe("dashboard visual primitives", () => {
     expect(screen.getByRole("region", { name: "第一方转化漏斗" })).toHaveTextContent("40");
     expect(screen.getByRole("region", { name: "第一方转化漏斗" })).toHaveTextContent("5");
   });
+
+  it("keeps funnel bars inside their track when event counts exceed the visitor sample", () => {
+    render(<ConversionFunnel funnel={{ visitors: 2, chatVisitors: 3, linkedLeads: 4, inquirySubmissions: 5, chatToLeadRate: 4 / 3 }} />);
+
+    const bars = screen.getByRole("region", { name: "第一方转化漏斗" }).querySelectorAll("[style]");
+    expect([...bars].every((bar) => (bar as HTMLElement).style.width !== "150%" && (bar as HTMLElement).style.width !== "200%" && (bar as HTMLElement).style.width !== "250%")).toBe(true);
+  });
 });

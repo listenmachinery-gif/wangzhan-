@@ -139,6 +139,7 @@ describe("GlobalIntelligenceDashboard", () => {
 
     await user.selectOptions(screen.getByRole("combobox", { name: "设备筛选" }), "desktop");
     expect(screen.getByRole("combobox", { name: "设备筛选" })).toHaveValue("desktop");
+    expect(within(screen.getByRole("region", { name: "设备结构" })).getByText("桌面端")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "选择美国" }));
     expect(screen.getByRole("combobox", { name: "国家筛选" })).toHaveValue("US");
   });
@@ -179,6 +180,7 @@ describe("GlobalIntelligenceDashboard", () => {
 
     expect(screen.queryByRole("link", { name: "导出 CSV" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "最新询盘" })).toHaveTextContent("当前账号无权查看询盘");
+    expect(screen.getByText("3/4 个数据源可用")).toBeInTheDocument();
     expect(vi.mocked(fetch).mock.calls.some(([url]) => String(url).includes("/api/admin/inquiries"))).toBe(false);
   });
 
