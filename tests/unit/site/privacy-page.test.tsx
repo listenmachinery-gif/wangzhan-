@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import PrivacyPage, { metadata } from "@/app/(site)/privacy/page";
 import { SiteFooter } from "@/components/SiteFooter";
+import { DEFAULT_NAVIGATION } from "@/lib/navigation/default-navigation";
 
 describe("privacy notice", () => {
   it("publishes the analytics and consent information required by the production integration", () => {
@@ -20,7 +21,7 @@ describe("privacy notice", () => {
   });
 
   it("links the site footer to the public privacy policy", () => {
-    render(<SiteFooter />);
+    render(<SiteFooter navigation={DEFAULT_NAVIGATION} />);
 
     expect(screen.getByRole("link", { name: "Privacy Policy" })).toHaveAttribute("href", "/privacy");
   });

@@ -1,29 +1,18 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+
 import { CookiePreferencesButton } from "@/components/analytics/CookiePreferencesButton";
 import { getCategoryHref, productCategories } from "@/data/products";
-
-const supportLinks = [
-  { label: "Contact Support", href: "/contact" },
-  { label: "Machine Selection", href: "/contact" },
-  { label: "Download Catalog", href: "/products" },
-  { label: "Spare Parts", href: "/contact" },
-];
-
-const exploreLinks = [
-  { label: "Applications", href: "/cases" },
-  { label: "Insights", href: "/news" },
-  { label: "About ZYRON", href: "/factory" },
-];
+import type { NavigationSnapshot } from "@/lib/navigation/schema";
 
 const buyLinks = [
-  { label: "Get a Quote", href: "/contact" },
-  { label: "Contact an Engineer", href: "/contact" },
-  { label: "OEM / ODM Cooperation", href: "/contact" },
-  { label: "Distributor Inquiry", href: "/contact" },
+  { id: "quote", label: "Get a Quote", href: "/contact" },
+  { id: "engineer", label: "Contact an Engineer", href: "/contact" },
+  { id: "oem", label: "OEM / ODM Cooperation", href: "/contact" },
+  { id: "distributor", label: "Distributor Inquiry", href: "/contact" },
 ];
 
-export function SiteFooter() {
+export function SiteFooter({ navigation }: { navigation: NavigationSnapshot }) {
   return (
     <footer className="border-t border-white/10 bg-black">
       <div className="mx-auto max-w-[1440px] px-5 py-12 sm:px-8">
@@ -40,12 +29,8 @@ export function SiteFooter() {
               <p>Address: Dongjiao Industrial Park, Bowang Town, Bowang District, Ma&apos;anshan City, Anhui Province, China</p>
             </div>
           </div>
-          <Link
-            href="/contact"
-            className="inline-flex w-fit items-center gap-2 rounded-sm bg-ignition px-5 py-3 text-sm font-semibold text-white transition hover:bg-neon lg:justify-self-end"
-          >
-            Start a Project
-            <ArrowRight size={16} />
+          <Link href="/contact" className="inline-flex w-fit items-center gap-2 rounded-sm bg-ignition px-5 py-3 text-sm font-semibold text-white transition hover:bg-neon lg:justify-self-end">
+            Start a Project<ArrowRight size={16} />
           </Link>
         </div>
 
@@ -54,31 +39,31 @@ export function SiteFooter() {
             <p className="text-sm font-semibold text-white">Product Categories</p>
             <div className="mt-4 grid gap-3 text-sm text-zinc-400 sm:grid-cols-2">
               {productCategories.map((category) => (
-                <Link key={category.id} href={getCategoryHref(category.id)} className="transition hover:text-white">
-                  {category.navLabel}
-                </Link>
+                <Link key={category.id} href={getCategoryHref(category.id)} className="transition hover:text-white">{category.navLabel}</Link>
               ))}
             </div>
           </div>
 
-          <FooterColumn title="Service & Support" links={supportLinks} />
+          {navigation.footerGroups.map((group) => (
+            <FooterColumn
+              key={group.id}
+              title={group.label}
+              links={group.items
+                .filter((item) => item.visible && item.href && item.href !== "/privacy")
+                .map((item) => ({ id: item.id, label: item.label, href: item.href! }))}
+            />
+          ))}
           <FooterColumn title="Where to Buy" links={buyLinks} />
-          <FooterColumn title="Explore" links={exploreLinks} />
         </div>
 
         <div className="grid gap-5 border-t border-white/10 pt-8 lg:grid-cols-[1fr_auto] lg:items-center">
           <div>
             <p className="text-sm font-semibold text-white">Subscribe for Machinery Updates</p>
-            <p className="mt-2 text-sm text-zinc-500">New product releases, buying guides, and production line ideas.</p>
+            <p className="mt-2 text-sm text-zinc-500">New product releases, machinery updates, and production line ideas.</p>
           </div>
           <div className="flex max-w-md gap-2">
-            <input
-              className="h-11 min-w-0 flex-1 rounded-sm border border-white/10 bg-white/5 px-3 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-ignition"
-              placeholder="Email address"
-            />
-            <button className="rounded-sm bg-ignition px-4 text-sm font-semibold text-white transition hover:bg-neon">
-              Subscribe
-            </button>
+            <input className="h-11 min-w-0 flex-1 rounded-sm border border-white/10 bg-white/5 px-3 text-sm text-white outline-none placeholder:text-zinc-600 focus:border-ignition" placeholder="Email address" />
+            <button className="rounded-sm bg-ignition px-4 text-sm font-semibold text-white transition hover:bg-neon">Subscribe</button>
           </div>
         </div>
       </div>
@@ -93,16 +78,12 @@ export function SiteFooter() {
   );
 }
 
-function FooterColumn({ title, links }: { title: string; links: Array<{ label: string; href: string }> }) {
+function FooterColumn({ title, links }: { title: string; links: Array<{ id: string; label: string; href: string }> }) {
   return (
     <div>
       <p className="text-sm font-semibold text-white">{title}</p>
       <div className="mt-4 grid gap-3 text-sm text-zinc-400">
-        {links.map((link) => (
-          <Link key={link.label} href={link.href} className="transition hover:text-white">
-            {link.label}
-          </Link>
-        ))}
+        {links.map((link) => <Link key={link.id} href={link.href} className="transition hover:text-white">{link.label}</Link>)}
       </div>
     </div>
   );
