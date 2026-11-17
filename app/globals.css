@@ -85,3 +85,29 @@ img {
     transition-duration: 0.01ms !important;
   }
 }
+
+.global-intelligence-dashboard:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  overflow: auto;
+  margin: 0;
+  padding: 24px;
+  background: #0b0d10;
+}
+
+@media print {
+  .global-intelligence-dashboard {
+    margin: 0 !important;
+    padding: 12px !important;
+    background: #0b0d10 !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .global-intelligence-dashboard button,
+  .global-intelligence-dashboard select,
+  .global-intelligence-dashboard a[download] {
+    display: none !important;
+  }
+}

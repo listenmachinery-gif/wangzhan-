@@ -1,24 +1,30 @@
-import { ConnectionStatus } from "@/components/admin/ConnectionStatus";
-import { AnalyticsOverviewService } from "@/lib/analytics/overview-service";
-import type { AnalyticsConnectionOverview } from "@/lib/analytics/types";
+import { GlobalIntelligenceDashboard } from "@/components/admin/dashboard/GlobalIntelligenceDashboard";
+import { ANALYTICS_RANGES, type AnalyticsRange } from "@/lib/analytics/types";
 import { can } from "@/lib/auth/permissions";
 import { getCurrentPrincipal } from "@/lib/auth/session";
 import { db } from "@/lib/db/client";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage({ searchParams }: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const principal = await getCurrentPrincipal();
   const mayViewAnalytics = principal ? can(principal, "analytics.read.summary") : false;
-  const statusPromise: Promise<AnalyticsConnectionOverview | null> = mayViewAnalytics
-    ? new AnalyticsOverviewService().getStatus().catch(() => null)
-    : Promise.resolve(null);
-  const [products, publishedProducts, newLeads, analyticsStatus] = await Promise.all([
+  const params = await searchParams;
+  const requestedRange = typeof params.range === "string" ? params.range : "28d";
+  const range = ANALYTICS_RANGES.includes(requestedRange as AnalyticsRange) ? requestedRange as AnalyticsRange : "28d";
+  const [products, publishedProducts, newLeads] = await Promise.all([
     db.product.count(),
     db.product.count({ where: { status: "PUBLISHED" } }),
     db.lead.count({ where: { status: "NEW" } }),
-    statusPromise,
   ]);
+
+  if (principal && mayViewAnalytics) {
+    const assignedScope = { assigneeId: principal.id, assignmentActive: true };
+    const canViewInquiries = can(principal, "lead.read.all") || can(principal, "lead.read.team") || can(principal, "lead.read.assigned", assignedScope);
+    return <GlobalIntelligenceDashboard initialRange={range} content={{ products, publishedProducts, newLeads }} canExport={can(principal, "analytics.export")} canViewInquiries={canViewInquiries} />;
+  }
 
   return (
     <div className="space-y-8">
@@ -39,12 +45,6 @@ export default async function AdminDashboardPage() {
           </article>
         ))}
       </section>
-      {analyticsStatus ? (
-        <section aria-label="外部数据连接" className="grid gap-4 sm:grid-cols-2">
-          <ConnectionStatus service="Google Analytics 4" state={analyticsStatus.ga4.code} message={analyticsStatus.ga4.message} checkedAt={analyticsStatus.ga4.checkedAt} href="/admin/analytics" />
-          <ConnectionStatus service="Google Search Console" state={analyticsStatus.searchConsole.code} message={analyticsStatus.searchConsole.message} checkedAt={analyticsStatus.searchConsole.checkedAt} href="/admin/analytics" />
-        </section>
-      ) : null}
     </div>
   );
 }

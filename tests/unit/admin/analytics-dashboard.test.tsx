@@ -220,22 +220,23 @@ describe("admin dashboard analytics visibility", () => {
     });
   });
 
-  it("does not show or probe connections for principals without settings.write", async () => {
+  it("keeps the lightweight overview for principals without analytics access", async () => {
     mocks.getCurrentPrincipal.mockResolvedValue(productEditor);
 
-    render(await AdminDashboardPage());
+    render(await AdminDashboardPage({ searchParams: Promise.resolve({}) }));
 
     expect(screen.queryByText("Google Analytics 4")).not.toBeInTheDocument();
     expect(mocks.getStatus).not.toHaveBeenCalled();
   });
 
-  it("shows real cached connection states to administrators", async () => {
+  it("shows the global intelligence dashboard to administrators", async () => {
     mocks.getCurrentPrincipal.mockResolvedValue(admin);
 
-    render(await AdminDashboardPage());
+    vi.stubGlobal("fetch", vi.fn(() => new Promise(() => {})));
 
-    expect(screen.getByText("Google Analytics 4")).toBeInTheDocument();
-    expect(screen.getByText("Google Search Console")).toBeInTheDocument();
-    expect(mocks.getStatus).toHaveBeenCalledOnce();
+    render(await AdminDashboardPage({ searchParams: Promise.resolve({}) }));
+
+    expect(screen.getByRole("heading", { name: "ZYRON 全球业务数据中心" })).toBeInTheDocument();
+    expect(mocks.getStatus).not.toHaveBeenCalled();
   });
 });
