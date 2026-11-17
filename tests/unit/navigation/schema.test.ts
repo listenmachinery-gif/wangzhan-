@@ -3,10 +3,11 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_NAVIGATION } from "@/lib/navigation/default-navigation";
 import {
   parseNavigationSnapshot,
+  type NavigationSnapshot,
   validateInternalHref,
 } from "@/lib/navigation/schema";
 
-function validSnapshot() {
+function validSnapshot(): NavigationSnapshot {
   return {
     schemaVersion: 1,
     primary: [

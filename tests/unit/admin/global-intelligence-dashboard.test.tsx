@@ -180,7 +180,7 @@ describe("GlobalIntelligenceDashboard", () => {
 
     expect(screen.queryByRole("link", { name: "导出 CSV" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "最新询盘" })).toHaveTextContent("当前账号无权查看询盘");
-    expect(screen.getByText("3/4 个数据源可用")).toBeInTheDocument();
+    expect(await screen.findByText("3/4 个数据源可用")).toBeInTheDocument();
     expect(vi.mocked(fetch).mock.calls.some(([url]) => String(url).includes("/api/admin/inquiries"))).toBe(false);
   });
 

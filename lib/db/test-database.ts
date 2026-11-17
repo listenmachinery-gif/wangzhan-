@@ -19,6 +19,11 @@ export async function resetTestDatabase() {
   assertTestDatabase();
 
   await db.$transaction([
+    db.shippingHighlightVersion.deleteMany(),
+    db.shippingMedia.deleteMany(),
+    db.shippingHighlight.deleteMany(),
+    db.navigationVersion.deleteMany(),
+    db.navigationDocument.deleteMany(),
     db.pageVersion.deleteMany(),
     db.sitePage.deleteMany(),
     db.siteSearchEvent.deleteMany(),

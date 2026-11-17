@@ -39,7 +39,7 @@ describe("RBAC seed CLI entrypoint", () => {
       "shipping.publish",
     ] as const;
 
-    expect(PERMISSIONS).toEqual(expect.arrayContaining(managedContentPermissions));
+    expect(PERMISSIONS).toEqual(expect.arrayContaining([...managedContentPermissions]));
     for (const permission of managedContentPermissions) {
       expect(ROLE_PERMISSIONS.ADMIN[permission], `ADMIN ${permission}`).toBe(true);
       expect(ROLE_PERMISSIONS.CONTENT_EDITOR[permission], `CONTENT_EDITOR ${permission}`).toBe(true);
