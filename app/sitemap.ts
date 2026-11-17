@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { getCategoryHref } from "@/data/products";
 import { listPublishedCategories } from "@/lib/repositories/category-repository";
 import { listNoindexSeoPaths } from "@/lib/repositories/seo-repository";
+import { listPublishedShippingHighlights } from "@/lib/repositories/shipping-highlight-repository";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,7 @@ const staticRoutes = [
   { path: "/factory", changeFrequency: "monthly", priority: 0.7 },
   { path: "/cases", changeFrequency: "monthly", priority: 0.7 },
   { path: "/news", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/shipping-highlights", changeFrequency: "weekly", priority: 0.75 },
   { path: "/contact", changeFrequency: "monthly", priority: 0.7 },
 ] as const;
 
@@ -20,6 +22,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const categories = await listPublishedCategories();
   const noindex = await listNoindexSeoPaths();
+  const shippingHighlights = [];
+  let shippingCursor: string | undefined;
+  do {
+    const page = await listPublishedShippingHighlights({ limit: 24, cursor: shippingCursor });
+    shippingHighlights.push(...page.items);
+    shippingCursor = page.nextCursor ?? undefined;
+  } while (shippingCursor);
 
   return [
     ...staticRoutes.map((route) => ({
@@ -40,5 +49,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly" as const,
       priority: 0.8,
     }))),
+    ...shippingHighlights.map((highlight) => ({
+      url: `${siteUrl}/shipping-highlights/${highlight.slug}`,
+      lastModified: highlight.updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
   ].filter((entry) => !noindex.has(new URL(entry.url).pathname));
 }

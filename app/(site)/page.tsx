@@ -7,9 +7,11 @@ import { PageRenderer } from "@/components/page-builder/PageRenderer";
 import { HomeBannerCarousel } from "@/components/site/HomeBannerCarousel";
 import { ManagedCompanyStrength } from "@/components/site/ManagedCompanyStrength";
 import { ManagedWhyChoose } from "@/components/site/ManagedWhyChoose";
+import { LatestShippingHighlights } from "@/components/site/LatestShippingHighlights";
 import { getCategoryHref, productCategories } from "@/data/products";
 import { listActiveBanners } from "@/lib/repositories/banner-repository";
 import { getPublishedPageBySlug } from "@/lib/repositories/page-repository";
+import { listLatestPublishedShippingHighlights } from "@/lib/repositories/shipping-highlight-repository";
 import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
 
 export const dynamic = "force-dynamic";
@@ -51,7 +53,11 @@ function usesProductCutout(image: string) {
 }
 
 export default async function Home() {
-  const [banners, publishedPage] = await Promise.all([listActiveBanners(), getPublishedPageBySlug("home")]);
+  const [banners, publishedPage, shippingHighlights] = await Promise.all([
+    listActiveBanners(),
+    getPublishedPageBySlug("home"),
+    listLatestPublishedShippingHighlights(3),
+  ]);
   const managedFactory = publishedPage?.nodes.find((node) => node.type === "FACTORY_STATS");
   const managedAdvantages = publishedPage?.nodes.find((node) => node.type === "ADVANTAGES");
   const additionalManagedNodes = publishedPage?.nodes.filter((node) => node.type !== "FACTORY_STATS" && node.type !== "ADVANTAGES") ?? [];
@@ -193,6 +199,7 @@ export default async function Home() {
 
       <ManagedWhyChoose node={managedAdvantages} />
       {additionalManagedNodes.length ? <PageRenderer document={{ schemaVersion: 1, nodes: additionalManagedNodes }} /> : null}
+      <LatestShippingHighlights highlights={shippingHighlights} />
 
       <section className="px-5 py-16 sm:px-8 lg:py-24">
         <div className="mx-auto grid max-w-[1440px] gap-4 lg:grid-cols-2">
