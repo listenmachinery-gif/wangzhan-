@@ -96,8 +96,8 @@ test("creates, publishes, previews, and updates a shipping highlight without lea
   await page.getByRole("textbox", { name: "SEO 标题" }).fill("Electric Shearing Machines Shipped to Germany | ZYRON");
   await page.getByRole("textbox", { name: "SEO 描述" }).fill("See how ZYRON inspected, packed, and loaded three electric shearing machines for sea delivery to a sheet-metal customer in Hamburg, Germany.");
   await page.getByRole("button", { name: "保存草稿" }).click();
-  await expect(page.getByRole("status")).toContainText("草稿已创建");
   await expect(page).toHaveURL(/\/admin\/shipping-highlights\/.+/);
+  await expect(page.getByRole("status")).toContainText("草稿已创建");
 
   const publicContext = await browser.newContext();
   const publicPage = await publicContext.newPage();

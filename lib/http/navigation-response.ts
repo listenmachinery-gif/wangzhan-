@@ -22,4 +22,3 @@ export function navigationErrorResponse(error: unknown) {
   console.error("Navigation administration API error", error instanceof Error ? error.name : "UnknownError");
   return NextResponse.json({ code: "NAVIGATION_OPERATION_FAILED" }, { status: 500 });
 }
-

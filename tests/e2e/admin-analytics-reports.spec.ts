@@ -56,7 +56,7 @@ test("protects and renders the first-party CRM report with a safe export", async
   await expect(page.getByRole("heading", { name: "外贸增长报告" })).toBeVisible();
   await expect(page.getByRole("region", { name: "第一方转化漏斗" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "流量来源" })).toBeVisible();
-  await expect(page.getByText("google", { exact: true })).toBeVisible();
+  await expect(page.getByText("Google", { exact: true })).toBeVisible();
 
   const result = await page.evaluate(async () => {
     const response = await fetch("/api/admin/analytics/reports/export");

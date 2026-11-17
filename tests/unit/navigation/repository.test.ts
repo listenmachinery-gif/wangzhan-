@@ -18,4 +18,3 @@ describe("published navigation repository", () => {
     expect(isNavigationTransactionConflict(new Error("P2034"))).toBe(false);
   });
 });
-

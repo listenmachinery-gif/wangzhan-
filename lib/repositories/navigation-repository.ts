@@ -31,4 +31,3 @@ export async function getPublishedNavigation(database: PrismaClient = db) {
 export async function resolvePublicNavigation(database: PrismaClient = db) {
   return await getPublishedNavigation(database) ?? DEFAULT_NAVIGATION;
 }
-

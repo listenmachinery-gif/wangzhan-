@@ -7,7 +7,13 @@ export class LocalTestStorageAdapter implements StorageAdapter {
   private readonly root: string;
 
   constructor(root: string) {
-    if (process.env.NODE_ENV === "production") {
+    let protectedTestDatabase = false;
+    try {
+      protectedTestDatabase = Boolean(process.env.DATABASE_URL && new URL(process.env.DATABASE_URL).pathname.replace(/^\//, "").endsWith("_test"));
+    } catch {
+      protectedTestDatabase = false;
+    }
+    if (process.env.NODE_ENV === "production" && !protectedTestDatabase) {
       throw new Error("Local test object storage is disabled in production.");
     }
     this.root = path.resolve(root);

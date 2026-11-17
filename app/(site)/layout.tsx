@@ -4,6 +4,8 @@ import { AnalyticsConsentProvider } from "@/components/analytics/AnalyticsConsen
 import { PublicChatWidget } from "@/components/chat/PublicChatWidget";
 import { getSiteNavigationView } from "@/lib/repositories/site-navigation-view";
 
+export const dynamic = "force-dynamic";
+
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const { navigation, categories, products } = await getSiteNavigationView();
 

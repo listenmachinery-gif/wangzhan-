@@ -499,4 +499,3 @@
 - Type consistency: Navigation 和 Shipping 的文档、服务、仓储、API 和组件接口名称一致。
 - Review Focus: 五项高风险输入都已指定具体所属测试任务。
 - Proportion: 计划只固定接口、边界和验收，不内嵌实现函数体。
-

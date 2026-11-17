@@ -31,12 +31,13 @@ function messageFrom(result: { message?: string; details?: string[] }, fallback:
   return [result.message ?? fallback, ...(result.details ?? [])].join(" ");
 }
 
-export function ShippingHighlightEditor({ initialRecord, categories, products, media, versions, canWrite = true, canPublish = true }: {
+export function ShippingHighlightEditor({ initialRecord, categories, products, media, versions, initialMessage = "", canWrite = true, canPublish = true }: {
   initialRecord: RecordState | null;
   categories: Category[];
   products: Product[];
   media: MediaAsset[];
   versions: Version[];
+  initialMessage?: string;
   canWrite?: boolean;
   canPublish?: boolean;
 }) {
@@ -46,7 +47,7 @@ export function ShippingHighlightEditor({ initialRecord, categories, products, m
   const [slug, setSlug] = useState(initialRecord?.slug ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(initialMessage);
   const [archiveConfirmation, setArchiveConfirmation] = useState(false);
   const sequence = useRef(0);
   const availableProducts = useMemo(() => products.filter((product) => !document.categoryId || product.categoryId === document.categoryId), [document.categoryId, products]);
@@ -127,7 +128,7 @@ export function ShippingHighlightEditor({ initialRecord, categories, products, m
   async function saveDraft() {
     if (!record) {
       const result = await request("/api/admin/shipping-highlights", "POST", { slug, document }, "草稿已创建");
-      if (result) router.replace(`/admin/shipping-highlights/${result.id}`);
+      if (result) router.replace(`/admin/shipping-highlights/${result.id}?created=1`);
       return;
     }
     await request(`/api/admin/shipping-highlights/${record.id}`, "PATCH", { version: record.version, slug, document }, "草稿已保存");

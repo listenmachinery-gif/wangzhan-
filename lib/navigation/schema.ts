@@ -123,4 +123,3 @@ export const navigationSnapshotSchema: z.ZodType<NavigationSnapshot> = z.object(
 export function parseNavigationSnapshot(raw: unknown) {
   return navigationSnapshotSchema.parse(raw);
 }
-

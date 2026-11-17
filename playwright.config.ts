@@ -15,9 +15,10 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   webServer: {
-    command: "npm run dev",
+    command: "npm run build && npm run start",
     url: "http://127.0.0.1:3000",
-    reuseExistingServer: !process.env.CI,
+    timeout: 180_000,
+    reuseExistingServer: false,
     env: {
       NEXT_PUBLIC_GA4_MEASUREMENT_ID:
         process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID ?? "G-ZYRONTEST",

@@ -52,4 +52,3 @@ export const DEFAULT_NAVIGATION = deepFreeze<NavigationSnapshot>({
     },
   ],
 });
-

@@ -87,4 +87,3 @@ describe("public managed site navigation", () => {
     ]);
   });
 });
-

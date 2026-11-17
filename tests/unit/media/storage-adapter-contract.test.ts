@@ -1,7 +1,7 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { LocalTestStorageAdapter } from "@/lib/storage/local-test-storage";
 
@@ -28,5 +28,17 @@ describe("StorageAdapter immutable object contract", () => {
 
     await storage.delete(input.key);
     await expect(storage.getSignedUrl(input.key)).rejects.toThrow();
+  });
+
+  it("permits production-mode local storage only with an explicitly protected _test database", () => {
+    try {
+      vi.stubEnv("NODE_ENV", "production");
+      vi.stubEnv("DATABASE_URL", "postgresql://test:test@127.0.0.1:5432/zyron_preview");
+      expect(() => new LocalTestStorageAdapter(".storage-test")).toThrow("disabled in production");
+      vi.stubEnv("DATABASE_URL", "postgresql://test:test@127.0.0.1:5432/zyron_cms_test");
+      expect(() => new LocalTestStorageAdapter(".storage-test")).not.toThrow();
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });

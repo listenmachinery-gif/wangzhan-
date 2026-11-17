@@ -8,9 +8,10 @@ import { ShippingHighlightService, ShippingNotFoundError } from "@/lib/services/
 
 export const dynamic = "force-dynamic";
 
-export default async function EditShippingHighlightPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EditShippingHighlightPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ created?: string }> }) {
   const principal = await requirePermission("shipping.read");
   const { id } = await params;
+  const query = await searchParams;
   const service = new ShippingHighlightService();
   try {
     const [record, versions, categories, products, media] = await Promise.all([
@@ -21,7 +22,7 @@ export default async function EditShippingHighlightPage({ params }: { params: Pr
     ]);
     const serialized = JSON.parse(JSON.stringify({ record, versions }));
     const title = typeof record.draftContent === "object" && record.draftContent && "title" in record.draftContent ? String(record.draftContent.title) : record.slug;
-    return <div className="space-y-6"><div><p className="text-sm font-semibold text-[#5F9500]">真实交付内容</p><h1 className="mt-2 text-3xl font-semibold tracking-tight">编辑：{title}</h1><p className="mt-2 text-sm text-neutral-600">版本回滚只生成新草稿，不会静默替换线上内容。</p></div><ShippingHighlightEditor initialRecord={serialized.record} categories={categories} products={products} media={media} versions={serialized.versions} canWrite={can(principal, "shipping.write")} canPublish={can(principal, "shipping.publish")} /></div>;
+    return <div className="space-y-6"><div><p className="text-sm font-semibold text-[#5F9500]">真实交付内容</p><h1 className="mt-2 text-3xl font-semibold tracking-tight">编辑：{title}</h1><p className="mt-2 text-sm text-neutral-600">版本回滚只生成新草稿，不会静默替换线上内容。</p></div><ShippingHighlightEditor initialRecord={serialized.record} categories={categories} products={products} media={media} versions={serialized.versions} initialMessage={query.created === "1" ? "草稿已创建" : ""} canWrite={can(principal, "shipping.write")} canPublish={can(principal, "shipping.publish")} /></div>;
   } catch (error) {
     if (error instanceof ShippingNotFoundError) notFound();
     throw error;
