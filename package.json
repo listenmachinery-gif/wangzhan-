@@ -13,6 +13,7 @@
     "test": "vitest run --passWithNoTests --exclude 'tests/integration/**' --exclude 'tests/e2e/**'",
     "test:integration": "dotenv run -f .env.test -- vitest run --exclude 'tests/e2e/**'",
     "test:e2e": "dotenv run -f .env.test -- playwright test",
+    "audit:deployment-size": "node scripts/audit-deployment-size.mjs",
     "db:generate": "prisma generate",
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:test": "dotenv run -f .env.test -- prisma migrate deploy",
