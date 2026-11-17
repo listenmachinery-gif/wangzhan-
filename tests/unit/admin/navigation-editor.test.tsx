@@ -4,6 +4,8 @@ import { cleanup, render, screen, waitFor, within } from "@testing-library/react
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+
 import { DEFAULT_NAVIGATION } from "@/lib/navigation/default-navigation";
 import type { NavigationSnapshot } from "@/lib/navigation/schema";
 

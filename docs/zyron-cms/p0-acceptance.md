@@ -12,6 +12,8 @@ P0 验收以一套隔离 PostgreSQL `_test` 数据库、一个本地 S3-compatib
 | 询盘先入库、SMTP 独立失败记录、CRM 分配/跟进/导出 RBAC | `lead-service.test.ts`、`admin-leads.spec.ts` |
 | SEO 草稿/发布快照、Metadata/Canonical、sitemap/robots | `seo-service.test.ts`、`admin-seo.spec.ts` |
 | 非敏感设置、用户角色、Session 撤销、最后 Super Admin、2FA 状态 | `settings-service.test.ts`、`user-admin.test.ts`、`p0-acceptance.spec.ts` |
+| 导航草稿/发布/回滚、桌面/移动/Footer 同步 | `admin-navigation.spec.ts`、`public-navigation-shipping.spec.ts` |
+| 发货集锦草稿隔离、真实媒体、产品关联、发布、首页/列表/详情和 SEO | `admin-shipping-highlights.spec.ts` |
 
 标准命令：`npm test && npm run test:integration && npm run test:e2e && npm run verify:catalogue && npm run typecheck && npm run lint && npm run build`。
 

@@ -73,6 +73,7 @@ test("renders database-published products at unchanged URLs with the shared layo
   await page.getByRole("link", { name: "View Models" }).click();
   await expect(page).toHaveURL(/#models$/);
   await expect(page.locator("section#models")).toBeInViewport();
+  await expect(page.getByRole("link", { name: "Request a Quote" }).first()).toHaveAttribute("href", "#quote");
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.locator("[data-technical-table-scroll]").first()).toHaveCSS("overflow-x", "auto");
 });

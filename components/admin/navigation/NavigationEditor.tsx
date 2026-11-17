@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowUp, ChevronDown, History, Plus, RotateCcw, Save, Send, Trash2 } from "lucide-react";
 
 import type { NavigationNode, NavigationSnapshot } from "@/lib/navigation/schema";
@@ -40,6 +41,7 @@ export function NavigationEditor({
   canWrite = true,
   canPublish = true,
 }: NavigationEditorProps) {
+  const router = useRouter();
   const [document, setDocument] = useState(() => structuredClone(initialDocument));
   const [version, setVersion] = useState(initialVersion);
   const [status, setStatus] = useState(initialStatus);
@@ -121,6 +123,7 @@ export function NavigationEditor({
       setStatus(updated.status);
       setDocument(structuredClone(updated.draftContent));
       setMessage(success);
+      router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "操作失败，请稍后重试。");
     } finally {
