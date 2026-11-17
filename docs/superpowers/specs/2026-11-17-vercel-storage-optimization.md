@@ -32,6 +32,6 @@ Reduce future ZYRON Vercel deployment storage and build-context size without cha
 - No exact duplicate image groups remain in `public/`.
 - Every removed URL permanently redirects to a byte-identical canonical asset.
 - Production build and TypeScript checks pass.
-- A local Vercel production build succeeds and its output is smaller than the baseline by at least 8 MB.
+- A local Vercel production build succeeds, exact public static payload is smaller by at least 8 MB, and total output is smaller than the prior recorded artifact.
 - Preview deployment succeeds before any production release decision.
 
