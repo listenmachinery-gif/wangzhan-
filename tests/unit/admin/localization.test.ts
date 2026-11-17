@@ -49,6 +49,12 @@ describe("admin Chinese display localization", () => {
     expect(formatAdminEnum("SUPER_ADMIN")).toBe("超级管理员");
     expect(formatAdminEnum("SALES_MANAGER")).toBe("销售经理");
     expect(formatAdminEnum("CRM_VIEWER")).toBe("CRM 查看员");
+    expect(formatAdminEnum("COVER")).toBe("封面");
+    expect(formatAdminEnum("LOADING")).toBe("装柜现场");
+    expect(formatAdminEnum("EQUIPMENT")).toBe("发货设备");
+    expect(formatAdminEnum("VIDEO")).toBe("视频");
+    expect(formatAdminEnum("ROLLBACK")).toBe("回滚");
+    expect(formatAdminEnum("ARCHIVE")).toBe("归档");
     expect(formatAdminEnum("UNMAPPED_TECHNICAL_VALUE")).toBe("UNMAPPED_TECHNICAL_VALUE");
     expect(formatAdminEnum(null, "—")).toBe("—");
   });

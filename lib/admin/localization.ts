@@ -128,6 +128,9 @@ export const adminEnumLabels: Readonly<Record<string, string>> = {
   DECORATIVE_IMAGE: "装饰图片",
   DOCUMENT: "文档",
   VIDEO: "视频",
+  COVER: "封面",
+  LOADING: "装柜现场",
+  EQUIPMENT: "发货设备",
   NUMBER: "数值",
   LEFT: "左对齐",
   CENTER: "居中",
@@ -151,6 +154,8 @@ export const adminEnumLabels: Readonly<Record<string, string>> = {
   UPDATE: "更新",
   PUBLISH: "发布",
   RESTORE: "恢复",
+  ROLLBACK: "回滚",
+  ARCHIVE: "归档",
 };
 
 const mediaReferenceEntityLabels: Readonly<Record<string, string>> = {

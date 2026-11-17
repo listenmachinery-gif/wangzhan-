@@ -334,6 +334,40 @@ describe("CMS PostgreSQL foundation", () => {
     expect(await db.permission.count({ where: { key: { startsWith: "analytics." } } })).toBe(4);
   });
 
+  it("seeds navigation and shipping grants idempotently for administrator content roles", async () => {
+    await seedRbac(db);
+    await seedRbac(db);
+
+    const permissions = await db.permission.findMany({
+      where: { key: { in: [
+        "navigation.read",
+        "navigation.write",
+        "navigation.publish",
+        "shipping.read",
+        "shipping.write",
+        "shipping.publish",
+      ] } },
+      orderBy: { key: "asc" },
+      include: { roles: { include: { role: true } } },
+    });
+
+    expect(permissions.map(({ key }) => key)).toEqual([
+      "navigation.publish",
+      "navigation.read",
+      "navigation.write",
+      "shipping.publish",
+      "shipping.read",
+      "shipping.write",
+    ]);
+    for (const permission of permissions) {
+      expect(permission.roles.map(({ role }) => role.key).sort()).toEqual([
+        "ADMIN",
+        "CONTENT_EDITOR",
+        "SUPER_ADMIN",
+      ]);
+    }
+  });
+
   it("persists chat conversations, idempotent messages, and assignment history", async () => {
     const agent = await db.user.create({
       data: { email: "support@example.com", name: "Support Agent", passwordHash: "argon2id:test" },

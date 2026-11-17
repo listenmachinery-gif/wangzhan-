@@ -28,6 +28,16 @@ describe("ZYRON CMS role permissions", () => {
     expect(can(admin, "user.manage", { targetRoles: ["SUPER_ADMIN"] })).toBe(false);
     expect(can(admin, "role.manage")).toBe(false);
     expect(can(admin, "security.manage")).toBe(false);
+    for (const permission of [
+      "navigation.read",
+      "navigation.write",
+      "navigation.publish",
+      "shipping.read",
+      "shipping.write",
+      "shipping.publish",
+    ] as const) {
+      expect(can(admin, permission), permission).toBe(true);
+    }
   });
 
   it("limits Product Editor to product catalogue and related media", () => {
@@ -43,6 +53,8 @@ describe("ZYRON CMS role permissions", () => {
     expect(can(editor, "analytics.read.summary")).toBe(false);
     expect(can(editor, "analytics.read.visitors")).toBe(false);
     expect(can(editor, "analytics.export")).toBe(false);
+    expect(can(editor, "navigation.read")).toBe(false);
+    expect(can(editor, "shipping.read")).toBe(false);
   });
 
   it("limits Content Editor to banners, shared media, and SEO", () => {
@@ -57,6 +69,16 @@ describe("ZYRON CMS role permissions", () => {
     expect(can(editor, "analytics.read.summary")).toBe(false);
     expect(can(editor, "analytics.read.visitors")).toBe(false);
     expect(can(editor, "analytics.export")).toBe(false);
+    for (const permission of [
+      "navigation.read",
+      "navigation.write",
+      "navigation.publish",
+      "shipping.read",
+      "shipping.write",
+      "shipping.publish",
+    ] as const) {
+      expect(can(editor, permission), permission).toBe(true);
+    }
   });
 
   it("allows Sales to access only currently assigned leads", () => {
