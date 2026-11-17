@@ -6,10 +6,16 @@ import { expect, test } from "@playwright/test";
 const email = "admin-e2e@example.com";
 const password = "e2e-secure-password";
 
-test.beforeAll(async () => {
+function database() {
   const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) throw new Error("DATABASE_URL is required for E2E tests.");
-  const db = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+  if (!connectionString || !new URL(connectionString).pathname.replace(/^\//, "").endsWith("_test")) {
+    throw new Error("Admin authentication E2E requires the isolated _test database.");
+  }
+  return new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+}
+
+test.beforeAll(async () => {
+  const db = database();
   const role = await db.role.upsert({
     where: { key: "SUPER_ADMIN" },
     update: {},
@@ -44,7 +50,7 @@ test("protects admin routes and keeps public/admin chrome separate", async ({ pa
   await page.getByRole("button", { name: "登录 ZYRON CMS" }).click();
 
   await expect(page).toHaveURL(/\/admin$/);
-  await expect(page.getByRole("heading", { name: "数据总览" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "ZYRON 全球业务数据中心" })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "后台主导航" })).toBeVisible();
   await expect(page.getByText("经营概览", { exact: true })).toBeVisible();
   await expect(page.getByText("客户增长", { exact: true })).toBeVisible();
