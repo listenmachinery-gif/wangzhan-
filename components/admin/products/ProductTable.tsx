@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { formatAdminEnum } from "@/lib/admin/localization";
 
 type ProductRow = {
   id: string;
@@ -22,7 +23,7 @@ export function ProductTable({ items }: { items: ProductRow[] }) {
             <tr key={product.id}>
               <td className="px-4 py-4"><p className="font-medium text-neutral-900">{product.name}</p><p className="mt-1 text-xs text-neutral-500">/products/{product.slug}</p></td>
               <td className="px-4 py-4 text-neutral-700">{product.category.name}</td>
-              <td className="px-4 py-4"><span className="rounded-full bg-neutral-100 px-2 py-1 text-xs">{product.status}</span></td>
+              <td className="px-4 py-4"><span className="rounded-full bg-neutral-100 px-2 py-1 text-xs">{formatAdminEnum(product.status)}</span></td>
               <td className="px-4 py-4 text-neutral-600">{product._count.sections} / {product._count.models}</td>
               <td className="px-4 py-4"><Link className="font-medium text-[#5F9500] hover:underline" href={`/admin/products/${product.id}`}>编辑</Link></td>
             </tr>

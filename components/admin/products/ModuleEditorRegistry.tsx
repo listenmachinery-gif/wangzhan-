@@ -6,8 +6,45 @@ import type { ProductModuleType } from "@/lib/product-modules/types";
 type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
 type MediaOption = { id: string; name: string };
 
+const fieldLabels: Readonly<Record<string, string>> = {
+  value: "内容",
+  eyebrow: "眉题",
+  title: "标题",
+  subtitle: "副标题",
+  intro: "导语",
+  paragraphs: "段落",
+  items: "项目",
+  image: "图片",
+  images: "图片组",
+  alt: "图片替代文本",
+  text: "文本",
+  label: "标签",
+  columns: "列",
+  rows: "行",
+  values: "数值",
+  desktop: "桌面端图片",
+  tablet: "平板图片",
+  mobile: "手机图片",
+  badges: "特点标签",
+  valuePoints: "核心价值",
+  primaryCta: "主要行动按钮",
+  secondaryCta: "次要行动按钮",
+  href: "链接",
+  fit: "适用情况",
+  materials: "适用材料",
+  note: "说明",
+  key: "字段键名",
+  unit: "单位",
+  name: "名称",
+  description: "描述",
+  specs: "参数",
+  question: "问题",
+  answer: "回答",
+  requiredInfo: "询盘必填信息",
+};
+
 function labelFor(key: string) {
-  return key.replace(/([A-Z])/g, " $1").replace(/^./, (value) => value.toUpperCase());
+  return fieldLabels[key] ?? key;
 }
 
 function blankCopy(value: JsonValue): JsonValue {

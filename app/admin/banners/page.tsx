@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { requirePermission } from "@/lib/auth/guards";
+import { formatAdminEnum } from "@/lib/admin/localization";
 import { BannerService } from "@/lib/services/banner-service";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +23,7 @@ export default async function AdminBannersPage() {
       <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white">
         <table className="min-w-full text-left text-sm">
           <thead className="bg-neutral-50 text-neutral-600"><tr><th className="px-4 py-3">名称</th><th className="px-4 py-3">状态</th><th className="px-4 py-3">排序</th><th className="px-4 py-3">排期</th><th className="px-4 py-3">操作</th></tr></thead>
-          <tbody>{banners.map((banner) => <tr key={banner.id} className="border-t"><td className="px-4 py-3"><p className="font-semibold">{banner.name}</p><p className="mt-1 max-w-md truncate text-neutral-500">{banner.title}</p></td><td className="px-4 py-3">{banner.status}{banner.enabled ? "" : " · 已停用"}</td><td className="px-4 py-3">{banner.position}</td><td className="px-4 py-3 text-neutral-600">{formatSchedule(banner.startsAt, banner.endsAt)}</td><td className="px-4 py-3"><Link href={`/admin/banners/${banner.id}`} className="font-semibold text-[#5F9500]">编辑</Link></td></tr>)}</tbody>
+          <tbody>{banners.map((banner) => <tr key={banner.id} className="border-t"><td className="px-4 py-3"><p className="font-semibold">{banner.name}</p><p className="mt-1 max-w-md truncate text-neutral-500">{banner.title}</p></td><td className="px-4 py-3">{formatAdminEnum(banner.status)}{banner.enabled ? "" : " · 已停用"}</td><td className="px-4 py-3">{banner.position}</td><td className="px-4 py-3 text-neutral-600">{formatSchedule(banner.startsAt, banner.endsAt)}</td><td className="px-4 py-3"><Link href={`/admin/banners/${banner.id}`} className="font-semibold text-[#5F9500]">编辑</Link></td></tr>)}</tbody>
         </table>
         {banners.length === 0 ? <p className="p-8 text-center text-sm text-neutral-500">尚无 Banner。首页会继续显示原有视频 Hero。</p> : null}
       </div>

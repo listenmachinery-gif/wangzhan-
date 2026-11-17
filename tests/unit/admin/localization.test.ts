@@ -4,6 +4,8 @@ import {
   formatAdminEnum,
   formatCountryName,
   formatDeviceType,
+  formatMediaReferenceEntity,
+  formatMediaReferenceField,
   formatTrafficMedium,
   formatTrafficSource,
 } from "@/lib/admin/localization";
@@ -11,12 +13,14 @@ import {
 describe("admin Chinese display localization", () => {
   it("renders ISO region codes as Chinese country and region names", () => {
     expect(formatCountryName("US")).toBe("美国");
+    expect(formatCountryName("USA")).toBe("美国");
+    expect(formatCountryName("United States")).toBe("美国");
     expect(formatCountryName(" de ")).toBe("德国");
     expect(formatCountryName("CN")).toBe("中国");
   });
 
   it("preserves customer-authored country text and unknown values", () => {
-    expect(formatCountryName("United States")).toBe("United States");
+    expect(formatCountryName("美国")).toBe("美国");
     expect(formatCountryName("ZZ")).toBe("ZZ");
     expect(formatCountryName(null)).toBe("未知");
     expect(formatCountryName(undefined, "—")).toBe("—");
@@ -47,5 +51,13 @@ describe("admin Chinese display localization", () => {
     expect(formatAdminEnum("CRM_VIEWER")).toBe("CRM 查看员");
     expect(formatAdminEnum("UNMAPPED_TECHNICAL_VALUE")).toBe("UNMAPPED_TECHNICAL_VALUE");
     expect(formatAdminEnum(null, "—")).toBe("—");
+  });
+
+  it("localizes media reference entity and field labels", () => {
+    expect(formatMediaReferenceEntity("Product")).toBe("产品");
+    expect(formatMediaReferenceEntity("ProductSection")).toBe("产品模块");
+    expect(formatMediaReferenceField("hero")).toBe("首图");
+    expect(formatMediaReferenceField("desktopMediaId")).toBe("桌面端媒体");
+    expect(formatMediaReferenceField("customField")).toBe("customField");
   });
 });

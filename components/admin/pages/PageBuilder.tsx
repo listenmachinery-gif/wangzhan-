@@ -23,6 +23,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { PageRenderer } from "@/components/page-builder/PageRenderer";
+import { formatAdminEnum } from "@/lib/admin/localization";
 import {
   componentRegistry,
   getComponentDefinition,
@@ -854,7 +855,7 @@ export function PageBuilder({
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-semibold">
-                        v{item.version} · {item.action}
+                        v{item.version} · {formatAdminEnum(item.action)}
                       </p>
                       <p className="mt-1 text-xs text-neutral-500">
                         {item.createdBy.name} ·{" "}

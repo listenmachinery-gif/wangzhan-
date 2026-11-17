@@ -1,4 +1,21 @@
 const regionNames = new Intl.DisplayNames(["zh-CN"], { type: "region" });
+const englishRegionNames = new Intl.DisplayNames(["en"], { type: "region" });
+
+const englishCountryToCode = new Map<string, string>();
+for (let first = 65; first <= 90; first += 1) {
+  for (let second = 65; second <= 90; second += 1) {
+    const code = String.fromCharCode(first, second);
+    const name = englishRegionNames.of(code);
+    if (name && name !== code && name !== "Unknown Region") englishCountryToCode.set(name.toLowerCase(), code);
+  }
+}
+
+const alpha3CountryCodes: Readonly<Record<string, string>> = {
+  AUS: "AU", BRA: "BR", CAN: "CA", CHN: "CN", DEU: "DE", ESP: "ES", FRA: "FR", GBR: "GB",
+  IDN: "ID", IND: "IN", ITA: "IT", JPN: "JP", KOR: "KR", MEX: "MX", MYS: "MY", NLD: "NL",
+  NZL: "NZ", PAK: "PK", POL: "PL", RUS: "RU", SAU: "SA", SGP: "SG", THA: "TH", TUR: "TR",
+  TWN: "TW", UKR: "UA", USA: "US", VNM: "VN", ZAF: "ZA", ARE: "AE",
+};
 
 export const trafficSourceLabels: Readonly<Record<string, string>> = {
   direct: "直接访问",
@@ -128,6 +145,33 @@ export const adminEnumLabels: Readonly<Record<string, string>> = {
   CATALOG_DOWNLOAD: "下载目录",
   CHAT_STARTED: "发起在线聊天",
   CHAT_MESSAGE_SENT: "发送聊天消息",
+
+  CREATE: "创建",
+  SAVE: "保存",
+  UPDATE: "更新",
+  PUBLISH: "发布",
+  RESTORE: "恢复",
+};
+
+const mediaReferenceEntityLabels: Readonly<Record<string, string>> = {
+  Product: "产品",
+  ProductSection: "产品模块",
+  ProductCategory: "产品分类",
+  Banner: "首页 Banner",
+  SitePage: "页面",
+  SeoRecord: "SEO 记录",
+};
+
+const mediaReferenceFieldLabels: Readonly<Record<string, string>> = {
+  hero: "首图",
+  image: "图片",
+  desktop: "桌面端图片",
+  tablet: "平板图片",
+  mobile: "手机图片",
+  desktopMediaId: "桌面端媒体",
+  tabletMediaId: "平板媒体",
+  mobileMediaId: "手机媒体",
+  openGraphMediaId: "Open Graph 图片",
 };
 
 function clean(value: string | null | undefined) {
@@ -137,8 +181,11 @@ function clean(value: string | null | undefined) {
 export function formatCountryName(value: string | null | undefined, fallback = "未知"): string {
   const original = clean(value);
   if (!original) return fallback;
-  if (!/^[a-z]{2}$/i.test(original)) return original;
-  const code = original.toUpperCase();
+  const upper = original.toUpperCase();
+  const code = /^[a-z]{2}$/i.test(original)
+    ? upper
+    : alpha3CountryCodes[upper] ?? englishCountryToCode.get(original.toLowerCase());
+  if (!code) return original;
   const localized = regionNames.of(code);
   return localized && localized !== code && localized !== "未知地区" ? localized : original;
 }
@@ -165,4 +212,16 @@ export function formatAdminEnum(value: string | null | undefined, fallback = "�
   const original = clean(value);
   if (!original) return fallback;
   return adminEnumLabels[original.toUpperCase()] ?? original;
+}
+
+export function formatMediaReferenceEntity(value: string | null | undefined, fallback = "未知内容"): string {
+  const original = clean(value);
+  if (!original) return fallback;
+  return mediaReferenceEntityLabels[original] ?? original;
+}
+
+export function formatMediaReferenceField(value: string | null | undefined, fallback = "未知位置"): string {
+  const original = clean(value);
+  if (!original) return fallback;
+  return mediaReferenceFieldLabels[original] ?? original;
 }

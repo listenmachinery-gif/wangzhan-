@@ -55,7 +55,7 @@ export const SMALL_ELECTRIC_PRODUCT_MODULE_LABELS: Record<ProductModuleType, str
 };
 
 export const SMALL_ELECTRIC_PRODUCT_LAYOUT_GROUPS = [
-  { id: "hero", label: "Hero", moduleTypes: ["HERO"] },
+  { id: "hero", label: "首屏", moduleTypes: ["HERO"] },
   {
     id: "advantages",
     label: "产品优势",
@@ -85,8 +85,8 @@ export const SMALL_ELECTRIC_PRODUCT_LAYOUT_GROUPS = [
     moduleTypes: ["COMPARISON", "ENERGY_COMPARISON", "WORKFLOW", "MANUFACTURER_SUPPORT"],
   },
   { id: "selection", label: "选型指南", moduleTypes: ["MODEL_GUIDE", "RELATED_LINKS"] },
-  { id: "faq", label: "FAQ", moduleTypes: ["FAQ"] },
-  { id: "inquiry", label: "询盘 CTA", moduleTypes: ["CTA"] },
+  { id: "faq", label: "常见问题", moduleTypes: ["FAQ"] },
+  { id: "inquiry", label: "询盘行动", moduleTypes: ["CTA"] },
 ] as const satisfies readonly {
   id: string;
   label: string;

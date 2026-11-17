@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { BannerSlide, type BannerPreviewViewport } from "@/components/site/HomeBannerCarousel";
+import { formatAdminEnum } from "@/lib/admin/localization";
 import type { PublicBanner, PublicBannerMedia } from "@/lib/repositories/banner-repository";
 
 type MediaOption = { id: string; originalName: string; altText: string | null; mimeType: string };
@@ -174,7 +175,7 @@ export function BannerEditor({ initialBanner, media }: { initialBanner: BannerSt
         <label className="text-sm font-medium">开始时间（浏览器本地时间）<input type="datetime-local" value={dateTimeLocal(banner.startsAt)} onChange={(event) => setBanner({ ...banner, startsAt: isoOrNull(event.target.value) })} className={inputClass} /></label>
         <label className="text-sm font-medium">结束时间（浏览器本地时间）<input type="datetime-local" value={dateTimeLocal(banner.endsAt)} onChange={(event) => setBanner({ ...banner, endsAt: isoOrNull(event.target.value) })} className={inputClass} /></label>
         <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" checked={banner.enabled} onChange={(event) => setBanner({ ...banner, enabled: event.target.checked })} />启用展示</label>
-        <p className="text-sm text-neutral-600 sm:text-right">{banner.status} · v{banner.version}</p>
+        <p className="text-sm text-neutral-600 sm:text-right">{formatAdminEnum(banner.status)} · v{banner.version}</p>
       </section>
       <section className="flex flex-wrap items-center gap-3 rounded-xl border border-neutral-200 bg-white p-5">
         <button type="button" disabled={busy} onClick={() => void save()} className="rounded-lg border border-neutral-300 px-5 py-2.5 text-sm font-semibold disabled:opacity-50">保存</button>

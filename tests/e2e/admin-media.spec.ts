@@ -101,6 +101,7 @@ test("uploads, searches, previews, edits alt text, and prevents referenced delet
 
   await mediaList.getByRole("listitem").getByRole("button", { name: "预览与编辑" }).click();
   await expect(page.getByText("引用警告")).toBeVisible();
+  await expect(page.getByText("产品 / e2e-product / 首图", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "删除资源" }).click();
   await expect(page.getByRole("dialog", { name: "媒体预览" }).getByRole("status")).toContainText("无法删除");
   await expect(page.getByRole("dialog", { name: "媒体预览" })).toBeVisible();

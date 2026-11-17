@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { createDraftProductModule } from "@/lib/product-modules/drafts";
 import { SMALL_ELECTRIC_PRODUCT_MODULE_LABELS } from "@/lib/product-modules/small-electric-template";
+import { formatAdminEnum } from "@/lib/admin/localization";
 import { PRODUCT_MODULE_TYPES, type ProductModuleType } from "@/lib/product-modules/types";
 import { ModuleEditorRegistry, type JsonValue } from "./ModuleEditorRegistry";
 
@@ -90,7 +91,7 @@ export function ProductEditor({ initialProduct, categories, media }: { initialPr
   return (
     <div className="space-y-6">
       <section className="rounded-xl border border-neutral-200 bg-white p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-semibold">基础信息</h2><span className="rounded-full bg-neutral-100 px-3 py-1 text-xs">{product.status} · v{product.version}</span></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-semibold">基础信息</h2><span className="rounded-full bg-neutral-100 px-3 py-1 text-xs">{formatAdminEnum(product.status)} · v{product.version}</span></div>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <label className="text-sm font-medium">名称<input value={product.name} onChange={(event) => setProduct({ ...product, name: event.target.value })} className="mt-2 w-full rounded-lg border px-3 py-2" /></label>
           <label className="text-sm font-medium">分类<select value={product.categoryId} onChange={(event) => setProduct({ ...product, categoryId: event.target.value })} className="mt-2 w-full rounded-lg border px-3 py-2">{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label>
@@ -105,7 +106,7 @@ export function ProductEditor({ initialProduct, categories, media }: { initialPr
         <div><h2 className="text-lg font-semibold">详情页模块</h2><p className="mt-1 text-sm text-neutral-600">顺序以“小型电动剪板机”的 24 模块模板为准；隐藏模块不会在前台显示。</p></div>
         {sections.map((section, index) => (
           <article key={section.id || section.type} data-module-editor={section.type} className="rounded-xl border border-neutral-200 bg-white p-5">
-            <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-semibold text-[#5F9500]">{section.type}</p><h3 className="mt-1 font-semibold">{SMALL_ELECTRIC_PRODUCT_MODULE_LABELS[section.type]}</h3></div><div className="flex items-center gap-2"><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={section.visible} onChange={(event) => setSections(sections.map((item, itemIndex) => itemIndex === index ? { ...item, visible: event.target.checked } : item))} />显示</label><button aria-label="上移模块" onClick={() => move(index, -1)} className="rounded border px-2 py-1">↑</button><button aria-label="下移模块" onClick={() => move(index, 1)} className="rounded border px-2 py-1">↓</button><button onClick={() => setSections(sections.filter((_, itemIndex) => itemIndex !== index))} className="rounded border border-red-200 px-2 py-1 text-red-700">删除</button></div></div>
+            <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-semibold text-[#5F9500]">模块 {index + 1}</p><h3 className="mt-1 font-semibold">{SMALL_ELECTRIC_PRODUCT_MODULE_LABELS[section.type]}</h3></div><div className="flex items-center gap-2"><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={section.visible} onChange={(event) => setSections(sections.map((item, itemIndex) => itemIndex === index ? { ...item, visible: event.target.checked } : item))} />显示</label><button aria-label="上移模块" onClick={() => move(index, -1)} className="rounded border px-2 py-1">↑</button><button aria-label="下移模块" onClick={() => move(index, 1)} className="rounded border px-2 py-1">↓</button><button onClick={() => setSections(sections.filter((_, itemIndex) => itemIndex !== index))} className="rounded border border-red-200 px-2 py-1 text-red-700">删除</button></div></div>
             <ModuleEditorRegistry type={section.type} value={section.content} media={media} onChange={(content) => setSections(sections.map((item, itemIndex) => itemIndex === index ? { ...item, content } : item))} />
           </article>
         ))}

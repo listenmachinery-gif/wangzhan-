@@ -5,6 +5,7 @@ import { Eye, Search, Trash2 } from "lucide-react";
 import Image from "next/image";
 
 import { MediaUploader } from "@/components/admin/media/MediaUploader";
+import { formatMediaReferenceEntity, formatMediaReferenceField } from "@/lib/admin/localization";
 
 export type MediaLibraryItem = {
   id: string;
@@ -95,7 +96,7 @@ export function MediaLibrary({ initialItems, canDelete }: { initialItems: MediaL
             <div className="flex items-start justify-between gap-4"><div><h2 className="text-xl font-semibold">媒体预览</h2><p className="mt-1 text-sm text-neutral-500">{selected.originalName}</p></div><button type="button" onClick={() => setSelected(null)} aria-label="关闭预览" className="rounded-lg px-3 py-1 text-2xl">×</button></div>
             {selected.previewUrl && selected.mimeType.startsWith("image/") ? <Image unoptimized width={576} height={256} src={selected.previewUrl} alt={selected.altText ?? ""} className="mt-4 max-h-64 w-full rounded-lg bg-neutral-100 object-contain" /> : null}
             <label className="mt-5 grid gap-2 text-sm font-medium">替代文本<input aria-label="替代文本编辑" value={selected.altText ?? ""} onChange={(event) => setSelected({ ...selected, altText: event.target.value })} className="rounded-lg border border-neutral-300 px-3 py-2" /></label>
-            {references.length ? <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm"><p className="font-semibold">引用警告</p>{references.map((reference) => <p key={`${reference.entityType}-${reference.entityId}-${reference.field}`}>{reference.entityType} / {reference.entityId} / {reference.field}</p>)}</div> : null}
+            {references.length ? <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm"><p className="font-semibold">引用警告</p>{references.map((reference) => <p key={`${reference.entityType}-${reference.entityId}-${reference.field}`}>{formatMediaReferenceEntity(reference.entityType)} / {reference.entityId} / {formatMediaReferenceField(reference.field)}</p>)}</div> : null}
             {notice ? <p role="status" className="mt-4 text-sm">{notice}</p> : null}
             <div className="mt-5 flex flex-wrap justify-between gap-3">{canDelete ? <button type="button" onClick={remove} className="inline-flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-700"><Trash2 className="h-4 w-4" />删除资源</button> : <span /> }<button type="button" onClick={saveAlt} className="rounded-lg bg-[#76B900] px-4 py-2 text-sm font-semibold">保存替代文本</button></div>
           </div>

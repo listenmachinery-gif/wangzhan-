@@ -94,6 +94,9 @@ test("edits, previews, publishes, and restores a homepage version", async ({
   await expect(page).toHaveURL(/\/admin$/);
 
   await page.getByRole("link", { name: "页面设计" }).click();
+  await expect(
+    page.getByRole("row").filter({ hasText: pageName }).getByText("首页", { exact: true }),
+  ).toBeVisible();
   await page
     .getByRole("row")
     .filter({ hasText: pageName })
@@ -135,7 +138,7 @@ test("edits, previews, publishes, and restores a homepage version", async ({
   await page.getByRole("button", { name: "历史" }).click();
   const saveVersion = page
     .getByRole("article")
-    .filter({ hasText: "SAVE" })
+    .filter({ hasText: "保存" })
     .last();
   await saveVersion.getByRole("button", { name: "恢复为草稿" }).click();
   await expect(page.getByText(/已恢复 v\d+ 为新草稿/)).toBeVisible();

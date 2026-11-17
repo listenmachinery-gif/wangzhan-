@@ -96,6 +96,7 @@ test("previews, publishes, orders, and applies responsive fallback on the homepa
   await page.getByRole("button", { name: "保存" }).click();
   await expect(page).toHaveURL(/\/admin\/banners\/(?!new)[^/]+$/);
   await expect(page.getByRole("heading", { name: `${marker} Primary`, exact: false })).toBeVisible();
+  await expect(page.getByText(/草稿 · v\d+/)).toBeVisible();
   await page.getByRole("button", { name: "发布到首页" }).click();
   await expect(page.getByRole("status")).toContainText("已发布");
 

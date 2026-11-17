@@ -50,4 +50,10 @@ test("protects admin routes and keeps public/admin chrome separate", async ({ pa
   await expect(page.getByText("客户增长", { exact: true })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "面包屑" })).toContainText("数据总览");
   await expect(page.getByRole("contentinfo")).toHaveCount(0);
+
+  await page.getByRole("link", { name: "用户与权限" }).click();
+  const userRow = page.getByRole("row").filter({ has: page.getByText(email, { exact: true }) });
+  await expect(userRow.getByText("超级管理员", { exact: true })).toBeVisible();
+  await userRow.getByRole("link", { name: "编辑" }).click();
+  await expect(page.getByRole("checkbox", { name: "超级管理员", exact: true })).toBeChecked();
 });

@@ -5,6 +5,7 @@ import { ChevronDown, Menu, PanelLeftClose, PanelLeftOpen, X } from "lucide-reac
 
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
 import type { Principal } from "@/lib/auth/permissions";
+import { formatAdminEnum } from "@/lib/admin/localization";
 
 export function AdminTopbar({ principal, collapsed, mobileOpen, onToggleCollapsed, onToggleMobile, status }: {
   principal: Principal;
@@ -66,7 +67,7 @@ export function AdminTopbar({ principal, collapsed, mobileOpen, onToggleCollapse
             <span aria-hidden className="grid size-8 place-items-center rounded-lg bg-graphite-950 text-xs font-semibold text-white">{initials}</span>
             <span className="hidden max-w-36 sm:block">
               <span className="block truncate text-xs font-semibold text-admin-ink">{principal.name}</span>
-              <span className="block truncate text-[10px] uppercase tracking-[0.08em] text-admin-muted">{principal.roles.join(" · ")}</span>
+              <span className="block truncate text-[10px] tracking-[0.08em] text-admin-muted">{principal.roles.map((role) => formatAdminEnum(role)).join(" · ")}</span>
             </span>
             <ChevronDown aria-hidden className={`hidden size-3.5 text-neutral-400 transition-transform sm:block ${menuOpen ? "rotate-180" : ""}`} />
           </button>
@@ -76,7 +77,7 @@ export function AdminTopbar({ principal, collapsed, mobileOpen, onToggleCollapse
               <p className="mt-1 break-all text-xs text-admin-muted">{principal.email}</p>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {principal.roles.map((role) => (
-                  <span key={role} className="rounded-full bg-neutral-100 px-2 py-1 text-[10px] font-semibold tracking-wide text-neutral-600">{role}</span>
+                  <span key={role} className="rounded-full bg-neutral-100 px-2 py-1 text-[10px] font-semibold tracking-wide text-neutral-600">{formatAdminEnum(role)}</span>
                 ))}
               </div>
             </div>

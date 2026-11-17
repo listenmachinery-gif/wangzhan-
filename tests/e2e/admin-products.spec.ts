@@ -119,15 +119,22 @@ test("edits, validates, reorders, hides, publishes, and updates the unchanged pu
   await page.getByRole("button", { name: "登录 ZYRON CMS" }).click();
   await page.getByRole("link", { name: "产品管理" }).click();
   await expect(page.getByRole("heading", { name: "产品管理" })).toBeVisible();
+  await expect(page.locator('select[name="status"]')).toContainText("草稿");
+  const productRow = page.getByRole("row", { name: /E2E Admin Product/ });
+  await expect(productRow.getByText("草稿", { exact: true })).toBeVisible();
+  await page.goto("/admin/product-categories");
+  await expect(page.getByRole("row", { name: /E2E Admin Category/ }).getByText("已发布", { exact: true })).toBeVisible();
+  await page.goto("/admin/products");
   await page.getByRole("row", { name: /E2E Admin Product/ }).getByRole("link", { name: "编辑" }).click();
+  await expect(page.getByText("草稿 · v1", { exact: true })).toBeVisible();
 
   const hero = page.locator("[data-module-editor='HERO']");
   const overview = page.locator("[data-module-editor='OVERVIEW']");
-  await hero.getByLabel("Title", { exact: true }).fill("");
+  await hero.getByLabel("标题", { exact: true }).fill("");
   await page.getByRole("button", { name: "保存模块顺序与内容" }).click();
   await expect(page.getByRole("status")).toContainText("Too small");
 
-  await hero.getByLabel("Title", { exact: true }).fill("Published E2E Machine");
+  await hero.getByLabel("标题", { exact: true }).fill("Published E2E Machine");
   await overview.getByRole("checkbox", { name: "显示" }).uncheck();
   await overview.getByRole("button", { name: "上移模块" }).click();
   await page.getByRole("button", { name: "保存模块顺序与内容" }).click();
