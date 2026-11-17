@@ -6,6 +6,7 @@ import { ArrowUpRight, CircleDot, Search, Trash2, X } from "lucide-react";
 
 import { DataState } from "@/components/admin/ui/DataState";
 import { StatusBadge } from "@/components/admin/ui/StatusBadge";
+import { formatCountryName, formatDeviceType, formatTrafficMedium, formatTrafficSource } from "@/lib/admin/localization";
 
 type ProductLink = { id: string; name: string; slug: string } | null;
 type PageView = { id: string; path: string; title: string | null; startedAt: string; activeSeconds: number; product: ProductLink };
@@ -62,6 +63,16 @@ const eventLabels: Record<string, string> = {
   CHAT_MESSAGE_SENT: "发送聊天消息",
 };
 const allowedPropertyKeys = new Set(["placement", "asset_name", "asset_path", "product_slug", "product_name", "product_category", "form_kind", "link_path"]);
+const propertyLabels: Record<string, string> = {
+  placement: "展示位置",
+  asset_name: "资源名称",
+  asset_path: "资源路径",
+  product_slug: "产品标识",
+  product_name: "产品名称",
+  product_category: "产品分类",
+  form_kind: "表单类型",
+  link_path: "链接路径",
+};
 
 function sourceName(value: unknown) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return "direct";
@@ -191,7 +202,7 @@ export function VisitorTimelineDrawer({ visitorId, onClose, returnFocusRef, canD
       >
         <header className="flex items-center justify-between gap-4 border-b border-admin-border bg-white px-5 py-4">
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ignition">Visitor journey</p>
+            <p className="text-[10px] font-semibold tracking-[0.16em] text-ignition">访客旅程</p>
             <h2 className="mt-1 truncate text-lg font-semibold text-admin-ink">{detail ? visitorLabel(detail.id) : "访客行为时间线"}</h2>
           </div>
           <div className="flex items-center gap-2">
@@ -209,9 +220,9 @@ export function VisitorTimelineDrawer({ visitorId, onClose, returnFocusRef, canD
             <div className="space-y-6">
               <section aria-label="访客摘要" className="rounded-admin border border-admin-border bg-white p-5 shadow-admin-card">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div><p className="text-xs text-admin-muted">首次来源</p><p className="mt-1 text-sm font-semibold text-admin-ink">{sourceName(detail.firstSource)}</p></div>
-                  <div><p className="text-xs text-admin-muted">地区</p><p className="mt-1 text-sm font-semibold text-admin-ink">{[detail.city, detail.region, detail.countryCode].filter(Boolean).join(" · ") || "未知"}</p></div>
-                  <div><p className="text-xs text-admin-muted">设备</p><p className="mt-1 text-sm font-semibold text-admin-ink">{[detail.deviceType, detail.browser, detail.operatingSystem].filter(Boolean).join(" · ") || "未知"}</p></div>
+                  <div><p className="text-xs text-admin-muted">首次来源</p><p className="mt-1 text-sm font-semibold text-admin-ink">{formatTrafficSource(sourceName(detail.firstSource))}</p></div>
+                  <div><p className="text-xs text-admin-muted">地区</p><p className="mt-1 text-sm font-semibold text-admin-ink">{[detail.city, detail.region, formatCountryName(detail.countryCode)].filter(Boolean).join(" · ")}</p></div>
+                  <div><p className="text-xs text-admin-muted">设备</p><p className="mt-1 text-sm font-semibold text-admin-ink">{[formatDeviceType(detail.deviceType), detail.browser, detail.operatingSystem].filter(Boolean).join(" · ")}</p></div>
                   <div><p className="text-xs text-admin-muted">最后访问</p><p className="mt-1 text-sm font-semibold text-admin-ink">{formatTime(detail.lastSeenAt)}</p></div>
                 </div>
                 {detail.linkedLead ? <Link href={`/admin/leads/${detail.linkedLead.id}`} className="mt-4 flex items-center justify-between gap-3 rounded-admin-sm border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 outline-none focus-visible:ring-2 focus-visible:ring-ignition"><span>已关联询盘 · {detail.linkedLead.company || detail.linkedLead.name || detail.linkedLead.email}</span><ArrowUpRight aria-hidden className="size-4" /></Link> : null}
@@ -222,7 +233,7 @@ export function VisitorTimelineDrawer({ visitorId, onClose, returnFocusRef, canD
                   return (
                     <section key={session.id} aria-label={`会话 ${sessionIndex + 1}`} className="rounded-admin border border-admin-border bg-white p-5 shadow-admin-card">
                       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-admin-border pb-4">
-                        <div><h3 className="text-sm font-semibold text-admin-ink">会话 {sessionIndex + 1}</h3><p className="mt-1 text-xs text-admin-muted">{formatTime(session.startedAt)} · {session.source || "direct"} / {session.medium || "none"}</p></div>
+                        <div><h3 className="text-sm font-semibold text-admin-ink">会话 {sessionIndex + 1}</h3><p className="mt-1 text-xs text-admin-muted">{formatTime(session.startedAt)} · {formatTrafficSource(session.source ?? "direct")} / {formatTrafficMedium(session.medium ?? "none")}</p></div>
                         <StatusBadge tone="neutral">{items.length} 个行为</StatusBadge>
                       </div>
                       {items.length > 0 ? (
@@ -235,7 +246,7 @@ export function VisitorTimelineDrawer({ visitorId, onClose, returnFocusRef, canD
                                 {item.detail ? <p className="mt-1 text-xs text-admin-muted">{item.detail}</p> : null}
                                 {item.path ? <p className="mt-1 break-all rounded-md bg-neutral-50 px-2 py-1 font-mono text-[11px] leading-5 text-neutral-600">{item.path}</p> : null}
                                 {item.product ? <Link href={`/products/${item.product.slug}`} className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-ignition outline-none hover:text-neon focus-visible:ring-2 focus-visible:ring-ignition">{item.product.name}<ArrowUpRight aria-hidden className="size-3" /></Link> : null}
-                                {item.properties?.length ? <ul className="mt-2 flex flex-wrap gap-1.5">{item.properties.map(([key, value]) => <li key={key} className="rounded-full bg-neutral-100 px-2 py-1 text-[10px] text-neutral-600">{key}：{value}</li>)}</ul> : null}
+                                {item.properties?.length ? <ul className="mt-2 flex flex-wrap gap-1.5">{item.properties.map(([key, value]) => <li key={key} className="rounded-full bg-neutral-100 px-2 py-1 text-[10px] text-neutral-600">{propertyLabels[key] ?? key}：{value}</li>)}</ul> : null}
                               </div>
                             </li>
                           ))}

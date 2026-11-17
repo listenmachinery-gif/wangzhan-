@@ -21,8 +21,8 @@ export function VisitorFilters({ values, products }: {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <label className="text-xs font-medium text-admin-muted">开始日期<input className={inputClass} type="date" name="from" defaultValue={values.from} /></label>
         <label className="text-xs font-medium text-admin-muted">结束日期<input className={inputClass} type="date" name="to" defaultValue={values.to} /></label>
-        <label className="text-xs font-medium text-admin-muted">流量来源<input className={inputClass} name="source" maxLength={200} placeholder="例如 google" defaultValue={values.source} /></label>
-        <label className="text-xs font-medium text-admin-muted">国家 / 地区代码<input className={inputClass} name="countryCode" maxLength={2} placeholder="例如 US" defaultValue={values.countryCode} /></label>
+        <label className="text-xs font-medium text-admin-muted">流量来源<input className={inputClass} name="source" maxLength={200} placeholder="例如：Google" defaultValue={values.source} /></label>
+        <label className="text-xs font-medium text-admin-muted">国家 / 地区（ISO 代码）<input className={inputClass} name="countryCode" maxLength={2} placeholder="例如：US（美国）" defaultValue={values.countryCode} /></label>
         <label className="text-xs font-medium text-admin-muted">设备
           <select className={inputClass} name="deviceType" defaultValue={values.deviceType ?? ""}>
             <option value="">全部设备</option><option value="desktop">桌面端</option><option value="mobile">移动端</option><option value="tablet">平板</option>

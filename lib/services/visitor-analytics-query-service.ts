@@ -3,6 +3,7 @@ import "server-only";
 import { Prisma, type AnalyticsEnvironment, type PrismaClient } from "@prisma/client";
 
 import { isActive, isOnline } from "@/lib/analytics/first-party/rules";
+import { formatCountryName, formatDeviceType, formatTrafficSource } from "@/lib/admin/localization";
 import { can, type Permission, type Principal } from "@/lib/auth/permissions";
 import { db } from "@/lib/db/client";
 
@@ -104,6 +105,12 @@ function visitorStatus(visitor: { lastSeenAt: Date; lastActiveAt: Date | null },
   if (visitor.lastActiveAt && isActive(visitor.lastActiveAt, now)) return "active";
   return "offline";
 }
+
+const visitorStatusLabels: Record<VisitorStatusFilter, string> = {
+  online: "在线",
+  active: "活跃",
+  offline: "离线",
+};
 
 export class VisitorAnalyticsQueryService {
   constructor(private readonly database: PrismaClient = db) {}
@@ -317,17 +324,17 @@ export class VisitorAnalyticsQueryService {
       orderBy: [{ lastSeenAt: "desc" }, { id: "desc" }],
       take: 10_000,
     });
-    const header = ["visitor", "firstSeenAt", "lastSeenAt", "status", "source", "country", "region", "city", "device", "browser", "operatingSystem", "sessions", "pageViews", "events", "leadCompany"];
+    const header = ["访客", "首次访问时间", "最近访问时间", "访客状态", "流量来源", "国家或地区", "地区", "城市", "设备", "浏览器", "操作系统", "会话数", "页面浏览数", "事件数", "关联公司"];
     const rows = visitors.map((visitor) => [
       visitorLabel(visitor.id),
       visitor.firstSeenAt.toISOString(),
       visitor.lastSeenAt.toISOString(),
-      visitorStatus(visitor, now),
-      sourceName(visitor.firstSource),
-      visitor.countryCode,
+      visitorStatusLabels[visitorStatus(visitor, now)],
+      formatTrafficSource(sourceName(visitor.firstSource)),
+      formatCountryName(visitor.countryCode, ""),
       visitor.region,
       visitor.city,
-      visitor.deviceType,
+      formatDeviceType(visitor.deviceType, ""),
       visitor.browser,
       visitor.operatingSystem,
       visitor._count.sessions,

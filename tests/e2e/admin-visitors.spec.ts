@@ -96,7 +96,7 @@ test("persists visitor filters in the URL and exports the same result", async ({
 
   await expect(page.getByRole("heading", { name: "访客分析" })).toBeVisible();
   await page.getByLabel("流量来源").fill("google");
-  await page.getByLabel("国家 / 地区代码").fill("US");
+  await page.getByLabel("国家 / 地区（ISO 代码）").fill("US");
   await page.getByLabel("设备").selectOption("desktop");
   await page.getByRole("button", { name: "应用筛选" }).click();
 
@@ -104,11 +104,16 @@ test("persists visitor filters in the URL and exports the same result", async ({
   await expect(page).toHaveURL(/countryCode=US/);
   await expect(page.getByText("访客-000001")).toBeVisible();
   await expect(page.getByText("访客-000002")).toHaveCount(0);
+  const visitorRow = page.getByRole("row", { name: /访客-000001/ });
+  await expect(visitorRow.getByText("Google", { exact: true })).toBeVisible();
+  await expect(visitorRow.getByText("美国", { exact: true })).toBeVisible();
+  await expect(visitorRow.getByText("桌面端", { exact: true })).toBeVisible();
   await expect(page.locator("body")).not.toContainText("secret-cookie-google");
 
   const journeyButton = page.getByRole("button", { name: "查看 访客-000001 的行为时间线" });
   await journeyButton.click();
   await expect(page.getByRole("dialog", { name: "访客行为时间线" })).toBeVisible();
+  await expect(page.getByText("Google / 自然搜索", { exact: false })).toBeVisible();
   await expect(page.getByText("/products/example-machine", { exact: true }).first()).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog", { name: "访客行为时间线" })).toHaveCount(0);
@@ -122,7 +127,7 @@ test("persists visitor filters in the URL and exports the same result", async ({
   expect(csv.body).toContain("访客-000001");
   expect(csv.body).not.toContain("访客-000002");
 
-  await page.getByLabel("国家 / 地区代码").fill("ZZ");
+  await page.getByLabel("国家 / 地区（ISO 代码）").fill("ZZ");
   await page.getByRole("button", { name: "应用筛选" }).click();
   await expect(page.getByText("暂无符合条件的访客")).toBeVisible();
 });

@@ -48,6 +48,12 @@ describe("visitor analytics CSV export", () => {
     }, now);
 
     expect(csv).toContain("访客-A12345");
+    expect(csv).toContain("访客,首次访问时间,最近访问时间,访客状态,流量来源,国家或地区");
+    expect(csv).toContain("离线");
+    expect(csv).toContain("美国");
+    expect(csv).toContain("桌面端");
+    expect(csv).not.toContain(",US,");
+    expect(csv).not.toContain(",desktop,");
     expect(csv).toContain("'=HYPERLINK");
     expect(csv).toContain("'+SUM(1,1)");
     expect(csv).not.toContain("cookie-visitor-a12345");

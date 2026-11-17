@@ -9,6 +9,7 @@ import { VisitorTimelineDrawer } from "@/components/admin/analytics/visitors/Vis
 import { DataState } from "@/components/admin/ui/DataState";
 import { StatusBadge } from "@/components/admin/ui/StatusBadge";
 import { TableShell } from "@/components/admin/ui/TableShell";
+import { formatCountryName, formatDeviceType, formatTrafficSource } from "@/lib/admin/localization";
 
 export type VisitorListItem = {
   id: string;
@@ -84,9 +85,9 @@ export function VisitorTable({ items, total, page, pageSize, now, baseQuery, can
               <tr key={item.id}>
                 <td><span className="block font-semibold text-admin-ink">{anonymousVisitorLabel(item.id)}</span>{item.linkedLead ? <span className="mt-0.5 block text-xs text-admin-muted">已关联询盘 · {item.linkedLead.company || item.linkedLead.email}</span> : <span className="mt-0.5 block text-xs text-admin-muted">匿名访客</span>}</td>
                 <td><StatusBadge tone={visitorStatus.tone}>{visitorStatus.label}</StatusBadge></td>
-                <td className="font-medium text-admin-ink">{sourceName(item.firstSource)}</td>
-                <td>{[item.city, item.region, item.countryCode].filter(Boolean).join(" · ") || "未知"}</td>
-                <td><span className="block capitalize">{item.deviceType || "未知"}</span><span className="block text-xs text-admin-muted">{[item.browser, item.operatingSystem].filter(Boolean).join(" · ") || "—"}</span></td>
+                <td className="font-medium text-admin-ink">{formatTrafficSource(sourceName(item.firstSource))}</td>
+                <td>{[item.city, item.region, formatCountryName(item.countryCode)].filter(Boolean).join(" · ")}</td>
+                <td><span className="block">{formatDeviceType(item.deviceType)}</span><span className="block text-xs text-admin-muted">{[item.browser, item.operatingSystem].filter(Boolean).join(" · ") || "—"}</span></td>
                 <td><span className="font-semibold tabular-nums text-admin-ink">{item._count.pageViews}</span><span className="ml-1 text-xs text-admin-muted">浏览 / {item._count.sessions} 会话</span></td>
                 <td><time dateTime={item.lastSeenAt.toISOString()}>{new Intl.DateTimeFormat("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(item.lastSeenAt)}</time></td>
                 <td className="text-right"><button type="button" disabled={!interactive} aria-label={`查看 ${anonymousVisitorLabel(item.id)} 的行为时间线`} onClick={(event) => { returnFocusRef.current = event.currentTarget; setSelectedVisitorId(item.id); }} className="rounded-admin-sm border border-admin-border px-3 py-1.5 text-xs font-semibold text-admin-ink outline-none transition duration-admin hover:border-neutral-400 hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-ignition disabled:cursor-wait disabled:opacity-60">查看旅程</button></td>

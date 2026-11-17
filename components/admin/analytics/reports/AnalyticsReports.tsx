@@ -3,6 +3,7 @@
 import { ArrowRight, Download, MessageSquareText, RefreshCw, Search, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { formatCountryName, formatDeviceType, formatTrafficSource } from "@/lib/admin/localization";
 
 type Breakdown = { value: string; label?: string; visitors: number; sessions: number; pageViews: number; inquiries: number };
 type Report = {
@@ -57,7 +58,7 @@ export function AnalyticsReports({ initialFrom, initialTo, canExport }: { initia
     <div className="space-y-6">
       <section className="rounded-admin border border-admin-border bg-[#0b0d10] p-5 text-white shadow-admin-card sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div><p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-300">First-party CRM intelligence</p><h2 className="mt-2 text-xl font-semibold">从访问到询盘，一条可验证的增长链路</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-400">只展示站内实际采集与 CRM 关联结果。GA4 与 Search Console 作为独立聚合数据源，不与个人访客拼接。</p></div>
+          <div><p className="text-[11px] font-semibold tracking-[0.16em] text-amber-300">第一方 CRM 洞察</p><h2 className="mt-2 text-xl font-semibold">从访问到询盘，一条可验证的增长链路</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-400">只展示站内实际采集与 CRM 关联结果。GA4 与 Search Console 作为独立聚合数据源，不与个人访客拼接。</p></div>
           <div className="flex flex-wrap items-end gap-3"><label className="text-xs text-neutral-400">开始日期<input aria-label="报告开始日期" type="date" value={from} onChange={(event) => setFrom(event.target.value)} className="mt-1 block rounded-admin-sm border border-white/15 bg-white/10 px-3 py-2 text-sm text-white" /></label><label className="text-xs text-neutral-400">结束日期<input aria-label="报告结束日期" type="date" value={to} onChange={(event) => setTo(event.target.value)} className="mt-1 block rounded-admin-sm border border-white/15 bg-white/10 px-3 py-2 text-sm text-white" /></label><button type="button" onClick={() => void load()} className="inline-flex items-center gap-2 rounded-admin-sm bg-white px-4 py-2 text-sm font-semibold text-black"><RefreshCw className="size-4" />刷新</button>{canExport ? <a href={`/api/admin/analytics/reports/export?${query}`} className="inline-flex items-center gap-2 rounded-admin-sm border border-white/20 px-4 py-2 text-sm font-semibold text-white"><Download className="size-4" />导出 CSV</a> : null}</div>
         </div>
       </section>
@@ -74,7 +75,7 @@ export function AnalyticsReports({ initialFrom, initialTo, canExport }: { initia
           ].map(({ label, value, icon: Icon }) => <article key={label} className="rounded-admin border border-admin-border bg-white p-5 shadow-admin-card"><Icon className="size-4 text-ignition" /><p className="mt-4 text-xs font-medium text-admin-muted">{label}</p><p className="mt-1 text-2xl font-semibold tabular-nums text-admin-ink">{formatter.format(value)}</p></article>)}
           <article className="rounded-admin border border-amber-200 bg-amber-50 p-5"><p className="text-xs font-medium text-amber-800">聊天转客户率</p><p className="mt-5 text-2xl font-semibold tabular-nums text-amber-950">{percent.format(funnel.chatToLeadRate)}</p><p className="mt-2 text-xs text-amber-800">基于显式关联，不推测身份</p></article>
         </section>
-        <div className="grid gap-5 xl:grid-cols-2"><DataTable title="流量来源" rows={report.firstParty.sources} /><DataTable title="国家与地区" rows={report.firstParty.countries} /><DataTable title="高意向产品" rows={report.firstParty.products} label={(row) => row.label ?? row.value} /><DataTable title="访问设备" rows={report.firstParty.devices} /></div>
+        <div className="grid gap-5 xl:grid-cols-2"><DataTable title="流量来源" rows={report.firstParty.sources} label={(row) => formatTrafficSource(row.value)} /><DataTable title="国家与地区" rows={report.firstParty.countries} label={(row) => formatCountryName(row.value)} /><DataTable title="高意向产品" rows={report.firstParty.products} label={(row) => row.label ?? row.value} /><DataTable title="访问设备" rows={report.firstParty.devices} label={(row) => formatDeviceType(row.value)} /></div>
         <section className="grid gap-4 lg:grid-cols-2"><div className="rounded-admin border border-admin-border bg-white p-5"><div className="flex items-center gap-2"><Search className="size-4 text-admin-muted" /><h2 className="font-semibold text-admin-ink">Google 数据保持独立</h2></div><p className="mt-2 text-sm leading-6 text-admin-muted">GA4 与 Search Console 只展示其官方聚合报告，不用于识别或补全单个客户。</p><Link href="/admin/analytics" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-admin-ink">查看 Google 分析 <ArrowRight className="size-4" /></Link></div><div className="rounded-admin border border-admin-border bg-white p-5"><h2 className="font-semibold text-admin-ink">访客明细</h2><p className="mt-2 text-sm leading-6 text-admin-muted">在权限范围内查看已同意统计的匿名轨迹，并关联询盘或在线沟通记录。</p><Link href="/admin/analytics/visitors" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-admin-ink">进入访客分析 <ArrowRight className="size-4" /></Link></div></section>
       </> : null}
     </div>
