@@ -143,13 +143,13 @@ export function AnalyticsDashboard({ initialRange }: { initialRange: AnalyticsRa
             <TrendChart title="GA4 访问趋势" accessibleName="GA4 每日活跃用户趋势" points={report.ga4.data.daily.map((item) => ({ label: item.date, value: item.activeUsers }))} />
           ) : (
             <section aria-label="数据源独立性说明" className="flex min-h-full flex-col justify-center rounded-admin border border-admin-border bg-white p-6 shadow-admin-card">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ignition">Measurement integrity</p>
+              <p className="text-[11px] font-semibold tracking-[0.16em] text-ignition">数据可靠性</p>
               <h2 className="mt-2 text-lg font-semibold tracking-tight text-admin-ink">三个数据源，各自独立校验</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-admin-muted">第一方数据用于实时运营，GA4 用于访问与转化趋势，Search Console 用于自然搜索表现。任何一个数据源异常，都不会阻断另外两个数据源。</p>
               <div className="mt-5 grid gap-3 sm:grid-cols-3" aria-label="数据源说明">
                 {["第一方实时数据", "GA4 访问分析", "Search Console 搜索分析"].map((source, index) => (
                   <div key={source} className="rounded-admin-sm border border-admin-border bg-neutral-50 px-4 py-3">
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-admin-muted">Source {index + 1}</span>
+                    <span className="text-[10px] font-semibold tracking-[0.1em] text-admin-muted">数据源 {index + 1}</span>
                     <p className="mt-1 text-sm font-semibold text-admin-ink">{source}</p>
                   </div>
                 ))}

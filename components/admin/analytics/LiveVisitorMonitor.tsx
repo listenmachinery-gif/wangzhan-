@@ -201,7 +201,7 @@ export function LiveVisitorMonitor({ enabled }: { enabled: boolean }) {
           <div className="flex gap-3 p-4">
             <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-full bg-neon/15 text-neon"><Radio className="size-5" /></span>
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neon">New visitor</p>
+              <p className="text-[10px] font-semibold tracking-[0.14em] text-neon">新访客</p>
               <p className="mt-1 text-sm font-semibold">新访客正在浏览 · {currentAlert.label}</p>
               <p className="mt-1 truncate text-xs text-zinc-400">{visitorContext(currentAlert)}</p>
             </div>

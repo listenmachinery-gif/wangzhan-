@@ -65,7 +65,7 @@ describe("inquiry list routes", () => {
       "最近跟进", "下次跟进", "逾期状态", "预计金额", "创建时间",
     ]);
     const row = within(table).getByRole("row", { name: /Jane Buyer/ });
-    for (const label of ["已发送报价", "A", "电话", "已逾期"]) {
+    for (const label of ["已发送报价", "A 级客户", "电话", "已逾期"]) {
       expect(within(row).getByLabelText(`状态：${label}`)).toBeInTheDocument();
     }
     expect(row).toHaveTextContent("CNC Shear");

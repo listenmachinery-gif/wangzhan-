@@ -33,7 +33,7 @@ export function TrendChart({
     <section className="rounded-admin border border-admin-border bg-white p-5 shadow-admin-card">
       <div className="flex items-center justify-between gap-4">
         <h3 className="text-sm font-semibold text-admin-ink">{title}</h3>
-        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-admin-muted">Daily trend</span>
+        <span className="text-[10px] font-semibold tracking-[0.12em] text-admin-muted">每日趋势</span>
       </div>
       <svg role="img" aria-label={accessibleName} viewBox={`0 0 ${width} ${height}`} className="mt-4 h-52 w-full">
         <title>{accessibleName}</title>

@@ -133,12 +133,11 @@ describe("AnalyticsDashboard", () => {
     expect(screen.getByRole("columnheader", { name: "搜索词" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "访问国家 / 地区" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "转化事件" })).toBeInTheDocument();
-    expect(screen.getByText("United States")).toBeInTheDocument();
+    expect(screen.getAllByText("美国")).toHaveLength(2);
     expect(screen.getByText("询盘提交")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "搜索设备" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "搜索国家 / 地区" })).toBeInTheDocument();
-    expect(screen.getByText("MOBILE")).toBeInTheDocument();
-    expect(screen.getByText("usa")).toBeInTheDocument();
+    expect(screen.getByText("移动端")).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "GA4 每日活跃用户趋势数据" })).toHaveTextContent("2026-11-15: 30");
     expect(screen.getByRole("list", { name: "Search Console 每日点击趋势数据" })).toHaveTextContent("2026-11-12: 18");
     expect(document.querySelectorAll("[data-mobile-scroll]").length).toBeGreaterThan(0);

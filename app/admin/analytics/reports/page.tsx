@@ -17,7 +17,7 @@ export default async function AdminAnalyticsReportsPage() {
   return (
     <div className="space-y-8">
       <AdminPageHeader
-        eyebrow="Revenue intelligence"
+        eyebrow="营收智能分析"
         title="外贸增长报告"
         description="用第一方访问、在线沟通和询盘关联数据识别高价值市场与产品；Google 数据保持独立汇总，不进行个人级归因。"
       />

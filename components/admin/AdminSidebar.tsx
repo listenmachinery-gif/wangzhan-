@@ -97,7 +97,7 @@ export function AdminSidebar({ principal, currentPath, collapsed, onNavigate }: 
           <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-admin-sm border border-ignition/35 bg-ignition/10 text-sm font-bold text-neon">Z</span>
           <div className={collapsed ? "sr-only" : "min-w-0"}>
             <p className="text-sm font-semibold tracking-[0.18em] text-white">ZYRON</p>
-            <p className="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-zinc-500">Global Commerce OS</p>
+            <p className="mt-0.5 text-[11px] tracking-[0.14em] text-zinc-500">全球商务管理系统</p>
           </div>
         </div>
       </div>
@@ -135,7 +135,7 @@ export function AdminSidebar({ principal, currentPath, collapsed, onNavigate }: 
         ))}
       </div>
       <div className={`border-t border-white/10 ${collapsed ? "p-3" : "px-5 py-4"}`}>
-        <p className={collapsed ? "sr-only" : "text-[10px] uppercase tracking-[0.12em] text-zinc-600"}>ZYRON CMS · Secure workspace</p>
+        <p className={collapsed ? "sr-only" : "text-[10px] tracking-[0.12em] text-zinc-600"}>ZYRON CMS · 安全工作区</p>
       </div>
     </nav>
   );

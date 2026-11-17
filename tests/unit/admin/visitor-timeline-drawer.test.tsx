@@ -118,7 +118,7 @@ describe("VisitorTimelineDrawer", () => {
     expect(within(dialog).getByRole("link", { name: /Buyer Co/ })).toHaveAttribute("href", "/admin/leads/lead-1");
     expect(within(dialog).getAllByRole("link", { name: "Example Machine" })[0]).toHaveAttribute("href", "/products/example-machine");
     expect(within(dialog).getByText(/a-very-long-product-path/)).toHaveClass("break-all");
-    expect(within(dialog).getByText("form_kind：product")).toBeVisible();
+    expect(within(dialog).getByText("表单类型：product")).toBeVisible();
     expect(within(dialog).queryByText(/must-not-render/)).not.toBeInTheDocument();
     expect(within(dialog).queryByText(/session-secret|page-secret|event-secret/)).not.toBeInTheDocument();
     expect(within(dialog).getAllByTestId("timeline-item").map((item) => item.textContent)).toEqual([

@@ -62,7 +62,7 @@ describe("admin chat workspace", () => {
     expect(list).toHaveClass("lg:w-[280px]");
     expect(screen.getByTestId("conversation-pane")).toHaveClass("flex-1");
     expect(screen.getByTestId("visitor-context")).toHaveClass("xl:w-[340px]");
-    expect(screen.getByLabelText("3 unread messages")).toBeVisible();
+    expect(screen.getByLabelText("3 条未读消息")).toBeVisible();
 
     const item = within(list).getByRole("button", { name: /Global Buyer/ });
     item.focus();
@@ -76,11 +76,11 @@ describe("admin chat workspace", () => {
     const user = userEvent.setup();
     render(<ChatWorkspace principal={principal} agents={[]} />);
     await user.click(await screen.findByRole("button", { name: /Global Buyer/ }));
-    await user.type(await screen.findByRole("textbox", { name: "Message" }), "We will prepare a quotation.");
-    await user.click(screen.getByRole("button", { name: "Send message" }));
+    await user.type(await screen.findByRole("textbox", { name: "消息内容" }), "We will prepare a quotation.");
+    await user.click(screen.getByRole("button", { name: "发送消息" }));
 
     expect(await screen.findByText("We will prepare a quotation.")).toBeVisible();
-    expect(screen.getByText("Saved · Live delivery unavailable")).toBeVisible();
+    expect(screen.getByText("已保存 · 实时传送暂不可用")).toBeVisible();
     expect(screen.getAllByText("We will prepare a quotation.")).toHaveLength(1);
   });
 });

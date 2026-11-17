@@ -22,21 +22,21 @@ function Editor({ type }: { type: "HERO" | "TECHNICAL" }) {
 describe("ModuleEditorRegistry", () => {
   it("can add optional responsive Hero fields and choose durable media URLs", () => {
     const value = Editor({ type: "HERO" });
-    fireEvent.click(screen.getByRole("button", { name: "添加 Tablet" }));
-    fireEvent.change(screen.getByLabelText("Tablet 媒体资源"), { target: { value: "media-1" } });
+    fireEvent.click(screen.getByRole("button", { name: "添加 平板图片" }));
+    fireEvent.change(screen.getByLabelText("平板图片 媒体资源"), { target: { value: "media-1" } });
     expect(value()).toMatchObject({ images: { tablet: "/api/media/media-1" } });
   });
 
   it("renames technical row keys when a column key changes", () => {
     const value = Editor({ type: "TECHNICAL" });
-    fireEvent.change(screen.getByLabelText("Key"), { target: { value: "model" } });
+    fireEvent.change(screen.getByLabelText("字段键名"), { target: { value: "model" } });
     expect(value()).toMatchObject({ columns: [{ key: "model" }], rows: [{ model: "" }] });
   });
 
   it("adds a second technical column without deleting the first column values", () => {
     const value = Editor({ type: "TECHNICAL" });
     fireEvent.click(screen.getAllByRole("button", { name: "添加项目" })[1]);
-    fireEvent.change(screen.getAllByLabelText("Key")[1], { target: { value: "width" } });
+    fireEvent.change(screen.getAllByLabelText("字段键名")[1], { target: { value: "width" } });
     expect(value()).toMatchObject({
       columns: [{ key: "value" }, { key: "width" }],
       rows: [{ value: "", width: "" }],
@@ -45,7 +45,7 @@ describe("ModuleEditorRegistry", () => {
 
   it("uses the first unused generated technical column key", () => {
     const value = Editor({ type: "TECHNICAL" });
-    fireEvent.change(screen.getByLabelText("Key"), { target: { value: "column_2" } });
+    fireEvent.change(screen.getByLabelText("字段键名"), { target: { value: "column_2" } });
     fireEvent.click(screen.getAllByRole("button", { name: "添加项目" })[1]);
     expect(value()).toMatchObject({
       columns: [{ key: "column_2" }, { key: "column_1" }],
