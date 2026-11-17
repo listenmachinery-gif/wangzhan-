@@ -79,7 +79,7 @@ export const applicationPhotos: readonly ApplicationPhoto[] = [
     title: "HVAC duct and ventilation parts",
     text: "Prepares flat duct parts, flanges and ventilation components for subsequent forming and connection processes.",
     image:
-      "/products/electro-hydraulic-servo-cnc-press-brake-applications/hvac-duct-and-ventilation.jpg",
+      "/products/electric-two-roll-plate-rolling-machine-applications/hvac-round-duct-parts.jpg",
     alt: "Real HVAC duct and ventilation parts production area",
   },
   {

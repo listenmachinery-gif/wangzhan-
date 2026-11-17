@@ -41,25 +41,25 @@ export const applicationPhotos: readonly ApplicationPhoto[] = [
   {
     title: "Sheet metal fabrication",
     text: "Cuts contours, holes and profiles for general fabrication before bending, welding and assembly.",
-    image: "/products/single-table-fiber-laser-cutting-machine-applications/sheet-metal-fabrication.jpg",
+    image: "/products/sheet-and-tube-fiber-laser-cutting-machine-applications/sheet-metal-fabrication.jpg",
     alt: "Real sheet metal laser cutting in a fabrication workshop",
   },
   {
     title: "Electrical cabinet and enclosure",
     text: "Supports repeatable cutting of cabinet panels, doors, mounting plates, ventilation openings and brackets.",
-    image: "/products/single-table-fiber-laser-cutting-machine-applications/electrical-cabinet-enclosure.jpg",
+    image: "/products/electro-hydraulic-servo-cnc-press-brake-applications/electrical-cabinet-manufacturing.jpg",
     alt: "Real electrical cabinet and enclosure production environment",
   },
   {
     title: "Advertising signage",
     text: "Produces letters, logos, decorative profiles and mounting parts from suitable metal sheets.",
-    image: "/products/single-table-fiber-laser-cutting-machine-applications/advertising-signage.jpg",
+    image: "/products/sheet-and-tube-fiber-laser-cutting-machine-applications/advertising-signage.jpg",
     alt: "Real advertising signage fabrication work",
   },
   {
     title: "Stainless steel products",
     text: "Processes suitable stainless panels and parts when power, gas and edge requirements are matched to the job.",
-    image: "/products/single-table-fiber-laser-cutting-machine-applications/stainless-steel-products.jpg",
+    image: "/products/electro-hydraulic-servo-cnc-press-brake-applications/stainless-steel-products.jpg",
     alt: "Real stainless steel sheet product manufacturing environment",
   },
   {
@@ -71,25 +71,25 @@ export const applicationPhotos: readonly ApplicationPhoto[] = [
   {
     title: "HVAC duct and ventilation parts",
     text: "Cuts flat blanks, flanges, transitions and ventilation components before forming and joining.",
-    image: "/products/single-table-fiber-laser-cutting-machine-applications/hvac-ventilation-parts.jpg",
+    image: "/products/electric-two-roll-plate-rolling-machine-applications/hvac-round-duct-parts.jpg",
     alt: "Real HVAC duct and ventilation installation",
   },
   {
     title: "Machinery manufacturing",
     text: "Supplies guards, covers, brackets and machine parts to a coordinated fabrication workflow.",
-    image: "/products/single-table-fiber-laser-cutting-machine-applications/machinery-manufacturing.jpg",
+    image: "/products/sheet-and-tube-fiber-laser-cutting-machine-applications/machinery-frame-structure.jpg",
     alt: "Real machinery manufacturing workshop",
   },
   {
     title: "Metal door and window parts",
     text: "Cuts suitable frame inserts, panels, brackets and decorative parts for metal doors and windows.",
-    image: "/products/single-table-fiber-laser-cutting-machine-applications/metal-door-window-parts.jpg",
+    image: "/products/sheet-and-tube-fiber-laser-cutting-machine-applications/metal-door-window-parts.jpg",
     alt: "Real fabricated metal door and window product",
   },
   {
     title: "General metalworking workshop",
     text: "Adds flexible flat-sheet cutting for mixed orders, repair work and daily metal-part production.",
-    image: "/products/single-table-fiber-laser-cutting-machine-applications/general-metalworking-workshop.jpg",
+    image: "/products/electric-two-roll-plate-rolling-machine-applications/general-sheet-metal-workshop.jpg",
     alt: "Real general metalworking workshop",
   },
 ] as const;

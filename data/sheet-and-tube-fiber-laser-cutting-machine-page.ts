@@ -72,7 +72,7 @@ export const applicationPhotos: readonly ApplicationPhoto[] = [
     title: "Electrical cabinet and enclosure",
     text: "Cuts flat cabinet panels and brackets while adding tube capability for bases, supports and protective frames.",
     image:
-      "/products/sheet-and-tube-fiber-laser-cutting-machine-applications/electrical-cabinet-enclosure.jpg",
+      "/products/electro-hydraulic-servo-cnc-press-brake-applications/electrical-cabinet-manufacturing.jpg",
     alt: "Real electrical cabinet and enclosure production environment",
   },
   {
@@ -86,7 +86,7 @@ export const applicationPhotos: readonly ApplicationPhoto[] = [
     title: "Stainless steel products",
     text: "Processes configured stainless sheet and tube parts for housings, frames and fabricated products.",
     image:
-      "/products/sheet-and-tube-fiber-laser-cutting-machine-applications/stainless-steel-products.jpg",
+      "/products/electro-hydraulic-servo-cnc-press-brake-applications/stainless-steel-products.jpg",
     alt: "Real stainless steel product manufacturing environment",
   },
   {
@@ -114,7 +114,7 @@ export const applicationPhotos: readonly ApplicationPhoto[] = [
     title: "General metalworking workshop",
     text: "Adds one flexible cutting station for changing sheet and tube orders before forming, welding and assembly.",
     image:
-      "/products/sheet-and-tube-fiber-laser-cutting-machine-applications/general-metalworking-workshop.jpg",
+      "/products/electric-two-roll-plate-rolling-machine-applications/general-sheet-metal-workshop.jpg",
     alt: "Real general metalworking workshop",
   },
 ] as const;

@@ -64,7 +64,7 @@ export const applicationPhotos: readonly ApplicationPhoto[] = [
     title: "HVAC duct and ventilation parts",
     text: "Handles suitable duct panels, transitions, flanges and ventilation components that require programmed press-brake forming.",
     image:
-      "/products/electro-hydraulic-servo-cnc-press-brake-applications/hvac-duct-and-ventilation.jpg",
+      "/products/electric-two-roll-plate-rolling-machine-applications/hvac-round-duct-parts.jpg",
     alt: "Real HVAC duct and ventilation installation",
   },
   {

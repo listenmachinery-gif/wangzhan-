@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import { legacyProductRedirects } from "./data/products";
+import { staticAssetRedirects } from "./data/static-asset-redirects";
 
 const nextConfig: NextConfig = {
   images: {
@@ -7,6 +8,7 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      ...staticAssetRedirects,
       ...legacyProductRedirects,
       {
         source: "/products/round-duct-seam-closing-machine",
