@@ -11,7 +11,10 @@ import { ChannelDistribution, ConversionFunnel, ProductRanking } from "@/compone
 import { DashboardKpiGrid } from "@/components/admin/dashboard/DashboardKpiGrid";
 import { DashboardPanel } from "@/components/admin/dashboard/DashboardPanel";
 import { DashboardToolbar } from "@/components/admin/dashboard/DashboardToolbar";
+import { DataSourceHealth, type DashboardHealthSource } from "@/components/admin/dashboard/DataSourceHealth";
+import { InquiryPulse } from "@/components/admin/dashboard/InquiryPulse";
 import { MultiSeriesTrendChart } from "@/components/admin/dashboard/MultiSeriesTrendChart";
+import { SearchPerformance } from "@/components/admin/dashboard/SearchPerformance";
 import { WorldTrafficMap } from "@/components/admin/dashboard/WorldTrafficMap";
 import { buildDashboardKpis, buildDashboardTrend, dashboardDateWindow } from "@/lib/dashboard/model";
 import type { DashboardContentStats, DashboardFirstPartyReport, DashboardInquiry, DashboardRange } from "@/lib/dashboard/types";
@@ -113,13 +116,13 @@ export function GlobalIntelligenceDashboard({ initialRange, content, canExport, 
   const visibleCountries = selectedCountry ? countries.filter((row) => row.value === selectedCountry) : countries;
   const visibleDevices = selectedDevice ? devices.filter((row) => row.value === selectedDevice) : devices;
   const kpis = buildDashboardKpis({ live, firstParty: firstParty.data, google: google.data, content });
-  const sourceStates = [
-    { label: "第一方汇总", healthy: Boolean(firstParty.data), loading: firstParty.loading, error: firstParty.error },
-    { label: "GA4", healthy: google.data?.ga4.state.code === "CONNECTED" || google.data?.ga4.state.code === "NO_DATA", loading: google.loading, error: google.error ?? google.data?.ga4.state.message },
-    { label: "Search Console", healthy: google.data?.searchConsole.state.code === "CONNECTED" || google.data?.searchConsole.state.code === "NO_DATA", loading: google.loading, error: google.error ?? google.data?.searchConsole.state.message },
-    { label: "CRM", healthy: canViewInquiries ? Boolean(inquiries.data) : true, loading: inquiries.loading, error: inquiries.error },
+  const sourceStates: DashboardHealthSource[] = [
+    { label: "第一方分析", status: firstParty.loading ? "loading" : firstParty.data ? "healthy" : "unavailable", message: firstParty.loading ? "正在读取汇总" : firstParty.data ? `已覆盖 ${firstParty.data.range.from} 至 ${firstParty.data.range.to}` : firstParty.error ?? "暂不可用", href: "/admin/analytics/reports" },
+    { label: "Google Analytics 4", status: google.loading ? "loading" : google.data?.ga4.state.code === "CONNECTED" || google.data?.ga4.state.code === "NO_DATA" ? "healthy" : "unavailable", message: google.error ?? google.data?.ga4.state.message ?? "等待连接状态", href: "/admin/analytics" },
+    { label: "Search Console", status: google.loading ? "loading" : google.data?.searchConsole.state.code === "CONNECTED" || google.data?.searchConsole.state.code === "NO_DATA" ? "healthy" : "unavailable", message: google.error ?? google.data?.searchConsole.state.message ?? "等待连接状态", href: "/admin/analytics" },
+    { label: "询盘 CRM", status: !canViewInquiries ? "restricted" : inquiries.loading ? "loading" : inquiries.data ? "healthy" : "unavailable", message: !canViewInquiries ? "当前账号无询盘读取权限" : inquiries.loading ? "正在读取询盘" : inquiries.data ? `权限范围内共 ${inquiries.data.total} 条` : inquiries.error ?? "暂不可用", href: "/admin/inquiries" },
   ];
-  const healthySources = sourceStates.filter((source) => source.healthy).length;
+  const healthySources = sourceStates.filter((source) => source.status === "healthy" || source.status === "restricted").length;
   const refreshing = firstParty.loading || google.loading || inquiries.loading;
 
   function selectRange(next: DashboardRange) {
@@ -186,13 +189,11 @@ export function GlobalIntelligenceDashboard({ initialRange, content, canExport, 
         </div>
 
         <div className="grid gap-4 xl:grid-cols-12">
-          <div className="xl:col-span-7"><PlaceholderPanel title="搜索表现" message={google.loading ? "正在读取 Search Console…" : google.data?.searchConsole.state.message ?? "暂无可用数据"} /></div>
-          <div className="xl:col-span-5"><PlaceholderPanel title="最新询盘" message={!canViewInquiries ? "当前账号无权查看询盘" : inquiries.loading ? "正在读取最新询盘…" : inquiries.data?.items.length ? `已读取 ${inquiries.data.items.length} 条最新询盘` : inquiries.error ?? "暂无询盘"} /></div>
+          <div className="xl:col-span-7"><SearchPerformance result={google.data?.searchConsole ?? null} loading={google.loading} error={google.error} /></div>
+          <div className="xl:col-span-5"><InquiryPulse rows={inquiries.data?.items ?? []} loading={inquiries.loading} error={inquiries.error} canView={canViewInquiries} /></div>
         </div>
 
-        <DashboardPanel title="数据源健康状态" description="每个来源独立运行，异常不会阻断其他模块">
-          <div className="grid gap-px bg-white/[0.07] sm:grid-cols-2 xl:grid-cols-4">{sourceStates.map((source) => <div key={source.label} className="flex items-center justify-between gap-4 bg-[#161A20] px-5 py-4"><div><p className="text-xs font-medium text-white">{source.label}</p><p className="mt-1 truncate text-[10px] text-[#78838E]">{source.loading ? "正在检查" : source.healthy ? "连接正常" : source.error ?? "暂不可用"}</p></div><span className={`size-2.5 shrink-0 rounded-full ${source.loading ? "bg-amber-300" : source.healthy ? "bg-[#76B900]" : "bg-rose-400"}`} aria-label={source.loading ? "检查中" : source.healthy ? "正常" : "异常"} /></div>)}</div>
-        </DashboardPanel>
+        <DataSourceHealth sources={sourceStates} />
       </div>
     </div>
   );

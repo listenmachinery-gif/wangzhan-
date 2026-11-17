@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -47,13 +47,30 @@ const googleOverview = {
   searchConsole: {
     state: { code: "CONNECTED", message: "已连接", checkedAt: "2026-11-17T02:00:00.000Z" },
     data: {
-      metrics: { clicks: { value: 28, previousValue: 20, changePercent: 40 } },
-      daily: [], queries: [], pages: [], devices: [], countries: [],
+      dataThrough: "2026-11-14",
+      metrics: {
+        clicks: { value: 28, previousValue: 20, changePercent: 40 },
+        impressions: { value: 900, previousValue: 700, changePercent: 28.6 },
+        ctr: { value: 0.031, previousValue: 0.029, changePercent: 6.9 },
+        position: { value: 8.4, previousValue: 9.2, changePercent: -8.7 },
+      },
+      daily: [],
+      queries: [{ query: "small electric shear", clicks: 12, impressions: 260, ctr: 0.046, position: 5.2 }],
+      pages: [{ page: "https://www.zyroncnc.com/products/electric-shear", clicks: 15, impressions: 320, ctr: 0.047, position: 4.8 }],
+      devices: [], countries: [],
     },
   },
 };
 
-const inquiries = { items: [], total: 0, page: 1, pageSize: 6 };
+const inquiries = {
+  items: [{
+    id: "lead-1", inquiryNumber: "INQ-20261117-001", country: "US", status: "NEW",
+    createdAt: "2026-11-17T01:00:00.000Z", nextFollowUpAt: "2026-11-18T02:00:00.000Z",
+    interestedProduct: { id: "p1", name: "小型电动剪板机", slug: "electric-shear" },
+    stage: { code: "QUALIFIED", name: "待报价", color: "#76B900" },
+  }],
+  total: 1, page: 1, pageSize: 6,
+};
 
 function response(body: unknown, ok = true) {
   return Promise.resolve({ ok, json: async () => body } as Response);
@@ -93,6 +110,12 @@ describe("GlobalIntelligenceDashboard", () => {
     expect(screen.getByRole("region", { name: "搜索表现" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "最新询盘" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "数据源健康状态" })).toBeInTheDocument();
+    const inquiryRegion = screen.getByRole("region", { name: "最新询盘" });
+    expect(within(inquiryRegion).getByRole("link", { name: /INQ-20261117-001/ })).toHaveAttribute("href", "/admin/inquiries/lead-1");
+    expect(within(inquiryRegion).getByText("美国")).toBeInTheDocument();
+    expect(screen.getByText("small electric shear")).toBeInTheDocument();
+    expect(screen.getByText("/products/electric-shear")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "查看完整分析" })).toHaveAttribute("href", "/admin/analytics");
     expect(fetch).toHaveBeenCalledWith(expect.stringContaining("/api/admin/analytics/reports?from="), expect.objectContaining({ signal: expect.any(AbortSignal) }));
     expect(fetch).toHaveBeenCalledWith("/api/admin/analytics/overview?range=28d", expect.objectContaining({ signal: expect.any(AbortSignal) }));
     expect(fetch).toHaveBeenCalledWith("/api/admin/inquiries?page=1&pageSize=6", expect.objectContaining({ signal: expect.any(AbortSignal) }));
@@ -157,5 +180,34 @@ describe("GlobalIntelligenceDashboard", () => {
     expect(screen.queryByRole("link", { name: "导出 CSV" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "最新询盘" })).toHaveTextContent("当前账号无权查看询盘");
     expect(vi.mocked(fetch).mock.calls.some(([url]) => String(url).includes("/api/admin/inquiries"))).toBe(false);
+  });
+
+  it("shows truthful Search Console connection and insufficient-data states", async () => {
+    const disconnected = {
+      ...googleOverview,
+      searchConsole: {
+        state: { code: "NOT_CONFIGURED", message: "尚未配置 Search Console", checkedAt: "2026-11-17T02:00:00.000Z" },
+        data: null,
+      },
+    };
+    vi.mocked(fetch).mockImplementation((input, init) => String(input).includes("/analytics/overview?") ? response(disconnected) : dashboardFetch(input, init));
+    const { unmount } = render(<GlobalIntelligenceDashboard initialRange="28d" content={{ products: 8, publishedProducts: 5, newLeads: 3 }} canExport canViewInquiries />);
+
+    const disconnectedSearch = await screen.findByRole("region", { name: "搜索表现" });
+    expect(within(disconnectedSearch).getByText("尚未配置 Search Console")).toBeInTheDocument();
+    expect(within(disconnectedSearch).getByRole("link", { name: "前往接入" })).toHaveAttribute("href", "/admin/analytics");
+    unmount();
+
+    const noRows = {
+      ...googleOverview,
+      searchConsole: {
+        ...googleOverview.searchConsole,
+        data: { ...googleOverview.searchConsole.data, queries: [], pages: [] },
+      },
+    };
+    vi.mocked(fetch).mockImplementation((input, init) => String(input).includes("/analytics/overview?") ? response(noRows) : dashboardFetch(input, init));
+    render(<GlobalIntelligenceDashboard initialRange="28d" content={{ products: 8, publishedProducts: 5, newLeads: 3 }} canExport canViewInquiries />);
+
+    expect(await screen.findByText("所选周期暂无搜索词和落地页数据")).toBeInTheDocument();
   });
 });
