@@ -78,9 +78,9 @@ test.beforeAll(async () => {
       { userId: actorId("manager"), teamId: `${prefix}-south`, role: "MANAGER", startsAt: new Date("2000-01-01"), endsAt: new Date("2020-01-01") },
       { userId: actorId("viewer"), teamId: `${prefix}-south`, role: "VIEWER", startsAt: new Date("2000-01-01"), endsAt: new Date("2020-01-01") },
     ] });
-    await db.contact.create({ data: { id: customerId, customerCode: `${prefix}-customer`, fullName: "E2E Shared Customer", email: `${prefix}-shared@example.com`, ownerId: actorId("admin"), internalNotes: "PRIVATE CUSTOMER INTERNAL NOTE" } });
+    await db.contact.create({ data: { id: customerId, customerCode: `${prefix}-customer`, fullName: "E2E Shared Customer", email: `${prefix}-shared@example.com`, countryCode: "US", ownerId: actorId("admin"), internalNotes: "PRIVATE CUSTOMER INTERNAL NOTE" } });
     for (const [id, actor, name] of [[ownLead, "sales", "E2E Own Buyer"], [colleagueLead, "colleague", "E2E Colleague Buyer"], [outsideLead, "outside", "E2E Outside Buyer"]] as const) {
-      await db.lead.create({ data: { id, name, email: `${id}@example.com`, message: `Private requirement ${id}`, contactId: customerId, stageId: "crm_stage_new_inquiry", assignments: { create: { assigneeId: actorId(actor), assignedById: actorId("admin") } }, activities: { create: { type: "NOTE", content: `Private note ${id}` } } } });
+      await db.lead.create({ data: { id, name, email: `${id}@example.com`, country: id === ownLead ? "US" : "DE", message: `Private requirement ${id}`, contactId: customerId, stageId: "crm_stage_new_inquiry", assignments: { create: { assigneeId: actorId(actor), assignedById: actorId("admin") } }, activities: { create: { type: "NOTE", content: `Private note ${id}` } } } });
     }
   } finally { await db.$disconnect(); }
 });
@@ -159,7 +159,9 @@ for (const actor of ["sales", "manager", "viewer"] as const) {
   test(`${actor} sees only current scope and protected customer history`, async ({ page }) => {
     await login(page, actor);
     await page.goto("/admin/inquiries?query=E2E");
-    await expect(page.getByRole("row", { name: /E2E Own Buyer/ })).toBeVisible();
+    const ownRow = page.getByRole("row", { name: /E2E Own Buyer/ });
+    await expect(ownRow).toBeVisible();
+    await expect(ownRow.getByText("美国", { exact: true })).toBeVisible();
     await expect(page.getByRole("row", { name: /E2E Outside Buyer/ })).toHaveCount(0);
     await expect(page.getByRole("row", { name: /E2E Colleague Buyer/ })).toHaveCount(actor === "sales" ? 0 : 1);
     for (const path of ["leads", "inquiries"]) {

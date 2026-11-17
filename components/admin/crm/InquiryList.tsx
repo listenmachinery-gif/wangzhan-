@@ -6,6 +6,7 @@ import { DataState } from "@/components/admin/ui/DataState";
 import { StatusBadge } from "@/components/admin/ui/StatusBadge";
 import { TableShell } from "@/components/admin/ui/TableShell";
 import { inquiryCustomerLevels, inquirySourceLabels, type InquiryAssignee } from "@/components/admin/crm/inquiry-options";
+import { formatAdminEnum, formatCountryName } from "@/lib/admin/localization";
 
 export type InquiryListPath = "/admin/leads" | "/admin/inquiries";
 
@@ -77,7 +78,7 @@ export function InquiryList({ path, rows, stages, assignees, query, total, page,
           stageCode={query.stageCode}
           status={query.status}
         />
-        <InquirySelectFilter name="customerLevel" label="客户等级" placeholder="全部等级" value={query.customerLevel} options={inquiryCustomerLevels.map((level) => ({ value: level, label: level }))} />
+        <InquirySelectFilter name="customerLevel" label="客户等级" placeholder="全部等级" value={query.customerLevel} options={inquiryCustomerLevels.map((level) => ({ value: level, label: formatAdminEnum(level) }))} />
         <InquirySelectFilter name="sourceChannel" label="来源渠道" placeholder="全部来源" value={query.sourceChannel} options={Object.entries(inquirySourceLabels).map(([value, label]) => ({ value, label }))} />
         <label className="block text-xs font-semibold text-admin-ink">
           <span className="mb-1.5 block">国家或地区</span>
@@ -115,12 +116,12 @@ export function InquiryList({ path, rows, stages, assignees, query, total, page,
                 </td>
                 <td className="min-w-32 font-medium text-admin-ink [overflow-wrap:anywhere]">{row.customer ?? "—"}</td>
                 <td className="min-w-32 [overflow-wrap:anywhere]">{row.company ?? "—"}</td>
-                <td className="min-w-24 [overflow-wrap:anywhere]">{row.country ?? "—"}</td>
+                <td className="min-w-24 [overflow-wrap:anywhere]">{formatCountryName(row.country, "—")}</td>
                 <td className="min-w-44 [overflow-wrap:anywhere]">{row.contacts.length ? row.contacts.map((contact) => <div key={contact}>{contact}</div>) : "—"}</td>
                 <td className="min-w-32 [overflow-wrap:anywhere]">{row.product ?? "—"}</td>
                 <td className="whitespace-nowrap">{row.source ? <StatusBadge>{row.source}</StatusBadge> : "—"}</td>
                 <td className="whitespace-nowrap"><StatusBadge tone={row.stageTone}>{row.stage}</StatusBadge></td>
-                <td>{row.level ? <StatusBadge>{row.level}</StatusBadge> : "—"}</td>
+                <td>{row.level ? <StatusBadge>{formatAdminEnum(row.level)}</StatusBadge> : "—"}</td>
                 <td className="min-w-24 [overflow-wrap:anywhere]">{row.assignee ?? "待分配"}</td>
                 <td className="whitespace-nowrap text-admin-muted"><InquiryTime value={row.lastFollowUpAt} /></td>
                 <td className="whitespace-nowrap text-admin-muted"><InquiryTime value={row.nextFollowUpAt} /></td>

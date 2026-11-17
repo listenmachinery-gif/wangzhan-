@@ -3,6 +3,7 @@ import type { LeadStatus } from "@prisma/client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminCard } from "@/components/admin/ui/AdminCard";
+import { formatAdminEnum, formatCountryName } from "@/lib/admin/localization";
 import type { InquiryAssignee } from "@/components/admin/crm/inquiry-options";
 
 export type InquiryDetailValue = {
@@ -123,7 +124,7 @@ export function InquiryDetail({
   const details = [
     ["客户姓名", inquiry.name],
     ["公司", inquiry.company],
-    ["国家或地区", inquiry.country],
+    ["国家或地区", formatCountryName(inquiry.country, "—")],
     ["电子邮箱", inquiry.email],
     ["电话", inquiry.phone],
     ["WhatsApp", inquiry.whatsapp],
@@ -183,7 +184,7 @@ export function InquiryDetail({
                 >
                   <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-admin-muted">
                     <span>
-                      {activity.type === "NOTE" ? "基础备注" : activity.type} ·{" "}
+                      {activity.type === "NOTE" ? "基础备注" : formatAdminEnum(activity.type)} ·{" "}
                       {activity.actorName}
                     </span>
                     <time dateTime={activity.createdAt}>

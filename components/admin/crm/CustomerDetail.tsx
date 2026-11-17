@@ -4,6 +4,7 @@ import { AdminCard } from "@/components/admin/ui/AdminCard";
 import { TableShell } from "@/components/admin/ui/TableShell";
 import { inquiryLegacyStatusLabels } from "@/components/admin/crm/inquiry-options";
 import type { CustomerDetail as CustomerValue } from "@/lib/services/customer-service";
+import { formatCountryName } from "@/lib/admin/localization";
 
 export function CustomerDetail({ customer }: { customer: CustomerValue }) {
   return (
@@ -46,7 +47,7 @@ export function CustomerDetail({ customer }: { customer: CustomerValue }) {
                 ["电子邮箱", customer.email],
                 ["电话", customer.phone],
                 ["WhatsApp", customer.whatsapp],
-                ["国家代码", customer.countryCode],
+                ["国家或地区", formatCountryName(customer.countryCode, "—")],
                 ["城市", customer.city],
                 ["职位", customer.jobTitle],
               ].map(([label, value]) => (
@@ -67,7 +68,7 @@ export function CustomerDetail({ customer }: { customer: CustomerValue }) {
               {customer.company.companyCode}
             </p>
             {customer.company.countryCode ? (
-              <p className="mt-3 text-sm">{customer.company.countryCode}</p>
+              <p className="mt-3 text-sm">{formatCountryName(customer.company.countryCode)}</p>
             ) : null}
             {customer.company.address ? (
               <p className="mt-2 break-words text-sm">

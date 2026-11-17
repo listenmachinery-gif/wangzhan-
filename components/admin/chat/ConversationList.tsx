@@ -4,6 +4,7 @@ import { MessageSquareText, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import type { AdminConversation } from "@/components/admin/chat/ChatWorkspace";
+import { formatAdminEnum, formatCountryName, formatDeviceType } from "@/lib/admin/localization";
 
 export function ConversationList({ conversations, selectedId, onSelect, loading }: {
   conversations: AdminConversation[];
@@ -24,7 +25,7 @@ export function ConversationList({ conversations, selectedId, onSelect, loading 
       <div className="border-b border-admin-border p-4">
         <div className="flex items-center justify-between">
           <div><p className="text-sm font-semibold text-admin-ink">会话队列</p><p className="mt-0.5 text-xs text-admin-muted">{conversations.length} 个会话</p></div>
-          <span className="rounded-full bg-ignition/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-[#558900]">Live</span>
+          <span className="rounded-full bg-ignition/10 px-2 py-1 text-[10px] font-bold tracking-wide text-[#558900]">实时</span>
         </div>
         <label className="relative mt-3 block">
           <span className="sr-only">搜索会话</span>
@@ -48,9 +49,9 @@ export function ConversationList({ conversations, selectedId, onSelect, loading 
               <div className="flex items-start gap-3">
                 <span className={`mt-0.5 grid size-9 shrink-0 place-items-center rounded-full ${active ? "bg-ignition text-graphite-950" : "bg-graphite-950 text-white"}`}><MessageSquareText aria-hidden className="size-4" /></span>
                 <span className="min-w-0 flex-1">
-                  <span className="flex items-center justify-between gap-2"><span className="truncate text-sm font-semibold text-admin-ink">{name}</span>{conversation.agentUnreadCount > 0 ? <span aria-label={`${conversation.agentUnreadCount} unread messages`} className="grid min-w-5 place-items-center rounded-full bg-ignition px-1.5 text-[10px] font-bold leading-5 text-graphite-950">{conversation.agentUnreadCount}</span> : null}</span>
+                  <span className="flex items-center justify-between gap-2"><span className="truncate text-sm font-semibold text-admin-ink">{name}</span>{conversation.agentUnreadCount > 0 ? <span aria-label={`${conversation.agentUnreadCount} 条未读消息`} className="grid min-w-5 place-items-center rounded-full bg-ignition px-1.5 text-[10px] font-bold leading-5 text-graphite-950">{conversation.agentUnreadCount}</span> : null}</span>
                   <span className="mt-1 block truncate text-xs text-admin-muted">最近：{conversation.messages[0]?.body || "新会话"}</span>
-                  <span className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-wide text-zinc-400"><span>{conversation.visitor.countryCode || "—"} · {conversation.visitor.deviceType || "unknown"}</span><span>{conversation.status}</span></span>
+                  <span className="mt-2 flex items-center justify-between text-[10px] tracking-wide text-zinc-400"><span>{formatCountryName(conversation.visitor.countryCode, "—")} · {formatDeviceType(conversation.visitor.deviceType, "未知设备")}</span><span>{formatAdminEnum(conversation.status)}</span></span>
                 </span>
               </div>
             </button>

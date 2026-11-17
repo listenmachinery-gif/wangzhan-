@@ -2,6 +2,7 @@ import Link from "next/link";
 import { TableShell } from "@/components/admin/ui/TableShell";
 import { DataState } from "@/components/admin/ui/DataState";
 import type { CustomerListItem } from "@/lib/services/customer-service";
+import { formatCountryName } from "@/lib/admin/localization";
 
 const link =
   "admin-focus inline-flex min-h-11 items-center rounded-admin-sm px-2 font-medium";
@@ -82,7 +83,7 @@ export function CustomerList({
                   </p>
                 </td>
                 <td>{customer.company?.name || "—"}</td>
-                <td>{customer.countryCode || "—"}</td>
+                <td>{formatCountryName(customer.countryCode, "—")}</td>
                 <td className="break-words">
                   {[customer.email, customer.phone, customer.whatsapp]
                     .filter(Boolean)

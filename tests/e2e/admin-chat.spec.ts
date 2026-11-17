@@ -33,8 +33,8 @@ test.beforeAll(async () => {
   ]);
   await db.analyticsVisitor.upsert({
     where: { id: visitorId },
-    update: {},
-    create: { id: visitorId, anonymousId: "chat-admin-e2e-anonymous", environment: "DEVELOPMENT", firstSeenAt: new Date(), lastSeenAt: new Date(), countryCode: "US", deviceType: "desktop" },
+    update: { countryCode: "US", deviceType: "mobile" },
+    create: { id: visitorId, anonymousId: "chat-admin-e2e-anonymous", environment: "DEVELOPMENT", firstSeenAt: new Date(), lastSeenAt: new Date(), countryCode: "US", deviceType: "mobile" },
   });
   await db.chatConversation.upsert({
     where: { id: conversationId },
@@ -70,13 +70,19 @@ test("admin assigns, replies, and closes a live chat conversation", async ({ pag
   await page.goto("/admin/chat");
 
   await expect(page.getByRole("heading", { name: "在线客服" })).toBeVisible();
+  await expect(page.getByTestId("conversation-rail").getByText("美国 · 移动端", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: /E2E Machinery Buyer/ }).click();
   await expect(page.getByText("Please quote a 2 mm electric shear.", { exact: true })).toBeVisible();
+  await expect(page.getByTestId("visitor-context").getByText("美国", { exact: true })).toBeVisible();
+  await expect(page.getByTestId("visitor-context").getByText("移动端", { exact: true })).toBeVisible();
   await page.getByLabel("分配客服").selectOption({ label: "Export Support" });
   await expect(page.getByText("Export Support", { exact: true }).first()).toBeVisible();
 
-  await page.getByRole("textbox", { name: "Message", exact: true }).fill("We can prepare the quotation today.");
-  await page.getByRole("button", { name: "Send message" }).click();
+  await page.getByTestId("visitor-context").getByRole("button", { name: "待处理", exact: true }).click();
+  await expect(page.getByTestId("conversation-pane").getByText("待处理", { exact: true })).toBeVisible();
+
+  await page.getByRole("textbox", { name: "消息内容", exact: true }).fill("We can prepare the quotation today.");
+  await page.getByRole("button", { name: "发送消息" }).click();
   await expect(page.getByText("We can prepare the quotation today.")).toHaveCount(1);
   await page.getByRole("button", { name: "创建或关联询盘客户" }).click();
   await expect(page.getByRole("link", { name: /E2E Machinery Buyer/ })).toBeVisible();
