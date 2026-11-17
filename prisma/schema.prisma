@@ -45,6 +45,13 @@ enum MediaLifecycleStatus {
   DELETED
 }
 
+enum ShippingMediaRole {
+  COVER
+  LOADING
+  EQUIPMENT
+  VIDEO
+}
+
 enum LeadStatus {
   NEW
   CONTACTED
@@ -144,40 +151,42 @@ enum ChatMessageType {
 }
 
 model User {
-  id                   String              @id @default(cuid())
-  email                String              @unique
-  name                 String
-  passwordHash         String
-  isActive             Boolean             @default(true)
-  twoFactorEnabled     Boolean             @default(false)
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @updatedAt
-  roles                UserRole[]
-  sessions             Session[]
-  loginAttempts        LoginAttempt[]
-  auditLogs            AuditLog[]          @relation("AuditActor")
-  uploadedMedia        MediaAsset[]        @relation("MediaUploader")
-  leadActivities       LeadActivity[]      @relation("LeadActivityActor")
-  assignedLeads        LeadAssignment[]    @relation("LeadAssignee")
-  leadAssignmentsMade  LeadAssignment[]    @relation("LeadAssignedBy")
-  authoredPageVersions PageVersion[]       @relation("PageVersionAuthor")
-  sentChatMessages     ChatMessage[]       @relation("ChatMessageSender")
-  chatAssignments      ChatAssignment[]    @relation("ChatAssignee")
-  chatAssignmentsMade  ChatAssignment[]    @relation("ChatAssignedBy")
-  ownedCompanies       Company[]           @relation("CompanyOwner")
-  createdCompanies     Company[]           @relation("CompanyCreator")
-  updatedCompanies     Company[]           @relation("CompanyUpdater")
-  ownedContacts        Contact[]           @relation("ContactOwner")
-  createdContacts      Contact[]           @relation("ContactCreator")
-  updatedContacts      Contact[]           @relation("ContactUpdater")
-  createdLeads         Lead[]              @relation("LeadCreator")
-  updatedLeads         Lead[]              @relation("LeadUpdater")
-  leadStageChanges     LeadStageHistory[]  @relation("LeadStageHistoryActor")
-  createdCrmTeams      CrmTeam[]           @relation("CrmTeamCreator")
-  updatedCrmTeams      CrmTeam[]           @relation("CrmTeamUpdater")
-  crmMemberships       CrmTeamMembership[] @relation("CrmTeamMember")
-  createdMemberships   CrmTeamMembership[] @relation("CrmTeamMembershipCreator")
-  updatedMemberships   CrmTeamMembership[] @relation("CrmTeamMembershipUpdater")
+  id                         String                     @id @default(cuid())
+  email                      String                     @unique
+  name                       String
+  passwordHash               String
+  isActive                   Boolean                    @default(true)
+  twoFactorEnabled           Boolean                    @default(false)
+  createdAt                  DateTime                   @default(now())
+  updatedAt                  DateTime                   @updatedAt
+  roles                      UserRole[]
+  sessions                   Session[]
+  loginAttempts              LoginAttempt[]
+  auditLogs                  AuditLog[]                 @relation("AuditActor")
+  uploadedMedia              MediaAsset[]               @relation("MediaUploader")
+  leadActivities             LeadActivity[]             @relation("LeadActivityActor")
+  assignedLeads              LeadAssignment[]           @relation("LeadAssignee")
+  leadAssignmentsMade        LeadAssignment[]           @relation("LeadAssignedBy")
+  authoredPageVersions       PageVersion[]              @relation("PageVersionAuthor")
+  authoredNavigationVersions NavigationVersion[]        @relation("NavigationVersionAuthor")
+  authoredShippingVersions   ShippingHighlightVersion[] @relation("ShippingHighlightVersionAuthor")
+  sentChatMessages           ChatMessage[]              @relation("ChatMessageSender")
+  chatAssignments            ChatAssignment[]           @relation("ChatAssignee")
+  chatAssignmentsMade        ChatAssignment[]           @relation("ChatAssignedBy")
+  ownedCompanies             Company[]                  @relation("CompanyOwner")
+  createdCompanies           Company[]                  @relation("CompanyCreator")
+  updatedCompanies           Company[]                  @relation("CompanyUpdater")
+  ownedContacts              Contact[]                  @relation("ContactOwner")
+  createdContacts            Contact[]                  @relation("ContactCreator")
+  updatedContacts            Contact[]                  @relation("ContactUpdater")
+  createdLeads               Lead[]                     @relation("LeadCreator")
+  updatedLeads               Lead[]                     @relation("LeadUpdater")
+  leadStageChanges           LeadStageHistory[]         @relation("LeadStageHistoryActor")
+  createdCrmTeams            CrmTeam[]                  @relation("CrmTeamCreator")
+  updatedCrmTeams            CrmTeam[]                  @relation("CrmTeamUpdater")
+  crmMemberships             CrmTeamMembership[]        @relation("CrmTeamMember")
+  createdMemberships         CrmTeamMembership[]        @relation("CrmTeamMembershipCreator")
+  updatedMemberships         CrmTeamMembership[]        @relation("CrmTeamMembershipUpdater")
 }
 
 model Role {
@@ -281,6 +290,7 @@ model ProductCategory {
   children               ProductCategory[]       @relation("CategoryTree")
   products               Product[]
   specificationTemplates SpecificationTemplate[]
+  shippingHighlights     ShippingHighlight[]     @relation("ShippingHighlightCategory")
 
   @@index([parentId, position])
   @@index([status, position])
@@ -309,6 +319,7 @@ model Product {
   seoRecords         SeoRecord[]
   analyticsPageViews AnalyticsPageView[]
   analyticsEvents    AnalyticsEvent[]
+  shippingHighlights ShippingHighlight[] @relation("ShippingHighlightProduct")
 
   @@index([categoryId, status, position])
   @@index([status, publishedAt])
@@ -413,6 +424,8 @@ model MediaAsset {
   tabletBanners   Banner[]             @relation("BannerTabletMedia")
   mobileBanners   Banner[]             @relation("BannerMobileMedia")
   ogSeoRecords    SeoRecord[]          @relation("SeoOgMedia")
+  shippingCovers  ShippingHighlight[]  @relation("ShippingHighlightCover")
+  shippingMedia   ShippingMedia[]
 
   @@index([lifecycleStatus, createdAt])
 }
@@ -457,6 +470,106 @@ model Banner {
   mobileMedia    MediaAsset?       @relation("BannerMobileMedia", fields: [mobileMediaId], references: [id], onDelete: Restrict)
 
   @@index([status, enabled, startsAt, endsAt, position])
+}
+
+model NavigationDocument {
+  id               String              @id @default(cuid())
+  key              String              @unique
+  status           PublicationStatus   @default(DRAFT)
+  draftContent     Json
+  publishedContent Json?
+  version          Int                 @default(1)
+  publishedVersion Int?
+  publishedAt      DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  versions         NavigationVersion[]
+
+  @@index([status, updatedAt])
+}
+
+model NavigationVersion {
+  id                   String             @id @default(cuid())
+  navigationDocumentId String
+  version              Int
+  snapshot             Json
+  action               String
+  createdById          String
+  createdAt            DateTime           @default(now())
+  publishedAt          DateTime?
+  navigationDocument   NavigationDocument @relation(fields: [navigationDocumentId], references: [id], onDelete: Cascade)
+  createdBy            User               @relation("NavigationVersionAuthor", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@unique([navigationDocumentId, version])
+  @@index([navigationDocumentId, createdAt])
+  @@index([createdById, createdAt])
+}
+
+model ShippingHighlight {
+  id                    String                     @id @default(cuid())
+  slug                  String                     @unique
+  slugLocked            Boolean                    @default(false)
+  status                PublicationStatus          @default(DRAFT)
+  version               Int                        @default(1)
+  draftContent          Json
+  publishedContent      Json?
+  publishedVersion      Int?
+  publishedAt           DateTime?
+  publishedShipmentDate DateTime?
+  publishedCountryCode  String?
+  publishedCategorySlug String?
+  categoryId            String?
+  productId             String?
+  coverMediaId          String?
+  createdAt             DateTime                   @default(now())
+  updatedAt             DateTime                   @updatedAt
+  category              ProductCategory?           @relation("ShippingHighlightCategory", fields: [categoryId], references: [id], onDelete: SetNull)
+  product               Product?                   @relation("ShippingHighlightProduct", fields: [productId], references: [id], onDelete: SetNull)
+  coverMedia            MediaAsset?                @relation("ShippingHighlightCover", fields: [coverMediaId], references: [id], onDelete: SetNull)
+  media                 ShippingMedia[]
+  versions              ShippingHighlightVersion[]
+
+  @@index([status, publishedShipmentDate])
+  @@index([publishedCountryCode, publishedShipmentDate])
+  @@index([publishedCategorySlug, publishedShipmentDate])
+  @@index([categoryId])
+  @@index([productId])
+  @@index([coverMediaId])
+}
+
+model ShippingHighlightVersion {
+  id                  String            @id @default(cuid())
+  shippingHighlightId String
+  version             Int
+  snapshot            Json
+  action              String
+  createdById         String
+  createdAt           DateTime          @default(now())
+  publishedAt         DateTime?
+  shippingHighlight   ShippingHighlight @relation(fields: [shippingHighlightId], references: [id], onDelete: Cascade)
+  createdBy           User              @relation("ShippingHighlightVersionAuthor", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@unique([shippingHighlightId, version])
+  @@index([shippingHighlightId, createdAt])
+  @@index([createdById, createdAt])
+}
+
+model ShippingMedia {
+  id                  String            @id @default(cuid())
+  shippingHighlightId String
+  mediaAssetId        String
+  role                ShippingMediaRole
+  position            Int
+  caption             String?
+  altText             String
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  shippingHighlight   ShippingHighlight @relation(fields: [shippingHighlightId], references: [id], onDelete: Cascade)
+  mediaAsset          MediaAsset        @relation(fields: [mediaAssetId], references: [id], onDelete: Restrict)
+
+  @@unique([shippingHighlightId, role, position])
+  @@index([shippingHighlightId, position])
+  @@index([mediaAssetId])
 }
 
 model Company {

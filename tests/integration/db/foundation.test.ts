@@ -132,6 +132,79 @@ describe("CMS PostgreSQL foundation", () => {
     ).rejects.toMatchObject({ code: "P2003" });
   });
 
+  it("provides versioned navigation and shipping tables with safe delete policies", async () => {
+    const tables = await db.$queryRaw<Array<{ table_name: string }>>`
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = current_schema()
+        AND table_name IN (
+          'NavigationDocument',
+          'NavigationVersion',
+          'ShippingHighlight',
+          'ShippingHighlightVersion',
+          'ShippingMedia'
+        )
+      ORDER BY table_name
+    `;
+    expect(tables.map(({ table_name }) => table_name)).toEqual([
+      "NavigationDocument",
+      "NavigationVersion",
+      "ShippingHighlight",
+      "ShippingHighlightVersion",
+      "ShippingMedia",
+    ]);
+
+    const indexes = await db.$queryRaw<Array<{ indexname: string }>>`
+      SELECT indexname
+      FROM pg_indexes
+      WHERE schemaname = current_schema()
+        AND tablename IN ('NavigationDocument', 'ShippingHighlight', 'ShippingMedia')
+    `;
+    const names = indexes.map(({ indexname }) => indexname);
+    expect(names).toEqual(expect.arrayContaining([
+      "NavigationDocument_key_key",
+      "ShippingHighlight_slug_key",
+      "ShippingHighlight_status_publishedShipmentDate_idx",
+      "ShippingMedia_shippingHighlightId_role_position_key",
+    ]));
+    expect(names.some((name) => name.startsWith("ShippingHighlight_publishedCountryCode_publishedShipmentDate_"))).toBe(true);
+
+    const constraints = await db.$queryRaw<Array<{ constraint_name: string; delete_action: string }>>`
+      SELECT
+        constraint_name,
+        delete_rule AS delete_action
+      FROM information_schema.referential_constraints
+      WHERE constraint_schema = current_schema()
+        AND constraint_name IN (
+          'ShippingHighlight_categoryId_fkey',
+          'ShippingHighlight_productId_fkey',
+          'ShippingHighlight_coverMediaId_fkey',
+          'ShippingMedia_mediaAssetId_fkey'
+        )
+      ORDER BY constraint_name
+    `;
+    expect(constraints).toEqual([
+      { constraint_name: "ShippingHighlight_categoryId_fkey", delete_action: "SET NULL" },
+      { constraint_name: "ShippingHighlight_coverMediaId_fkey", delete_action: "SET NULL" },
+      { constraint_name: "ShippingHighlight_productId_fkey", delete_action: "SET NULL" },
+      { constraint_name: "ShippingMedia_mediaAssetId_fkey", delete_action: "RESTRICT" },
+    ]);
+
+    const enumValues = await db.$queryRaw<Array<{ enumlabel: string }>>`
+      SELECT enumlabel
+      FROM pg_enum
+      JOIN pg_type ON pg_type.oid = pg_enum.enumtypid
+      WHERE pg_type.typname = 'ShippingMediaRole'
+      ORDER BY enumsortorder
+    `;
+    expect(enumValues.map(({ enumlabel }) => enumlabel)).toEqual([
+      "COVER",
+      "LOADING",
+      "EQUIPMENT",
+      "VIDEO",
+    ]);
+  });
+
   it("persists the analytics graph with idempotency and query indexes", async () => {
     const category = await db.productCategory.create({
       data: { name: "Shearing Machines", slug: "analytics-shearing-machines" },
