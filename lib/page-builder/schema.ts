@@ -32,6 +32,10 @@ export const PAGE_COMPONENT_TYPES = [
   "INQUIRY_CTA",
   "WHATSAPP_CTA",
   "DOWNLOAD_CATALOG",
+  "SPLIT_FEATURE",
+  "TIMELINE",
+  "RESOURCE_LINKS",
+  "INQUIRY_FORM",
 ] as const;
 
 export type PageComponentType = (typeof PAGE_COMPONENT_TYPES)[number];
