@@ -18,13 +18,19 @@ export const DEFAULT_NAVIGATION = deepFreeze<NavigationSnapshot>({
       id: "support",
       kind: "GROUP",
       label: "SUPPORT",
-      href: "/contact",
+      href: "/support",
       visible: true,
       children: [
+        { id: "support-center", kind: "LINK", label: "Support Center", href: "/support", visible: true },
         { id: "company-news", kind: "LINK", label: "Company News", href: "/news", visible: true },
         { id: "shipping-highlights", kind: "LINK", label: "Shipping Highlights", href: "/shipping-highlights", visible: true },
       ],
     },
+    { id: "showcase", kind: "GROUP", label: "SHOWCASE", href: "/showcase", visible: true, children: [
+      { id: "showcase-overview", kind: "LINK", label: "Overview", href: "/showcase", visible: true },
+      { id: "showcase-shipping", kind: "LINK", label: "Shipping Highlights", href: "/shipping-highlights", visible: true },
+      { id: "showcase-cases", kind: "LINK", label: "Customer Cases", href: "/cases", visible: true },
+    ] },
     { id: "contact", kind: "LINK", label: "CONTACT", href: "/contact", visible: true },
   ],
   quote: { id: "quote-now", kind: "LINK", label: "Quote Now", href: "/contact", visible: true },
@@ -36,6 +42,7 @@ export const DEFAULT_NAVIGATION = deepFreeze<NavigationSnapshot>({
       id: "footer-support",
       label: "Service & Support",
       items: [
+        { id: "footer-support-center", kind: "LINK", label: "Support Center", href: "/support", visible: true },
         { id: "footer-contact-support", kind: "LINK", label: "Contact Support", href: "/contact", visible: true },
         { id: "footer-company-news", kind: "LINK", label: "Company News", href: "/news", visible: true },
         { id: "footer-shipping-highlights", kind: "LINK", label: "Shipping Highlights", href: "/shipping-highlights", visible: true },
