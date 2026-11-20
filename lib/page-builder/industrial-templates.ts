@@ -1,6 +1,6 @@
 import type { PageDocument, PageNode } from "@/lib/page-builder/schema";
 
-const node = (id: string, type: PageNode["type"], content: Record<string, unknown>, style?: PageNode["style"]): PageNode => ({ id, type, content, ...(style ? { style } : {}) });
+const node = (id: string, type: PageNode["type"], content: PageNode["content"], style?: PageNode["style"]): PageNode => ({ id, type, content, ...(style ? { style } : {}) });
 const hero = (title: string, description: string, image: string, label = "Explore Machines", href = "/products") => node("hero", "HERO", { eyebrow: "ZYRON Heavy Industry", title, description, primaryLabel: label, primaryHref: href, image, alt: title }, { textColor: "#FFFFFF" });
 const split = (id: string, eyebrow: string, title: string, body: string, image: string, reverse = false) => node(id, "SPLIT_FEATURE", { eyebrow, title, body, image, imageAlt: title, reverse, ctaLabel: "Talk to Our Team", ctaHref: "/contact" });
 const faq = node("faq", "FAQ", { heading: "Frequently Asked Questions", items: [
