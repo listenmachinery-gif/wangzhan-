@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ProductCatalog } from "@/components/ProductCatalog";
+import { ManagedPageSections } from "@/components/site/ManagedPageSections";
 import { listPublishedCategories } from "@/lib/repositories/category-repository";
 import { buildPublicCatalogueView } from "@/lib/repositories/public-catalogue-view";
 import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
@@ -149,6 +150,7 @@ export default async function ProductsPage() {
           </a>
         </div>
       </section>
+      <ManagedPageSections slug="products" />
     </main>
   );
 }
