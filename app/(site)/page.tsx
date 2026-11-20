@@ -58,6 +58,10 @@ export default async function Home() {
     getPublishedPageBySlug("home"),
     listLatestPublishedShippingHighlights(3),
   ]);
+  // A full CMS template is opt-in; legacy homepage remains intact until published with a HERO block.
+  if (publishedPage?.nodes.some((node) => node.type === "HERO")) {
+    return <main className="bg-[#f4f6f8] text-[#101214]"><PageRenderer document={publishedPage} /></main>;
+  }
   const managedFactory = publishedPage?.nodes.find((node) => node.type === "FACTORY_STATS");
   const managedAdvantages = publishedPage?.nodes.find((node) => node.type === "ADVANTAGES");
   const additionalManagedNodes = publishedPage?.nodes.filter((node) => node.type !== "FACTORY_STATS" && node.type !== "ADVANTAGES") ?? [];
