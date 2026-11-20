@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Mail, MapPin, MessageCircle } from "lucide-react";
 import { InquiryForm } from "@/components/InquiryForm";
 import { ManagedPageSections } from "@/components/site/ManagedPageSections";
+import { PageRenderer } from "@/components/page-builder/PageRenderer";
+import { getPublishedPageBySlug } from "@/lib/repositories/page-repository";
 import { productCategories } from "@/data/products";
 import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
 
@@ -30,7 +32,11 @@ const contactItems = [
   },
 ];
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const managed = await getPublishedPageBySlug("contact");
+  if (managed?.nodes.some((node) => node.type === "HERO")) {
+    return <main className="bg-[#f4f6f8] text-[#101214]"><PageRenderer document={managed} /></main>;
+  }
   return (
     <main className="bg-[#f4f6f8] text-[#101214]">
       <section className="bg-graphite-950 px-5 py-16 text-white sm:px-8 lg:py-24">
