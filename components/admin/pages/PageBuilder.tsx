@@ -471,7 +471,7 @@ export function PageBuilder({
 
   const groups = useMemo(
     () =>
-      ["基础", "外贸业务", "营销"].map((group) => ({
+      ["基础", "布局", "外贸业务", "营销"].map((group) => ({
         group,
         definitions: componentRegistry.filter((item) => item.group === group),
       })),
@@ -810,6 +810,39 @@ export function PageBuilder({
                       }
                       className="mt-1 h-9 w-full rounded border px-2"
                     />
+                  </label>
+                  <label className="col-span-2 text-xs">
+                    文字颜色
+                    <div className="mt-1 flex gap-2">
+                      <input type="color" aria-label="选择文字颜色" value={activeStyle.textColor ?? "#1D1D1F"} onChange={(event) => updateStyle({ textColor: event.target.value })} className="h-9 w-12 cursor-pointer rounded border" />
+                      <input type="text" value={activeStyle.textColor ?? ""} placeholder="#1D1D1F" onChange={(event) => updateStyle({ textColor: event.target.value || undefined })} className="h-9 min-w-0 flex-1 rounded border px-2" />
+                    </div>
+                  </label>
+                  <label className="col-span-2 text-xs">
+                    字体
+                    <select value={activeStyle.fontFamily ?? "sans"} onChange={(event) => updateStyle({ fontFamily: event.target.value as PageStyle["fontFamily"] })} className="mt-1 h-9 w-full rounded border px-2">
+                      <option value="sans">无衬线 Sans</option><option value="serif">衬线 Serif</option><option value="mono">等宽 Mono</option>
+                    </select>
+                  </label>
+                  <label className="text-xs">
+                    字重
+                    <select value={activeStyle.fontWeight ?? "normal"} onChange={(event) => updateStyle({ fontWeight: event.target.value as PageStyle["fontWeight"] })} className="mt-1 h-9 w-full rounded border px-2">
+                      <option value="normal">常规</option><option value="medium">中等</option><option value="semibold">半粗</option><option value="bold">粗体</option>
+                    </select>
+                  </label>
+                  <label className="text-xs">
+                    文字对齐
+                    <select value={activeStyle.textAlign ?? "left"} onChange={(event) => updateStyle({ textAlign: event.target.value as PageStyle["textAlign"] })} className="mt-1 h-9 w-full rounded border px-2">
+                      <option value="left">左对齐</option><option value="center">居中</option><option value="right">右对齐</option>
+                    </select>
+                  </label>
+                  <label className="text-xs">
+                    行高
+                    <input type="number" min="1" max="2" step="0.1" value={activeStyle.lineHeight ?? ""} onChange={(event) => updateStyle({ lineHeight: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" />
+                  </label>
+                  <label className="text-xs">
+                    字间距
+                    <input type="number" min="-2" max="8" step="0.1" value={activeStyle.letterSpacing ?? ""} onChange={(event) => updateStyle({ letterSpacing: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" />
                   </label>
                   <label className="flex items-end gap-2 pb-2 text-xs">
                     <input
