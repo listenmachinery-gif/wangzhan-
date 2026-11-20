@@ -60,6 +60,31 @@ export const componentRegistry: ComponentDefinition[] = [
   define({ type: "INQUIRY_CTA", label: "询盘行动按钮", group: "营销", description: "询盘行动入口", defaultContent: { heading: "Discuss your production requirements", description: "Our engineers will recommend a suitable configuration.", label: "Request a Quote", href: "/contact" }, contentSchema: z.object({ heading: shortText, description: text, label: shortText, href: url }).strict(), editorFields: [{ key: "heading", label: "标题", kind: "text" }, { key: "description", label: "描述", kind: "textarea" }, { key: "label", label: "按钮", kind: "text" }] }),
   define({ type: "WHATSAPP_CTA", label: "WhatsApp 行动按钮", group: "营销", description: "WhatsApp 外部沟通入口", defaultContent: { heading: "Talk to our sales team", label: "Open WhatsApp", href: "https://wa.me/" }, contentSchema: z.object({ heading: shortText, label: shortText, href: z.string().url().startsWith("https://") }).strict(), editorFields: [{ key: "heading", label: "标题", kind: "text" }, { key: "label", label: "按钮", kind: "text" }, { key: "href", label: "WhatsApp 链接", kind: "url" }] }),
   define({ type: "DOWNLOAD_CATALOG", label: "下载目录", group: "营销", description: "目录下载入口", defaultContent: { heading: "Download Product Catalog", description: "Review available machine families and configurations.", label: "Download PDF", href: "/contact" }, contentSchema: z.object({ heading: shortText, description: text, label: shortText, href: url }).strict(), editorFields: [{ key: "heading", label: "标题", kind: "text" }, { key: "description", label: "描述", kind: "textarea" }, { key: "href", label: "文件链接", kind: "url" }] }),
+
+  define({
+    type: "SPLIT_FEATURE", label: "图文双栏", group: "外贸业务", description: "图文左右交错展示，适合设备特征、技术和公司介绍",
+    defaultContent: { eyebrow: "Engineering Detail", title: "Designed around your process", body: "Explain the product feature or manufacturing process with clear evidence.", image: "/products/hydraulic-press-brake-hero.png", imageAlt: "ZYRON machinery detail", reverse: false, ctaLabel: "Explore Products", ctaHref: "/products" },
+    contentSchema: z.object({ eyebrow: shortText, title: shortText.min(1), body: text, image: mediaUrl, imageAlt: shortText.min(1), reverse: z.boolean(), ctaLabel: shortText, ctaHref: url }).strict(),
+    editorFields: [{ key: "eyebrow", label: "眉题", kind: "text" }, { key: "title", label: "主标题", kind: "text" }, { key: "body", label: "正文", kind: "textarea" }, { key: "image", label: "图片地址", kind: "url" }, { key: "imageAlt", label: "图片替代文字", kind: "text" }, { key: "reverse", label: "反向排列（true/false）", kind: "json" }, { key: "ctaLabel", label: "按钮文字", kind: "text" }, { key: "ctaHref", label: "按钮链接", kind: "url" }],
+  }),
+  define({
+    type: "TIMELINE", label: "发展历程 / 流程", group: "外贸业务", description: "公司时间轴、交付步骤和服务流程",
+    defaultContent: { heading: "Our Process", items: [{ year: "01", title: "Requirement Review", body: "Confirm materials, dimensions and capacity." }, { year: "02", title: "Configuration", body: "Discuss the suitable machine and options." }] },
+    contentSchema: z.object({ heading: shortText, items: z.array(z.object({ year: shortText, title: shortText, body: text }).strict()).min(1).max(20) }).strict(),
+    editorFields: [{ key: "heading", label: "标题", kind: "text" }, { key: "items", label: "时间轴条目", kind: "json" }],
+  }),
+  define({
+    type: "RESOURCE_LINKS", label: "支持中心入口", group: "外贸业务", description: "支持文档、下载、服务、视频等资源入口",
+    defaultContent: { heading: "Find What You Need", description: "Access practical resources before and after delivery.", items: [{ title: "Technical Support", description: "Contact our team for guidance", href: "/contact" }, { title: "Company News", description: "Explore updates and announcements", href: "/news" }] },
+    contentSchema: z.object({ heading: shortText, description: text, items: z.array(z.object({ title: shortText, description: text, href: url }).strict()).min(1).max(16) }).strict(),
+    editorFields: [{ key: "heading", label: "标题", kind: "text" }, { key: "description", label: "描述", kind: "textarea" }, { key: "items", label: "资源链接", kind: "json" }],
+  }),
+  define({
+    type: "INQUIRY_FORM", label: "真实询盘表单", group: "营销", description: "复用当前网站询盘接口与跟踪逻辑，不能替换成静态假表单",
+    defaultContent: { eyebrow: "Talk to ZYRON", heading: "Tell us about your production requirements.", description: "Material, thickness, working length and destination help us respond." },
+    contentSchema: z.object({ eyebrow: shortText, heading: shortText.min(1), description: text }).strict(),
+    editorFields: [{ key: "eyebrow", label: "眉题", kind: "text" }, { key: "heading", label: "表单标题", kind: "text" }, { key: "description", label: "补充说明", kind: "textarea" }],
+  }),
 ];
 
 const registryByType = new Map(componentRegistry.map((definition) => [definition.type, definition]));
