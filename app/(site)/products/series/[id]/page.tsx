@@ -75,6 +75,7 @@ export default async function ProductSeriesPage({ params }: ProductSeriesPagePro
 
   return (
     <main className="bg-[#f4f6f8] text-[#101214]">
+      <ManagedPageSections slug={`series-${id}`} placement="BEFORE_LEGACY" />
       <section
         data-series-hero
         className="relative isolate min-h-[700px] overflow-hidden bg-[#0B0D10] px-5 py-14 text-white sm:px-8 lg:py-20"
@@ -221,7 +222,7 @@ export default async function ProductSeriesPage({ params }: ProductSeriesPagePro
           </div>
         </div>
       </section>
-      <ManagedPageSections slug={`series-${id}`} />
+      <ManagedPageSections slug={`series-${id}`} placement="AFTER_LEGACY" />
     </main>
   );
 }

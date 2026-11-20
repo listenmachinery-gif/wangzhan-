@@ -58,4 +58,14 @@ export const DEFAULT_NAVIGATION = deepFreeze<NavigationSnapshot>({
       ],
     },
   ],
+  footer: {
+    brandName: "ZYRON Heavy Industry",
+    description: "One-stop manufacturer of sheet metal machinery, HVAC duct production equipment, laser cutting machines, press machines, rolling machines, and shredding solutions.",
+    email: "info@zyroncnc.com",
+    whatsapp: "+8615655537083",
+    address: "Dongjiao Industrial Park, Bowang Town, Bowang District, Ma'anshan City, Anhui Province, China",
+    ctaLabel: "Start a Project",
+    ctaHref: "/contact",
+    copyright: "Copyright 2026 ZYRON Heavy Industry. All rights reserved.",
+  },
 });

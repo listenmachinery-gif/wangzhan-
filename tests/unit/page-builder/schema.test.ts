@@ -39,6 +39,7 @@ describe("page builder document schema", () => {
         {
           id: "factory-stats",
           type: "FACTORY_STATS",
+          placement: "BEFORE_LEGACY",
           content: { heading: "Manufacturing capacity" },
           style: { paddingY: 64, backgroundColor: "#0B0D10", columns: 4 },
           responsive: {
@@ -53,8 +54,16 @@ describe("page builder document schema", () => {
     expect(result.nodes[0]).toMatchObject({
       id: "factory-stats",
       type: "FACTORY_STATS",
+      placement: "BEFORE_LEGACY",
       responsive: { mobile: { columns: 1 } },
     });
+  });
+
+  it("rejects unknown legacy slot placement values", () => {
+    expect(() => pageDocumentSchema.parse({
+      schemaVersion: 1,
+      nodes: [{ id: "bad-slot", type: "SPACER", placement: "MIDDLE", content: { size: 20 } }],
+    })).toThrow();
   });
 
   it("rejects executable content and unbounded style values", () => {

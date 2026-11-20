@@ -13,24 +13,33 @@ const buyLinks = [
 ];
 
 export function SiteFooter({ navigation }: { navigation: NavigationSnapshot }) {
+  const footer = navigation.footer ?? {
+    brandName: "ZYRON Heavy Industry",
+    description: "One-stop manufacturer of sheet metal machinery, HVAC duct production equipment, laser cutting machines, press machines, rolling machines, and shredding solutions.",
+    email: "info@zyroncnc.com",
+    whatsapp: "+8615655537083",
+    address: "Dongjiao Industrial Park, Bowang Town, Bowang District, Ma'anshan City, Anhui Province, China",
+    ctaLabel: "Start a Project",
+    ctaHref: "/contact",
+    copyright: "Copyright 2026 ZYRON Heavy Industry. All rights reserved.",
+  };
   return (
     <footer className="border-t border-white/10 bg-black">
       <div className="mx-auto max-w-[1440px] px-5 py-12 sm:px-8">
         <div className="grid gap-5 border-b border-white/10 pb-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div>
-            <p className="text-2xl font-semibold text-white">ZYRON Heavy Industry</p>
+            <p className="text-2xl font-semibold text-white">{footer.brandName}</p>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-zinc-400">
-              One-stop manufacturer of sheet metal machinery, HVAC duct production equipment, laser cutting machines,
-              press machines, rolling machines, and shredding solutions.
+              {footer.description}
             </p>
             <div className="mt-5 grid gap-2 text-sm leading-6 text-zinc-400">
-              <p>Email: info@zyroncnc.com</p>
-              <p>WhatsApp: +8615655537083</p>
-              <p>Address: Dongjiao Industrial Park, Bowang Town, Bowang District, Ma&apos;anshan City, Anhui Province, China</p>
+              <p>Email: {footer.email}</p>
+              <p>WhatsApp: {footer.whatsapp}</p>
+              <p>Address: {footer.address}</p>
             </div>
           </div>
-          <Link href="/contact" className="inline-flex w-fit items-center gap-2 rounded-sm bg-ignition px-5 py-3 text-sm font-semibold text-white transition hover:bg-neon lg:justify-self-end">
-            Start a Project<ArrowRight size={16} />
+          <Link href={footer.ctaHref} className="inline-flex w-fit items-center gap-2 rounded-sm bg-ignition px-5 py-3 text-sm font-semibold text-white transition hover:bg-neon lg:justify-self-end">
+            {footer.ctaLabel}<ArrowRight size={16} />
           </Link>
         </div>
 
@@ -69,7 +78,7 @@ export function SiteFooter({ navigation }: { navigation: NavigationSnapshot }) {
       </div>
       <div className="border-t border-white/10 px-5 py-5 text-xs text-zinc-500">
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-center gap-x-5 gap-y-2">
-          <span>Copyright 2026 ZYRON Heavy Industry. All rights reserved.</span>
+          <span>{footer.copyright}</span>
           <Link href="/privacy" className="transition hover:text-white">Privacy Policy</Link>
           <CookiePreferencesButton />
         </div>

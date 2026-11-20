@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { ProductViewTracker } from "@/components/analytics/ProductViewTracker";
-import { ManagedPageSections } from "@/components/site/ManagedPageSections";
+import { PageRenderer } from "@/components/page-builder/PageRenderer";
 import ElectricTwoRollPlateRollingMachineSolutionPage from "@/components/ElectricTwoRollPlateRollingMachineSolutionPage";
 import ElectricFoldingMachineSolutionPage from "@/components/ElectricFoldingMachineSolutionPage";
 import ElectroHydraulicServoCncPressBrakeSolutionPage from "@/components/ElectroHydraulicServoCncPressBrakeSolutionPage";
@@ -28,6 +28,7 @@ import TorsionBarCncPressBrakeSolutionPage from "@/components/TorsionBarCncPress
 import { StandardProductPage } from "@/components/products/StandardProductPage";
 import { getCategoryById, products } from "@/data/products";
 import { getPublishedProductBySlug } from "@/lib/repositories/product-repository";
+import { getPublishedPageBySlug } from "@/lib/repositories/page-repository";
 import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
 
 export const dynamic = "force-dynamic";
@@ -38,15 +39,24 @@ type ProductDetailProps = {
   }>;
 };
 
-function trackedProduct(
+async function trackedProduct(
   identity: { productId?: string; productSlug: string; productName: string; productCategory: string },
   content: ReactNode,
 ) {
+  const document = await getPublishedPageBySlug(`product-${identity.productSlug}`);
+  const nodesFor = (placement: "BEFORE_LEGACY" | "AFTER_LEGACY" | "REPLACE_LEGACY") =>
+    document?.nodes.filter((node) => (node.placement ?? "AFTER_LEGACY") === placement) ?? [];
+  const before = nodesFor("BEFORE_LEGACY");
+  const after = nodesFor("AFTER_LEGACY");
+  const replacement = nodesFor("REPLACE_LEGACY");
+  const render = (nodes: typeof before) =>
+    document && nodes.length ? <PageRenderer document={{ ...document, nodes }} /> : null;
   return (
     <>
       <ProductViewTracker {...identity} />
-      {content}
-      <ManagedPageSections slug={`product-${identity.productSlug}`} />
+      {render(before)}
+      {replacement.length ? render(replacement) : content}
+      {render(after)}
     </>
   );
 }

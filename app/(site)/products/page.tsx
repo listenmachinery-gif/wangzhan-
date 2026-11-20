@@ -46,6 +46,7 @@ export default async function ProductsPage() {
   ];
   return (
     <main className="bg-[#f4f6f8] text-[#101214]">
+      <ManagedPageSections slug="products" placement="BEFORE_LEGACY" />
       <section className="relative isolate min-h-[calc(100vh-4rem)] overflow-hidden bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
         <Image
           src="/products/product-center-hero.png"
@@ -150,7 +151,7 @@ export default async function ProductsPage() {
           </a>
         </div>
       </section>
-      <ManagedPageSections slug="products" />
+      <ManagedPageSections slug="products" placement="AFTER_LEGACY" />
     </main>
   );
 }

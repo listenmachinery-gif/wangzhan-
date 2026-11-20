@@ -26,9 +26,7 @@ export function ProductEditor({ initialProduct, categories, media }: { initialPr
   const [sections, setSections] = useState(initialProduct.sections);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
-  const [moduleToAdd, setModuleToAdd] = useState<ProductModuleType>(
-    PRODUCT_MODULE_TYPES.find((type) => !initialProduct.sections.some((section) => section.type === type)) ?? "HERO",
-  );
+  const [moduleToAdd, setModuleToAdd] = useState<ProductModuleType>("HERO");
   const [copyName, setCopyName] = useState(`${initialProduct.name} Copy`);
   const [copySlug, setCopySlug] = useState(`${initialProduct.slug}-copy`);
 
@@ -77,11 +75,20 @@ export function ProductEditor({ initialProduct, categories, media }: { initialPr
     setMessage("产品已归档。"); router.refresh();
   }
   function addModule() {
-    if (sections.some(({ type }) => type === moduleToAdd)) return setMessage("该模块已经存在。");
-    const next = [...sections, { id: `draft-${moduleToAdd}`, type: moduleToAdd, position: sections.length, visible: true, content: createDraftProductModule(moduleToAdd) as JsonValue, mediaAssetIds: [] }];
+    if (sections.length >= 100) return setMessage("每个产品最多支持 100 个模块。");
+    const next = [...sections, { id: `draft-${moduleToAdd}-${crypto.randomUUID()}`, type: moduleToAdd, position: sections.length, visible: true, content: createDraftProductModule(moduleToAdd) as JsonValue, mediaAssetIds: [] }];
     setSections(next);
-    setModuleToAdd(PRODUCT_MODULE_TYPES.find((type) => !next.some((section) => section.type === type)) ?? "HERO");
     setMessage("已添加空白模块；请填写全部必填字段后保存。");
+  }
+  function duplicateModule(index: number) {
+    if (sections.length >= 100) return setMessage("每个产品最多支持 100 个模块。");
+    const source = sections[index];
+    const copy = structuredClone(source);
+    copy.id = `draft-${source.type}-${crypto.randomUUID()}`;
+    const next = [...sections];
+    next.splice(index + 1, 0, copy);
+    setSections(next.map((section, position) => ({ ...section, position })));
+    setMessage("已复制模块，请按需修改后保存。");
   }
   async function copy() {
     const result = await request(`/api/admin/products/${product.id}`, { method: "POST", body: JSON.stringify({ action: "copy", name: copyName, slug: copySlug, expectedVersion: product.version }) });
@@ -105,13 +112,13 @@ export function ProductEditor({ initialProduct, categories, media }: { initialPr
       <section className="space-y-4">
         <div><h2 className="text-lg font-semibold">详情页模块</h2><p className="mt-1 text-sm text-neutral-600">顺序以“小型电动剪板机”的 24 模块模板为准；隐藏模块不会在前台显示。</p></div>
         {sections.map((section, index) => (
-          <article key={section.id || section.type} data-module-editor={section.type} className="rounded-xl border border-neutral-200 bg-white p-5">
-            <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-semibold text-[#5F9500]">模块 {index + 1}</p><h3 className="mt-1 font-semibold">{SMALL_ELECTRIC_PRODUCT_MODULE_LABELS[section.type]}</h3></div><div className="flex items-center gap-2"><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={section.visible} onChange={(event) => setSections(sections.map((item, itemIndex) => itemIndex === index ? { ...item, visible: event.target.checked } : item))} />显示</label><button aria-label="上移模块" onClick={() => move(index, -1)} className="rounded border px-2 py-1">↑</button><button aria-label="下移模块" onClick={() => move(index, 1)} className="rounded border px-2 py-1">↓</button><button onClick={() => setSections(sections.filter((_, itemIndex) => itemIndex !== index))} className="rounded border border-red-200 px-2 py-1 text-red-700">删除</button></div></div>
+          <article key={section.id || `${section.type}-${index}`} data-module-editor={section.type} className="rounded-xl border border-neutral-200 bg-white p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-semibold text-[#5F9500]">模块 {index + 1}</p><h3 className="mt-1 font-semibold">{SMALL_ELECTRIC_PRODUCT_MODULE_LABELS[section.type]}</h3></div><div className="flex items-center gap-2"><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={section.visible} onChange={(event) => setSections(sections.map((item, itemIndex) => itemIndex === index ? { ...item, visible: event.target.checked } : item))} />显示</label><button aria-label="上移模块" onClick={() => move(index, -1)} className="rounded border px-2 py-1">↑</button><button aria-label="下移模块" onClick={() => move(index, 1)} className="rounded border px-2 py-1">↓</button><button aria-label="复制模块" onClick={() => duplicateModule(index)} className="rounded border px-2 py-1">复制</button><button onClick={() => setSections(sections.filter((_, itemIndex) => itemIndex !== index))} className="rounded border border-red-200 px-2 py-1 text-red-700">删除</button></div></div>
             <ModuleEditorRegistry type={section.type} value={section.content} media={media} onChange={(content) => setSections(sections.map((item, itemIndex) => itemIndex === index ? { ...item, content } : item))} />
           </article>
         ))}
         {sections.length === 0 ? <p className="rounded-xl border border-dashed p-8 text-center text-sm text-neutral-500">尚无模块。请先从已有产品复制或通过 API 添加经 schema 校验的模块。</p> : null}
-        <div className="flex flex-wrap gap-3"><select aria-label="新增模块类型" value={moduleToAdd} disabled={sections.length === PRODUCT_MODULE_TYPES.length} onChange={(event) => setModuleToAdd(event.target.value as ProductModuleType)} className="rounded-lg border px-3 py-2 text-sm">{PRODUCT_MODULE_TYPES.filter((type) => !sections.some((section) => section.type === type)).map((type) => <option key={type} value={type}>{SMALL_ELECTRIC_PRODUCT_MODULE_LABELS[type]}</option>)}</select><button type="button" disabled={sections.length === PRODUCT_MODULE_TYPES.length} onClick={addModule} className="rounded-lg border px-4 py-2 text-sm font-semibold disabled:opacity-50">新增标准模块</button><button disabled={busy} onClick={() => void saveModules()} className="rounded-lg bg-[#0B0D10] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50">保存模块顺序与内容</button></div>
+        <div className="flex flex-wrap gap-3"><select aria-label="新增模块类型" value={moduleToAdd} disabled={sections.length >= 100} onChange={(event) => setModuleToAdd(event.target.value as ProductModuleType)} className="rounded-lg border px-3 py-2 text-sm">{PRODUCT_MODULE_TYPES.map((type) => <option key={type} value={type}>{SMALL_ELECTRIC_PRODUCT_MODULE_LABELS[type]}</option>)}</select><button type="button" disabled={sections.length >= 100} onClick={addModule} className="rounded-lg border px-4 py-2 text-sm font-semibold disabled:opacity-50">新增标准模块</button><button disabled={busy} onClick={() => void saveModules()} className="rounded-lg bg-[#0B0D10] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50">保存模块顺序与内容</button></div>
       </section>
 
       <section className="flex flex-wrap items-center gap-3 rounded-xl border border-neutral-200 bg-white p-5">

@@ -31,6 +31,16 @@ export type NavigationSnapshot = {
   quote: NavigationNode;
   languages: LanguageNavigationLink[];
   footerGroups: FooterNavigationGroup[];
+  footer?: {
+    brandName: string;
+    description: string;
+    email: string;
+    whatsapp: string;
+    address: string;
+    ctaLabel: string;
+    ctaHref: string;
+    copyright: string;
+  };
 };
 
 const idSchema = z.string().trim().min(1).max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
@@ -118,6 +128,16 @@ export const navigationSnapshotSchema: z.ZodType<NavigationSnapshot> = z.object(
   quote: navigationNodeSchema,
   languages: z.array(languageNavigationLinkSchema).max(30),
   footerGroups: z.array(footerNavigationGroupSchema).max(12),
+  footer: z.object({
+    brandName: labelSchema,
+    description: z.string().trim().min(1).max(1_000),
+    email: z.string().trim().email().max(254),
+    whatsapp: z.string().trim().min(1).max(80),
+    address: z.string().trim().min(1).max(500),
+    ctaLabel: labelSchema,
+    ctaHref: hrefSchema,
+    copyright: z.string().trim().min(1).max(240),
+  }).strict().optional(),
 }).strict().superRefine(validateDocumentStructure);
 
 export function parseNavigationSnapshot(raw: unknown) {

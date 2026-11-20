@@ -32,6 +32,16 @@ type RequestResult = {
 };
 
 const inputClass = "h-10 w-full rounded-admin-sm border border-admin-border bg-white px-3 text-sm text-admin-ink outline-none transition focus:border-ignition focus:ring-2 focus:ring-ignition/15";
+const fallbackFooter = {
+  brandName: "ZYRON Heavy Industry",
+  description: "Industrial machinery solutions for global buyers.",
+  email: "info@zyroncnc.com",
+  whatsapp: "+8615655537083",
+  address: "Ma'anshan, Anhui Province, China",
+  ctaLabel: "Start a Project",
+  ctaHref: "/contact",
+  copyright: "Copyright 2026 ZYRON Heavy Industry. All rights reserved.",
+};
 
 export function NavigationEditor({
   initialDocument,
@@ -100,6 +110,39 @@ export function NavigationEditor({
         ...item,
         children: (item.children ?? []).filter((_, index) => index !== childIndex),
       } : item),
+    }));
+  }
+
+  function updateGrandchild(parentIndex: number, childIndex: number, grandchildIndex: number, patch: Partial<NavigationNode>) {
+    setDocument((current) => ({
+      ...current,
+      primary: current.primary.map((item, itemIndex) => itemIndex === parentIndex ? {
+        ...item,
+        children: (item.children ?? []).map((child, index) => index === childIndex ? {
+          ...child,
+          children: (child.children ?? []).map((grandchild, nestedIndex) => nestedIndex === grandchildIndex ? { ...grandchild, ...patch } : grandchild),
+        } : child),
+      } : item),
+    }));
+  }
+
+  function removeGrandchild(parentIndex: number, childIndex: number, grandchildIndex: number) {
+    setDocument((current) => ({
+      ...current,
+      primary: current.primary.map((item, itemIndex) => itemIndex === parentIndex ? {
+        ...item,
+        children: (item.children ?? []).map((child, index) => index === childIndex ? {
+          ...child,
+          children: (child.children ?? []).filter((_, nestedIndex) => nestedIndex !== grandchildIndex),
+        } : child),
+      } : item),
+    }));
+  }
+
+  function updateFooter(patch: Partial<NonNullable<NavigationSnapshot["footer"]>>) {
+    setDocument((current) => ({
+      ...current,
+      footer: { ...(current.footer ?? fallbackFooter), ...patch },
     }));
   }
 
@@ -201,17 +244,30 @@ export function NavigationEditor({
                 {node.kind === "GROUP" ? (
                   <div className="mt-4 space-y-3 border-l-2 border-ignition/30 pl-4">
                     {(node.children ?? []).map((child, childIndex) => (
-                      <div key={child.id} className="grid gap-3 rounded-admin-sm bg-admin-canvas p-3 sm:grid-cols-[minmax(140px,1fr)_minmax(180px,1.2fr)_auto] sm:items-end">
+                      <div key={child.id} className="rounded-admin-sm bg-admin-canvas p-3">
+                        <div className="grid gap-3 sm:grid-cols-[minmax(140px,1fr)_minmax(180px,1.2fr)_120px_auto] sm:items-end">
                         <label className="grid gap-1 text-xs font-semibold text-admin-muted">子菜单名称
                           <input aria-label={`${node.label} 子菜单 ${childIndex + 1} 名称`} value={child.label} disabled={!canWrite} onChange={(event) => updateChild(index, childIndex, { label: event.target.value })} className={inputClass} />
                         </label>
                         <label className="grid gap-1 text-xs font-semibold text-admin-muted">子菜单链接
                           <input aria-label={`${node.label} 子菜单 ${childIndex + 1} 链接`} value={child.href ?? ""} disabled={!canWrite} onChange={(event) => updateChild(index, childIndex, { href: event.target.value })} className={inputClass} />
                         </label>
+                        <label className="grid gap-1 text-xs font-semibold text-admin-muted">类型
+                          <select aria-label={`${node.label} 子菜单 ${childIndex + 1} 类型`} value={child.kind} disabled={!canWrite} onChange={(event) => updateChild(index, childIndex, { kind: event.target.value as NavigationNode["kind"], children: event.target.value === "GROUP" ? child.children ?? [] : undefined })} className={inputClass}><option value="LINK">链接</option><option value="GROUP">分组</option></select>
+                        </label>
                         <div className="flex items-center gap-2 pb-1">
                           <label className="inline-flex items-center gap-2 text-xs font-semibold text-admin-muted"><input type="checkbox" checked={child.visible} disabled={!canWrite} onChange={(event) => updateChild(index, childIndex, { visible: event.target.checked })} />显示</label>
                           <IconButton label={`删除 ${child.label}`} disabled={!canWrite} onClick={() => removeChild(index, childIndex)} destructive><Trash2 /></IconButton>
                         </div>
+                        </div>
+                        {child.kind === "GROUP" ? <div className="mt-3 space-y-2 border-l-2 border-ignition/20 pl-3">
+                          {(child.children ?? []).map((grandchild, grandchildIndex) => <div key={grandchild.id} className="grid gap-2 rounded-admin-sm border border-admin-border bg-white p-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+                            <label className="grid gap-1 text-xs font-semibold text-admin-muted">三级名称<input aria-label={`${child.label} 三级菜单 ${grandchildIndex + 1} 名称`} value={grandchild.label} disabled={!canWrite} onChange={(event) => updateGrandchild(index, childIndex, grandchildIndex, { label: event.target.value })} className={inputClass} /></label>
+                            <label className="grid gap-1 text-xs font-semibold text-admin-muted">三级链接<input aria-label={`${child.label} 三级菜单 ${grandchildIndex + 1} 链接`} value={grandchild.href ?? ""} disabled={!canWrite} onChange={(event) => updateGrandchild(index, childIndex, grandchildIndex, { href: event.target.value })} className={inputClass} /></label>
+                            <IconButton label={`删除三级菜单 ${grandchild.label}`} disabled={!canWrite} onClick={() => removeGrandchild(index, childIndex, grandchildIndex)} destructive><Trash2 /></IconButton>
+                          </div>)}
+                          {canWrite ? <button type="button" aria-label={`为 ${child.label} 新增三级菜单`} onClick={() => updateChild(index, childIndex, { children: [...(child.children ?? []), newNode()] })} className="inline-flex items-center gap-1 text-xs font-semibold text-ignition"><Plus className="size-3.5" />新增三级菜单</button> : null}
+                        </div> : null}
                       </div>
                     ))}
                     {canWrite ? <button type="button" aria-label={`为 ${node.label} 新增子项`} onClick={() => updatePrimary(index, { children: [...(node.children ?? []), newNode()] })} className="inline-flex items-center gap-1.5 text-sm font-semibold text-ignition"><Plus className="size-4" />新增子菜单</button> : null}
@@ -219,6 +275,23 @@ export function NavigationEditor({
                 ) : null}
               </div>
             ))}
+          </div>
+        </div>
+
+        <div className="rounded-admin-lg border border-admin-border bg-white p-5 shadow-admin-sm">
+          <div>
+            <h2 className="font-semibold text-admin-ink">页脚品牌与联系信息</h2>
+            <p className="mt-1 text-xs text-admin-muted">这些内容会直接显示在官网页脚，请只填写已核实的企业资料。</p>
+          </div>
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted">品牌名称<input aria-label="页脚品牌名称" value={(document.footer ?? fallbackFooter).brandName} disabled={!canWrite} onChange={(event) => updateFooter({ brandName: event.target.value })} className={inputClass} /></label>
+            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted">联系邮箱<input aria-label="页脚联系邮箱" type="email" value={(document.footer ?? fallbackFooter).email} disabled={!canWrite} onChange={(event) => updateFooter({ email: event.target.value })} className={inputClass} /></label>
+            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted">WhatsApp<input aria-label="页脚 WhatsApp" value={(document.footer ?? fallbackFooter).whatsapp} disabled={!canWrite} onChange={(event) => updateFooter({ whatsapp: event.target.value })} className={inputClass} /></label>
+            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted">CTA 名称<input aria-label="页脚 CTA 名称" value={(document.footer ?? fallbackFooter).ctaLabel} disabled={!canWrite} onChange={(event) => updateFooter({ ctaLabel: event.target.value })} className={inputClass} /></label>
+            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted">CTA 链接<input aria-label="页脚 CTA 链接" value={(document.footer ?? fallbackFooter).ctaHref} disabled={!canWrite} onChange={(event) => updateFooter({ ctaHref: event.target.value })} className={inputClass} /></label>
+            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted">版权文字<input aria-label="页脚版权文字" value={(document.footer ?? fallbackFooter).copyright} disabled={!canWrite} onChange={(event) => updateFooter({ copyright: event.target.value })} className={inputClass} /></label>
+            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted md:col-span-2">品牌简介<textarea aria-label="页脚品牌简介" rows={3} value={(document.footer ?? fallbackFooter).description} disabled={!canWrite} onChange={(event) => updateFooter({ description: event.target.value })} className={`${inputClass} h-auto py-2`} /></label>
+            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted md:col-span-2">联系地址<textarea aria-label="页脚联系地址" rows={2} value={(document.footer ?? fallbackFooter).address} disabled={!canWrite} onChange={(event) => updateFooter({ address: event.target.value })} className={`${inputClass} h-auto py-2`} /></label>
           </div>
         </div>
 

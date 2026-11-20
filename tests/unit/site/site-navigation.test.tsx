@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 
-import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -24,6 +25,7 @@ vi.mock("@/lib/repositories/category-repository", () => ({
 import { getSiteNavigationView } from "@/lib/repositories/site-navigation-view";
 
 describe("public managed site navigation", () => {
+  afterEach(cleanup);
   beforeEach(() => {
     vi.clearAllMocks();
     repositoryMocks.resolvePublicNavigation.mockResolvedValue(DEFAULT_NAVIGATION);
@@ -40,8 +42,22 @@ describe("public managed site navigation", () => {
 
     expect(screen.getAllByText("Shipping Highlights").length).toBeGreaterThanOrEqual(3);
     expect(screen.getAllByText("Shearing Machines").length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("link", { name: "Quote Now" }).length).toBeGreaterThanOrEqual(2);
-    expect(container.textContent).not.toMatch(/Buying Guides|Customer Cases|SHOWCASE/i);
+    expect(screen.getAllByRole("link", { name: "Quote Now" }).length).toBeGreaterThanOrEqual(1);
+    expect(container.textContent).not.toMatch(/Buying Guides/i);
+    expect(container.textContent).toMatch(/Customer Cases|SHOWCASE/i);
+  });
+
+  it("opens the mobile navigation as a dialog and closes it with Escape", async () => {
+    const user = userEvent.setup();
+    render(<SiteHeader navigation={DEFAULT_NAVIGATION} categories={productCategories} products={products} />);
+
+    const trigger = screen.getByRole("button", { name: "Open navigation" });
+    await user.click(trigger);
+    expect(screen.getByRole("dialog", { name: "Site navigation" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Close navigation" })).toHaveFocus();
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog", { name: "Site navigation" })).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
   });
 
   it("uses compatibility catalogue data when the database has no published categories", async () => {

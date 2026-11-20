@@ -159,8 +159,8 @@ export async function importLegacyCatalogue(options: {
             "id", "productId", "type", "position", "visible", "content", "updatedAt"
           )
           VALUES ${Prisma.join(sectionRows)}
-          ON CONFLICT ("productId", "type") DO UPDATE SET
-            "position" = EXCLUDED."position",
+          ON CONFLICT ("productId", "position") DO UPDATE SET
+            "type" = EXCLUDED."type",
             "visible" = EXCLUDED."visible",
             "content" = EXCLUDED."content",
             "updatedAt" = EXCLUDED."updatedAt"

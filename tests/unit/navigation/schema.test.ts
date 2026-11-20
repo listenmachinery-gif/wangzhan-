@@ -46,14 +46,17 @@ describe("managed navigation schema", () => {
       "ABOUT ZYRON",
       "PRODUCTS",
       "SUPPORT",
+      "SHOWCASE",
       "CONTACT",
     ]);
     const support = DEFAULT_NAVIGATION.primary.find((item) => item.label === "SUPPORT");
     expect(support?.children?.map((item) => item.label)).toEqual([
+      "Support Center",
       "Company News",
       "Shipping Highlights",
     ]);
-    expect(JSON.stringify(DEFAULT_NAVIGATION)).not.toMatch(/Buying Guides|Customer Cases|SHOWCASE/);
+    expect(JSON.stringify(DEFAULT_NAVIGATION)).not.toMatch(/Buying Guides/);
+    expect(DEFAULT_NAVIGATION.footer?.brandName).toBe("ZYRON Heavy Industry");
     expect(Object.isFrozen(DEFAULT_NAVIGATION)).toBe(true);
     expect(Object.isFrozen(DEFAULT_NAVIGATION.primary)).toBe(true);
   });

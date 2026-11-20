@@ -40,6 +40,14 @@ export const PAGE_COMPONENT_TYPES = [
 
 export type PageComponentType = (typeof PAGE_COMPONENT_TYPES)[number];
 
+export const PAGE_NODE_PLACEMENTS = [
+  "BEFORE_LEGACY",
+  "AFTER_LEGACY",
+  "REPLACE_LEGACY",
+] as const;
+
+export type PageNodePlacement = (typeof PAGE_NODE_PLACEMENTS)[number];
+
 const safeKeySchema = z.string().min(1).max(64).refine(
   (key) => !["html", "script", "dangerouslySetInnerHTML", "__proto__", "constructor", "prototype"].includes(key),
   "Executable or prototype-mutating content keys are not allowed.",
@@ -107,24 +115,45 @@ export const pageStyleSchema = z.object({
 
 export type PageStyle = z.infer<typeof pageStyleSchema>;
 
+export const pageTextStyleSchema = z.object({
+  color: colorSchema.optional(),
+  fontFamily: z.enum(["sans", "serif", "mono"]).optional(),
+  fontSize: z.number().int().min(10).max(96).optional(),
+  fontWeight: z.enum(["normal", "medium", "semibold", "bold"]).optional(),
+  lineHeight: z.number().min(1).max(2).optional(),
+  letterSpacing: z.number().min(-2).max(8).optional(),
+  textAlign: z.enum(["left", "center", "right"]).optional(),
+}).strict();
+
+export type PageTextStyle = z.infer<typeof pageTextStyleSchema>;
+
 export type PageNode = {
   id: string;
   type: PageComponentType;
+  /**
+   * Controls where managed modules appear on routes that still have a proven
+   * legacy product or catalogue layout. Older documents intentionally default
+   * to AFTER_LEGACY so existing publications keep their current appearance.
+   */
+  placement?: PageNodePlacement;
   content: SafeJson;
   style?: PageStyle;
   responsive?: { tablet?: PageStyle; mobile?: PageStyle };
+  textStyles?: Record<string, PageTextStyle>;
   children?: PageNode[];
 };
 
 export const pageNodeSchema: z.ZodType<PageNode> = z.lazy(() => z.object({
   id: z.string().min(1).max(80).regex(/^[a-zA-Z0-9_-]+$/),
   type: z.enum(PAGE_COMPONENT_TYPES),
+  placement: z.enum(PAGE_NODE_PLACEMENTS).optional(),
   content: safeJsonSchema,
   style: pageStyleSchema.optional(),
   responsive: z.object({
     tablet: pageStyleSchema.optional(),
     mobile: pageStyleSchema.optional(),
   }).strict().optional(),
+  textStyles: z.record(safeKeySchema, pageTextStyleSchema).optional(),
   children: z.array(pageNodeSchema).max(24).optional(),
 }).strict());
 

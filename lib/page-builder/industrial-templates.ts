@@ -1,7 +1,10 @@
 import type { PageDocument, PageNode } from "@/lib/page-builder/schema";
 
 const node = (id: string, type: PageNode["type"], content: PageNode["content"], style?: PageNode["style"]): PageNode => ({ id, type, content, ...(style ? { style } : {}) });
-const hero = (title: string, description: string, image: string, label = "Explore Machines", href = "/products") => node("hero", "HERO", { eyebrow: "ZYRON Heavy Industry", title, description, primaryLabel: label, primaryHref: href, image, alt: title }, { textColor: "#FFFFFF" });
+const hero = (title: string, description: string, image: string, label = "Explore Machines", href = "/products"): PageNode => ({
+  ...node("hero", "HERO", { eyebrow: "ZYRON Heavy Industry", title, description, primaryLabel: label, primaryHref: href, image, alt: title }, { textColor: "#FFFFFF" }),
+  placement: "BEFORE_LEGACY",
+});
 const split = (id: string, eyebrow: string, title: string, body: string, image: string, reverse = false) => node(id, "SPLIT_FEATURE", { eyebrow, title, body, image, imageAlt: title, reverse, ctaLabel: "Talk to Our Team", ctaHref: "/contact" });
 const faq = node("faq", "FAQ", { heading: "Frequently Asked Questions", items: [
   { title: "How do I choose the correct machine?", body: "Tell us your material, thickness, working length, process requirements and output target." },
@@ -15,7 +18,7 @@ const support = node("support-resources", "RESOURCE_LINKS", { heading: "Support 
   { title: "Shipping Highlights", description: "Browse completed shipments and equipment deliveries.", href: "/shipping-highlights" },
 ] });
 const products = node("product-series", "CATEGORY_CARDS", { heading: "Explore Our Machine Series", items: [
-  { title: "Shearing Machines", description: "Cutting solutions for sheet metal fabrication.", image: "/products/home-categories/shearing.png", href: "/products" },
+  { title: "Shearing Machines", description: "Cutting solutions for sheet metal fabrication.", image: "/products/series-heroes/shearing-machine-series.png", href: "/products" },
   { title: "Bending Machines", description: "Press brakes and folding solutions.", image: "/products/hydraulic-press-brake-hero.png", href: "/products" },
   { title: "Laser Cutting", description: "Fiber laser processing systems.", image: "/products/product-center-hero.png", href: "/products" },
 ] });
@@ -48,8 +51,8 @@ export const INDUSTRIAL_PAGE_TEMPLATES: Record<string, { label: string; document
     products, timeline, faq, cta,
   ] } },
   series: { label: "产品系列 · Series", document: { schemaVersion: 1, nodes: [
-    hero("Shearing Machine Solutions", "Find shearing equipment that matches the material, thickness, cutting length and productivity required.", "/products/home-categories/shearing.png"),
-    split("series-types", "Choose Your Equipment", "Match machine structure to your application.", "Compare cutting capacity, operation method, control options, maintenance requirements and expected throughput.", "/products/home-categories/shearing.png"),
+    hero("Shearing Machine Solutions", "Find shearing equipment that matches the material, thickness, cutting length and productivity required.", "/products/series-heroes/shearing-machine-series.png"),
+    split("series-types", "Choose Your Equipment", "Match machine structure to your application.", "Compare cutting capacity, operation method, control options, maintenance requirements and expected throughput.", "/products/series-heroes/shearing-machine-series.png"),
     node("series-comparison", "MODEL_COMPARISON", { heading: "Machine Selection Guide", columns: ["Selection Factor", "What to Confirm"], rows: [["Material", "Steel, stainless steel, aluminum or other"], ["Thickness", "Maximum required cutting thickness"], ["Length", "Maximum sheet width"], ["Control", "Manual or controlled backgauge"]] }), faq, cta,
   ] } },
   detail: { label: "单品详情 · Product Detail", document: { schemaVersion: 1, nodes: [
