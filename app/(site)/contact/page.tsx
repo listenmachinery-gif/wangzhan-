@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Mail, MapPin, MessageCircle } from "lucide-react";
 import { InquiryForm } from "@/components/InquiryForm";
+import { ManagedPageSections } from "@/components/site/ManagedPageSections";
 import { productCategories } from "@/data/products";
 import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
 
@@ -79,6 +80,7 @@ export default function ContactPage() {
           </Link>
         </div>
       </section>
+      <ManagedPageSections slug="contact" />
     </main>
   );
 }
