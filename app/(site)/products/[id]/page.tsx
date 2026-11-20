@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { ProductViewTracker } from "@/components/analytics/ProductViewTracker";
+import { ManagedPageSections } from "@/components/site/ManagedPageSections";
 import ElectricTwoRollPlateRollingMachineSolutionPage from "@/components/ElectricTwoRollPlateRollingMachineSolutionPage";
 import ElectricFoldingMachineSolutionPage from "@/components/ElectricFoldingMachineSolutionPage";
 import ElectroHydraulicServoCncPressBrakeSolutionPage from "@/components/ElectroHydraulicServoCncPressBrakeSolutionPage";
@@ -45,6 +46,7 @@ function trackedProduct(
     <>
       <ProductViewTracker {...identity} />
       {content}
+      <ManagedPageSections slug={`product-${identity.productSlug}`} />
     </>
   );
 }
