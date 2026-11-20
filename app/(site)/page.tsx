@@ -8,6 +8,7 @@ import { HomeBannerCarousel } from "@/components/site/HomeBannerCarousel";
 import { ManagedCompanyStrength } from "@/components/site/ManagedCompanyStrength";
 import { ManagedWhyChoose } from "@/components/site/ManagedWhyChoose";
 import { LatestShippingHighlights } from "@/components/site/LatestShippingHighlights";
+import { companyVerificationHighlights } from "@/data/company";
 import { getCategoryHref, productCategories } from "@/data/products";
 import { listActiveBanners } from "@/lib/repositories/banner-repository";
 import { getPublishedPageBySlug } from "@/lib/repositories/page-repository";
@@ -28,13 +29,6 @@ const fallbackMetadata: Metadata = {
 export function generateMetadata() {
   return overlayPublishedSeo("/", fallbackMetadata);
 }
-
-const certificateHighlights = [
-  "CE Machinery Directive",
-  "ISO 9001 Quality Management",
-  "Business Registration",
-  "Trademark Protection",
-];
 
 const solutionSteps = [
   "Material and thickness",
@@ -168,18 +162,17 @@ export default async function Home() {
 
       <ManagedCompanyStrength node={managedFactory} />
 
-      <section id="certificates" className="relative overflow-hidden bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
+      <section id="verification-documents" className="relative overflow-hidden bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_35%,rgba(118,185,0,0.14),transparent_30%)]" />
         <div className="relative mx-auto grid max-w-[1440px] gap-10 lg:grid-cols-[0.7fr_1.3fr] lg:items-center">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-ignition">Certificates</p>
-            <h2 className="mt-4 text-4xl font-semibold leading-tight sm:text-6xl">Certified quality. Verified manufacturing.</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-ignition">Documentation</p>
+            <h2 className="mt-4 text-4xl font-semibold leading-tight sm:text-6xl">Documents prepared for supplier evaluation.</h2>
             <p className="mt-5 max-w-xl text-base leading-8 text-zinc-400">
-              Quality management, machinery compliance, business qualification, and brand registrations support global
-              procurement decisions.
+              Available documents vary by machine and order. Request the relevant files for review before confirming a purchase.
             </p>
             <div className="mt-8 grid gap-4">
-              {certificateHighlights.map((item) => (
+              {companyVerificationHighlights.map((item) => (
                 <div key={item} className="border-l-2 border-ignition pl-4 text-sm font-semibold leading-6 text-zinc-100">
                   {item}
                 </div>
@@ -189,8 +182,8 @@ export default async function Home() {
 
           <div className="relative min-h-[48vh] overflow-hidden rounded-sm border border-white/10 bg-black shadow-[0_28px_90px_rgba(0,0,0,0.42)] lg:min-h-[68vh]">
             <Image
-              src="/brand/certificates-showcase.png"
-              alt="ZYRON certificates and business registration documents"
+              src="/brand/factory-showcase.png"
+              alt="ZYRON machinery production environment"
               fill
               sizes="(min-width: 1024px) 58vw, 100vw"
               className="object-contain"

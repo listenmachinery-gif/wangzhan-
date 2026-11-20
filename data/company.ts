@@ -1,7 +1,6 @@
 export type CompanyStat = {
   value: string;
   label: string;
-  verification: "existing-site-data";
 };
 
 export type CompanyStep = {
@@ -33,12 +32,19 @@ export const companyIdentity = {
   sameAs: [] as string[],
 };
 
-// VERIFY BEFORE PUBLISHING: values are inherited from the existing live site.
+// Keep the public fallback factual until business documents confirm numeric claims.
 export const companyStats: CompanyStat[] = [
-  { value: "15+", label: "Years of Experience", verification: "existing-site-data" },
-  { value: "60+", label: "Countries Served", verification: "existing-site-data" },
-  { value: "200+", label: "Team Members", verification: "existing-site-data" },
-  { value: "10,000m²+", label: "Factory Area", verification: "existing-site-data" },
+  { value: "Cutting", label: "Sheet Processing" },
+  { value: "Bending", label: "Forming Equipment" },
+  { value: "Rolling", label: "Curved Forming" },
+  { value: "Ductwork", label: "HVAC Production" },
+];
+
+export const companyVerificationHighlights = [
+  "Machine specification confirmation",
+  "Pre-shipment inspection records",
+  "Operation and maintenance documents",
+  "Export packing information",
 ];
 
 export const companyFocus = [

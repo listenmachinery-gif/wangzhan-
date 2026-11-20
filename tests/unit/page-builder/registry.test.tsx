@@ -24,6 +24,19 @@ describe("page builder component registry", () => {
     }
   });
 
+  it("does not publish unverified company metrics or certifications as component defaults", () => {
+    const factory = getComponentDefinition("FACTORY_STATS")!;
+    const certificates = getComponentDefinition("CERTIFICATES")!;
+    const serializedDefaults = JSON.stringify({
+      factory: factory.defaultContent,
+      certificates: certificates.defaultContent,
+    });
+
+    expect(serializedDefaults).not.toMatch(/15\+|60\+|200\+|10,000m²\+/);
+    expect(serializedDefaults).not.toMatch(/CE Machinery Directive|ISO 9001/);
+    expect(serializedDefaults).toContain("Machine specification confirmation");
+  });
+
   it("server-renders every registered component from its validated default content", () => {
     const document: PageDocument = {
       schemaVersion: 1,

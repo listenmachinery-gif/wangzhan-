@@ -23,12 +23,6 @@ export function generateMetadata() {
   return overlayPublishedSeo("/products", fallbackMetadata);
 }
 
-const heroStats = [
-  { value: "0", label: "Machine Series" },
-  { value: "0", label: "Product Types" },
-  { value: "60+", label: "Countries Served" },
-];
-
 const selectionSteps = [
   "Confirm material, thickness, and finished part.",
   "Choose cutting, bending, rolling, duct, pressing, or recycling process.",
@@ -42,7 +36,6 @@ export default async function ProductsPage() {
   const visibleHeroStats = [
     { value: String(visibleCategories.length), label: "Machine Series" },
     { value: String(visibleProducts.length), label: "Product Types" },
-    ...heroStats.slice(2),
   ];
   return (
     <main className="bg-[#f4f6f8] text-[#101214]">
@@ -93,7 +86,7 @@ export default async function ProductsPage() {
             </div>
           </div>
 
-          <div className="mt-14 grid w-full max-w-4xl gap-5 border-y border-white/15 py-7 sm:grid-cols-3">
+          <div className="mt-14 grid w-full max-w-3xl gap-5 border-y border-white/15 py-7 sm:grid-cols-2">
             {visibleHeroStats.map((stat) => (
               <div key={stat.label}>
                 <p className="text-5xl font-semibold tracking-normal text-white">{stat.value}</p>

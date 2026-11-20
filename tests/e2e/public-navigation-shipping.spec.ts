@@ -13,8 +13,9 @@ test("keeps navigation, compatibility routes, and responsive layouts usable", as
     }
     await page.goto("/");
     if (viewport.width < 1280) {
-      const mobileNavigation = page.locator("details.mobile-nav");
-      await mobileNavigation.getByLabel("Open navigation").click();
+      await page.getByRole("button", { name: "Open navigation" }).click();
+      const mobileNavigation = page.getByRole("dialog", { name: "Site navigation" });
+      await expect(mobileNavigation).toBeVisible();
       const support = mobileNavigation.getByText("SUPPORT", { exact: true });
       await expect(support).toBeVisible();
       await support.click();
