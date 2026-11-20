@@ -23,6 +23,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { PageRenderer } from "@/components/page-builder/PageRenderer";
+import { INDUSTRIAL_PAGE_TEMPLATES } from "@/lib/page-builder/industrial-templates";
 import { formatAdminEnum } from "@/lib/admin/localization";
 import {
   componentRegistry,
@@ -236,6 +237,7 @@ export function PageBuilder({
   onPersist?: Persist;
 }) {
   const [document, setDocument] = useState(() => clone(page.document));
+  const [templateChoice, setTemplateChoice] = useState("home");
   const [past, setPast] = useState<PageDocument[]>([]);
   const [future, setFuture] = useState<PageDocument[]>([]);
   const [selectedId, setSelectedId] = useState(
@@ -469,6 +471,15 @@ export function PageBuilder({
     setMessage(`已恢复 v${targetVersion} 为新草稿`);
   }
 
+  function applyTemplate() {
+    const preset = INDUSTRIAL_PAGE_TEMPLATES[templateChoice];
+    if (!preset) return;
+    if (!window.confirm("替换当前草稿全部模块？建议先保存当前版本，发布后仍可从历史版本恢复。")) return;
+    const next = clone(preset.document);
+    commit(next, next.nodes[0]?.id ?? "");
+    setMessage(`已应用「${preset.label}」，请按实际产品资料编辑后保存。`);
+  }
+
   const groups = useMemo(
     () =>
       ["基础", "布局", "外贸业务", "营销"].map((group) => ({
@@ -515,6 +526,14 @@ export function PageBuilder({
 
   return (
     <div className="-m-4 min-h-[calc(100vh-4rem)] bg-[#ECEFF1] sm:-m-6 lg:-m-8">
+      <div className="flex flex-wrap items-center gap-3 border-b border-neutral-200 bg-white px-4 py-2">
+        <label htmlFor="industrial-template-select" className="text-xs font-semibold text-neutral-600">页面模板</label>
+        <select id="industrial-template-select" value={templateChoice} onChange={(event) => setTemplateChoice(event.target.value)} className="h-9 rounded border border-neutral-300 px-2 text-sm">
+          {Object.entries(INDUSTRIAL_PAGE_TEMPLATES).map(([key, preset]) => <option key={key} value={key}>{preset.label}</option>)}
+        </select>
+        <button type="button" onClick={applyTemplate} className="rounded border border-neutral-300 px-3 py-2 text-xs font-semibold hover:border-[#76B900]">应用模板到草稿</button>
+        <span className="text-xs text-neutral-500">模块可继续增加、排序、复制、删除；应用模板不会自动发布。</span>
+      </div>
       <header className="sticky top-16 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200 bg-white px-4 py-3">
         <div>
           <div className="flex items-center gap-2">
