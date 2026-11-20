@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { getCategoryHref } from "@/data/products";
+import { ManagedPageSections } from "@/components/site/ManagedPageSections";
 import { getPublishedCategoryBySlug } from "@/lib/repositories/category-repository";
 import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
 import { buildProductDirectory, toPublicCategory, toPublicProduct } from "@/lib/repositories/public-catalogue-view";
@@ -220,6 +221,7 @@ export default async function ProductSeriesPage({ params }: ProductSeriesPagePro
           </div>
         </div>
       </section>
+      <ManagedPageSections slug={`series-${id}`} />
     </main>
   );
 }
