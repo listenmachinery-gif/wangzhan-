@@ -52,6 +52,10 @@ test.beforeAll(async () => {
       slug: "home",
       pageType: "HOME",
       draftContent: defaultHomepageDocument as unknown as Prisma.InputJsonValue,
+      publishedContent: defaultHomepageDocument as unknown as Prisma.InputJsonValue,
+      status: "PUBLISHED",
+      publishedVersion: 1,
+      publishedAt: new Date(),
     },
   });
   await db.pageVersion.create({
@@ -116,6 +120,17 @@ test("edits, previews, publishes, and restores a homepage version", async ({
   );
   await page.getByRole("button", { name: "保存草稿" }).click();
   await expect(page.getByText(/草稿已保存|已自动保存/)).toBeVisible();
+
+  const editorUrl = page.url();
+  await page.goto("/");
+  await expect(
+    page.getByRole("heading", { name: "Manufacturing capacity behind every solution." }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("E2E published company strength", { exact: true }),
+  ).toHaveCount(0);
+
+  await page.goto(editorUrl);
   await page.getByRole("button", { name: "发布", exact: true }).click();
   await expect(page.getByText("已发布到前台")).toBeVisible();
 

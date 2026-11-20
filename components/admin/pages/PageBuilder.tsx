@@ -23,6 +23,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { PageRenderer } from "@/components/page-builder/PageRenderer";
+import { INDUSTRIAL_PAGE_TEMPLATES } from "@/lib/page-builder/industrial-templates";
 import { formatAdminEnum } from "@/lib/admin/localization";
 import {
   componentRegistry,
@@ -32,7 +33,9 @@ import {
 import type {
   PageDocument,
   PageNode,
+  PageNodePlacement,
   PageStyle,
+  PageTextStyle,
 } from "@/lib/page-builder/schema";
 
 type Device = "desktop" | "tablet" | "mobile";
@@ -236,6 +239,7 @@ export function PageBuilder({
   onPersist?: Persist;
 }) {
   const [document, setDocument] = useState(() => clone(page.document));
+  const [templateChoice, setTemplateChoice] = useState("home");
   const [past, setPast] = useState<PageDocument[]>([]);
   const [future, setFuture] = useState<PageDocument[]>([]);
   const [selectedId, setSelectedId] = useState(
@@ -247,6 +251,7 @@ export function PageBuilder({
   const [message, setMessage] = useState("所有更改已保存");
   const [dirty, setDirty] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [textElementKey, setTextElementKey] = useState("");
   const [versions, setVersions] = useState<
     Array<{
       version: number;
@@ -268,6 +273,18 @@ export function PageBuilder({
   const selectedDefinition = selected
     ? getComponentDefinition(selected.type)
     : undefined;
+  const editableTextKeys = selected
+    ? Object.entries(selected.content as Record<string, unknown>)
+        .filter(([, value]) => typeof value === "string")
+        .map(([key]) => key)
+        .filter((key) => !/(href|src|image|alt|poster|url)$/i.test(key))
+    : [];
+  const activeTextKey = editableTextKeys.includes(textElementKey)
+    ? textElementKey
+    : (editableTextKeys[0] ?? "");
+  const activeTextStyle = activeTextKey
+    ? (selected?.textStyles?.[activeTextKey] ?? {})
+    : {};
 
   const commit = useCallback(
     (next: PageDocument, nextSelectedId?: string) => {
@@ -469,6 +486,15 @@ export function PageBuilder({
     setMessage(`已恢复 v${targetVersion} 为新草稿`);
   }
 
+  function applyTemplate() {
+    const preset = INDUSTRIAL_PAGE_TEMPLATES[templateChoice];
+    if (!preset) return;
+    if (!window.confirm("替换当前草稿全部模块？建议先保存当前版本，发布后仍可从历史版本恢复。")) return;
+    const next = clone(preset.document);
+    commit(next, next.nodes[0]?.id ?? "");
+    setMessage(`已应用「${preset.label}」，请按实际产品资料编辑后保存。`);
+  }
+
   const groups = useMemo(
     () =>
       ["基础", "外贸业务", "营销"].map((group) => ({
@@ -512,9 +538,47 @@ export function PageBuilder({
           };
     commit({ ...document, nodes });
   }
+  function updateTextStyle(changes: Partial<PageTextStyle>) {
+    if (!selected || !activeTextKey) return;
+    const nodes = [...document.nodes];
+    nodes[selectedIndex] = {
+      ...selected,
+      textStyles: {
+        ...selected.textStyles,
+        [activeTextKey]: {
+          ...selected.textStyles?.[activeTextKey],
+          ...changes,
+        },
+      },
+    };
+    commit({ ...document, nodes });
+  }
 
   return (
     <div className="-m-4 min-h-[calc(100vh-4rem)] bg-[#ECEFF1] sm:-m-6 lg:-m-8">
+      <div className="flex flex-wrap items-center gap-3 border-b border-neutral-200 bg-white px-4 py-2">
+        <label htmlFor="industrial-template-select" className="text-xs font-semibold text-neutral-600">页面模板</label>
+        <select id="industrial-template-select" value={templateChoice} onChange={(event) => setTemplateChoice(event.target.value)} className="h-9 rounded border border-neutral-300 px-2 text-sm">
+          {Object.entries(INDUSTRIAL_PAGE_TEMPLATES).map(([key, preset]) => <option key={key} value={key}>{preset.label}</option>)}
+        </select>
+        <button type="button" onClick={applyTemplate} className="rounded border border-neutral-300 px-3 py-2 text-xs font-semibold hover:border-[#76B900]">应用模板到草稿</button>
+        <label className="flex items-center gap-2 text-xs font-semibold text-neutral-600">
+          前台呈现
+          <select
+            aria-label="前台呈现模式"
+            value={document.renderMode ?? "AUGMENT_LEGACY"}
+            onChange={(event) => commit({
+              ...document,
+              renderMode: event.target.value as PageDocument["renderMode"],
+            })}
+            className="h-9 rounded border border-neutral-300 px-2 text-sm"
+          >
+            <option value="AUGMENT_LEGACY">兼容旧页面并插入模块</option>
+            <option value="REPLACE_LEGACY">CMS 模块整页接管</option>
+          </select>
+        </label>
+        <span className="text-xs text-neutral-500">模块可继续增加、排序、复制、删除；应用模板不会自动发布。</span>
+      </div>
       <header className="sticky top-16 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200 bg-white px-4 py-3">
         <div>
           <div className="flex items-center gap-2">
@@ -728,7 +792,44 @@ export function PageBuilder({
                   删除
                 </button>
               </div>
+              {editableTextKeys.length ? (
+                <div className="mt-6 border-t pt-5">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500">单独文字样式</h3>
+                  <label className="mt-4 block text-xs">文字元素
+                    <select aria-label="文字元素" value={activeTextKey} onChange={(event) => setTextElementKey(event.target.value)} className="mt-1 h-9 w-full rounded border px-2">
+                      {editableTextKeys.map((key) => <option key={key} value={key}>{selectedDefinition.editorFields.find((field) => field.key === key)?.label ?? key}</option>)}
+                    </select>
+                  </label>
+                  <div className="mt-3 grid grid-cols-2 gap-3">
+                    <label className="col-span-2 text-xs">颜色<div className="mt-1 flex gap-2"><input type="color" aria-label="单独文字颜色" value={activeTextStyle.color ?? "#1D1D1F"} onChange={(event) => updateTextStyle({ color: event.target.value })} className="h-9 w-12 rounded border" /><input aria-label="单独文字 HEX" value={activeTextStyle.color ?? ""} placeholder="#1D1D1F" onChange={(event) => updateTextStyle({ color: event.target.value || undefined })} className="h-9 min-w-0 flex-1 rounded border px-2" /></div></label>
+                    <label className="text-xs">字号<input aria-label="单独文字字号" type="number" min="10" max="96" value={activeTextStyle.fontSize ?? ""} onChange={(event) => updateTextStyle({ fontSize: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
+                    <label className="text-xs">字重<select aria-label="单独文字字重" value={activeTextStyle.fontWeight ?? "normal"} onChange={(event) => updateTextStyle({ fontWeight: event.target.value as PageTextStyle["fontWeight"] })} className="mt-1 h-9 w-full rounded border px-2"><option value="normal">常规</option><option value="medium">中等</option><option value="semibold">半粗</option><option value="bold">粗体</option></select></label>
+                    <label className="text-xs">行高<input aria-label="单独文字行高" type="number" min="1" max="2" step="0.1" value={activeTextStyle.lineHeight ?? ""} onChange={(event) => updateTextStyle({ lineHeight: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
+                    <label className="text-xs">字距<input aria-label="单独文字字距" type="number" min="-2" max="8" step="0.1" value={activeTextStyle.letterSpacing ?? ""} onChange={(event) => updateTextStyle({ letterSpacing: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
+                  </div>
+                </div>
+              ) : null}
               <div className="mt-6 border-t pt-5">
+                <label className="mb-5 block text-xs font-semibold text-neutral-600">
+                  旧版内容插槽
+                  <select
+                    aria-label="旧版内容插槽"
+                    value={selected.placement ?? "AFTER_LEGACY"}
+                    onChange={(event) => {
+                      const nodes = [...document.nodes];
+                      nodes[selectedIndex] = {
+                        ...selected,
+                        placement: event.target.value as PageNodePlacement,
+                      };
+                      commit({ ...document, nodes });
+                    }}
+                    className="mt-1 h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm"
+                  >
+                    <option value="BEFORE_LEGACY">旧版内容之前</option>
+                    <option value="AFTER_LEGACY">旧版内容之后</option>
+                    <option value="REPLACE_LEGACY">替换旧版内容</option>
+                  </select>
+                </label>
                 <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-neutral-500">
                   内容
                 </h3>
@@ -782,6 +883,10 @@ export function PageBuilder({
                       className="mt-1 h-9 w-full rounded border px-2"
                     />
                   </label>
+                  <label className="text-xs">左右内边距<input aria-label="左右内边距" type="number" value={activeStyle.paddingX ?? ""} onChange={(event) => updateStyle({ paddingX: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
+                  <label className="text-xs">最大宽度<input aria-label="最大宽度" type="number" min="320" max="1920" value={activeStyle.maxWidth ?? ""} onChange={(event) => updateStyle({ maxWidth: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
+                  <label className="text-xs">上外边距<input aria-label="上外边距" type="number" value={activeStyle.marginTop ?? ""} onChange={(event) => updateStyle({ marginTop: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
+                  <label className="text-xs">下外边距<input aria-label="下外边距" type="number" value={activeStyle.marginBottom ?? ""} onChange={(event) => updateStyle({ marginBottom: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
                   <label className="col-span-2 text-xs">
                     背景颜色
                     <input
@@ -796,6 +901,7 @@ export function PageBuilder({
                       className="mt-1 h-9 w-full rounded border px-2"
                     />
                   </label>
+                  <label className="col-span-2 text-xs">背景图片<input aria-label="背景图片" type="text" value={activeStyle.backgroundImage ?? ""} placeholder="/api/media/..." onChange={(event) => updateStyle({ backgroundImage: event.target.value || undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
                   <label className="text-xs">
                     字号
                     <input
@@ -810,6 +916,39 @@ export function PageBuilder({
                       }
                       className="mt-1 h-9 w-full rounded border px-2"
                     />
+                  </label>
+                  <label className="col-span-2 text-xs">
+                    文字颜色
+                    <div className="mt-1 flex gap-2">
+                      <input type="color" aria-label="选择文字颜色" value={activeStyle.textColor ?? "#1D1D1F"} onChange={(event) => updateStyle({ textColor: event.target.value })} className="h-9 w-12 cursor-pointer rounded border" />
+                      <input type="text" value={activeStyle.textColor ?? ""} placeholder="#1D1D1F" onChange={(event) => updateStyle({ textColor: event.target.value || undefined })} className="h-9 min-w-0 flex-1 rounded border px-2" />
+                    </div>
+                  </label>
+                  <label className="col-span-2 text-xs">
+                    字体
+                    <select value={activeStyle.fontFamily ?? "sans"} onChange={(event) => updateStyle({ fontFamily: event.target.value as PageStyle["fontFamily"] })} className="mt-1 h-9 w-full rounded border px-2">
+                      <option value="sans">无衬线 Sans</option><option value="serif">衬线 Serif</option><option value="mono">等宽 Mono</option>
+                    </select>
+                  </label>
+                  <label className="text-xs">
+                    字重
+                    <select value={activeStyle.fontWeight ?? "normal"} onChange={(event) => updateStyle({ fontWeight: event.target.value as PageStyle["fontWeight"] })} className="mt-1 h-9 w-full rounded border px-2">
+                      <option value="normal">常规</option><option value="medium">中等</option><option value="semibold">半粗</option><option value="bold">粗体</option>
+                    </select>
+                  </label>
+                  <label className="text-xs">
+                    文字对齐
+                    <select value={activeStyle.textAlign ?? "left"} onChange={(event) => updateStyle({ textAlign: event.target.value as PageStyle["textAlign"] })} className="mt-1 h-9 w-full rounded border px-2">
+                      <option value="left">左对齐</option><option value="center">居中</option><option value="right">右对齐</option>
+                    </select>
+                  </label>
+                  <label className="text-xs">
+                    行高
+                    <input type="number" min="1" max="2" step="0.1" value={activeStyle.lineHeight ?? ""} onChange={(event) => updateStyle({ lineHeight: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" />
+                  </label>
+                  <label className="text-xs">
+                    字间距
+                    <input type="number" min="-2" max="8" step="0.1" value={activeStyle.letterSpacing ?? ""} onChange={(event) => updateStyle({ letterSpacing: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" />
                   </label>
                   <label className="flex items-end gap-2 pb-2 text-xs">
                     <input

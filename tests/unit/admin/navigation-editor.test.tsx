@@ -39,12 +39,12 @@ describe("NavigationEditor", () => {
     expect(within(screen.getAllByTestId("primary-navigation-item")[1]).getByDisplayValue("START")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "新增一级链接" }));
-    expect(screen.getAllByTestId("primary-navigation-item")).toHaveLength(6);
+    expect(screen.getAllByTestId("primary-navigation-item")).toHaveLength(7);
     await user.click(screen.getByRole("button", { name: "删除 新菜单" }));
-    expect(screen.getAllByTestId("primary-navigation-item")).toHaveLength(5);
+    expect(screen.getAllByTestId("primary-navigation-item")).toHaveLength(6);
 
     await user.click(screen.getByRole("button", { name: "为 SUPPORT 新增子项" }));
-    expect(screen.getByRole("textbox", { name: "SUPPORT 子菜单 3 名称" })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "SUPPORT 子菜单 4 名称" })).toBeInTheDocument();
   });
 
   it("saves a draft and publishes the returned version", async () => {
@@ -79,6 +79,7 @@ describe("NavigationEditor", () => {
       expect(payload.document.languages[0].label).toBe("English Global");
       expect(payload.document.footerGroups[0].label).toBe("客户支持");
       expect(payload.document.footerGroups[0].items[0].label).toBe("联系工程师");
+      expect(payload.document.footer.brandName).toBe("ZYRON International");
       return response({ version: 4, status: "DRAFT", draftContent: payload.document });
     });
     renderEditor();
@@ -91,6 +92,34 @@ describe("NavigationEditor", () => {
     await user.type(screen.getByRole("textbox", { name: "页脚组 1 名称" }), "客户支持");
     await user.clear(screen.getByRole("textbox", { name: "页脚组 1 链接 1 名称" }));
     await user.type(screen.getByRole("textbox", { name: "页脚组 1 链接 1 名称" }), "联系工程师");
+    await user.clear(screen.getByRole("textbox", { name: "页脚品牌名称" }));
+    await user.type(screen.getByRole("textbox", { name: "页脚品牌名称" }), "ZYRON International");
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent("草稿已保存");
+  });
+
+  it("edits the complete managed footer in the published navigation snapshot", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(globalThis, "fetch").mockImplementation((_input, init) => {
+      const payload = JSON.parse(String(init?.body));
+      expect(payload.document.footer.productCategories).toEqual({ visible: false, label: "设备分类" });
+      expect(payload.document.footer.actionLinks.label).toBe("合作入口");
+      expect(payload.document.footer.newsletter).toMatchObject({ visible: true, title: "机械资讯", ctaHref: "/news" });
+      expect(payload.document.footer.legalLinks[0].label).toBe("隐私条款");
+      return response({ version: 4, status: "DRAFT", draftContent: payload.document });
+    });
+    renderEditor();
+
+    await user.click(screen.getByRole("checkbox", { name: "显示产品分类" }));
+    await user.clear(screen.getByRole("textbox", { name: "产品分类标题" }));
+    await user.type(screen.getByRole("textbox", { name: "产品分类标题" }), "设备分类");
+    await user.clear(screen.getByRole("textbox", { name: "合作入口标题" }));
+    await user.type(screen.getByRole("textbox", { name: "合作入口标题" }), "合作入口");
+    await user.clear(screen.getByRole("textbox", { name: "资讯标题" }));
+    await user.type(screen.getByRole("textbox", { name: "资讯标题" }), "机械资讯");
+    await user.clear(screen.getByRole("textbox", { name: "法律链接 1 名称" }));
+    await user.type(screen.getByRole("textbox", { name: "法律链接 1 名称" }), "隐私条款");
     await user.click(screen.getByRole("button", { name: "保存草稿" }));
 
     expect(await screen.findByRole("status")).toHaveTextContent("草稿已保存");

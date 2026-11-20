@@ -29,7 +29,11 @@ const optionalText = (maximum: number) => z.preprocess(
   z.string().trim().min(1).max(maximum).optional(),
 );
 const normalizedPhone = z.preprocess(
-  (value) => typeof value === "string" ? value.trim().replace(/\s+/g, " ") : value,
+  (value) => {
+    if (typeof value !== "string") return value;
+    const normalized = value.trim().replace(/\s+/g, " ");
+    return normalized === "" ? undefined : normalized;
+  },
   z.string().min(1).max(80).optional(),
 );
 const email = z.string().trim().toLowerCase().email().max(254);

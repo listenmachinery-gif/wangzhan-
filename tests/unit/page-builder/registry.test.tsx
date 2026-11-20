@@ -24,6 +24,19 @@ describe("page builder component registry", () => {
     }
   });
 
+  it("does not publish unverified company metrics or certifications as component defaults", () => {
+    const factory = getComponentDefinition("FACTORY_STATS")!;
+    const certificates = getComponentDefinition("CERTIFICATES")!;
+    const serializedDefaults = JSON.stringify({
+      factory: factory.defaultContent,
+      certificates: certificates.defaultContent,
+    });
+
+    expect(serializedDefaults).not.toMatch(/15\+|60\+|200\+|10,000m²\+/);
+    expect(serializedDefaults).not.toMatch(/CE Machinery Directive|ISO 9001/);
+    expect(serializedDefaults).toContain("Machine specification confirmation");
+  });
+
   it("server-renders every registered component from its validated default content", () => {
     const document: PageDocument = {
       schemaVersion: 1,
@@ -88,6 +101,29 @@ describe("page builder component registry", () => {
     expect(stylesheet).toContain("@media (max-width: 639px)");
     expect(stylesheet).toContain("font-size:24px");
     expect(stylesheet).toContain("display:none");
+  });
+
+  it("scopes independent title and body typography to the selected text field", () => {
+    const hero = getComponentDefinition("HERO")!;
+    const document: PageDocument = {
+      schemaVersion: 1,
+      nodes: [{
+        id: "styled-hero",
+        type: "HERO",
+        content: hero.defaultContent as PageNode["content"],
+        textStyles: {
+          title: { color: "#76B900", fontSize: 64, fontWeight: "bold" },
+          description: { color: "#FFFFFF", fontSize: 18, lineHeight: 1.7 },
+        },
+      }],
+    };
+
+    const { container } = render(<PageRenderer document={document} />);
+    const stylesheet = container.querySelector("style")?.textContent ?? "";
+    expect(container.querySelector('[data-page-text="title"]')).toBeInTheDocument();
+    expect(container.querySelector('[data-page-text="description"]')).toBeInTheDocument();
+    expect(stylesheet).toContain('[data-page-node="styled-hero"] [data-page-text="title"]');
+    expect(stylesheet).toContain("font-size:64px!important");
   });
 
   it("rejects protocol-relative and remote image sources", () => {

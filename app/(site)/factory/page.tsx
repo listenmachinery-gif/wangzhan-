@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { CompanyPage } from "@/components/company/CompanyPage";
+import { ManagedPageSections } from "@/components/site/ManagedPageSections";
+import { PageRenderer } from "@/components/page-builder/PageRenderer";
+import { getPublishedPageBySlug } from "@/lib/repositories/page-repository";
 import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +45,10 @@ export function generateMetadata() {
   return overlayPublishedSeo("/factory", fallbackMetadata);
 }
 
-export default function FactoryPage() {
-  return <CompanyPage />;
+export default async function FactoryPage() {
+  const managed = await getPublishedPageBySlug("company");
+  if (managed?.nodes.some((node) => node.type === "HERO")) {
+    return <main className="bg-[#f4f6f8] text-[#101214]"><PageRenderer document={managed} /></main>;
+  }
+  return <><CompanyPage /><ManagedPageSections slug="company" /></>;
 }

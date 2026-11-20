@@ -13,6 +13,13 @@ const categorySlug = "e2e-admin-category";
 function database() {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new Error("DATABASE_URL is required for E2E tests.");
+  const testConnectionString = process.env.TEST_DATABASE_URL;
+  if (!testConnectionString || connectionString !== testConnectionString) {
+    throw new Error("Product E2E requires DATABASE_URL to exactly match TEST_DATABASE_URL.");
+  }
+  if (!new URL(connectionString).pathname.replace(/^\//, "").endsWith("_test")) {
+    throw new Error("Product E2E is restricted to a database whose name ends with _test.");
+  }
   return new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 }
 

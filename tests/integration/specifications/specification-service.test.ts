@@ -112,7 +112,7 @@ describe("SpecificationService", () => {
     expect(saved.version).toBe(productVersion + 1);
     await expect(db.productModel.findMany({ where: { productId }, orderBy: { position: "asc" } })).resolves.toHaveLength(2);
     await expect(db.specificationValue.count()).resolves.toBe(4);
-    const technical = await db.productSection.findUniqueOrThrow({ where: { productId_type: { productId, type: "TECHNICAL" } } });
+    const technical = await db.productSection.findFirstOrThrow({ where: { productId, type: "TECHNICAL" } });
     expect(technical.content).toMatchObject({
       columns: [
         { key: "__model", label: "Model" },

@@ -76,7 +76,7 @@ describe("product administration validation", () => {
     expect(parsed.sections[0]).toMatchObject({ type: "HERO", position: 0, visible: true });
   });
 
-  it("rejects invalid modules, duplicate types, duplicate ordering, and oversized batches", () => {
+  it("allows repeated module types but rejects duplicate ordering, invalid modules, and oversized batches", () => {
     const hero = {
       type: "HERO" as const,
       position: 0,
@@ -85,10 +85,10 @@ describe("product administration validation", () => {
       mediaAssetIds: [],
     };
 
-    expect(() => productSectionBatchSchema.parse({
+    expect(productSectionBatchSchema.parse({
       version: 1,
       sections: [hero, { ...hero, position: 1 }],
-    })).toThrow(/type/i);
+    }).sections).toHaveLength(2);
     expect(() => productSectionBatchSchema.parse({
       version: 1,
       sections: [hero, {
@@ -105,7 +105,7 @@ describe("product administration validation", () => {
     })).toThrow();
     expect(() => productSectionBatchSchema.parse({
       version: 1,
-      sections: Array.from({ length: 25 }, (_, position) => ({
+      sections: Array.from({ length: 101 }, (_, position) => ({
         ...hero,
         position,
         type: position === 0 ? "HERO" : "OVERVIEW",

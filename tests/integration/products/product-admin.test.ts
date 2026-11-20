@@ -181,6 +181,31 @@ describe("ProductAdminService", () => {
     );
   });
 
+  it("persists repeated section types in a deterministic product order", async () => {
+    const product = await service.createProduct(editor, {
+      categoryId,
+      name: "Repeated Sections",
+      slug: "repeated-sections",
+      summary: "Repeated module validation.",
+      position: 0,
+    });
+    await service.saveSections(editor, product.id, {
+      version: product.version,
+      sections: [
+        { type: "OVERVIEW", position: 0, visible: true, content: validProductModuleData.OVERVIEW, mediaAssetIds: [] },
+        { type: "OVERVIEW", position: 1, visible: true, content: validProductModuleData.OVERVIEW, mediaAssetIds: [] },
+      ],
+    });
+
+    await expect(db.productSection.findMany({
+      where: { productId: product.id },
+      orderBy: { position: "asc" },
+    })).resolves.toMatchObject([
+      { type: "OVERVIEW", position: 0 },
+      { type: "OVERVIEW", position: 1 },
+    ]);
+  });
+
   it("publishes validated drafts and revalidates only affected public routes", async () => {
     const product = await service.createProduct(editor, {
       categoryId,

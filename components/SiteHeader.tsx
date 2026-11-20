@@ -1,6 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, ChevronRight, Globe2, Menu } from "lucide-react";
+import { ChevronDown, ChevronRight, Globe2, Menu, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import type { Product, ProductCategory } from "@/data/products";
 import { getCategoryHref } from "@/data/products";
@@ -16,6 +19,26 @@ type SiteHeaderProps = {
 export function SiteHeader({ navigation, categories, products }: SiteHeaderProps) {
   const primary = navigation.primary.filter((item) => item.visible);
   const languages = navigation.languages.filter((item) => item.visible);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setMobileOpen(false);
+      menuButtonRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [mobileOpen]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0B0D10]/95 backdrop-blur-xl">
@@ -41,11 +64,25 @@ export function SiteHeader({ navigation, categories, products }: SiteHeaderProps
           {languages.length > 0 ? <LanguageMenu languages={languages} /> : null}
         </div>
 
-        <details className="mobile-nav relative xl:hidden">
-          <summary className="grid h-10 w-10 cursor-pointer list-none place-items-center text-white transition hover:text-ignition" aria-label="Open navigation">
-            <Menu size={21} />
-          </summary>
-          <div className="absolute right-0 top-12 max-h-[78vh] w-[min(88vw,380px)] overflow-auto rounded-md border border-black/10 bg-white p-5 shadow-[0_28px_70px_rgba(15,23,42,0.2)]">
+        <button
+          ref={menuButtonRef}
+          type="button"
+          aria-label="Open navigation"
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-site-navigation"
+          onClick={() => setMobileOpen(true)}
+          className="grid h-11 w-11 place-items-center rounded-sm text-white transition hover:text-ignition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ignition xl:hidden"
+        >
+          <Menu size={21} />
+        </button>
+        {mobileOpen ? (
+          <div className="fixed inset-0 z-[80] xl:hidden" role="dialog" aria-modal="true" aria-label="Site navigation">
+            <button type="button" aria-label="Close navigation backdrop" onClick={() => setMobileOpen(false)} className="absolute inset-0 bg-black/65" />
+            <div id="mobile-site-navigation" className="absolute right-0 top-0 h-full w-[min(92vw,420px)] overflow-auto bg-white p-5 shadow-2xl" onClick={(event) => { if ((event.target as HTMLElement).closest("a")) setMobileOpen(false); }}>
+              <div className="mb-6 flex items-center justify-between border-b border-neutral-200 pb-4">
+                <p className="text-sm font-semibold uppercase tracking-[0.12em] text-neutral-950">Navigation</p>
+                <button ref={closeButtonRef} type="button" aria-label="Close navigation" onClick={() => { setMobileOpen(false); menuButtonRef.current?.focus(); }} className="grid h-11 w-11 place-items-center rounded-sm border border-neutral-200 text-neutral-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ignition"><X size={21} /></button>
+              </div>
             <div className="grid gap-3">
               {primary.map((item) => <MobileNavigationItem key={item.id} item={item} />)}
             </div>
@@ -91,8 +128,9 @@ export function SiteHeader({ navigation, categories, products }: SiteHeaderProps
                 </div>
               </>
             ) : null}
+            </div>
           </div>
-        </details>
+        ) : null}
       </div>
     </header>
   );
@@ -104,7 +142,7 @@ function LanguageMenu({ languages }: { languages: NavigationSnapshot["languages"
       <button className="grid h-10 w-10 place-items-center text-white transition hover:text-ignition" type="button" aria-label="Language and global support">
         <Globe2 size={25} />
       </button>
-      <div className="pointer-events-none absolute right-0 top-full w-[180px] pt-4 opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
+      <div className="pointer-events-none absolute right-0 top-full w-[180px] pt-4 opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
         <div className="overflow-hidden rounded-b-sm border border-black/10 bg-white py-2 shadow-[0_22px_60px_rgba(15,23,42,0.22)]">
           {languages.map((item) => (
             <Link key={item.id} href={item.href} className="block px-4 py-2 text-sm font-medium text-neutral-700 transition hover:bg-neutral-100 hover:text-ignition">{item.label}</Link>
@@ -131,7 +169,7 @@ function DesktopNavigationItem({ item, categories, products }: { item: Navigatio
 }
 
 function MobileNavigationItem({ item }: { item: NavigationNode }) {
-  const children = item.children?.filter((child) => child.visible && child.href) ?? [];
+  const children = item.children?.filter((child) => child.visible) ?? [];
   if (item.kind === "GROUP" && children.length > 0) {
     return (
       <details className="group/mobile border-b border-neutral-100 pb-3">
@@ -139,7 +177,7 @@ function MobileNavigationItem({ item }: { item: NavigationNode }) {
           {item.label}<ChevronDown size={15} className="transition group-open/mobile:rotate-180" />
         </summary>
         <div className="mt-3 grid gap-3 border-l border-neutral-200 pl-3">
-          {children.map((child) => <Link key={child.id} href={child.href!} className="text-sm text-neutral-600">{child.label}</Link>)}
+          {children.map((child) => <MobileNavigationItem key={child.id} item={child} />)}
         </div>
       </details>
     );
@@ -152,7 +190,7 @@ function NavItem({ href, label }: { href: string; label: string }) {
 }
 
 function SimpleDropdown({ item }: { item: NavigationNode }) {
-  const links = item.children?.filter((child) => child.visible && child.href) ?? [];
+  const links = item.children?.filter((child) => child.visible) ?? [];
   return (
     <div className="group relative flex h-full items-center">
       {item.href ? (
@@ -160,9 +198,18 @@ function SimpleDropdown({ item }: { item: NavigationNode }) {
       ) : (
         <span className="inline-flex h-full items-center gap-1 text-xs font-semibold uppercase tracking-[0.08em] text-white">{item.label}<ChevronDown size={15} /></span>
       )}
-      <div className="pointer-events-none absolute left-1/2 top-full w-[220px] -translate-x-1/2 pt-0 opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
+      <div className="pointer-events-none absolute left-1/2 top-full w-[220px] -translate-x-1/2 pt-0 opacity-0 transition duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
         <div className="overflow-hidden rounded-b-sm border border-black/10 bg-white py-2 shadow-[0_22px_60px_rgba(15,23,42,0.22)]">
-          {links.map((link) => <Link key={link.id} href={link.href!} className="block px-5 py-3 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-100 hover:text-ignition">{link.label}</Link>)}
+          {links.map((link) => link.kind === "GROUP" && link.children?.some((child) => child.visible) ? (
+            <div key={link.id} className="group/submenu relative">
+              {link.href ? <Link href={link.href} className="flex items-center justify-between gap-3 px-5 py-3 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-100 hover:text-ignition">{link.label}<ChevronRight size={15} /></Link> : <span className="flex items-center justify-between gap-3 px-5 py-3 text-sm font-semibold text-neutral-700">{link.label}<ChevronRight size={15} /></span>}
+              <div className="invisible absolute left-full top-0 w-[220px] opacity-0 transition group-hover/submenu:visible group-hover/submenu:opacity-100 group-focus-within/submenu:visible group-focus-within/submenu:opacity-100">
+                <div className="border border-black/10 bg-white py-2 shadow-[0_22px_60px_rgba(15,23,42,0.22)]">
+                  {link.children.filter((child) => child.visible && child.href).map((child) => <Link key={child.id} href={child.href!} className="block px-5 py-3 text-sm font-medium text-neutral-700 transition hover:bg-neutral-100 hover:text-ignition">{child.label}</Link>)}
+                </div>
+              </div>
+            </div>
+          ) : link.href ? <Link key={link.id} href={link.href} className="block px-5 py-3 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-100 hover:text-ignition">{link.label}</Link> : null)}
         </div>
       </div>
     </div>
@@ -171,7 +218,7 @@ function SimpleDropdown({ item }: { item: NavigationNode }) {
 
 function MachineMegaMenu({ categories, products }: { categories: ProductCategory[]; products: Product[] }) {
   return (
-    <div data-product-cascade-menu className="pointer-events-none absolute left-1/2 top-full z-50 w-[310px] -translate-x-1/2 opacity-0 transition duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
+    <div data-product-cascade-menu className="pointer-events-none absolute left-1/2 top-full z-50 w-[310px] -translate-x-1/2 opacity-0 transition duration-150 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
       <div className="border border-neutral-200 bg-white p-2 shadow-[0_28px_75px_rgba(15,23,42,0.22)]">
         <div data-product-menu-level="1" className="grid">
           {categories.map((category) => <CategoryCascadeItem key={category.id} category={category} products={products} />)}
@@ -188,7 +235,7 @@ function CategoryCascadeItem({ category, products }: { category: ProductCategory
       <Link href={getCategoryHref(category.id)} data-product-series-item className="flex min-h-12 items-center justify-between gap-4 px-4 py-3 text-sm font-semibold leading-5 text-neutral-900 transition hover:bg-neutral-100 hover:text-ignition">
         {category.name}<ChevronRight size={16} className="shrink-0 text-neutral-400" />
       </Link>
-      <div className="invisible absolute left-full top-[-9px] w-[320px] opacity-0 transition duration-150 group-hover/series:visible group-hover/series:opacity-100">
+      <div className="invisible absolute left-full top-[-9px] w-[320px] opacity-0 transition duration-150 group-hover/series:visible group-hover/series:opacity-100 group-focus-within/series:visible group-focus-within/series:opacity-100">
         <div data-product-menu-level="2" className="border border-neutral-200 bg-white p-2 shadow-[0_28px_75px_rgba(15,23,42,0.2)]">
           {directory.map((group) => group.isDirectProduct ? (
             <Link key={group.id} href={`/products/${group.products[0].id}`} data-product-second-level className="flex min-h-11 items-center px-4 py-2.5 text-sm font-medium leading-5 text-neutral-700 transition hover:bg-neutral-100 hover:text-ignition">{group.name}</Link>
@@ -197,7 +244,7 @@ function CategoryCascadeItem({ category, products }: { category: ProductCategory
               <Link href={`${getCategoryHref(category.id)}#${group.id}`} data-product-second-level className="flex min-h-11 items-center justify-between gap-4 px-4 py-2.5 text-sm font-semibold leading-5 text-neutral-900 transition hover:bg-neutral-100 hover:text-ignition">
                 {group.name}<ChevronRight size={16} className="shrink-0 text-neutral-400" />
               </Link>
-              <div className="invisible absolute left-full top-[-9px] w-[310px] opacity-0 transition duration-150 group-hover/subcategory:visible group-hover/subcategory:opacity-100">
+              <div className="invisible absolute left-full top-[-9px] w-[310px] opacity-0 transition duration-150 group-hover/subcategory:visible group-hover/subcategory:opacity-100 group-focus-within/subcategory:visible group-focus-within/subcategory:opacity-100">
                 <div data-product-menu-level="3" className="border border-neutral-200 bg-white p-2 shadow-[0_28px_75px_rgba(15,23,42,0.2)]">
                   {group.products.map((product) => <Link key={product.id} href={`/products/${product.id}`} className="flex min-h-11 items-center px-4 py-2.5 text-sm leading-5 text-neutral-700 transition hover:bg-neutral-100 hover:text-ignition">{product.name}</Link>)}
                 </div>

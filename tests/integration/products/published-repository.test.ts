@@ -46,8 +46,9 @@ describe("published catalogue repositories", () => {
 
   it("returns visible validated modules in deterministic position order", async () => {
     const product = await db.product.findUniqueOrThrow({ where: { slug: "compact-electric-shearing-machine" } });
+    const overview = await db.productSection.findFirstOrThrow({ where: { productId: product.id, type: "OVERVIEW" } });
     await db.productSection.update({
-      where: { productId_type: { productId: product.id, type: "OVERVIEW" } },
+      where: { id: overview.id },
       data: { visible: false },
     });
 

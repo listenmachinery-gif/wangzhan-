@@ -2,7 +2,7 @@ import { PublicationStatus } from "@prisma/client";
 import { z } from "zod";
 
 import { productModuleSchemas } from "@/lib/product-modules/schemas";
-import { PRODUCT_MODULE_TYPES, type ProductModuleType } from "@/lib/product-modules/types";
+import { PRODUCT_MODULE_TYPES } from "@/lib/product-modules/types";
 
 const nonEmpty = z.string().trim().min(1);
 const slug = z.string().trim().min(1).max(160).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use a lowercase URL slug.");
@@ -69,18 +69,13 @@ const sectionSchema = z.object({
 
 export const productSectionBatchSchema = z.object({
   version,
-  sections: z.array(sectionSchema).max(PRODUCT_MODULE_TYPES.length),
+  sections: z.array(sectionSchema).max(100),
 }).strict().superRefine(({ sections }, context) => {
-  const seenTypes = new Set<ProductModuleType>();
   const seenPositions = new Set<number>();
   sections.forEach((section, index) => {
-    if (seenTypes.has(section.type)) {
-      context.addIssue({ code: "custom", path: ["sections", index, "type"], message: "Module type must be unique." });
-    }
     if (seenPositions.has(section.position)) {
       context.addIssue({ code: "custom", path: ["sections", index, "position"], message: "Module position must be unique." });
     }
-    seenTypes.add(section.type);
     seenPositions.add(section.position);
   });
 });

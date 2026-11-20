@@ -128,6 +128,68 @@ function responsiveStyles(nodes: PageNode[]): string {
   ].join("");
 }
 
+/**
+ * Utility classes on nested headings previously overrode the editor's wrapper styles.
+ * Apply validated typography overrides to actual text elements, including per-device overrides.
+ */
+function typographyOverrides(nodes: PageNode[]): string {
+  const desktop: string[] = [];
+  const tablet: string[] = [];
+  const mobile: string[] = [];
+  const visit = (node: PageNode) => {
+    const selector = `[data-page-node="${node.id}"] :is(h1,h2,h3,h4,h5,h6,p,li,span,summary)`;
+    const build = (style?: PageStyle) => {
+      if (!style) return "";
+      const declarations = [
+        style.textColor ? `color:${style.textColor}!important` : "",
+        style.fontSize !== undefined ? `font-size:${style.fontSize}px!important` : "",
+        style.fontWeight ? `font-weight:${{ normal: 400, medium: 500, semibold: 600, bold: 700 }[style.fontWeight]}!important` : "",
+        style.fontFamily ? `font-family:${{ sans: "Arial,sans-serif", serif: "Georgia,serif", mono: "monospace" }[style.fontFamily]}!important` : "",
+        style.lineHeight !== undefined ? `line-height:${style.lineHeight}!important` : "",
+        style.letterSpacing !== undefined ? `letter-spacing:${style.letterSpacing}px!important` : "",
+        style.textAlign ? `text-align:${style.textAlign}!important` : "",
+      ].filter(Boolean);
+      return declarations.length ? `${selector}{${declarations.join(";")}}` : "";
+    };
+    const base = build(node.style);
+    if (base) desktop.push(base);
+    const tab = build(node.responsive?.tablet);
+    if (tab) tablet.push(tab);
+    const mob = build(node.responsive?.mobile);
+    if (mob) mobile.push(mob);
+    node.children?.forEach(visit);
+  };
+  nodes.forEach(visit);
+  return [
+    desktop.join(""),
+    tablet.length ? `@media(min-width:640px) and (max-width:1023px){${tablet.join("")}}` : "",
+    mobile.length ? `@media(max-width:639px){${mobile.join("")}}` : "",
+  ].join("");
+}
+
+function elementTypographyOverrides(nodes: PageNode[]): string {
+  const rules: string[] = [];
+  const visit = (node: PageNode) => {
+    Object.entries(node.textStyles ?? {}).forEach(([key, style]) => {
+      const declarations = [
+        style.color ? `color:${style.color}!important` : "",
+        style.fontSize !== undefined ? `font-size:${style.fontSize}px!important` : "",
+        style.fontWeight ? `font-weight:${{ normal: 400, medium: 500, semibold: 600, bold: 700 }[style.fontWeight]}!important` : "",
+        style.fontFamily ? `font-family:${{ sans: "Arial,sans-serif", serif: "Georgia,serif", mono: "monospace" }[style.fontFamily]}!important` : "",
+        style.lineHeight !== undefined ? `line-height:${style.lineHeight}!important` : "",
+        style.letterSpacing !== undefined ? `letter-spacing:${style.letterSpacing}px!important` : "",
+        style.textAlign ? `text-align:${style.textAlign}!important` : "",
+      ].filter(Boolean);
+      if (declarations.length) {
+        rules.push(`[data-page-node="${node.id}"] [data-page-text="${key}"]{${declarations.join(";")}}`);
+      }
+    });
+    node.children?.forEach(visit);
+  };
+  nodes.forEach(visit);
+  return rules.join("");
+}
+
 function renderNode(node: PageNode): ReactNode {
   const definition = getComponentDefinition(node.type);
   if (!definition) return null;
@@ -161,7 +223,7 @@ function Node({ node }: { node: PageNode }) {
 
 export function PageRenderer({ document }: { document: PageDocument }) {
   const nodes = Array.isArray(document?.nodes) ? document.nodes : [];
-  const styles = responsiveStyles(nodes);
+  const styles = responsiveStyles(nodes) + typographyOverrides(nodes) + elementTypographyOverrides(nodes);
   return (
     <>
       {styles ? <style>{styles}</style> : null}

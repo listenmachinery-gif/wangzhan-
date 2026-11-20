@@ -59,7 +59,10 @@ describe("managed homepage modules", () => {
         name: "Manufacturing capacity behind every solution.",
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText("15+")).toBeInTheDocument();
+    expect(screen.getByText("Cutting")).toBeInTheDocument();
+    expect(screen.getByText("Sheet Processing")).toBeInTheDocument();
+    expect(screen.queryByText("15+")).not.toBeInTheDocument();
+    expect(screen.queryByText("60+")).not.toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
         name: "Built for buyers who need practical production answers.",

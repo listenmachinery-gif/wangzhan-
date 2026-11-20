@@ -51,8 +51,16 @@ function json(document: PageDocument) {
   return document as unknown as Prisma.InputJsonValue;
 }
 
-function publicPath(slug: string) {
-  return slug === "home" ? "/" : `/${slug}`;
+export function publicPathsForPageSlug(slug: string) {
+  if (slug === "home") return ["/"];
+  if (slug === "products") return ["/products"];
+  if (slug.startsWith("product-") && slug.length > "product-".length) {
+    return [`/products/${slug.slice("product-".length)}`, "/products"];
+  }
+  if (slug.startsWith("series-") && slug.length > "series-".length) {
+    return [`/products/series/${slug.slice("series-".length)}`, "/products"];
+  }
+  return [`/${slug}`];
 }
 
 function uniqueError(error: unknown) {
@@ -161,7 +169,7 @@ export class PageService {
       throwPageTransactionError(error);
     }
     try {
-      await this.revalidate(publicPath(page.slug));
+      await Promise.all(publicPathsForPageSlug(page.slug).map((path) => this.revalidate(path)));
     } catch (error) {
       console.error("Page published but cache invalidation failed", error instanceof Error ? error.message : "UnknownError");
     }

@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ProductCatalog } from "@/components/ProductCatalog";
+import { ManagedPageSections } from "@/components/site/ManagedPageSections";
 import { listPublishedCategories } from "@/lib/repositories/category-repository";
 import { buildPublicCatalogueView } from "@/lib/repositories/public-catalogue-view";
 import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
@@ -22,12 +23,6 @@ export function generateMetadata() {
   return overlayPublishedSeo("/products", fallbackMetadata);
 }
 
-const heroStats = [
-  { value: "0", label: "Machine Series" },
-  { value: "0", label: "Product Types" },
-  { value: "60+", label: "Countries Served" },
-];
-
 const selectionSteps = [
   "Confirm material, thickness, and finished part.",
   "Choose cutting, bending, rolling, duct, pressing, or recycling process.",
@@ -41,10 +36,10 @@ export default async function ProductsPage() {
   const visibleHeroStats = [
     { value: String(visibleCategories.length), label: "Machine Series" },
     { value: String(visibleProducts.length), label: "Product Types" },
-    ...heroStats.slice(2),
   ];
   return (
     <main className="bg-[#f4f6f8] text-[#101214]">
+      <ManagedPageSections slug="products" placement="BEFORE_LEGACY" />
       <section className="relative isolate min-h-[calc(100vh-4rem)] overflow-hidden bg-[#0B0D10] px-5 py-16 text-white sm:px-8 lg:py-24">
         <Image
           src="/products/product-center-hero.png"
@@ -91,7 +86,7 @@ export default async function ProductsPage() {
             </div>
           </div>
 
-          <div className="mt-14 grid w-full max-w-4xl gap-5 border-y border-white/15 py-7 sm:grid-cols-3">
+          <div className="mt-14 grid w-full max-w-3xl gap-5 border-y border-white/15 py-7 sm:grid-cols-2">
             {visibleHeroStats.map((stat) => (
               <div key={stat.label}>
                 <p className="text-5xl font-semibold tracking-normal text-white">{stat.value}</p>
@@ -149,6 +144,7 @@ export default async function ProductsPage() {
           </a>
         </div>
       </section>
+      <ManagedPageSections slug="products" placement="AFTER_LEGACY" />
     </main>
   );
 }
