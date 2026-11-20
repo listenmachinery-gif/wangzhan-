@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function SupportPage() {
-  const document = await getPublishedPageBySlug("support") ?? INDUSTRIAL_PAGE_TEMPLATES.support.document;
+  const published = await getPublishedPageBySlug("support");
+  const document = published?.nodes.length ? published : INDUSTRIAL_PAGE_TEMPLATES.support.document;
   return <main className="bg-[#f4f6f8] text-[#101214]"><PageRenderer document={document} /></main>;
 }

@@ -244,15 +244,13 @@ export default async function Home() {
             </div>
             <h2 className="text-3xl font-semibold sm:text-5xl">Stay updated on new machines and production solutions.</h2>
             <p className="mt-4 max-w-3xl text-base leading-7 text-neutral-600">
-              Subscribe for product releases, machine selection guides, and practical equipment configuration notes.
+              Read product releases, machine selection guides, and practical equipment configuration notes.
             </p>
           </div>
-          <div className="flex w-full max-w-md gap-2 lg:w-[420px]">
-            <input className="h-12 min-w-0 flex-1 rounded-sm border border-neutral-200 px-3 text-sm outline-none focus:border-ignition" placeholder="Email address" />
-            <button className="rounded-sm bg-ignition px-5 text-sm font-semibold text-white transition hover:bg-neon">
-              Subscribe
-            </button>
-          </div>
+          <Link href="/news" className="inline-flex h-12 w-fit items-center gap-2 rounded-sm bg-ignition px-5 text-sm font-semibold text-white transition hover:bg-neon">
+            Read Company News
+            <ArrowRight size={16} />
+          </Link>
         </div>
       </section>
     </main>

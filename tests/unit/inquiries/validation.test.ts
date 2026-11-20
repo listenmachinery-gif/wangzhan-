@@ -58,6 +58,16 @@ describe("inquiry validation", () => {
     });
   });
 
+  it("accepts blank optional phone fields submitted by the public HTML form", () => {
+    expect(parseInquiryPayload({
+      name: "Buyer",
+      email: "buyer@example.com",
+      whatsapp: "",
+      requirement: "Please quote a suitable machine.",
+      website: "",
+    })).toMatchObject({ phone: null, whatsapp: null });
+  });
+
   it("accepts the existing small-electric-shear selector shape and derives its message", () => {
     const parsed = parseInquiryPayload({
       inquiryType: "small-electric-shear-selector",

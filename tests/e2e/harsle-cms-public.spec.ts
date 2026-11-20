@@ -1,9 +1,13 @@
 import { expect, test } from "@playwright/test";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 import { importLegacyCatalogue } from "../../lib/migration/catalogue-importer";
 import { readLegacyCatalogue } from "../../lib/migration/legacy-product-reader";
+
+const longTitleSlug = "cms-long-title-layout-test";
+const longTitle = "Precision Sheet Metal Production System for International Buyers Requiring Configurable Cutting Capacity";
+const inquiryEmail = "public-acceptance-inquiry@zyron.test";
 
 test.beforeAll(async () => {
   const connectionString = process.env.DATABASE_URL ?? "";
@@ -11,10 +15,62 @@ test.beforeAll(async () => {
     throw new Error("Public visual tests require the isolated _test database.");
   }
   const database = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
-  if (await database.productCategory.count() === 0) {
-    const catalogue = await readLegacyCatalogue({ includePageContent: true });
-    await importLegacyCatalogue({ database, catalogue, write: true });
-  }
+  const supportPages = await database.sitePage.findMany({ where: { slug: "support" }, select: { id: true } });
+  await database.pageVersion.deleteMany({ where: { pageId: { in: supportPages.map(({ id }) => id) } } });
+  await database.sitePage.deleteMany({ where: { id: { in: supportPages.map(({ id }) => id) } } });
+  await database.mediaReference.deleteMany({ where: { entityType: { in: ["Product", "ProductSection"] } } });
+  await database.product.deleteMany();
+  await database.productCategory.deleteMany();
+  await database.auditLog.deleteMany({ where: { action: "inquiry.attempt" } });
+  const catalogue = await readLegacyCatalogue({ includePageContent: true });
+  await importLegacyCatalogue({ database, catalogue, write: true });
+  const category = await database.productCategory.findUniqueOrThrow({ where: { slug: "shearing-machines" } });
+  await database.product.create({
+    data: {
+      categoryId: category.id,
+      slug: longTitleSlug,
+      name: longTitle,
+      summary: "Responsive title acceptance fixture.",
+      status: "PUBLISHED",
+      publishedAt: new Date(),
+      sections: { create: {
+        type: "HERO",
+        position: 0,
+        content: {
+          eyebrow: "Responsive Layout Test",
+          title: longTitle,
+          subtitle: "A long verified title must wrap without expanding the page beyond the mobile viewport.",
+          images: { desktop: "/products/product-center-hero.png", alt: "Sheet metal machinery" },
+          primaryCta: { label: "Request a Quote", href: "/contact" },
+        } as Prisma.InputJsonValue,
+      } },
+    },
+  });
+  await database.sitePage.create({
+    data: {
+      name: "Empty Support Fixture",
+      slug: "support",
+      pageType: "CUSTOM",
+      status: "PUBLISHED",
+      draftContent: { schemaVersion: 1, nodes: [] },
+      publishedContent: { schemaVersion: 1, nodes: [] },
+      publishedVersion: 1,
+      publishedAt: new Date(),
+    },
+  });
+  await database.$disconnect();
+});
+
+test.afterAll(async () => {
+  const connectionString = process.env.DATABASE_URL ?? "";
+  const database = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+  await database.leadNotificationAttempt.deleteMany({ where: { lead: { email: inquiryEmail } } });
+  await database.leadStageHistory.deleteMany({ where: { lead: { email: inquiryEmail } } });
+  await database.leadActivity.deleteMany({ where: { lead: { email: inquiryEmail } } });
+  await database.leadAssignment.deleteMany({ where: { lead: { email: inquiryEmail } } });
+  await database.lead.deleteMany({ where: { email: inquiryEmail } });
+  await database.sitePage.deleteMany({ where: { slug: "support" } });
+  await database.product.deleteMany({ where: { slug: longTitleSlug } });
   await database.$disconnect();
 });
 
@@ -68,4 +124,46 @@ test("mobile navigation supports open, close and focus restoration", async ({ pa
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog", { name: "Site navigation" })).toBeHidden();
   await expect(trigger).toBeFocused();
+});
+
+test("empty managed support content falls back to the complete support template", async ({ page }) => {
+  await page.goto("/support", { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("heading", { level: 1, name: "Support for Every Production Stage" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Support and Resources" })).toBeVisible();
+});
+
+test("long product titles wrap without mobile overflow", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`/products/${longTitleSlug}`, { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("heading", { level: 1, name: longTitle })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+});
+
+test("contact inquiry stores a real test-database lead and reports success", async ({ page }) => {
+  await page.goto("/contact", { waitUntil: "domcontentloaded" });
+  await page.getByLabel("Name", { exact: true }).fill("Public Acceptance Buyer");
+  await page.getByLabel("Email", { exact: true }).fill(inquiryEmail);
+  await page.getByLabel("Destination Country").fill("Germany");
+  await page.getByLabel("Production Requirement").fill("Acceptance-only request for a 2 mm sheet cutting workflow.");
+  await page.getByRole("button", { name: "Send Inquiry" }).click();
+  await expect(page.getByText("Thank you. Your inquiry has been received. Our team will reply soon.")).toBeVisible();
+
+  const connectionString = process.env.DATABASE_URL ?? "";
+  const database = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+  await expect(database.lead.count({ where: { email: inquiryEmail } })).resolves.toBe(1);
+  await database.$disconnect();
+});
+
+test("core public pages expose stable canonical URLs", async ({ page }) => {
+  await page.goto("/contact", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("link[rel='canonical']")).toHaveAttribute("href", /\/contact$/);
+  await page.goto("/products/compact-electric-shearing-machine", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("link[rel='canonical']")).toHaveAttribute("href", /\/products\/compact-electric-shearing-machine$/);
+});
+
+test("homepage update section uses a real destination instead of a fake subscription form", async ({ page }) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("main").getByRole("link", { name: "Read Company News" })).toHaveAttribute("href", "/news");
+  await expect(page.getByPlaceholder("Email address")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Subscribe" })).toHaveCount(0);
 });
