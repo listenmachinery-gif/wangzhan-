@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CompanyPage } from "@/components/company/CompanyPage";
+import { ManagedPageSections } from "@/components/site/ManagedPageSections";
 import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
 
 export const dynamic = "force-dynamic";
@@ -43,5 +44,5 @@ export function generateMetadata() {
 }
 
 export default function FactoryPage() {
-  return <CompanyPage />;
+  return <><CompanyPage /><ManagedPageSections slug="company" /></>;
 }
