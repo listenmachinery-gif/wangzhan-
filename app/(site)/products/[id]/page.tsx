@@ -29,6 +29,7 @@ import { StandardProductPage } from "@/components/products/StandardProductPage";
 import { getCategoryById, products } from "@/data/products";
 import { getPublishedProductBySlug } from "@/lib/repositories/product-repository";
 import { getPublishedPageBySlug } from "@/lib/repositories/page-repository";
+import { resolveProductPageLayout } from "@/lib/page-builder/product-page-layout";
 import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
 
 export const dynamic = "force-dynamic";
@@ -44,11 +45,7 @@ async function trackedProduct(
   content: ReactNode,
 ) {
   const document = await getPublishedPageBySlug(`product-${identity.productSlug}`);
-  const nodesFor = (placement: "BEFORE_LEGACY" | "AFTER_LEGACY" | "REPLACE_LEGACY") =>
-    document?.nodes.filter((node) => (node.placement ?? "AFTER_LEGACY") === placement) ?? [];
-  const before = nodesFor("BEFORE_LEGACY");
-  const after = nodesFor("AFTER_LEGACY");
-  const replacement = nodesFor("REPLACE_LEGACY");
+  const { before, after, replacement } = resolveProductPageLayout(document);
   const render = (nodes: typeof before) =>
     document && nodes.length ? <PageRenderer document={{ ...document, nodes }} /> : null;
   return (

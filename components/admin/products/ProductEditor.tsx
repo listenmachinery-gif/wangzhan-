@@ -20,7 +20,7 @@ function referencedMediaIds(value: JsonValue): string[] {
   return [];
 }
 
-export function ProductEditor({ initialProduct, categories, media }: { initialProduct: ProductState; categories: Array<{ id: string; name: string }>; media: Array<{ id: string; name: string }> }) {
+export function ProductEditor({ initialProduct, categories, media, pageDesignerHref }: { initialProduct: ProductState; categories: Array<{ id: string; name: string }>; media: Array<{ id: string; name: string }>; pageDesignerHref: string }) {
   const router = useRouter();
   const [product, setProduct] = useState(initialProduct);
   const [sections, setSections] = useState(initialProduct.sections);
@@ -123,6 +123,7 @@ export function ProductEditor({ initialProduct, categories, media }: { initialPr
 
       <section className="flex flex-wrap items-center gap-3 rounded-xl border border-neutral-200 bg-white p-5">
         <Link href={`/admin/products/${product.id}/specifications`} className="rounded-lg border border-neutral-300 px-5 py-2.5 text-sm font-semibold">管理型号参数</Link>
+        <Link href={pageDesignerHref} className="rounded-lg border border-[#76B900] px-5 py-2.5 text-sm font-semibold text-[#416500]">自由设计产品页面</Link>
         <button disabled={busy} onClick={() => void publish()} className="rounded-lg bg-[#76B900] px-5 py-2.5 font-semibold text-[#0B0D10] disabled:opacity-50">发布到前台</button>
         <button disabled={busy || product.status === "ARCHIVED"} onClick={() => void archive()} className="rounded-lg border border-red-300 px-5 py-2.5 text-sm font-semibold text-red-700 disabled:opacity-50">归档</button>
         {message ? <p role="status" className={`text-sm ${message.includes("失败") || message.includes("changed") ? "text-red-700" : "text-neutral-700"}`}>{message}</p> : null}

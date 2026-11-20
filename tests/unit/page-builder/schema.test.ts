@@ -59,6 +59,24 @@ describe("page builder document schema", () => {
     });
   });
 
+  it("accepts an explicit full product page takeover mode", () => {
+    const result = pageDocumentSchema.parse({
+      schemaVersion: 1,
+      renderMode: "REPLACE_LEGACY",
+      nodes: [],
+    });
+
+    expect(result.renderMode).toBe("REPLACE_LEGACY");
+  });
+
+  it("rejects unknown page render modes", () => {
+    expect(() => pageDocumentSchema.parse({
+      schemaVersion: 1,
+      renderMode: "REPLACE_EVERYTHING",
+      nodes: [],
+    })).toThrow();
+  });
+
   it("rejects unknown legacy slot placement values", () => {
     expect(() => pageDocumentSchema.parse({
       schemaVersion: 1,

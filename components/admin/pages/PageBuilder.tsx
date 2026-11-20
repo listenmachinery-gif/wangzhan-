@@ -562,6 +562,21 @@ export function PageBuilder({
           {Object.entries(INDUSTRIAL_PAGE_TEMPLATES).map(([key, preset]) => <option key={key} value={key}>{preset.label}</option>)}
         </select>
         <button type="button" onClick={applyTemplate} className="rounded border border-neutral-300 px-3 py-2 text-xs font-semibold hover:border-[#76B900]">应用模板到草稿</button>
+        <label className="flex items-center gap-2 text-xs font-semibold text-neutral-600">
+          前台呈现
+          <select
+            aria-label="前台呈现模式"
+            value={document.renderMode ?? "AUGMENT_LEGACY"}
+            onChange={(event) => commit({
+              ...document,
+              renderMode: event.target.value as PageDocument["renderMode"],
+            })}
+            className="h-9 rounded border border-neutral-300 px-2 text-sm"
+          >
+            <option value="AUGMENT_LEGACY">兼容旧页面并插入模块</option>
+            <option value="REPLACE_LEGACY">CMS 模块整页接管</option>
+          </select>
+        </label>
         <span className="text-xs text-neutral-500">模块可继续增加、排序、复制、删除；应用模板不会自动发布。</span>
       </div>
       <header className="sticky top-16 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200 bg-white px-4 py-3">

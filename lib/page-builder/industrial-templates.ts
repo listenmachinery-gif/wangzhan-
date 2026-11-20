@@ -55,7 +55,7 @@ export const INDUSTRIAL_PAGE_TEMPLATES: Record<string, { label: string; document
     split("series-types", "Choose Your Equipment", "Match machine structure to your application.", "Compare cutting capacity, operation method, control options, maintenance requirements and expected throughput.", "/products/series-heroes/shearing-machine-series.png"),
     node("series-comparison", "MODEL_COMPARISON", { heading: "Machine Selection Guide", columns: ["Selection Factor", "What to Confirm"], rows: [["Material", "Steel, stainless steel, aluminum or other"], ["Thickness", "Maximum required cutting thickness"], ["Length", "Maximum sheet width"], ["Control", "Manual or controlled backgauge"]] }), faq, cta,
   ] } },
-  detail: { label: "单品详情 · Product Detail", document: { schemaVersion: 1, nodes: [
+  detail: { label: "单品详情 · Product Detail", document: { schemaVersion: 1, renderMode: "REPLACE_LEGACY", nodes: [
     hero("Configured for Your Workshop", "Review features, materials, processing requirements and machine configuration options.", "/products/hydraulic-press-brake-hero.png"),
     split("detail-performance", "Equipment Overview", "Precision starts with a suitable configuration.", "Explain actual machine structure and processing capabilities based on verified product information.", "/products/hydraulic-press-brake-hero.png"),
     node("detail-spec", "SPECIFICATION_TABLE", { heading: "Technical Specifications", columns: ["Item", "Value"], rows: [["Model", "Confirm model before publishing"], ["Working Capacity", "Confirm specification"], ["Power", "Confirm specification"]] }),

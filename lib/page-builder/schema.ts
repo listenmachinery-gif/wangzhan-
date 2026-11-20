@@ -143,6 +143,13 @@ export type PageNode = {
   children?: PageNode[];
 };
 
+export const PAGE_RENDER_MODES = [
+  "AUGMENT_LEGACY",
+  "REPLACE_LEGACY",
+] as const;
+
+export type PageRenderMode = (typeof PAGE_RENDER_MODES)[number];
+
 export const pageNodeSchema: z.ZodType<PageNode> = z.lazy(() => z.object({
   id: z.string().min(1).max(80).regex(/^[a-zA-Z0-9_-]+$/),
   type: z.enum(PAGE_COMPONENT_TYPES),
@@ -159,6 +166,7 @@ export const pageNodeSchema: z.ZodType<PageNode> = z.lazy(() => z.object({
 
 export const pageDocumentSchema = z.object({
   schemaVersion: z.literal(1),
+  renderMode: z.enum(PAGE_RENDER_MODES).optional(),
   nodes: z.array(pageNodeSchema).max(100),
 }).strict().superRefine((document, context) => {
   let total = 0;
