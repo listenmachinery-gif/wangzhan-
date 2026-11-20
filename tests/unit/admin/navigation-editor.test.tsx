@@ -99,6 +99,32 @@ describe("NavigationEditor", () => {
     expect(await screen.findByRole("status")).toHaveTextContent("草稿已保存");
   });
 
+  it("edits the complete managed footer in the published navigation snapshot", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(globalThis, "fetch").mockImplementation((_input, init) => {
+      const payload = JSON.parse(String(init?.body));
+      expect(payload.document.footer.productCategories).toEqual({ visible: false, label: "设备分类" });
+      expect(payload.document.footer.actionLinks.label).toBe("合作入口");
+      expect(payload.document.footer.newsletter).toMatchObject({ visible: true, title: "机械资讯", ctaHref: "/news" });
+      expect(payload.document.footer.legalLinks[0].label).toBe("隐私条款");
+      return response({ version: 4, status: "DRAFT", draftContent: payload.document });
+    });
+    renderEditor();
+
+    await user.click(screen.getByRole("checkbox", { name: "显示产品分类" }));
+    await user.clear(screen.getByRole("textbox", { name: "产品分类标题" }));
+    await user.type(screen.getByRole("textbox", { name: "产品分类标题" }), "设备分类");
+    await user.clear(screen.getByRole("textbox", { name: "合作入口标题" }));
+    await user.type(screen.getByRole("textbox", { name: "合作入口标题" }), "合作入口");
+    await user.clear(screen.getByRole("textbox", { name: "资讯标题" }));
+    await user.type(screen.getByRole("textbox", { name: "资讯标题" }), "机械资讯");
+    await user.clear(screen.getByRole("textbox", { name: "法律链接 1 名称" }));
+    await user.type(screen.getByRole("textbox", { name: "法律链接 1 名称" }), "隐私条款");
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent("草稿已保存");
+  });
+
   it("shows a stale-version conflict without replacing local edits", async () => {
     const user = userEvent.setup();
     vi.spyOn(globalThis, "fetch").mockImplementation(() => response({ code: "NAVIGATION_CONFLICT", message: "Navigation changed." }, 409));

@@ -32,7 +32,7 @@ type RequestResult = {
 };
 
 const inputClass = "h-10 w-full rounded-admin-sm border border-admin-border bg-white px-3 text-sm text-admin-ink outline-none transition focus:border-ignition focus:ring-2 focus:ring-ignition/15";
-const fallbackFooter = {
+const fallbackFooter: NonNullable<NavigationSnapshot["footer"]> = {
   brandName: "ZYRON Heavy Industry",
   description: "Industrial machinery solutions for global buyers.",
   email: "info@zyroncnc.com",
@@ -41,6 +41,23 @@ const fallbackFooter = {
   ctaLabel: "Start a Project",
   ctaHref: "/contact",
   copyright: "Copyright 2026 ZYRON Heavy Industry. All rights reserved.",
+  productCategories: { visible: true, label: "Product Categories" },
+  actionLinks: {
+    label: "Where to Buy",
+    items: [
+      { id: "footer-action-quote", kind: "LINK", label: "Get a Quote", href: "/contact", visible: true },
+    ],
+  },
+  newsletter: {
+    visible: true,
+    title: "Machinery Updates",
+    description: "Read verified product releases and delivery updates.",
+    ctaLabel: "Read Company News",
+    ctaHref: "/news",
+  },
+  legalLinks: [
+    { id: "footer-legal-privacy", kind: "LINK", label: "Privacy Policy", href: "/privacy", visible: true },
+  ],
 };
 
 export function NavigationEditor({
@@ -146,6 +163,37 @@ export function NavigationEditor({
     }));
   }
 
+  function updateFooterAction(index: number, patch: Partial<NavigationNode>) {
+    setDocument((current) => {
+      const footer = current.footer ?? fallbackFooter;
+      const actionLinks = footer.actionLinks ?? fallbackFooter.actionLinks!;
+      return {
+        ...current,
+        footer: {
+          ...footer,
+          actionLinks: {
+            ...actionLinks,
+            items: actionLinks.items.map((item, itemIndex) => itemIndex === index ? { ...item, ...patch } : item),
+          },
+        },
+      };
+    });
+  }
+
+  function updateLegalLink(index: number, patch: Partial<NavigationNode>) {
+    setDocument((current) => {
+      const footer = current.footer ?? fallbackFooter;
+      const legalLinks = footer.legalLinks ?? fallbackFooter.legalLinks!;
+      return {
+        ...current,
+        footer: {
+          ...footer,
+          legalLinks: legalLinks.map((item, itemIndex) => itemIndex === index ? { ...item, ...patch } : item),
+        },
+      };
+    });
+  }
+
   async function request(url: string, method: string, body: unknown, success: string) {
     setBusy(true);
     setMessage("");
@@ -173,6 +221,12 @@ export function NavigationEditor({
       setBusy(false);
     }
   }
+
+  const footer = document.footer ?? fallbackFooter;
+  const productCategoryFooter = footer.productCategories ?? fallbackFooter.productCategories!;
+  const footerActions = footer.actionLinks ?? fallbackFooter.actionLinks!;
+  const footerNewsletter = footer.newsletter ?? fallbackFooter.newsletter!;
+  const footerLegalLinks = footer.legalLinks ?? fallbackFooter.legalLinks!;
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
@@ -284,14 +338,72 @@ export function NavigationEditor({
             <p className="mt-1 text-xs text-admin-muted">这些内容会直接显示在官网页脚，请只填写已核实的企业资料。</p>
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted">品牌名称<input aria-label="页脚品牌名称" value={(document.footer ?? fallbackFooter).brandName} disabled={!canWrite} onChange={(event) => updateFooter({ brandName: event.target.value })} className={inputClass} /></label>
-            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted">联系邮箱<input aria-label="页脚联系邮箱" type="email" value={(document.footer ?? fallbackFooter).email} disabled={!canWrite} onChange={(event) => updateFooter({ email: event.target.value })} className={inputClass} /></label>
-            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted">WhatsApp<input aria-label="页脚 WhatsApp" value={(document.footer ?? fallbackFooter).whatsapp} disabled={!canWrite} onChange={(event) => updateFooter({ whatsapp: event.target.value })} className={inputClass} /></label>
-            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted">CTA 名称<input aria-label="页脚 CTA 名称" value={(document.footer ?? fallbackFooter).ctaLabel} disabled={!canWrite} onChange={(event) => updateFooter({ ctaLabel: event.target.value })} className={inputClass} /></label>
-            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted">CTA 链接<input aria-label="页脚 CTA 链接" value={(document.footer ?? fallbackFooter).ctaHref} disabled={!canWrite} onChange={(event) => updateFooter({ ctaHref: event.target.value })} className={inputClass} /></label>
-            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted">版权文字<input aria-label="页脚版权文字" value={(document.footer ?? fallbackFooter).copyright} disabled={!canWrite} onChange={(event) => updateFooter({ copyright: event.target.value })} className={inputClass} /></label>
-            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted md:col-span-2">品牌简介<textarea aria-label="页脚品牌简介" rows={3} value={(document.footer ?? fallbackFooter).description} disabled={!canWrite} onChange={(event) => updateFooter({ description: event.target.value })} className={`${inputClass} h-auto py-2`} /></label>
-            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted md:col-span-2">联系地址<textarea aria-label="页脚联系地址" rows={2} value={(document.footer ?? fallbackFooter).address} disabled={!canWrite} onChange={(event) => updateFooter({ address: event.target.value })} className={`${inputClass} h-auto py-2`} /></label>
+            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted">品牌名称<input aria-label="页脚品牌名称" value={footer.brandName} disabled={!canWrite} onChange={(event) => updateFooter({ brandName: event.target.value })} className={inputClass} /></label>
+            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted">联系邮箱<input aria-label="页脚联系邮箱" type="email" value={footer.email} disabled={!canWrite} onChange={(event) => updateFooter({ email: event.target.value })} className={inputClass} /></label>
+            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted">WhatsApp<input aria-label="页脚 WhatsApp" value={footer.whatsapp} disabled={!canWrite} onChange={(event) => updateFooter({ whatsapp: event.target.value })} className={inputClass} /></label>
+            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted">CTA 名称<input aria-label="页脚 CTA 名称" value={footer.ctaLabel} disabled={!canWrite} onChange={(event) => updateFooter({ ctaLabel: event.target.value })} className={inputClass} /></label>
+            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted">CTA 链接<input aria-label="页脚 CTA 链接" value={footer.ctaHref} disabled={!canWrite} onChange={(event) => updateFooter({ ctaHref: event.target.value })} className={inputClass} /></label>
+            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted">版权文字<input aria-label="页脚版权文字" value={footer.copyright} disabled={!canWrite} onChange={(event) => updateFooter({ copyright: event.target.value })} className={inputClass} /></label>
+            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted md:col-span-2">品牌简介<textarea aria-label="页脚品牌简介" rows={3} value={footer.description} disabled={!canWrite} onChange={(event) => updateFooter({ description: event.target.value })} className={`${inputClass} h-auto py-2`} /></label>
+            <label className="grid gap-1.5 text-xs font-semibold text-admin-muted md:col-span-2">联系地址<textarea aria-label="页脚联系地址" rows={2} value={footer.address} disabled={!canWrite} onChange={(event) => updateFooter({ address: event.target.value })} className={`${inputClass} h-auto py-2`} /></label>
+          </div>
+        </div>
+
+        <div className="rounded-admin-lg border border-admin-border bg-white p-5 shadow-admin-sm">
+          <div>
+            <h2 className="font-semibold text-admin-ink">页脚产品、合作与资讯入口</h2>
+            <p className="mt-1 text-xs text-admin-muted">控制产品分类、合作链接和资讯按钮；所有入口都使用真实链接，不显示无效订阅表单。</p>
+          </div>
+          <div className="mt-4 grid gap-5 lg:grid-cols-2">
+            <div className="rounded-admin-sm border border-admin-border p-4">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-admin-ink">产品分类</p>
+                <label className="inline-flex items-center gap-2 text-xs font-semibold text-admin-muted"><input type="checkbox" aria-label="显示产品分类" checked={productCategoryFooter.visible} disabled={!canWrite} onChange={(event) => updateFooter({ productCategories: { ...productCategoryFooter, visible: event.target.checked } })} />显示</label>
+              </div>
+              <label className="mt-3 grid gap-1 text-xs font-semibold text-admin-muted">标题<input aria-label="产品分类标题" value={productCategoryFooter.label} disabled={!canWrite} onChange={(event) => updateFooter({ productCategories: { ...productCategoryFooter, label: event.target.value } })} className={inputClass} /></label>
+            </div>
+
+            <div className="rounded-admin-sm border border-admin-border p-4">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-admin-ink">合作入口</p>
+                {canWrite ? <button type="button" onClick={() => updateFooter({ actionLinks: { ...footerActions, items: [...footerActions.items, newNode()] } })} className="inline-flex items-center gap-1 text-xs font-semibold text-ignition"><Plus className="size-3.5" />新增入口</button> : null}
+              </div>
+              <label className="mt-3 grid gap-1 text-xs font-semibold text-admin-muted">标题<input aria-label="合作入口标题" value={footerActions.label} disabled={!canWrite} onChange={(event) => updateFooter({ actionLinks: { ...footerActions, label: event.target.value } })} className={inputClass} /></label>
+              <div className="mt-3 space-y-3">
+                {footerActions.items.map((item, index) => <div key={item.id} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+                  <label className="grid gap-1 text-xs font-semibold text-admin-muted">名称<input aria-label={`合作入口 ${index + 1} 名称`} value={item.label} disabled={!canWrite} onChange={(event) => updateFooterAction(index, { label: event.target.value })} className={inputClass} /></label>
+                  <label className="grid gap-1 text-xs font-semibold text-admin-muted">链接<input aria-label={`合作入口 ${index + 1} 链接`} value={item.href ?? ""} disabled={!canWrite} onChange={(event) => updateFooterAction(index, { href: event.target.value })} className={inputClass} /></label>
+                  <div className="flex items-center gap-1 pb-0.5">
+                    <label className="inline-flex items-center gap-1 text-xs text-admin-muted"><input type="checkbox" aria-label={`显示合作入口 ${index + 1}`} checked={item.visible} disabled={!canWrite} onChange={(event) => updateFooterAction(index, { visible: event.target.checked })} />显示</label>
+                    <IconButton label={`删除合作入口 ${item.label}`} disabled={!canWrite} onClick={() => updateFooter({ actionLinks: { ...footerActions, items: footerActions.items.filter((_, itemIndex) => itemIndex !== index) } })} destructive><Trash2 /></IconButton>
+                  </div>
+                </div>)}
+              </div>
+            </div>
+
+            <div className="rounded-admin-sm border border-admin-border p-4 lg:col-span-2">
+              <div className="flex items-center justify-between gap-3"><p className="text-sm font-semibold text-admin-ink">资讯入口</p><label className="inline-flex items-center gap-2 text-xs font-semibold text-admin-muted"><input type="checkbox" aria-label="显示资讯入口" checked={footerNewsletter.visible} disabled={!canWrite} onChange={(event) => updateFooter({ newsletter: { ...footerNewsletter, visible: event.target.checked } })} />显示</label></div>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <label className="grid gap-1 text-xs font-semibold text-admin-muted">标题<input aria-label="资讯标题" value={footerNewsletter.title} disabled={!canWrite} onChange={(event) => updateFooter({ newsletter: { ...footerNewsletter, title: event.target.value } })} className={inputClass} /></label>
+                <label className="grid gap-1 text-xs font-semibold text-admin-muted">按钮名称<input aria-label="资讯按钮名称" value={footerNewsletter.ctaLabel} disabled={!canWrite} onChange={(event) => updateFooter({ newsletter: { ...footerNewsletter, ctaLabel: event.target.value } })} className={inputClass} /></label>
+                <label className="grid gap-1 text-xs font-semibold text-admin-muted">按钮链接<input aria-label="资讯按钮链接" value={footerNewsletter.ctaHref} disabled={!canWrite} onChange={(event) => updateFooter({ newsletter: { ...footerNewsletter, ctaHref: event.target.value } })} className={inputClass} /></label>
+                <label className="grid gap-1 text-xs font-semibold text-admin-muted">说明<input aria-label="资讯说明" value={footerNewsletter.description} disabled={!canWrite} onChange={(event) => updateFooter({ newsletter: { ...footerNewsletter, description: event.target.value } })} className={inputClass} /></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-admin-lg border border-admin-border bg-white p-5 shadow-admin-sm">
+          <div className="flex items-center justify-between gap-3">
+            <div><h2 className="font-semibold text-admin-ink">法律信息栏</h2><p className="mt-1 text-xs text-admin-muted">管理版权文字旁的隐私政策、使用条款等链接。</p></div>
+            {canWrite ? <button type="button" onClick={() => updateFooter({ legalLinks: [...footerLegalLinks, newNode()] })} className="inline-flex items-center gap-1 text-xs font-semibold text-ignition"><Plus className="size-3.5" />新增法律链接</button> : null}
+          </div>
+          <div className="mt-4 space-y-3">
+            {footerLegalLinks.map((item, index) => <div key={item.id} className="grid gap-2 md:grid-cols-[1fr_1fr_auto] md:items-end">
+              <label className="grid gap-1 text-xs font-semibold text-admin-muted">名称<input aria-label={`法律链接 ${index + 1} 名称`} value={item.label} disabled={!canWrite} onChange={(event) => updateLegalLink(index, { label: event.target.value })} className={inputClass} /></label>
+              <label className="grid gap-1 text-xs font-semibold text-admin-muted">链接<input aria-label={`法律链接 ${index + 1} 链接`} value={item.href ?? ""} disabled={!canWrite} onChange={(event) => updateLegalLink(index, { href: event.target.value })} className={inputClass} /></label>
+              <div className="flex items-center gap-1 pb-0.5"><label className="inline-flex items-center gap-1 text-xs text-admin-muted"><input type="checkbox" aria-label={`显示法律链接 ${index + 1}`} checked={item.visible} disabled={!canWrite} onChange={(event) => updateLegalLink(index, { visible: event.target.checked })} />显示</label><IconButton label={`删除法律链接 ${item.label}`} disabled={!canWrite} onClick={() => updateFooter({ legalLinks: footerLegalLinks.filter((_, itemIndex) => itemIndex !== index) })} destructive><Trash2 /></IconButton></div>
+            </div>)}
           </div>
         </div>
 

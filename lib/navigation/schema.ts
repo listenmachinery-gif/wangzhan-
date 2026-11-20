@@ -40,6 +40,22 @@ export type NavigationSnapshot = {
     ctaLabel: string;
     ctaHref: string;
     copyright: string;
+    productCategories?: {
+      visible: boolean;
+      label: string;
+    };
+    actionLinks?: {
+      label: string;
+      items: NavigationNode[];
+    };
+    newsletter?: {
+      visible: boolean;
+      title: string;
+      description: string;
+      ctaLabel: string;
+      ctaHref: string;
+    };
+    legalLinks?: NavigationNode[];
   };
 };
 
@@ -120,6 +136,12 @@ function validateDocumentStructure(snapshot: NavigationSnapshot, context: z.Refi
     register(group.id, ["footerGroups", groupIndex, "id"]);
     group.items.forEach((node, nodeIndex) => visit(node, 1, ["footerGroups", groupIndex, "items", nodeIndex]));
   });
+  snapshot.footer?.actionLinks?.items.forEach((node, nodeIndex) => {
+    visit(node, 1, ["footer", "actionLinks", "items", nodeIndex]);
+  });
+  snapshot.footer?.legalLinks?.forEach((node, nodeIndex) => {
+    visit(node, 1, ["footer", "legalLinks", nodeIndex]);
+  });
 }
 
 export const navigationSnapshotSchema: z.ZodType<NavigationSnapshot> = z.object({
@@ -137,6 +159,22 @@ export const navigationSnapshotSchema: z.ZodType<NavigationSnapshot> = z.object(
     ctaLabel: labelSchema,
     ctaHref: hrefSchema,
     copyright: z.string().trim().min(1).max(240),
+    productCategories: z.object({
+      visible: z.boolean(),
+      label: labelSchema,
+    }).strict().optional(),
+    actionLinks: z.object({
+      label: labelSchema,
+      items: z.array(navigationNodeSchema).max(30),
+    }).strict().optional(),
+    newsletter: z.object({
+      visible: z.boolean(),
+      title: labelSchema,
+      description: z.string().trim().min(1).max(500),
+      ctaLabel: labelSchema,
+      ctaHref: hrefSchema,
+    }).strict().optional(),
+    legalLinks: z.array(navigationNodeSchema).max(12).optional(),
   }).strict().optional(),
 }).strict().superRefine(validateDocumentStructure);
 

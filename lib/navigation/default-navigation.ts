@@ -54,7 +54,6 @@ export const DEFAULT_NAVIGATION = deepFreeze<NavigationSnapshot>({
       items: [
         { id: "footer-about-zyron", kind: "LINK", label: "About ZYRON", href: "/factory", visible: true },
         { id: "footer-contact", kind: "LINK", label: "Contact", href: "/contact", visible: true },
-        { id: "footer-privacy", kind: "LINK", label: "Privacy Policy", href: "/privacy", visible: true },
       ],
     },
   ],
@@ -67,5 +66,28 @@ export const DEFAULT_NAVIGATION = deepFreeze<NavigationSnapshot>({
     ctaLabel: "Start a Project",
     ctaHref: "/contact",
     copyright: "Copyright 2026 ZYRON Heavy Industry. All rights reserved.",
+    productCategories: {
+      visible: true,
+      label: "Product Categories",
+    },
+    actionLinks: {
+      label: "Where to Buy",
+      items: [
+        { id: "footer-action-quote", kind: "LINK", label: "Get a Quote", href: "/contact", visible: true },
+        { id: "footer-action-engineer", kind: "LINK", label: "Contact an Engineer", href: "/contact", visible: true },
+        { id: "footer-action-oem", kind: "LINK", label: "OEM / ODM Cooperation", href: "/contact", visible: true },
+        { id: "footer-action-distributor", kind: "LINK", label: "Distributor Inquiry", href: "/contact", visible: true },
+      ],
+    },
+    newsletter: {
+      visible: true,
+      title: "Machinery Updates",
+      description: "Read verified product releases, delivery updates, and production line ideas.",
+      ctaLabel: "Read Company News",
+      ctaHref: "/news",
+    },
+    legalLinks: [
+      { id: "footer-legal-privacy", kind: "LINK", label: "Privacy Policy", href: "/privacy", visible: true },
+    ],
   },
 });

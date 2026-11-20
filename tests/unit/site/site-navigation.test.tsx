@@ -47,6 +47,32 @@ describe("public managed site navigation", () => {
     expect(container.textContent).toMatch(/Customer Cases|SHOWCASE/i);
   });
 
+  it("renders all optional footer sections from the published snapshot without a fake subscription form", () => {
+    const navigation = structuredClone(DEFAULT_NAVIGATION);
+    navigation.footer!.productCategories = { visible: false, label: "Hidden Categories" };
+    navigation.footer!.actionLinks = {
+      label: "Partner With ZYRON",
+      items: [{ id: "footer-partner", kind: "LINK", label: "Become a Distributor", href: "/contact", visible: true }],
+    };
+    navigation.footer!.newsletter = {
+      visible: true,
+      title: "Verified Machinery Updates",
+      description: "Read new product and delivery information.",
+      ctaLabel: "Read Company News",
+      ctaHref: "/news",
+    };
+    navigation.footer!.legalLinks = [{ id: "footer-terms", kind: "LINK", label: "Terms of Use", href: "/privacy", visible: true }];
+
+    render(<SiteFooter navigation={navigation} />);
+
+    expect(screen.queryByText("Hidden Categories")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Become a Distributor" })).toHaveAttribute("href", "/contact");
+    expect(screen.getByRole("link", { name: "Read Company News" })).toHaveAttribute("href", "/news");
+    expect(screen.getByRole("link", { name: "Terms of Use" })).toHaveAttribute("href", "/privacy");
+    expect(screen.queryByPlaceholderText("Email address")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Subscribe" })).not.toBeInTheDocument();
+  });
+
   it("opens the mobile navigation as a dialog and closes it with Escape", async () => {
     const user = userEvent.setup();
     render(<SiteHeader navigation={DEFAULT_NAVIGATION} categories={productCategories} products={products} />);

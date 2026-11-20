@@ -65,6 +65,49 @@ describe("managed navigation schema", () => {
     expect(parseNavigationSnapshot(validSnapshot())).toMatchObject({ schemaVersion: 1 });
   });
 
+  it("accepts a fully managed footer while preserving older snapshots", () => {
+    const snapshot = validSnapshot();
+    snapshot.footer = {
+      brandName: "ZYRON Heavy Industry",
+      description: "Industrial machinery solutions.",
+      email: "info@zyroncnc.com",
+      whatsapp: "+8615655537083",
+      address: "Ma'anshan, Anhui, China",
+      ctaLabel: "Start a Project",
+      ctaHref: "/contact",
+      copyright: "Copyright 2026 ZYRON Heavy Industry.",
+      productCategories: { visible: false, label: "Machine Categories" },
+      actionLinks: {
+        label: "Work With Us",
+        items: [{ id: "footer-distributor", kind: "LINK", label: "Distributor Inquiry", href: "/contact", visible: true }],
+      },
+      newsletter: {
+        visible: true,
+        title: "Machinery Updates",
+        description: "Read verified product and delivery updates.",
+        ctaLabel: "View News",
+        ctaHref: "/news",
+      },
+      legalLinks: [{ id: "footer-legal-privacy", kind: "LINK", label: "Privacy Policy", href: "/privacy", visible: true }],
+    };
+
+    expect(parseNavigationSnapshot(snapshot).footer).toMatchObject({
+      productCategories: { visible: false, label: "Machine Categories" },
+      newsletter: { ctaHref: "/news" },
+    });
+    expect(parseNavigationSnapshot(validSnapshot()).footer).toBeUndefined();
+  });
+
+  it("rejects unsafe managed footer links and duplicate footer ids", () => {
+    const snapshot = structuredClone(DEFAULT_NAVIGATION);
+    snapshot.footer!.newsletter!.ctaHref = "javascript:alert(1)";
+    expect(() => parseNavigationSnapshot(snapshot)).toThrow();
+
+    snapshot.footer!.newsletter!.ctaHref = "/news";
+    snapshot.footer!.legalLinks = [{ id: "home", kind: "LINK", label: "Privacy", href: "/privacy", visible: true }];
+    expect(() => parseNavigationSnapshot(snapshot)).toThrow(/duplicate/i);
+  });
+
   it.each([
     ["/", true],
     ["/products", true],
