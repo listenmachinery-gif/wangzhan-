@@ -7,6 +7,9 @@ import type { ProductCategory } from "@/data/products";
 
 type InquiryFormProps = {
   productCategories: ProductCategory[];
+  eyebrow?: string;
+  heading?: string;
+  description?: string;
 };
 
 type SubmitState = "idle" | "sending" | "success" | "error";
@@ -37,7 +40,7 @@ function buildMailto(formData: FormData) {
   return `mailto:info@zyroncnc.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
-export function InquiryForm({ productCategories }: InquiryFormProps) {
+export function InquiryForm({ productCategories, eyebrow = "Inquiry Form", heading = "Tell us what you need.", description }: InquiryFormProps) {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [message, setMessage] = useState("");
   const { trackStart, trackSuccessfulSubmit } = useInquiryTracking("general-inquiry");
@@ -82,8 +85,9 @@ export function InquiryForm({ productCategories }: InquiryFormProps) {
 
   return (
     <form onSubmit={handleSubmit} onFocusCapture={trackStart} className="rounded-md bg-white p-7 shadow-sm lg:p-9">
-      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ignition">Inquiry Form</p>
-      <h2 className="mt-3 text-3xl font-semibold text-neutral-950">Tell us what you need.</h2>
+      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ignition">{eyebrow}</p>
+      <h2 className="mt-3 text-3xl font-semibold text-neutral-950">{heading}</h2>
+      {description ? <p className="mt-3 text-sm leading-6 text-neutral-600">{description}</p> : null}
       <div className="mt-7 grid gap-4 md:grid-cols-2">
         <label className="grid gap-2 text-sm font-semibold text-neutral-700">
           Name
