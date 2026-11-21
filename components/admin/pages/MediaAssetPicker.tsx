@@ -69,8 +69,9 @@ export function MediaAssetPicker({
 
   useEffect(() => {
     if (!open) return;
+    const trigger = triggerRef.current;
     searchRef.current?.focus();
-    return () => triggerRef.current?.focus();
+    return () => trigger?.focus();
   }, [open]);
 
   function handleDialogKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
