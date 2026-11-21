@@ -125,6 +125,29 @@ describe("PageBuilder", () => {
     );
   });
 
+  it("edits per-element typography independently for tablet and mobile", async () => {
+    const onPersist = vi.fn().mockResolvedValue({ version: 2 });
+    const user = userEvent.setup();
+    render(<PageBuilder page={page} canPublish onPersist={onPersist} />);
+
+    await user.selectOptions(screen.getByRole("combobox", { name: "文字元素" }), "heading");
+    await user.click(screen.getByRole("button", { name: "平板预览" }));
+    fireEvent.change(screen.getByRole("spinbutton", { name: "单独文字字号" }), { target: { value: "36" } });
+    await user.click(screen.getByRole("button", { name: "手机预览" }));
+    expect(screen.getByRole("spinbutton", { name: "单独文字字号" })).toHaveValue(null);
+    fireEvent.change(screen.getByRole("spinbutton", { name: "单独文字字号" }), { target: { value: "24" } });
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+
+    await waitFor(() => expect(onPersist).toHaveBeenCalledTimes(1));
+    expect(onPersist.mock.calls[0][0].document.nodes[0]).toMatchObject({
+      responsiveTextStyles: {
+        tablet: { heading: { fontSize: 36 } },
+        mobile: { heading: { fontSize: 24 } },
+      },
+    });
+    expect(onPersist.mock.calls[0][0].document.nodes[0].textStyles?.heading).toBeUndefined();
+  });
+
   it("serializes and coalesces concurrent saves for the same edit revision", async () => {
     let finishSave: (value: { version: number }) => void = () => undefined;
     const onPersist = vi.fn(

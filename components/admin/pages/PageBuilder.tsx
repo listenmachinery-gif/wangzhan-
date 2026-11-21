@@ -424,7 +424,9 @@ export function PageBuilder({
     ? textElementKey
     : (editableTextKeys[0] ?? "");
   const activeTextStyle = activeTextKey
-    ? (selected?.textStyles?.[activeTextKey] ?? {})
+    ? (device === "desktop"
+        ? selected?.textStyles?.[activeTextKey]
+        : selected?.responsiveTextStyles?.[device]?.[activeTextKey]) ?? {}
     : {};
 
   const commit = useCallback(
@@ -655,6 +657,10 @@ export function PageBuilder({
           device === "desktop"
             ? node.style
             : { ...node.style, ...node.responsive?.[device] },
+        textStyles:
+          device === "desktop"
+            ? node.textStyles
+            : { ...node.textStyles, ...node.responsiveTextStyles?.[device] },
       })),
     }),
     [device, document],
@@ -682,16 +688,30 @@ export function PageBuilder({
   function updateTextStyle(changes: Partial<PageTextStyle>) {
     if (!selected || !activeTextKey) return;
     const nodes = [...document.nodes];
-    nodes[selectedIndex] = {
-      ...selected,
-      textStyles: {
-        ...selected.textStyles,
-        [activeTextKey]: {
-          ...selected.textStyles?.[activeTextKey],
-          ...changes,
-        },
-      },
-    };
+    nodes[selectedIndex] = device === "desktop"
+      ? {
+          ...selected,
+          textStyles: {
+            ...selected.textStyles,
+            [activeTextKey]: {
+              ...selected.textStyles?.[activeTextKey],
+              ...changes,
+            },
+          },
+        }
+      : {
+          ...selected,
+          responsiveTextStyles: {
+            ...selected.responsiveTextStyles,
+            [device]: {
+              ...selected.responsiveTextStyles?.[device],
+              [activeTextKey]: {
+                ...selected.responsiveTextStyles?.[device]?.[activeTextKey],
+                ...changes,
+              },
+            },
+          },
+        };
     commit({ ...document, nodes });
   }
 

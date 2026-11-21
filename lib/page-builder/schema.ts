@@ -142,6 +142,10 @@ export type PageNode = {
   style?: PageStyle;
   responsive?: { tablet?: PageStyle; mobile?: PageStyle };
   textStyles?: Record<string, PageTextStyle>;
+  responsiveTextStyles?: {
+    tablet?: Record<string, PageTextStyle>;
+    mobile?: Record<string, PageTextStyle>;
+  };
   children?: PageNode[];
 };
 
@@ -163,6 +167,10 @@ export const pageNodeSchema: z.ZodType<PageNode> = z.lazy(() => z.object({
     mobile: pageStyleSchema.optional(),
   }).strict().optional(),
   textStyles: z.record(safeKeySchema, pageTextStyleSchema).optional(),
+  responsiveTextStyles: z.object({
+    tablet: z.record(safeKeySchema, pageTextStyleSchema).optional(),
+    mobile: z.record(safeKeySchema, pageTextStyleSchema).optional(),
+  }).strict().optional(),
   children: z.array(pageNodeSchema).max(24).optional(),
 }).strict());
 
