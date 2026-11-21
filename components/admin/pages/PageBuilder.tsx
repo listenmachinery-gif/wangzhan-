@@ -556,7 +556,7 @@ export function PageBuilder({
 
   const groups = useMemo(
     () =>
-      ["基础", "布局", "外贸业务", "营销"].map((group) => ({
+      ["基础", "外贸业务", "营销"].map((group) => ({
         group,
         definitions: componentRegistry.filter((item) => item.group === group),
       })),
