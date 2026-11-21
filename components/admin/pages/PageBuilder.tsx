@@ -72,6 +72,97 @@ function createId(type: string) {
   return `${type.toLowerCase()}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
+const repeaterFieldLabels: Record<string, string> = {
+  title: "标题",
+  description: "描述",
+  body: "正文",
+  alt: "替代文字",
+  href: "链接",
+  year: "序号 / 年份",
+  mediaKind: "媒体类型",
+  src: "媒体地址",
+  image: "图片地址",
+};
+
+function MediaRepeaterEditor({
+  fieldLabel,
+  items,
+  onChange,
+}: {
+  fieldLabel: string;
+  items: Record<string, unknown>[];
+  onChange(items: Record<string, unknown>[]): void;
+}) {
+  function update(index: number, changes: Record<string, unknown>) {
+    onChange(items.map((item, itemIndex) => itemIndex === index ? { ...item, ...changes } : item));
+  }
+  function move(index: number, offset: -1 | 1) {
+    const target = index + offset;
+    if (target < 0 || target >= items.length) return;
+    const next = [...items];
+    [next[index], next[target]] = [next[target], next[index]];
+    onChange(next);
+  }
+  return (
+    <div className="space-y-3">
+      <p className="text-xs font-semibold text-neutral-600">{fieldLabel}</p>
+      {items.map((item, index) => {
+        const mediaKey = typeof item.src === "string" ? "src" : typeof item.image === "string" ? "image" : null;
+        const mediaKind: LibraryMediaKind = item.mediaKind === "video" ? "video" : "image";
+        return (
+          <div key={index} data-testid="media-repeater-item" className="space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3">
+            <div className="flex items-center justify-between gap-2">
+              <strong className="text-xs">第 {index + 1} 项</strong>
+              <div className="flex gap-1">
+                <button type="button" aria-label={`上移第 ${index + 1} 项`} disabled={index === 0} onClick={() => move(index, -1)} className="rounded border bg-white p-1 disabled:opacity-30"><ArrowUp size={14} /></button>
+                <button type="button" aria-label={`下移第 ${index + 1} 项`} disabled={index === items.length - 1} onClick={() => move(index, 1)} className="rounded border bg-white p-1 disabled:opacity-30"><ArrowDown size={14} /></button>
+                <button type="button" aria-label={`移除第 ${index + 1} 项`} disabled={items.length === 1} onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))} className="rounded border border-red-200 bg-white p-1 text-red-700 disabled:opacity-30"><Trash2 size={14} /></button>
+              </div>
+            </div>
+            {Object.entries(item).map(([key, value]) => {
+              if (typeof value !== "string" || key === mediaKey) return null;
+              if (key === "mediaKind") return (
+                <label key={key} className="block text-xs">媒体类型
+                  <select aria-label={`第 ${index + 1} 项 媒体类型`} value={value} onChange={(event) => update(index, { mediaKind: event.target.value })} className="mt-1 h-9 w-full rounded border bg-white px-2">
+                    <option value="image">图片</option><option value="video">视频</option>
+                  </select>
+                </label>
+              );
+              const label = repeaterFieldLabels[key] ?? key;
+              const multiline = key === "description" || key === "body";
+              return (
+                <label key={key} className="block text-xs">{label}
+                  {multiline ? (
+                    <textarea aria-label={`第 ${index + 1} 项 ${label}`} value={value} rows={2} onChange={(event) => update(index, { [key]: event.target.value })} className="mt-1 w-full rounded border bg-white px-2 py-1.5" />
+                  ) : (
+                    <input aria-label={`第 ${index + 1} 项 ${label}`} value={value} onChange={(event) => update(index, { [key]: event.target.value })} className="mt-1 h-9 w-full rounded border bg-white px-2" />
+                  )}
+                </label>
+              );
+            })}
+            {mediaKey ? (
+              <div className="space-y-2">
+                <label className="block text-xs">{repeaterFieldLabels[mediaKey]}
+                  <input aria-label={`第 ${index + 1} 项 ${repeaterFieldLabels[mediaKey]}`} value={String(item[mediaKey] ?? "")} onChange={(event) => update(index, { [mediaKey]: event.target.value })} className="mt-1 h-9 w-full rounded border bg-white px-2" />
+                </label>
+                <MediaAssetPicker
+                  label={`替换第 ${index + 1} 项${mediaKind === "video" ? "视频" : "图片"}`}
+                  kind={mediaKind}
+                  onSelect={(media) => update(index, {
+                    [mediaKey]: media.url,
+                    ...(Object.hasOwn(item, "alt") && media.altText ? { alt: media.altText } : {}),
+                  })}
+                />
+              </div>
+            ) : null}
+          </div>
+        );
+      })}
+      <button type="button" aria-label="添加媒体项目" onClick={() => onChange([...items, clone(items.at(-1) ?? {})])} className="w-full rounded border border-dashed px-3 py-2 text-xs font-semibold hover:border-[#76B900]">+ 添加项目</button>
+    </div>
+  );
+}
+
 function LayerRow({
   node,
   index,
@@ -170,6 +261,16 @@ function FieldEditor({
         const mediaArray = Array.isArray(value) && value.some((entry) =>
           entry && typeof entry === "object" && !Array.isArray(entry) && ("image" in entry || "src" in entry)
         );
+        if ((field.kind === "json" || field.kind === "list") && mediaArray) {
+          return (
+            <MediaRepeaterEditor
+              key={field.key}
+              fieldLabel={field.label}
+              items={value as Record<string, unknown>[]}
+              onChange={(items) => onChange({ ...content, [field.key]: items })}
+            />
+          );
+        }
         if (field.kind === "json" || field.kind === "list")
           return (
             <label key={field.key} className="block">
@@ -199,25 +300,6 @@ function FieldEditor({
                 rows={5}
                 className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 font-mono text-xs"
               />
-              {mediaArray ? (
-                <div className="mt-3 space-y-2 rounded-lg border border-neutral-200 bg-neutral-50 p-3">
-                  <p className="text-xs font-semibold text-neutral-700">媒体资源替换（每一张图片均可单独替换）</p>
-                  {(value as Record<string, unknown>[]).map((entry, index) => {
-                    if (!entry || typeof entry !== "object") return null;
-                    const mediaKey = typeof entry.src === "string" ? "src" : typeof entry.image === "string" ? "image" : null;
-                    if (!mediaKey) return null;
-                    return <div key={index} className="flex items-center justify-between gap-2 rounded bg-white p-2">
-                      <span className="min-w-0 truncate text-xs" title={String(entry[mediaKey])}>第 {index + 1} 张：{String(entry.title ?? entry.alt ?? entry[mediaKey])}</span>
-                      <MediaAssetPicker label="替换" kind={entry.mediaKind === "video" ? "video" : "image"} onSelect={(media) => {
-                        const next = (value as Record<string, unknown>[]).map((item, itemIndex) => itemIndex === index
-                          ? { ...item, [mediaKey]: media.url, ...("alt" in item && media.altText ? { alt: media.altText } : {}) }
-                          : item);
-                        onChange({ ...content, [field.key]: next });
-                      }} />
-                    </div>;
-                  })}
-                </div>
-              ) : null}
             </label>
           );
         return (
@@ -831,7 +913,7 @@ export function PageBuilder({
                 </div>
                 <ChevronRight size={18} className="text-neutral-400" />
               </div>
-              <div className="mt-4 flex gap-2">
+              <div className="mt-4 grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   aria-label="复制当前组件"
@@ -840,6 +922,14 @@ export function PageBuilder({
                 >
                   <Copy size={14} />
                   复制
+                </button>
+                <button
+                  type="button"
+                  aria-label={selected.style?.visible === false ? "恢复当前组件" : "隐藏当前组件"}
+                  onClick={() => updateStyle({ visible: selected.style?.visible === false })}
+                  className="inline-flex items-center justify-center rounded-lg border px-2 py-2 text-xs font-semibold"
+                >
+                  {selected.style?.visible === false ? "恢复" : "隐藏"}
                 </button>
                 <button
                   type="button"
@@ -944,6 +1034,8 @@ export function PageBuilder({
                   </label>
                   <label className="text-xs">左右内边距<input aria-label="左右内边距" type="number" value={activeStyle.paddingX ?? ""} onChange={(event) => updateStyle({ paddingX: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
                   <label className="text-xs">最大宽度<input aria-label="最大宽度" type="number" min="320" max="1920" value={activeStyle.maxWidth ?? ""} onChange={(event) => updateStyle({ maxWidth: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
+                  <label className="text-xs">区块宽度<select aria-label="区块宽度" value={activeStyle.width ?? "auto"} onChange={(event) => updateStyle({ width: event.target.value as PageStyle["width"] })} className="mt-1 h-9 w-full rounded border px-2"><option value="auto">自动</option><option value="full">全幅</option><option value="content">内容宽度</option></select></label>
+                  <label className="text-xs">元素间距<input aria-label="元素间距" type="number" min="0" max="128" value={activeStyle.gap ?? ""} onChange={(event) => updateStyle({ gap: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
                   <label className="text-xs">上外边距<input aria-label="上外边距" type="number" value={activeStyle.marginTop ?? ""} onChange={(event) => updateStyle({ marginTop: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
                   <label className="text-xs">下外边距<input aria-label="下外边距" type="number" value={activeStyle.marginBottom ?? ""} onChange={(event) => updateStyle({ marginBottom: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
                   <label className="col-span-2 text-xs">
@@ -960,7 +1052,9 @@ export function PageBuilder({
                       className="mt-1 h-9 w-full rounded border px-2"
                     />
                   </label>
-                  <label className="col-span-2 text-xs">背景图片<input aria-label="背景图片" type="text" value={activeStyle.backgroundImage ?? ""} placeholder="/api/media/..." onChange={(event) => updateStyle({ backgroundImage: event.target.value || undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
+                  <label className="col-span-2 text-xs">背景图片<input aria-label="背景图片" type="text" value={activeStyle.backgroundImage ?? ""} placeholder="/api/media/..." onChange={(event) => updateStyle({ backgroundImage: event.target.value || undefined })} className="mt-1 h-9 w-full rounded border px-2" /><span className="mt-2 block"><MediaAssetPicker label="从媒体库选择背景图片" kind="image" onSelect={(media) => updateStyle({ backgroundImage: media.url })} /></span></label>
+                  <label className="text-xs">图片适配<select aria-label="图片适配" value={activeStyle.objectFit ?? "cover"} onChange={(event) => updateStyle({ objectFit: event.target.value as PageStyle["objectFit"] })} className="mt-1 h-9 w-full rounded border px-2"><option value="cover">裁切铺满</option><option value="contain">完整显示</option></select></label>
+                  <label className="text-xs">图片位置<select aria-label="图片位置" value={activeStyle.objectPosition ?? "center"} onChange={(event) => updateStyle({ objectPosition: event.target.value as PageStyle["objectPosition"] })} className="mt-1 h-9 w-full rounded border px-2"><option value="center">居中</option><option value="top">顶部</option><option value="bottom">底部</option><option value="left">左侧</option><option value="right">右侧</option></select></label>
                   <label className="text-xs">
                     字号
                     <input
