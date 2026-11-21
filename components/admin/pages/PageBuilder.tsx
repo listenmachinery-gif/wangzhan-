@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { MediaAssetPicker, type LibraryMediaKind } from "@/components/admin/pages/MediaAssetPicker";
 import { PageRenderer } from "@/components/page-builder/PageRenderer";
 import { INDUSTRIAL_PAGE_TEMPLATES } from "@/lib/page-builder/industrial-templates";
 import { formatAdminEnum } from "@/lib/admin/localization";
@@ -159,6 +160,15 @@ function FieldEditor({
     <div className="space-y-4">
       {definition.editorFields.map((field) => {
         const value = content[field.key];
+        // Media slots are backed by the existing protected MediaAsset library.
+        // Persist a stable /api/media/id path instead of a temporary signed preview URL.
+        const fieldIsMedia = field.kind === "url" && (
+          ["src", "image", "poster", "backgroundImage", "backgroundVideo", "videoSrc", "desktopImage", "mobileImage", "tabletImage"].includes(field.key)
+        );
+        const kind: LibraryMediaKind = ["videoSrc", "backgroundVideo"].includes(field.key) || (node.type === "VIDEO" && field.key === "src") ? "video" : "image";
+        const mediaArray = Array.isArray(value) && value.some((entry) =>
+          entry && typeof entry === "object" && !Array.isArray(entry) && ("image" in entry || "src" in entry)
+        );
         if (field.kind === "json" || field.kind === "list")
           return (
             <label key={field.key} className="block">
@@ -188,6 +198,25 @@ function FieldEditor({
                 rows={5}
                 className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 font-mono text-xs"
               />
+              {mediaArray ? (
+                <div className="mt-3 space-y-2 rounded-lg border border-neutral-200 bg-neutral-50 p-3">
+                  <p className="text-xs font-semibold text-neutral-700">媒体资源替换（每一张图片均可单独替换）</p>
+                  {(value as Record<string, unknown>[]).map((entry, index) => {
+                    if (!entry || typeof entry !== "object") return null;
+                    const mediaKey = typeof entry.src === "string" ? "src" : typeof entry.image === "string" ? "image" : null;
+                    if (!mediaKey) return null;
+                    return <div key={index} className="flex items-center justify-between gap-2 rounded bg-white p-2">
+                      <span className="min-w-0 truncate text-xs" title={String(entry[mediaKey])}>第 {index + 1} 张：{String(entry.title ?? entry.alt ?? entry[mediaKey])}</span>
+                      <MediaAssetPicker label="替换" kind="image" onSelect={(media) => {
+                        const next = (value as Record<string, unknown>[]).map((item, itemIndex) => itemIndex === index
+                          ? { ...item, [mediaKey]: media.url, ...("alt" in item && media.altText ? { alt: media.altText } : {}) }
+                          : item);
+                        onChange({ ...content, [field.key]: next });
+                      }} />
+                    </div>;
+                  })}
+                </div>
+              ) : null}
             </label>
           );
         return (
@@ -222,6 +251,21 @@ function FieldEditor({
                 className="mt-1 h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm"
               />
             )}
+            {fieldIsMedia ? (
+              <div className="mt-2">
+                <MediaAssetPicker
+                  kind={kind}
+                  onSelect={(media) => {
+                    const nextContent: Record<string, unknown> = { ...content, [field.key]: media.url };
+                    if (kind === "image") {
+                      const altField = field.key === "image" ? (Object.hasOwn(content, "imageAlt") ? "imageAlt" : "alt") : field.key === "src" ? "alt" : null;
+                      if (altField && Object.hasOwn(content, altField)) nextContent[altField] = media.altText || nextContent[altField];
+                    }
+                    onChange(nextContent);
+                  }}
+                />
+              </div>
+            ) : null}
           </label>
         );
       })}
