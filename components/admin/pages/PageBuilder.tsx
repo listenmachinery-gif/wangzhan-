@@ -25,6 +25,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MediaAssetPicker, type LibraryMediaKind } from "@/components/admin/pages/MediaAssetPicker";
 import { PageRenderer } from "@/components/page-builder/PageRenderer";
 import { INDUSTRIAL_PAGE_TEMPLATES } from "@/lib/page-builder/industrial-templates";
+import { HARSLE_LAYOUT_TEMPLATES } from "@/lib/page-builder/harsle-layout-templates";
 import { formatAdminEnum } from "@/lib/admin/localization";
 import {
   componentRegistry,
@@ -531,7 +532,7 @@ export function PageBuilder({
   }
 
   function applyTemplate() {
-    const preset = INDUSTRIAL_PAGE_TEMPLATES[templateChoice];
+    const preset = { ...INDUSTRIAL_PAGE_TEMPLATES, ...HARSLE_LAYOUT_TEMPLATES }[templateChoice];
     if (!preset) return;
     if (!window.confirm("替换当前草稿全部模块？建议先保存当前版本，发布后仍可从历史版本恢复。")) return;
     const next = clone(preset.document);
@@ -603,7 +604,7 @@ export function PageBuilder({
       <div className="flex flex-wrap items-center gap-3 border-b border-neutral-200 bg-white px-4 py-2">
         <label htmlFor="industrial-template-select" className="text-xs font-semibold text-neutral-600">页面模板</label>
         <select id="industrial-template-select" value={templateChoice} onChange={(event) => setTemplateChoice(event.target.value)} className="h-9 rounded border border-neutral-300 px-2 text-sm">
-          {Object.entries(INDUSTRIAL_PAGE_TEMPLATES).map(([key, preset]) => <option key={key} value={key}>{preset.label}</option>)}
+          {Object.entries({ ...INDUSTRIAL_PAGE_TEMPLATES, ...HARSLE_LAYOUT_TEMPLATES }).map(([key, preset]) => <option key={key} value={key}>{preset.label}</option>)}
         </select>
         <button type="button" onClick={applyTemplate} className="rounded border border-neutral-300 px-3 py-2 text-xs font-semibold hover:border-[#76B900]">应用模板到草稿</button>
         <label className="flex items-center gap-2 text-xs font-semibold text-neutral-600">
