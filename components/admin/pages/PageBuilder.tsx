@@ -207,7 +207,7 @@ function FieldEditor({
                     if (!mediaKey) return null;
                     return <div key={index} className="flex items-center justify-between gap-2 rounded bg-white p-2">
                       <span className="min-w-0 truncate text-xs" title={String(entry[mediaKey])}>第 {index + 1} 张：{String(entry.title ?? entry.alt ?? entry[mediaKey])}</span>
-                      <MediaAssetPicker label="替换" kind="image" onSelect={(media) => {
+                      <MediaAssetPicker label="替换" kind={entry.mediaKind === "video" ? "video" : "image"} onSelect={(media) => {
                         const next = (value as Record<string, unknown>[]).map((item, itemIndex) => itemIndex === index
                           ? { ...item, [mediaKey]: media.url, ...("alt" in item && media.altText ? { alt: media.altText } : {}) }
                           : item);
