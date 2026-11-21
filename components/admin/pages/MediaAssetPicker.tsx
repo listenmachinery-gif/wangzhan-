@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { Film, FolderOpen, Image as ImageIcon, Search, X } from "lucide-react";
 
 export type LibraryMediaKind = "image" | "video";
@@ -39,6 +39,9 @@ export function MediaAssetPicker({
   const [cursor, setCursor] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async (search: string, nextCursor: string | null = null) => {
     setBusy(true);
@@ -66,12 +69,31 @@ export function MediaAssetPicker({
 
   useEffect(() => {
     if (!open) return;
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
-    }
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
+    searchRef.current?.focus();
+    return () => triggerRef.current?.focus();
   }, [open]);
+
+  function handleDialogKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setOpen(false);
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ) ?? []);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
 
   function onSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -95,6 +117,7 @@ export function MediaAssetPicker({
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => { setOpen(true); setQuery(""); setAppliedQuery(""); }}
         className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 px-3 py-2 text-xs font-semibold transition hover:border-[#76B900]"
@@ -104,9 +127,11 @@ export function MediaAssetPicker({
       </button>
       {open ? (
         <div
+          ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-label={kind === "video" ? "选择媒体库视频" : "选择媒体库图片"}
+          onKeyDown={handleDialogKeyDown}
           className="fixed inset-0 z-[100] grid place-items-center bg-black/65 p-3"
         >
           <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
@@ -121,7 +146,7 @@ export function MediaAssetPicker({
             </header>
             <form onSubmit={onSearch} className="flex gap-2 border-b p-4">
               <label className="sr-only" htmlFor="page-media-search">搜索媒体</label>
-              <input id="page-media-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索文件名、分类、替代文字" className="min-w-0 flex-1 rounded border border-neutral-300 px-3 py-2 text-sm" />
+              <input ref={searchRef} id="page-media-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索文件名、分类、替代文字" className="min-w-0 flex-1 rounded border border-neutral-300 px-3 py-2 text-sm" />
               <button type="submit" disabled={busy} className="inline-flex items-center gap-2 rounded bg-[#76B900] px-4 text-sm font-semibold disabled:opacity-50"><Search size={15} />搜索</button>
             </form>
             <div className="overflow-y-auto p-4">
