@@ -997,6 +997,15 @@ export function PageBuilder({
                     <option value="BEFORE_LEGACY">旧版内容之前</option>
                     <option value="AFTER_LEGACY">旧版内容之后</option>
                     <option value="REPLACE_LEGACY">替换旧版内容</option>
+                    <option value="PRODUCT_AFTER_HERO">产品首屏之后</option>
+                    <option value="PRODUCT_AFTER_ADVANTAGES">产品优势之后</option>
+                    <option value="PRODUCT_AFTER_APPLICATIONS">应用场景之后</option>
+                    <option value="PRODUCT_AFTER_GALLERY">产品图集之后</option>
+                    <option value="PRODUCT_AFTER_MODELS">型号参数之后</option>
+                    <option value="PRODUCT_AFTER_FEATURES">技术特性之后</option>
+                    <option value="PRODUCT_AFTER_SELECTION">选型指南之后</option>
+                    <option value="PRODUCT_AFTER_FAQ">常见问题之后</option>
+                    <option value="PRODUCT_BEFORE_INQUIRY">询盘行动之前</option>
                   </select>
                 </label>
                 <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-neutral-500">

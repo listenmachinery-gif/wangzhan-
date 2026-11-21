@@ -42,10 +42,25 @@ export const PAGE_COMPONENT_TYPES = [
 
 export type PageComponentType = (typeof PAGE_COMPONENT_TYPES)[number];
 
+export const PRODUCT_PAGE_SLOT_PLACEMENTS = [
+  "PRODUCT_AFTER_HERO",
+  "PRODUCT_AFTER_ADVANTAGES",
+  "PRODUCT_AFTER_APPLICATIONS",
+  "PRODUCT_AFTER_GALLERY",
+  "PRODUCT_AFTER_MODELS",
+  "PRODUCT_AFTER_FEATURES",
+  "PRODUCT_AFTER_SELECTION",
+  "PRODUCT_AFTER_FAQ",
+  "PRODUCT_BEFORE_INQUIRY",
+] as const;
+
+export type ProductPageSlotPlacement = (typeof PRODUCT_PAGE_SLOT_PLACEMENTS)[number];
+
 export const PAGE_NODE_PLACEMENTS = [
   "BEFORE_LEGACY",
   "AFTER_LEGACY",
   "REPLACE_LEGACY",
+  ...PRODUCT_PAGE_SLOT_PLACEMENTS,
 ] as const;
 
 export type PageNodePlacement = (typeof PAGE_NODE_PLACEMENTS)[number];

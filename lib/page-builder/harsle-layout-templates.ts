@@ -1,4 +1,4 @@
-import type { PageDocument, PageNode } from "@/lib/page-builder/schema";
+import type { PageDocument, PageNode, ProductPageSlotPlacement } from "@/lib/page-builder/schema";
 
 /**
  * Reference-inspired layout-only presets. Do NOT replace existing site data automatically.
@@ -6,6 +6,7 @@ import type { PageDocument, PageNode } from "@/lib/page-builder/schema";
  * through the existing admin MediaAsset library.
  */
 const make = (id: string, type: PageNode["type"], content: PageNode["content"]): PageNode => ({ id, type, content });
+const placed = (node: PageNode, placement: PageNode["placement"] | ProductPageSlotPlacement): PageNode => ({ ...node, placement });
 const hero = (id: string, title: string, description: string, layout: "full" | "split" = "full", image = "/products/hydraulic-press-brake-hero.png"): PageNode =>
   make(id, "MEDIA_HERO", {
     eyebrow: "ZYRON HEAVY INDUSTRY", title, description,
@@ -72,7 +73,7 @@ const cta = (id: string) => make(id, "INQUIRY_CTA", {
 });
 const spec = (id: string) => make(id, "SPECIFICATION_TABLE", {
   heading: "Technical Specifications", columns: ["Specification", "Value"],
-  rows: [["Machine Model", "Confirm with product data"], ["Working Capacity", "Confirm with product data"], ["Controls", "Confirm actual configuration"]],
+  rows: [],
 });
 const basic = (nodes: PageNode[]): PageDocument => ({ schemaVersion: 1, nodes });
 
@@ -109,22 +110,26 @@ export const HARSLE_LAYOUT_TEMPLATES: Record<string, { label: string; document: 
   },
   "reference-product-story": {
     label: "HARSLE 排版参考 · 设备专题详情",
-    document: { schemaVersion: 1, renderMode: "REPLACE_LEGACY", nodes: [
-      hero("ref-product-hero", "Built Around Your Production Requirements", "Review machine structure, application and configuration.", "split"),
-      feature("ref-product-overview", "EQUIPMENT OVERVIEW", "Introducing the Machine", "Replace this copy with the verified product description."),
-      feature("ref-product-controls", "CONTROLS", "Practical Operation", "Use real control-system images and accurate functional descriptions.", true),
-      feature("ref-product-structure", "ENGINEERING", "Structure and Key Components", "Show the actual machine frame and component details."),
-      showcase("ref-product-details", "Equipment Photos and Video"), spec("ref-product-specification"),
-      faq("ref-product-faq"), inquiry("ref-product-form"), cta("ref-product-cta"),
-    ] },
+    document: basic([
+      placed(hero("ref-product-hero", "Built Around Your Production Requirements", "Review machine structure, application and configuration.", "split"), "BEFORE_LEGACY"),
+      placed(feature("ref-product-overview", "EQUIPMENT OVERVIEW", "Introducing the Machine", "Replace this copy with the verified product description."), "PRODUCT_AFTER_HERO"),
+      placed(feature("ref-product-controls", "CONTROLS", "Practical Operation", "Use real control-system images and accurate functional descriptions.", true), "PRODUCT_AFTER_ADVANTAGES"),
+      placed(feature("ref-product-structure", "ENGINEERING", "Structure and Key Components", "Show the actual machine frame and component details."), "PRODUCT_AFTER_GALLERY"),
+      placed(showcase("ref-product-details", "Equipment Photos and Video"), "PRODUCT_AFTER_GALLERY"),
+      placed(faq("ref-product-faq"), "PRODUCT_AFTER_FAQ"),
+      placed(inquiry("ref-product-form"), "PRODUCT_BEFORE_INQUIRY"),
+      placed(cta("ref-product-cta"), "AFTER_LEGACY"),
+    ]),
   },
   "reference-product-catalog": {
     label: "HARSLE 排版参考 · 图库型产品详情",
-    document: { schemaVersion: 1, renderMode: "REPLACE_LEGACY", nodes: [
-      hero("ref-catalog-hero", "Industrial Machinery", "View product details and ask about configurations.", "split"),
-      showcase("ref-catalog-gallery", "Machine Gallery and Videos"), feature("ref-catalog-overview", "PRODUCT DETAILS", "Designed for Your Workshop", "Replace with verified specifications and details."),
-      spec("ref-catalog-spec"), faq("ref-catalog-faq"), inquiry("ref-catalog-form"),
-    ] },
+    document: basic([
+      placed(hero("ref-catalog-hero", "Industrial Machinery", "View product details and ask about configurations.", "split"), "BEFORE_LEGACY"),
+      placed(showcase("ref-catalog-gallery", "Machine Gallery and Videos"), "PRODUCT_AFTER_HERO"),
+      placed(feature("ref-catalog-overview", "PRODUCT DETAILS", "Designed for Your Workshop", "Replace with verified specifications and details."), "PRODUCT_AFTER_GALLERY"),
+      placed(faq("ref-catalog-faq"), "PRODUCT_AFTER_FAQ"),
+      placed(inquiry("ref-catalog-form"), "PRODUCT_BEFORE_INQUIRY"),
+    ]),
   },
   "reference-support": {
     label: "HARSLE 排版参考 · 支持",

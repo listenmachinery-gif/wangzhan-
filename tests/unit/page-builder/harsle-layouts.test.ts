@@ -41,4 +41,14 @@ describe("HARSLE-inspired editable layout presets", () => {
     } }] };
     expect(pageDocumentSchema.safeParse(existing).success).toBe(true);
   });
+
+  it("keeps product presets non-destructive and leaves specifications to real product data", () => {
+    for (const key of ["reference-product-story", "reference-product-catalog"]) {
+      const document = HARSLE_LAYOUT_TEMPLATES[key].document;
+      expect(document.renderMode).not.toBe("REPLACE_LEGACY");
+      expect(document.nodes.some((node) => node.type === "SPECIFICATION_TABLE")).toBe(false);
+      expect(JSON.stringify(document)).not.toContain("Confirm with product data");
+      expect(document.nodes.some((node) => node.placement?.startsWith("PRODUCT_"))).toBe(true);
+    }
+  });
 });

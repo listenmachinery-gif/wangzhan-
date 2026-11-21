@@ -95,4 +95,30 @@ describe("StandardProductPage", () => {
     expect(new Set(groupedTypes).size).toBe(PRODUCT_MODULE_TYPES.length);
     expect([...groupedTypes].sort()).toEqual([...PRODUCT_MODULE_TYPES].sort());
   });
+
+  it("renders CMS modules inside named product slots without replacing real modules", () => {
+    const { container } = render(<StandardProductPage product={{
+      slug: "slot-product",
+      name: "Slot Product",
+      summary: "Real product summary",
+      registeredWidget: null,
+      modules: [
+        { type: "HERO", position: 0, visible: true, data: validProductModuleData.HERO },
+        { type: "TECHNICAL", position: 1, visible: true, data: validProductModuleData.TECHNICAL },
+        { type: "CTA", position: 2, visible: true, data: validProductModuleData.CTA },
+      ],
+    }} cmsSlots={{
+      PRODUCT_AFTER_HERO: [{ id: "cms-after-hero", type: "PARAGRAPH", content: { text: "CMS engineering detail" } }],
+      PRODUCT_BEFORE_INQUIRY: [{ id: "cms-before-inquiry", type: "PARAGRAPH", content: { text: "CMS inquiry introduction" } }],
+    }} />);
+
+    expect(screen.getByText("CMS engineering detail")).toBeInTheDocument();
+    expect(screen.getByText("CMS inquiry introduction")).toBeInTheDocument();
+    expect(container.querySelectorAll("[data-product-module='HERO']")).toHaveLength(1);
+    expect(container.querySelectorAll("[data-product-module='TECHNICAL']")).toHaveLength(1);
+    const heroGroup = container.querySelector("[data-product-layout-group='hero']")!;
+    expect(heroGroup.querySelector("[data-page-node='cms-after-hero']")).toBeInTheDocument();
+    const inquiryGroup = container.querySelector("[data-product-layout-group='inquiry']")!;
+    expect(inquiryGroup.firstElementChild).toHaveAttribute("data-page-node", "cms-before-inquiry");
+  });
 });
