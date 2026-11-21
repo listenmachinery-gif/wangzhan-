@@ -36,6 +36,8 @@ export const PAGE_COMPONENT_TYPES = [
   "TIMELINE",
   "RESOURCE_LINKS",
   "INQUIRY_FORM",
+  "MEDIA_HERO",
+  "MEDIA_SHOWCASE",
 ] as const;
 
 export type PageComponentType = (typeof PAGE_COMPONENT_TYPES)[number];
