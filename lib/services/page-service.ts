@@ -51,6 +51,54 @@ function json(document: PageDocument) {
   return document as unknown as Prisma.InputJsonValue;
 }
 
+type PageMediaPointer = { id: string; field: string };
+
+function pageMediaPointers(value: unknown, path: Array<string | number> = []): PageMediaPointer[] {
+  if (typeof value === "string") {
+    const match = value.match(/^\/api\/media\/([^/?#]+)$/);
+    if (!match) return [];
+    try {
+      return [{ id: decodeURIComponent(match[1]), field: path.join(".") }];
+    } catch {
+      throw new PageValidationError("A page contains an invalid media reference.");
+    }
+  }
+  if (Array.isArray(value)) return value.flatMap((item, index) => pageMediaPointers(item, [...path, index]));
+  if (value && typeof value === "object") {
+    return Object.entries(value).flatMap(([key, item]) => pageMediaPointers(item, [...path, key]));
+  }
+  return [];
+}
+
+async function syncPageMediaReferences(
+  transaction: Prisma.TransactionClient,
+  pageId: string,
+  document: PageDocument,
+) {
+  const pointers = pageMediaPointers(document);
+  const mediaIds = [...new Set(pointers.map((pointer) => pointer.id))];
+  const assets = mediaIds.length ? await transaction.mediaAsset.findMany({
+    where: { id: { in: mediaIds }, lifecycleStatus: "ACTIVE" },
+    select: { id: true },
+  }) : [];
+  const activeIds = new Set(assets.map((asset) => asset.id));
+  if (mediaIds.some((id) => !activeIds.has(id))) {
+    throw new PageValidationError("One or more page media assets do not exist or are not active.");
+  }
+  await transaction.mediaReference.deleteMany({ where: { entityType: "SitePage", entityId: pageId } });
+  if (pointers.length) {
+    await transaction.mediaReference.createMany({
+      data: pointers.map((pointer) => ({
+        mediaAssetId: pointer.id,
+        entityType: "SitePage",
+        entityId: pageId,
+        field: pointer.field,
+      })),
+      skipDuplicates: true,
+    });
+  }
+}
+
 export function publicPathsForPageSlug(slug: string) {
   if (slug === "home") return ["/"];
   if (slug === "products") return ["/products"];
@@ -110,6 +158,7 @@ export class PageService {
         const page = await transaction.sitePage.create({
           data: { name: input.name, slug: input.slug, pageType: input.pageType, draftContent: json(document) },
         });
+        await syncPageMediaReferences(transaction, page.id, document);
         await transaction.pageVersion.create({ data: { pageId: page.id, version: 1, snapshot: json(document), action: "CREATE", createdById: principal.id } });
         await transaction.auditLog.create({ data: { actorId: principal.id, action: "page.create", entityType: "SitePage", entityId: page.id, after: { slug: page.slug, version: page.version } } });
         return page;
@@ -134,6 +183,7 @@ export class PageService {
         data: { name: input.name, draftContent: json(document), status: "DRAFT", version: { increment: 1 } },
       });
       if (changed.count !== 1) throw new PageConflictError("Page changed. Reload before saving.");
+      await syncPageMediaReferences(transaction, id, document);
       await transaction.pageVersion.create({ data: { pageId: id, version: nextVersion, snapshot: json(document), action: "SAVE", createdById: principal.id } });
       const updated = await transaction.sitePage.findUniqueOrThrow({ where: { id } });
       await transaction.auditLog.create({ data: { actorId: principal.id, action: "page.save", entityType: "SitePage", entityId: id, before: { version: current.version }, after: { version: updated.version } } });
@@ -160,6 +210,7 @@ export class PageService {
         data: { status: "PUBLISHED", publishedContent: json(document), publishedVersion: nextVersion, publishedAt, version: { increment: 1 } },
       });
       if (changed.count !== 1) throw new PageConflictError("Page changed. Reload before publishing.");
+      await syncPageMediaReferences(transaction, id, document);
       await transaction.pageVersion.create({ data: { pageId: id, version: nextVersion, snapshot: json(document), action: "PUBLISH", createdById: principal.id, publishedAt } });
       const updated = await transaction.sitePage.findUniqueOrThrow({ where: { id } });
       await transaction.auditLog.create({ data: { actorId: principal.id, action: "page.publish", entityType: "SitePage", entityId: id, before: { status: current.status, version: current.version }, after: { status: updated.status, version: updated.version, publishedVersion: updated.publishedVersion } } });
@@ -204,6 +255,7 @@ export class PageService {
         data: { draftContent: json(document), status: "DRAFT", version: { increment: 1 } },
       });
       if (changed.count !== 1) throw new PageConflictError("Page changed. Reload before rolling back.");
+      await syncPageMediaReferences(transaction, id, document);
       await transaction.pageVersion.create({ data: { pageId: id, version: nextVersion, snapshot: json(document), action: "ROLLBACK", createdById: principal.id } });
       const updated = await transaction.sitePage.findUniqueOrThrow({ where: { id } });
       await transaction.auditLog.create({ data: { actorId: principal.id, action: "page.rollback", entityType: "SitePage", entityId: id, before: { version: current.version }, after: { version: updated.version, targetVersion: input.targetVersion } } });
