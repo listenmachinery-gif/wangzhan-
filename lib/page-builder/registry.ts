@@ -87,6 +87,68 @@ export const componentRegistry: ComponentDefinition[] = [
   }),
 ];
 
+
+componentRegistry.push(
+  define({
+    type: "MEDIA_HERO", label: "大图/视频首屏", group: "营销",
+    description: "参考 HARSLE 的大面积主视觉，支持完整背景或左右图文、图片或视频独立更换",
+    defaultContent: {
+      eyebrow: "ZYRON Heavy Industry", title: "Machines Made for Precision",
+      description: "Discover high-quality sheet metal equipment designed for your production.",
+      image: "/products/hydraulic-press-brake-hero.png", videoSrc: "",
+      poster: "/products/hydraulic-press-brake-hero.png", alt: "Industrial machine",
+      layout: "full", mediaKind: "image", mediaSide: "right",
+      primaryLabel: "Explore Products", primaryHref: "/products",
+      secondaryLabel: "Request a Quote", secondaryHref: "/contact",
+    },
+    contentSchema: z.object({
+      eyebrow: shortText, title: shortText.min(1), description: text,
+      image: mediaUrl, videoSrc: optionalMediaUrl, poster: optionalMediaUrl, alt: shortText.min(1),
+      layout: z.enum(["full","split"]), mediaKind: z.enum(["image","video"]),
+      mediaSide: z.enum(["left","right"]), primaryLabel: shortText, primaryHref: url,
+      secondaryLabel: shortText, secondaryHref: url,
+    }).strict(),
+    editorFields: [
+      { key: "eyebrow", label: "眉题", kind: "text" },
+      { key: "title", label: "标题", kind: "text" },
+      { key: "description", label: "正文", kind: "textarea" },
+      { key: "layout", label: "布局 full / split", kind: "text" },
+      { key: "mediaKind", label: "媒体 image / video", kind: "text" },
+      { key: "mediaSide", label: "图片位置 left / right", kind: "text" },
+      { key: "image", label: "图片（媒体库可替换）", kind: "url" },
+      { key: "videoSrc", label: "视频（媒体库可替换）", kind: "url" },
+      { key: "poster", label: "视频封面", kind: "url" },
+      { key: "alt", label: "替代文字", kind: "text" },
+      { key: "primaryLabel", label: "主按钮文字", kind: "text" },
+      { key: "primaryHref", label: "主按钮链接", kind: "url" },
+      { key: "secondaryLabel", label: "副按钮文字", kind: "text" },
+      { key: "secondaryHref", label: "副按钮链接", kind: "url" },
+    ],
+  }),
+  define({
+    type: "MEDIA_SHOWCASE", label: "图片视频展示网格", group: "外贸业务",
+    description: "混合图片和视频的展示模块，适用工厂、案例、客户展示、工序说明",
+    defaultContent: {
+      eyebrow: "Showcase", heading: "Machinery in Action",
+      description: "Explore real production scenes and equipment demonstrations.",
+      items: [{ title: "Factory Showcase", description: "ZYRON production equipment", src: "/brand/factory-showcase.png", mediaKind: "image", alt: "Factory showcase" }],
+    },
+    contentSchema: z.object({
+      eyebrow: shortText, heading: shortText.min(1), description: text,
+      items: z.array(z.object({
+        title: shortText, description: text, src: mediaUrl,
+        mediaKind: z.enum(["image","video"]), alt: shortText,
+      }).strict()).min(1).max(24),
+    }).strict(),
+    editorFields: [
+      { key: "eyebrow", label: "眉题", kind: "text" },
+      { key: "heading", label: "标题", kind: "text" },
+      { key: "description", label: "介绍", kind: "textarea" },
+      { key: "items", label: "素材（支持媒体库单项替换）", kind: "json" },
+    ],
+  }),
+);
+
 const registryByType = new Map(componentRegistry.map((definition) => [definition.type, definition]));
 
 export function getComponentDefinition(type: string) {

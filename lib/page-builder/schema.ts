@@ -36,14 +36,31 @@ export const PAGE_COMPONENT_TYPES = [
   "TIMELINE",
   "RESOURCE_LINKS",
   "INQUIRY_FORM",
+  "MEDIA_HERO",
+  "MEDIA_SHOWCASE",
 ] as const;
 
 export type PageComponentType = (typeof PAGE_COMPONENT_TYPES)[number];
+
+export const PRODUCT_PAGE_SLOT_PLACEMENTS = [
+  "PRODUCT_AFTER_HERO",
+  "PRODUCT_AFTER_ADVANTAGES",
+  "PRODUCT_AFTER_APPLICATIONS",
+  "PRODUCT_AFTER_GALLERY",
+  "PRODUCT_AFTER_MODELS",
+  "PRODUCT_AFTER_FEATURES",
+  "PRODUCT_AFTER_SELECTION",
+  "PRODUCT_AFTER_FAQ",
+  "PRODUCT_BEFORE_INQUIRY",
+] as const;
+
+export type ProductPageSlotPlacement = (typeof PRODUCT_PAGE_SLOT_PLACEMENTS)[number];
 
 export const PAGE_NODE_PLACEMENTS = [
   "BEFORE_LEGACY",
   "AFTER_LEGACY",
   "REPLACE_LEGACY",
+  ...PRODUCT_PAGE_SLOT_PLACEMENTS,
 ] as const;
 
 export type PageNodePlacement = (typeof PAGE_NODE_PLACEMENTS)[number];
@@ -140,6 +157,10 @@ export type PageNode = {
   style?: PageStyle;
   responsive?: { tablet?: PageStyle; mobile?: PageStyle };
   textStyles?: Record<string, PageTextStyle>;
+  responsiveTextStyles?: {
+    tablet?: Record<string, PageTextStyle>;
+    mobile?: Record<string, PageTextStyle>;
+  };
   children?: PageNode[];
 };
 
@@ -161,6 +182,10 @@ export const pageNodeSchema: z.ZodType<PageNode> = z.lazy(() => z.object({
     mobile: pageStyleSchema.optional(),
   }).strict().optional(),
   textStyles: z.record(safeKeySchema, pageTextStyleSchema).optional(),
+  responsiveTextStyles: z.object({
+    tablet: z.record(safeKeySchema, pageTextStyleSchema).optional(),
+    mobile: z.record(safeKeySchema, pageTextStyleSchema).optional(),
+  }).strict().optional(),
   children: z.array(pageNodeSchema).max(24).optional(),
 }).strict());
 

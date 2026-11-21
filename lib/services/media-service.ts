@@ -301,11 +301,12 @@ export class MediaService {
     });
   }
 
-  async list(principal: Principal, input: { query?: string; cursor?: string; limit: number }) {
+  async list(principal: Principal, input: { query?: string; cursor?: string; kind?: "image" | "video"; limit: number }) {
     assertPermission(principal, "media.read");
     const assets = await this.database.mediaAsset.findMany({
       where: {
         lifecycleStatus: "ACTIVE",
+        ...(input.kind === "image" ? { mimeType: { startsWith: "image/" } } : input.kind === "video" ? { mimeType: { startsWith: "video/" } } : {}),
         ...(input.query
           ? {
               OR: [

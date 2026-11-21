@@ -22,8 +22,10 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { MediaAssetPicker, type LibraryMediaKind } from "@/components/admin/pages/MediaAssetPicker";
 import { PageRenderer } from "@/components/page-builder/PageRenderer";
 import { INDUSTRIAL_PAGE_TEMPLATES } from "@/lib/page-builder/industrial-templates";
+import { HARSLE_LAYOUT_TEMPLATES } from "@/lib/page-builder/harsle-layout-templates";
 import { formatAdminEnum } from "@/lib/admin/localization";
 import {
   componentRegistry,
@@ -68,6 +70,134 @@ function clone<T>(value: T): T {
 }
 function createId(type: string) {
   return `${type.toLowerCase()}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+const repeaterFieldLabels: Record<string, string> = {
+  title: "标题",
+  description: "描述",
+  body: "正文",
+  alt: "替代文字",
+  href: "链接",
+  year: "序号 / 年份",
+  mediaKind: "媒体类型",
+  src: "媒体地址",
+  image: "图片地址",
+};
+
+function StructuredRepeaterEditor({
+  fieldLabel,
+  items,
+  onChange,
+}: {
+  fieldLabel: string;
+  items: Record<string, unknown>[];
+  onChange(items: Record<string, unknown>[]): void;
+}) {
+  const hasMedia = items.some((item) =>
+    typeof item.src === "string" || typeof item.image === "string"
+  );
+  function update(index: number, changes: Record<string, unknown>) {
+    onChange(items.map((item, itemIndex) => itemIndex === index ? { ...item, ...changes } : item));
+  }
+  function move(index: number, offset: -1 | 1) {
+    const target = index + offset;
+    if (target < 0 || target >= items.length) return;
+    const next = [...items];
+    [next[index], next[target]] = [next[target], next[index]];
+    onChange(next);
+  }
+  return (
+    <div className="space-y-3">
+      <p className="text-xs font-semibold text-neutral-600">{fieldLabel}</p>
+      {items.map((item, index) => {
+        const mediaKey = typeof item.src === "string" ? "src" : typeof item.image === "string" ? "image" : null;
+        const mediaKind: LibraryMediaKind = item.mediaKind === "video" ? "video" : "image";
+        return (
+          <div
+            key={index}
+            data-testid={hasMedia ? "media-repeater-item" : "structured-repeater-item"}
+            className="space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <strong className="text-xs">第 {index + 1} 项</strong>
+              <div className="flex gap-1">
+                <button type="button" aria-label={`上移第 ${index + 1} 项`} disabled={index === 0} onClick={() => move(index, -1)} className="rounded border bg-white p-1 disabled:opacity-30"><ArrowUp size={14} /></button>
+                <button type="button" aria-label={`下移第 ${index + 1} 项`} disabled={index === items.length - 1} onClick={() => move(index, 1)} className="rounded border bg-white p-1 disabled:opacity-30"><ArrowDown size={14} /></button>
+                <button type="button" aria-label={`移除第 ${index + 1} 项`} disabled={items.length === 1} onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))} className="rounded border border-red-200 bg-white p-1 text-red-700 disabled:opacity-30"><Trash2 size={14} /></button>
+              </div>
+            </div>
+            {Object.entries(item).map(([key, value]) => {
+              if (key === mediaKey) return null;
+              if (key === "mediaKind" && typeof value === "string") return (
+                <label key={key} className="block text-xs">媒体类型
+                  <select aria-label={`第 ${index + 1} 项 媒体类型`} value={value} onChange={(event) => update(index, { mediaKind: event.target.value })} className="mt-1 h-9 w-full rounded border bg-white px-2">
+                    <option value="image">图片</option><option value="video">视频</option>
+                  </select>
+                </label>
+              );
+              const label = repeaterFieldLabels[key] ?? key;
+              const multiline = key === "description" || key === "body";
+              if (typeof value === "boolean") return (
+                <label key={key} className="flex items-center gap-2 text-xs">
+                  <input
+                    aria-label={`第 ${index + 1} 项 ${label}`}
+                    type="checkbox"
+                    checked={value}
+                    onChange={(event) => update(index, { [key]: event.target.checked })}
+                  />
+                  {label}
+                </label>
+              );
+              if (typeof value === "number") return (
+                <label key={key} className="block text-xs">{label}
+                  <input
+                    aria-label={`第 ${index + 1} 项 ${label}`}
+                    type="number"
+                    value={value}
+                    onChange={(event) => update(index, { [key]: event.target.valueAsNumber })}
+                    className="mt-1 h-9 w-full rounded border bg-white px-2"
+                  />
+                </label>
+              );
+              if (typeof value !== "string") return null;
+              return (
+                <label key={key} className="block text-xs">{label}
+                  {multiline ? (
+                    <textarea aria-label={`第 ${index + 1} 项 ${label}`} value={value} rows={2} onChange={(event) => update(index, { [key]: event.target.value })} className="mt-1 w-full rounded border bg-white px-2 py-1.5" />
+                  ) : (
+                    <input aria-label={`第 ${index + 1} 项 ${label}`} value={value} onChange={(event) => update(index, { [key]: event.target.value })} className="mt-1 h-9 w-full rounded border bg-white px-2" />
+                  )}
+                </label>
+              );
+            })}
+            {mediaKey ? (
+              <div className="space-y-2">
+                <label className="block text-xs">{repeaterFieldLabels[mediaKey]}
+                  <input aria-label={`第 ${index + 1} 项 ${repeaterFieldLabels[mediaKey]}`} value={String(item[mediaKey] ?? "")} onChange={(event) => update(index, { [mediaKey]: event.target.value })} className="mt-1 h-9 w-full rounded border bg-white px-2" />
+                </label>
+                <MediaAssetPicker
+                  label={`替换第 ${index + 1} 项${mediaKind === "video" ? "视频" : "图片"}`}
+                  kind={mediaKind}
+                  onSelect={(media) => update(index, {
+                    [mediaKey]: media.url,
+                    ...(Object.hasOwn(item, "alt") && media.altText ? { alt: media.altText } : {}),
+                  })}
+                />
+              </div>
+            ) : null}
+          </div>
+        );
+      })}
+      <button
+        type="button"
+        aria-label={hasMedia ? "添加媒体项目" : "添加项目"}
+        onClick={() => onChange([...items, clone(items.at(-1) ?? {})])}
+        className="w-full rounded border border-dashed px-3 py-2 text-xs font-semibold hover:border-[#76B900]"
+      >
+        + 添加项目
+      </button>
+    </div>
+  );
 }
 
 function LayerRow({
@@ -159,6 +289,30 @@ function FieldEditor({
     <div className="space-y-4">
       {definition.editorFields.map((field) => {
         const value = content[field.key];
+        // Media slots are backed by the existing protected MediaAsset library.
+        // Persist a stable /api/media/id path instead of a temporary signed preview URL.
+        const fieldIsMedia = field.kind === "url" && (
+          ["src", "image", "poster", "backgroundImage", "backgroundVideo", "videoSrc", "desktopImage", "mobileImage", "tabletImage"].includes(field.key)
+        );
+        const kind: LibraryMediaKind = ["videoSrc", "backgroundVideo"].includes(field.key) || (node.type === "VIDEO" && field.key === "src") ? "video" : "image";
+        const structuredArray = Array.isArray(value) && value.length > 0 && value.every((entry) =>
+          entry &&
+          typeof entry === "object" &&
+          !Array.isArray(entry) &&
+          Object.values(entry).every((item) =>
+            item === null || ["string", "number", "boolean"].includes(typeof item)
+          )
+        );
+        if ((field.kind === "json" || field.kind === "list") && structuredArray) {
+          return (
+            <StructuredRepeaterEditor
+              key={field.key}
+              fieldLabel={field.label}
+              items={value as Record<string, unknown>[]}
+              onChange={(items) => onChange({ ...content, [field.key]: items })}
+            />
+          );
+        }
         if (field.kind === "json" || field.kind === "list")
           return (
             <label key={field.key} className="block">
@@ -195,7 +349,21 @@ function FieldEditor({
             <span className="text-xs font-semibold text-neutral-600">
               {field.label}
             </span>
-            {field.kind === "textarea" ? (
+            {node.type === "MEDIA_HERO" && ["layout","mediaKind","mediaSide"].includes(field.key) ? (
+              <select
+                aria-label={field.label}
+                value={String(value ?? "")}
+                onChange={(event) => onChange({ ...content, [field.key]: event.target.value })}
+                className="mt-1 h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm"
+              >
+                {(field.key === "layout"
+                  ? [{ value: "full", label: "全幅主视觉" }, { value: "split", label: "左右图文" }]
+                  : field.key === "mediaKind"
+                    ? [{ value: "image", label: "图片" }, { value: "video", label: "视频" }]
+                    : [{ value: "right", label: "图片在右" }, { value: "left", label: "图片在左" }]
+                ).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            ) : field.kind === "textarea" ? (
               <textarea
                 aria-label={field.label}
                 value={String(value ?? "")}
@@ -222,6 +390,21 @@ function FieldEditor({
                 className="mt-1 h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm"
               />
             )}
+            {fieldIsMedia ? (
+              <div className="mt-2">
+                <MediaAssetPicker
+                  kind={kind}
+                  onSelect={(media) => {
+                    const nextContent: Record<string, unknown> = { ...content, [field.key]: media.url };
+                    if (kind === "image") {
+                      const altField = field.key === "image" ? (Object.hasOwn(content, "imageAlt") ? "imageAlt" : "alt") : field.key === "src" ? "alt" : null;
+                      if (altField && Object.hasOwn(content, altField)) nextContent[altField] = media.altText || nextContent[altField];
+                    }
+                    onChange(nextContent);
+                  }}
+                />
+              </div>
+            ) : null}
           </label>
         );
       })}
@@ -283,7 +466,9 @@ export function PageBuilder({
     ? textElementKey
     : (editableTextKeys[0] ?? "");
   const activeTextStyle = activeTextKey
-    ? (selected?.textStyles?.[activeTextKey] ?? {})
+    ? (device === "desktop"
+        ? selected?.textStyles?.[activeTextKey]
+        : selected?.responsiveTextStyles?.[device]?.[activeTextKey]) ?? {}
     : {};
 
   const commit = useCallback(
@@ -487,7 +672,7 @@ export function PageBuilder({
   }
 
   function applyTemplate() {
-    const preset = INDUSTRIAL_PAGE_TEMPLATES[templateChoice];
+    const preset = { ...INDUSTRIAL_PAGE_TEMPLATES, ...HARSLE_LAYOUT_TEMPLATES }[templateChoice];
     if (!preset) return;
     if (!window.confirm("替换当前草稿全部模块？建议先保存当前版本，发布后仍可从历史版本恢复。")) return;
     const next = clone(preset.document);
@@ -514,6 +699,10 @@ export function PageBuilder({
           device === "desktop"
             ? node.style
             : { ...node.style, ...node.responsive?.[device] },
+        textStyles:
+          device === "desktop"
+            ? node.textStyles
+            : { ...node.textStyles, ...node.responsiveTextStyles?.[device] },
       })),
     }),
     [device, document],
@@ -541,16 +730,30 @@ export function PageBuilder({
   function updateTextStyle(changes: Partial<PageTextStyle>) {
     if (!selected || !activeTextKey) return;
     const nodes = [...document.nodes];
-    nodes[selectedIndex] = {
-      ...selected,
-      textStyles: {
-        ...selected.textStyles,
-        [activeTextKey]: {
-          ...selected.textStyles?.[activeTextKey],
-          ...changes,
-        },
-      },
-    };
+    nodes[selectedIndex] = device === "desktop"
+      ? {
+          ...selected,
+          textStyles: {
+            ...selected.textStyles,
+            [activeTextKey]: {
+              ...selected.textStyles?.[activeTextKey],
+              ...changes,
+            },
+          },
+        }
+      : {
+          ...selected,
+          responsiveTextStyles: {
+            ...selected.responsiveTextStyles,
+            [device]: {
+              ...selected.responsiveTextStyles?.[device],
+              [activeTextKey]: {
+                ...selected.responsiveTextStyles?.[device]?.[activeTextKey],
+                ...changes,
+              },
+            },
+          },
+        };
     commit({ ...document, nodes });
   }
 
@@ -559,7 +762,7 @@ export function PageBuilder({
       <div className="flex flex-wrap items-center gap-3 border-b border-neutral-200 bg-white px-4 py-2">
         <label htmlFor="industrial-template-select" className="text-xs font-semibold text-neutral-600">页面模板</label>
         <select id="industrial-template-select" value={templateChoice} onChange={(event) => setTemplateChoice(event.target.value)} className="h-9 rounded border border-neutral-300 px-2 text-sm">
-          {Object.entries(INDUSTRIAL_PAGE_TEMPLATES).map(([key, preset]) => <option key={key} value={key}>{preset.label}</option>)}
+          {Object.entries({ ...INDUSTRIAL_PAGE_TEMPLATES, ...HARSLE_LAYOUT_TEMPLATES }).map(([key, preset]) => <option key={key} value={key}>{preset.label}</option>)}
         </select>
         <button type="button" onClick={applyTemplate} className="rounded border border-neutral-300 px-3 py-2 text-xs font-semibold hover:border-[#76B900]">应用模板到草稿</button>
         <label className="flex items-center gap-2 text-xs font-semibold text-neutral-600">
@@ -772,7 +975,7 @@ export function PageBuilder({
                 </div>
                 <ChevronRight size={18} className="text-neutral-400" />
               </div>
-              <div className="mt-4 flex gap-2">
+              <div className="mt-4 grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   aria-label="复制当前组件"
@@ -781,6 +984,14 @@ export function PageBuilder({
                 >
                   <Copy size={14} />
                   复制
+                </button>
+                <button
+                  type="button"
+                  aria-label={selected.style?.visible === false ? "恢复当前组件" : "隐藏当前组件"}
+                  onClick={() => updateStyle({ visible: selected.style?.visible === false })}
+                  className="inline-flex items-center justify-center rounded-lg border px-2 py-2 text-xs font-semibold"
+                >
+                  {selected.style?.visible === false ? "恢复" : "隐藏"}
                 </button>
                 <button
                   type="button"
@@ -804,6 +1015,8 @@ export function PageBuilder({
                     <label className="col-span-2 text-xs">颜色<div className="mt-1 flex gap-2"><input type="color" aria-label="单独文字颜色" value={activeTextStyle.color ?? "#1D1D1F"} onChange={(event) => updateTextStyle({ color: event.target.value })} className="h-9 w-12 rounded border" /><input aria-label="单独文字 HEX" value={activeTextStyle.color ?? ""} placeholder="#1D1D1F" onChange={(event) => updateTextStyle({ color: event.target.value || undefined })} className="h-9 min-w-0 flex-1 rounded border px-2" /></div></label>
                     <label className="text-xs">字号<input aria-label="单独文字字号" type="number" min="10" max="96" value={activeTextStyle.fontSize ?? ""} onChange={(event) => updateTextStyle({ fontSize: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
                     <label className="text-xs">字重<select aria-label="单独文字字重" value={activeTextStyle.fontWeight ?? "normal"} onChange={(event) => updateTextStyle({ fontWeight: event.target.value as PageTextStyle["fontWeight"] })} className="mt-1 h-9 w-full rounded border px-2"><option value="normal">常规</option><option value="medium">中等</option><option value="semibold">半粗</option><option value="bold">粗体</option></select></label>
+                    <label className="text-xs">字体<select aria-label="单独文字字体" value={activeTextStyle.fontFamily ?? "sans"} onChange={(event) => updateTextStyle({ fontFamily: event.target.value as PageTextStyle["fontFamily"] })} className="mt-1 h-9 w-full rounded border px-2"><option value="sans">无衬线 Sans</option><option value="serif">衬线 Serif</option><option value="mono">等宽 Mono</option></select></label>
+                    <label className="text-xs">对齐<select aria-label="单独文字对齐" value={activeTextStyle.textAlign ?? "left"} onChange={(event) => updateTextStyle({ textAlign: event.target.value as PageTextStyle["textAlign"] })} className="mt-1 h-9 w-full rounded border px-2"><option value="left">左对齐</option><option value="center">居中</option><option value="right">右对齐</option></select></label>
                     <label className="text-xs">行高<input aria-label="单独文字行高" type="number" min="1" max="2" step="0.1" value={activeTextStyle.lineHeight ?? ""} onChange={(event) => updateTextStyle({ lineHeight: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
                     <label className="text-xs">字距<input aria-label="单独文字字距" type="number" min="-2" max="8" step="0.1" value={activeTextStyle.letterSpacing ?? ""} onChange={(event) => updateTextStyle({ letterSpacing: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
                   </div>
@@ -828,6 +1041,15 @@ export function PageBuilder({
                     <option value="BEFORE_LEGACY">旧版内容之前</option>
                     <option value="AFTER_LEGACY">旧版内容之后</option>
                     <option value="REPLACE_LEGACY">替换旧版内容</option>
+                    <option value="PRODUCT_AFTER_HERO">产品首屏之后</option>
+                    <option value="PRODUCT_AFTER_ADVANTAGES">产品优势之后</option>
+                    <option value="PRODUCT_AFTER_APPLICATIONS">应用场景之后</option>
+                    <option value="PRODUCT_AFTER_GALLERY">产品图集之后</option>
+                    <option value="PRODUCT_AFTER_MODELS">型号参数之后</option>
+                    <option value="PRODUCT_AFTER_FEATURES">技术特性之后</option>
+                    <option value="PRODUCT_AFTER_SELECTION">选型指南之后</option>
+                    <option value="PRODUCT_AFTER_FAQ">常见问题之后</option>
+                    <option value="PRODUCT_BEFORE_INQUIRY">询盘行动之前</option>
                   </select>
                 </label>
                 <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-neutral-500">
@@ -885,6 +1107,8 @@ export function PageBuilder({
                   </label>
                   <label className="text-xs">左右内边距<input aria-label="左右内边距" type="number" value={activeStyle.paddingX ?? ""} onChange={(event) => updateStyle({ paddingX: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
                   <label className="text-xs">最大宽度<input aria-label="最大宽度" type="number" min="320" max="1920" value={activeStyle.maxWidth ?? ""} onChange={(event) => updateStyle({ maxWidth: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
+                  <label className="text-xs">区块宽度<select aria-label="区块宽度" value={activeStyle.width ?? "auto"} onChange={(event) => updateStyle({ width: event.target.value as PageStyle["width"] })} className="mt-1 h-9 w-full rounded border px-2"><option value="auto">自动</option><option value="full">全幅</option><option value="content">内容宽度</option></select></label>
+                  <label className="text-xs">元素间距<input aria-label="元素间距" type="number" min="0" max="128" value={activeStyle.gap ?? ""} onChange={(event) => updateStyle({ gap: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
                   <label className="text-xs">上外边距<input aria-label="上外边距" type="number" value={activeStyle.marginTop ?? ""} onChange={(event) => updateStyle({ marginTop: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
                   <label className="text-xs">下外边距<input aria-label="下外边距" type="number" value={activeStyle.marginBottom ?? ""} onChange={(event) => updateStyle({ marginBottom: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
                   <label className="col-span-2 text-xs">
@@ -901,7 +1125,9 @@ export function PageBuilder({
                       className="mt-1 h-9 w-full rounded border px-2"
                     />
                   </label>
-                  <label className="col-span-2 text-xs">背景图片<input aria-label="背景图片" type="text" value={activeStyle.backgroundImage ?? ""} placeholder="/api/media/..." onChange={(event) => updateStyle({ backgroundImage: event.target.value || undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
+                  <label className="col-span-2 text-xs">背景图片<input aria-label="背景图片" type="text" value={activeStyle.backgroundImage ?? ""} placeholder="/api/media/..." onChange={(event) => updateStyle({ backgroundImage: event.target.value || undefined })} className="mt-1 h-9 w-full rounded border px-2" /><span className="mt-2 block"><MediaAssetPicker label="从媒体库选择背景图片" kind="image" onSelect={(media) => updateStyle({ backgroundImage: media.url })} /></span></label>
+                  <label className="text-xs">图片适配<select aria-label="图片适配" value={activeStyle.objectFit ?? "cover"} onChange={(event) => updateStyle({ objectFit: event.target.value as PageStyle["objectFit"] })} className="mt-1 h-9 w-full rounded border px-2"><option value="cover">裁切铺满</option><option value="contain">完整显示</option></select></label>
+                  <label className="text-xs">图片位置<select aria-label="图片位置" value={activeStyle.objectPosition ?? "center"} onChange={(event) => updateStyle({ objectPosition: event.target.value as PageStyle["objectPosition"] })} className="mt-1 h-9 w-full rounded border px-2"><option value="center">居中</option><option value="top">顶部</option><option value="bottom">底部</option><option value="left">左侧</option><option value="right">右侧</option></select></label>
                   <label className="text-xs">
                     字号
                     <input

@@ -1,6 +1,6 @@
 # HARSLE 信息架构审计与 ZYRON CMS 映射
 
-审计日期：2026-11-20  
+审计日期：2026-11-20
 参考范围：`https://www.harsle.com/`、`/company/`、`/products/`、`/shearing-machine/`、`/press-brake/`、`/product/press-brake-with-6-axis/`、`/service/`、`/portfolio/`、`/contact/`
 
 本文件只记录可复用的信息架构、层级、节奏和交互模式。HARSLE 的商标、图片、代码、产品命名、独特文案、统计数字、认证和服务承诺均不进入 ZYRON 模板。
