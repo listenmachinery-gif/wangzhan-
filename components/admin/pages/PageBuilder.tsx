@@ -225,7 +225,21 @@ function FieldEditor({
             <span className="text-xs font-semibold text-neutral-600">
               {field.label}
             </span>
-            {field.kind === "textarea" ? (
+            {node.type === "MEDIA_HERO" && ["layout","mediaKind","mediaSide"].includes(field.key) ? (
+              <select
+                aria-label={field.label}
+                value={String(value ?? "")}
+                onChange={(event) => onChange({ ...content, [field.key]: event.target.value })}
+                className="mt-1 h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm"
+              >
+                {(field.key === "layout"
+                  ? [{ value: "full", label: "全幅主视觉" }, { value: "split", label: "左右图文" }]
+                  : field.key === "mediaKind"
+                    ? [{ value: "image", label: "图片" }, { value: "video", label: "视频" }]
+                    : [{ value: "right", label: "图片在右" }, { value: "left", label: "图片在左" }]
+                ).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            ) : field.kind === "textarea" ? (
               <textarea
                 aria-label={field.label}
                 value={String(value ?? "")}
@@ -542,7 +556,7 @@ export function PageBuilder({
 
   const groups = useMemo(
     () =>
-      ["基础", "外贸业务", "营销"].map((group) => ({
+      ["基础", "布局", "外贸业务", "营销"].map((group) => ({
         group,
         definitions: componentRegistry.filter((item) => item.group === group),
       })),
