@@ -73,9 +73,12 @@ function pageMediaPointers(value: unknown, path: Array<string | number> = []): P
 async function syncPageMediaReferences(
   transaction: Prisma.TransactionClient,
   pageId: string,
-  document: PageDocument,
+  snapshots: Array<{ scope: "draft" | "published"; document: PageDocument }>,
 ) {
-  const pointers = pageMediaPointers(document);
+  const pointers = snapshots.flatMap(({ scope, document }) => pageMediaPointers(document).map((pointer) => ({
+    ...pointer,
+    field: `${scope}:${pointer.field}`,
+  })));
   const mediaIds = [...new Set(pointers.map((pointer) => pointer.id))];
   const assets = mediaIds.length ? await transaction.mediaAsset.findMany({
     where: { id: { in: mediaIds }, lifecycleStatus: "ACTIVE" },
@@ -158,7 +161,7 @@ export class PageService {
         const page = await transaction.sitePage.create({
           data: { name: input.name, slug: input.slug, pageType: input.pageType, draftContent: json(document) },
         });
-        await syncPageMediaReferences(transaction, page.id, document);
+        await syncPageMediaReferences(transaction, page.id, [{ scope: "draft", document }]);
         await transaction.pageVersion.create({ data: { pageId: page.id, version: 1, snapshot: json(document), action: "CREATE", createdById: principal.id } });
         await transaction.auditLog.create({ data: { actorId: principal.id, action: "page.create", entityType: "SitePage", entityId: page.id, after: { slug: page.slug, version: page.version } } });
         return page;
@@ -183,7 +186,10 @@ export class PageService {
         data: { name: input.name, draftContent: json(document), status: "DRAFT", version: { increment: 1 } },
       });
       if (changed.count !== 1) throw new PageConflictError("Page changed. Reload before saving.");
-      await syncPageMediaReferences(transaction, id, document);
+      await syncPageMediaReferences(transaction, id, [
+        { scope: "draft", document },
+        ...(current.publishedContent ? [{ scope: "published" as const, document: parsePageDocument(current.publishedContent) }] : []),
+      ]);
       await transaction.pageVersion.create({ data: { pageId: id, version: nextVersion, snapshot: json(document), action: "SAVE", createdById: principal.id } });
       const updated = await transaction.sitePage.findUniqueOrThrow({ where: { id } });
       await transaction.auditLog.create({ data: { actorId: principal.id, action: "page.save", entityType: "SitePage", entityId: id, before: { version: current.version }, after: { version: updated.version } } });
@@ -210,7 +216,10 @@ export class PageService {
         data: { status: "PUBLISHED", publishedContent: json(document), publishedVersion: nextVersion, publishedAt, version: { increment: 1 } },
       });
       if (changed.count !== 1) throw new PageConflictError("Page changed. Reload before publishing.");
-      await syncPageMediaReferences(transaction, id, document);
+      await syncPageMediaReferences(transaction, id, [
+        { scope: "draft", document },
+        { scope: "published", document },
+      ]);
       await transaction.pageVersion.create({ data: { pageId: id, version: nextVersion, snapshot: json(document), action: "PUBLISH", createdById: principal.id, publishedAt } });
       const updated = await transaction.sitePage.findUniqueOrThrow({ where: { id } });
       await transaction.auditLog.create({ data: { actorId: principal.id, action: "page.publish", entityType: "SitePage", entityId: id, before: { status: current.status, version: current.version }, after: { status: updated.status, version: updated.version, publishedVersion: updated.publishedVersion } } });
@@ -255,7 +264,10 @@ export class PageService {
         data: { draftContent: json(document), status: "DRAFT", version: { increment: 1 } },
       });
       if (changed.count !== 1) throw new PageConflictError("Page changed. Reload before rolling back.");
-      await syncPageMediaReferences(transaction, id, document);
+      await syncPageMediaReferences(transaction, id, [
+        { scope: "draft", document },
+        ...(current.publishedContent ? [{ scope: "published" as const, document: parsePageDocument(current.publishedContent) }] : []),
+      ]);
       await transaction.pageVersion.create({ data: { pageId: id, version: nextVersion, snapshot: json(document), action: "ROLLBACK", createdById: principal.id } });
       const updated = await transaction.sitePage.findUniqueOrThrow({ where: { id } });
       await transaction.auditLog.create({ data: { actorId: principal.id, action: "page.rollback", entityType: "SitePage", entityId: id, before: { version: current.version }, after: { version: updated.version, targetVersion: input.targetVersion } } });

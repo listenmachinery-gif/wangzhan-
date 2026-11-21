@@ -133,6 +133,8 @@ describe("PageBuilder", () => {
     await user.selectOptions(screen.getByRole("combobox", { name: "文字元素" }), "heading");
     await user.click(screen.getByRole("button", { name: "平板预览" }));
     fireEvent.change(screen.getByRole("spinbutton", { name: "单独文字字号" }), { target: { value: "36" } });
+    await user.selectOptions(screen.getByRole("combobox", { name: "单独文字字体" }), "serif");
+    await user.selectOptions(screen.getByRole("combobox", { name: "单独文字对齐" }), "right");
     await user.click(screen.getByRole("button", { name: "手机预览" }));
     expect(screen.getByRole("spinbutton", { name: "单独文字字号" })).toHaveValue(null);
     fireEvent.change(screen.getByRole("spinbutton", { name: "单独文字字号" }), { target: { value: "24" } });
@@ -141,7 +143,7 @@ describe("PageBuilder", () => {
     await waitFor(() => expect(onPersist).toHaveBeenCalledTimes(1));
     expect(onPersist.mock.calls[0][0].document.nodes[0]).toMatchObject({
       responsiveTextStyles: {
-        tablet: { heading: { fontSize: 36 } },
+        tablet: { heading: { fontSize: 36, fontFamily: "serif", textAlign: "right" } },
         mobile: { heading: { fontSize: 24 } },
       },
     });
@@ -206,6 +208,28 @@ describe("PageBuilder", () => {
     expect(saved[0]).toMatchObject({ title: "Second", src: "/api/media/media-new", alt: "Replacement" });
     expect(fetchMock.mock.calls[0][0]).toContain("kind=image");
     fetchMock.mockRestore();
+  });
+
+  it("edits ordinary card and FAQ repeaters without requiring raw JSON", async () => {
+    const faqPage = {
+      ...page,
+      document: {
+        schemaVersion: 1 as const,
+        nodes: [{
+          id: "faq",
+          type: "FAQ" as const,
+          content: { heading: "FAQ", items: [{ title: "Question", body: "Answer" }] },
+        }],
+      },
+    };
+    const user = userEvent.setup();
+    render(<PageBuilder page={faqPage} canPublish onPersist={vi.fn()} />);
+
+    expect(screen.getByRole("textbox", { name: "第 1 项 标题" })).toHaveValue("Question");
+    expect(screen.getByRole("textbox", { name: "第 1 项 正文" })).toHaveValue("Answer");
+    expect(screen.queryByRole("textbox", { name: "问答" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "添加项目" }));
+    expect(screen.getAllByTestId("structured-repeater-item")).toHaveLength(2);
   });
 
   it("supports global hide/restore, background media, width, gap, and image fit controls", async () => {

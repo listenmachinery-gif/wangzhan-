@@ -109,7 +109,7 @@ describe("PageService", () => {
       document: withMedia,
     });
     await expect(db.mediaReference.findMany({ where: { entityType: "SitePage", entityId: page.id } })).resolves.toEqual([
-      expect.objectContaining({ mediaAssetId: media.id, field: "nodes.0.style.backgroundImage" }),
+      expect.objectContaining({ mediaAssetId: media.id, field: "draft:nodes.0.style.backgroundImage" }),
     ]);
 
     const withoutMedia = {
@@ -132,7 +132,47 @@ describe("PageService", () => {
 
     await service.rollback(editor, page.id, { version: saved.version, targetVersion: 1 });
     await expect(db.mediaReference.findMany({ where: { entityType: "SitePage", entityId: page.id } })).resolves.toEqual([
-      expect.objectContaining({ mediaAssetId: media.id, field: "nodes.0.style.backgroundImage" }),
+      expect.objectContaining({ mediaAssetId: media.id, field: "draft:nodes.0.style.backgroundImage" }),
+    ]);
+  });
+
+  it("keeps live media protected while a replacement remains only in draft", async () => {
+    const [liveMedia, draftMedia] = await Promise.all([
+      db.mediaAsset.create({ data: {
+        objectKey: "pages/live.webp", originalName: "live.webp", mimeType: "image/webp",
+        byteSize: 100, checksum: "page-live-media", usage: "EDITORIAL_IMAGE", uploadedById: editor.id,
+      } }),
+      db.mediaAsset.create({ data: {
+        objectKey: "pages/draft.webp", originalName: "draft.webp", mimeType: "image/webp",
+        byteSize: 100, checksum: "page-draft-media", usage: "EDITORIAL_IMAGE", uploadedById: editor.id,
+      } }),
+    ]);
+    const documentWith = (mediaId: string) => ({
+      ...defaultHomepageDocument,
+      nodes: defaultHomepageDocument.nodes.map((node, index) => index === 0
+        ? { ...node, style: { ...node.style, backgroundImage: `/api/media/${mediaId}` } }
+        : node),
+    });
+    const page = await service.create(editor, {
+      name: "Protected Media Page", slug: "protected-media", pageType: "CUSTOM", document: documentWith(liveMedia.id),
+    });
+    const published = await service.publish(editor, page.id, { version: page.version });
+    const saved = await service.saveDraft(editor, page.id, { version: published.version, document: documentWith(draftMedia.id) });
+
+    await expect(db.mediaReference.findMany({
+      where: { entityType: "SitePage", entityId: page.id },
+      orderBy: { field: "asc" },
+    })).resolves.toEqual([
+      expect.objectContaining({ mediaAssetId: draftMedia.id, field: "draft:nodes.0.style.backgroundImage" }),
+      expect.objectContaining({ mediaAssetId: liveMedia.id, field: "published:nodes.0.style.backgroundImage" }),
+    ]);
+
+    await service.publish(editor, page.id, { version: saved.version });
+    const finalReferences = await db.mediaReference.findMany({ where: { entityType: "SitePage", entityId: page.id } });
+    expect(new Set(finalReferences.map(({ mediaAssetId }) => mediaAssetId))).toEqual(new Set([draftMedia.id]));
+    expect(finalReferences.map(({ field }) => field).sort()).toEqual([
+      "draft:nodes.0.style.backgroundImage",
+      "published:nodes.0.style.backgroundImage",
     ]);
   });
 

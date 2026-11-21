@@ -84,7 +84,7 @@ const repeaterFieldLabels: Record<string, string> = {
   image: "图片地址",
 };
 
-function MediaRepeaterEditor({
+function StructuredRepeaterEditor({
   fieldLabel,
   items,
   onChange,
@@ -93,6 +93,9 @@ function MediaRepeaterEditor({
   items: Record<string, unknown>[];
   onChange(items: Record<string, unknown>[]): void;
 }) {
+  const hasMedia = items.some((item) =>
+    typeof item.src === "string" || typeof item.image === "string"
+  );
   function update(index: number, changes: Record<string, unknown>) {
     onChange(items.map((item, itemIndex) => itemIndex === index ? { ...item, ...changes } : item));
   }
@@ -110,7 +113,11 @@ function MediaRepeaterEditor({
         const mediaKey = typeof item.src === "string" ? "src" : typeof item.image === "string" ? "image" : null;
         const mediaKind: LibraryMediaKind = item.mediaKind === "video" ? "video" : "image";
         return (
-          <div key={index} data-testid="media-repeater-item" className="space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3">
+          <div
+            key={index}
+            data-testid={hasMedia ? "media-repeater-item" : "structured-repeater-item"}
+            className="space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3"
+          >
             <div className="flex items-center justify-between gap-2">
               <strong className="text-xs">第 {index + 1} 项</strong>
               <div className="flex gap-1">
@@ -120,8 +127,8 @@ function MediaRepeaterEditor({
               </div>
             </div>
             {Object.entries(item).map(([key, value]) => {
-              if (typeof value !== "string" || key === mediaKey) return null;
-              if (key === "mediaKind") return (
+              if (key === mediaKey) return null;
+              if (key === "mediaKind" && typeof value === "string") return (
                 <label key={key} className="block text-xs">媒体类型
                   <select aria-label={`第 ${index + 1} 项 媒体类型`} value={value} onChange={(event) => update(index, { mediaKind: event.target.value })} className="mt-1 h-9 w-full rounded border bg-white px-2">
                     <option value="image">图片</option><option value="video">视频</option>
@@ -130,6 +137,29 @@ function MediaRepeaterEditor({
               );
               const label = repeaterFieldLabels[key] ?? key;
               const multiline = key === "description" || key === "body";
+              if (typeof value === "boolean") return (
+                <label key={key} className="flex items-center gap-2 text-xs">
+                  <input
+                    aria-label={`第 ${index + 1} 项 ${label}`}
+                    type="checkbox"
+                    checked={value}
+                    onChange={(event) => update(index, { [key]: event.target.checked })}
+                  />
+                  {label}
+                </label>
+              );
+              if (typeof value === "number") return (
+                <label key={key} className="block text-xs">{label}
+                  <input
+                    aria-label={`第 ${index + 1} 项 ${label}`}
+                    type="number"
+                    value={value}
+                    onChange={(event) => update(index, { [key]: event.target.valueAsNumber })}
+                    className="mt-1 h-9 w-full rounded border bg-white px-2"
+                  />
+                </label>
+              );
+              if (typeof value !== "string") return null;
               return (
                 <label key={key} className="block text-xs">{label}
                   {multiline ? (
@@ -158,7 +188,14 @@ function MediaRepeaterEditor({
           </div>
         );
       })}
-      <button type="button" aria-label="添加媒体项目" onClick={() => onChange([...items, clone(items.at(-1) ?? {})])} className="w-full rounded border border-dashed px-3 py-2 text-xs font-semibold hover:border-[#76B900]">+ 添加项目</button>
+      <button
+        type="button"
+        aria-label={hasMedia ? "添加媒体项目" : "添加项目"}
+        onClick={() => onChange([...items, clone(items.at(-1) ?? {})])}
+        className="w-full rounded border border-dashed px-3 py-2 text-xs font-semibold hover:border-[#76B900]"
+      >
+        + 添加项目
+      </button>
     </div>
   );
 }
@@ -258,12 +295,17 @@ function FieldEditor({
           ["src", "image", "poster", "backgroundImage", "backgroundVideo", "videoSrc", "desktopImage", "mobileImage", "tabletImage"].includes(field.key)
         );
         const kind: LibraryMediaKind = ["videoSrc", "backgroundVideo"].includes(field.key) || (node.type === "VIDEO" && field.key === "src") ? "video" : "image";
-        const mediaArray = Array.isArray(value) && value.some((entry) =>
-          entry && typeof entry === "object" && !Array.isArray(entry) && ("image" in entry || "src" in entry)
+        const structuredArray = Array.isArray(value) && value.length > 0 && value.every((entry) =>
+          entry &&
+          typeof entry === "object" &&
+          !Array.isArray(entry) &&
+          Object.values(entry).every((item) =>
+            item === null || ["string", "number", "boolean"].includes(typeof item)
+          )
         );
-        if ((field.kind === "json" || field.kind === "list") && mediaArray) {
+        if ((field.kind === "json" || field.kind === "list") && structuredArray) {
           return (
-            <MediaRepeaterEditor
+            <StructuredRepeaterEditor
               key={field.key}
               fieldLabel={field.label}
               items={value as Record<string, unknown>[]}
@@ -973,6 +1015,8 @@ export function PageBuilder({
                     <label className="col-span-2 text-xs">颜色<div className="mt-1 flex gap-2"><input type="color" aria-label="单独文字颜色" value={activeTextStyle.color ?? "#1D1D1F"} onChange={(event) => updateTextStyle({ color: event.target.value })} className="h-9 w-12 rounded border" /><input aria-label="单独文字 HEX" value={activeTextStyle.color ?? ""} placeholder="#1D1D1F" onChange={(event) => updateTextStyle({ color: event.target.value || undefined })} className="h-9 min-w-0 flex-1 rounded border px-2" /></div></label>
                     <label className="text-xs">字号<input aria-label="单独文字字号" type="number" min="10" max="96" value={activeTextStyle.fontSize ?? ""} onChange={(event) => updateTextStyle({ fontSize: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
                     <label className="text-xs">字重<select aria-label="单独文字字重" value={activeTextStyle.fontWeight ?? "normal"} onChange={(event) => updateTextStyle({ fontWeight: event.target.value as PageTextStyle["fontWeight"] })} className="mt-1 h-9 w-full rounded border px-2"><option value="normal">常规</option><option value="medium">中等</option><option value="semibold">半粗</option><option value="bold">粗体</option></select></label>
+                    <label className="text-xs">字体<select aria-label="单独文字字体" value={activeTextStyle.fontFamily ?? "sans"} onChange={(event) => updateTextStyle({ fontFamily: event.target.value as PageTextStyle["fontFamily"] })} className="mt-1 h-9 w-full rounded border px-2"><option value="sans">无衬线 Sans</option><option value="serif">衬线 Serif</option><option value="mono">等宽 Mono</option></select></label>
+                    <label className="text-xs">对齐<select aria-label="单独文字对齐" value={activeTextStyle.textAlign ?? "left"} onChange={(event) => updateTextStyle({ textAlign: event.target.value as PageTextStyle["textAlign"] })} className="mt-1 h-9 w-full rounded border px-2"><option value="left">左对齐</option><option value="center">居中</option><option value="right">右对齐</option></select></label>
                     <label className="text-xs">行高<input aria-label="单独文字行高" type="number" min="1" max="2" step="0.1" value={activeTextStyle.lineHeight ?? ""} onChange={(event) => updateTextStyle({ lineHeight: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
                     <label className="text-xs">字距<input aria-label="单独文字字距" type="number" min="-2" max="8" step="0.1" value={activeTextStyle.letterSpacing ?? ""} onChange={(event) => updateTextStyle({ letterSpacing: event.target.value ? Number(event.target.value) : undefined })} className="mt-1 h-9 w-full rounded border px-2" /></label>
                   </div>
