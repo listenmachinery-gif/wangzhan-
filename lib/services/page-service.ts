@@ -152,6 +152,11 @@ export class PageService {
     return page;
   }
 
+  async getBySlug(principal: Principal, slug: string) {
+    if (!can(principal, "page.read")) throw new PagePermissionError("Page read permission is required.");
+    return this.database.sitePage.findUnique({ where: { slug } });
+  }
+
   async create(principal: Principal, rawInput: unknown) {
     if (!can(principal, "page.write")) throw new PagePermissionError("Page write permission is required.");
     const input = pageCreateSchema.parse(rawInput);

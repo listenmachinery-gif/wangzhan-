@@ -12,7 +12,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { PageBuilder } from "@/components/admin/pages/PageBuilder";
-import { defaultHomepageDocument } from "@/lib/page-builder/default-homepage";
+import { defaultHomepageDocument, homepageRedesignDocument } from "@/lib/page-builder/default-homepage";
 
 const page = {
   id: "home-page",
@@ -230,6 +230,18 @@ describe("PageBuilder", () => {
     expect(screen.queryByRole("textbox", { name: "问答" })).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "添加项目" }));
     expect(screen.getAllByTestId("structured-repeater-item")).toHaveLength(2);
+  });
+
+  it("edits homepage insight publication status with a structured selector", async () => {
+    const user = userEvent.setup();
+    render(<PageBuilder page={{ ...page, document: homepageRedesignDocument }} canPublish onPersist={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: "选择 首页行业洞察" }));
+    const statuses = screen.getAllByRole("combobox", { name: /第 \d+ 项 发布状态/ });
+    expect(statuses).toHaveLength(3);
+    expect(statuses[0]).toHaveValue("draft");
+    await user.selectOptions(statuses[0], "published");
+    expect(statuses[0]).toHaveValue("published");
   });
 
   it("supports global hide/restore, background media, width, gap, and image fit controls", async () => {

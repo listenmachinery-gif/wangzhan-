@@ -20,6 +20,7 @@ import {
   Trash2,
   Undo2,
 } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { MediaAssetPicker, type LibraryMediaKind } from "@/components/admin/pages/MediaAssetPicker";
@@ -73,6 +74,21 @@ function createId(type: string) {
 }
 
 const repeaterFieldLabels: Record<string, string> = {
+  id: "内部标识",
+  name: "导航名称",
+  eyebrow: "英文小标题",
+  headline: "英文主标题",
+  excerpt: "文章摘要",
+  category: "文章分类",
+  status: "发布状态",
+  featured: "重点展示",
+  buttonText: "按钮文字",
+  imageAlt: "图片替代文字",
+  number: "序号",
+  value: "数值",
+  suffix: "数值后缀",
+  unit: "单位",
+  label: "说明文字",
   title: "标题",
   description: "描述",
   body: "正文",
@@ -128,6 +144,14 @@ function StructuredRepeaterEditor({
             </div>
             {Object.entries(item).map(([key, value]) => {
               if (key === mediaKey) return null;
+              if (key === "status" && typeof value === "string") return (
+                <label key={key} className="block text-xs">发布状态
+                  <select aria-label={`第 ${index + 1} 项 发布状态`} value={value} onChange={(event) => update(index, { status: event.target.value })} className="mt-1 h-9 w-full rounded border bg-white px-2">
+                    <option value="draft">草稿（前台隐藏）</option>
+                    <option value="published">已发布（需真实链接）</option>
+                  </select>
+                </label>
+              );
               if (key === "mediaKind" && typeof value === "string") return (
                 <label key={key} className="block text-xs">媒体类型
                   <select aria-label={`第 ${index + 1} 项 媒体类型`} value={value} onChange={(event) => update(index, { mediaKind: event.target.value })} className="mt-1 h-9 w-full rounded border bg-white px-2">
@@ -869,6 +893,11 @@ export function PageBuilder({
             <Save size={16} />
             保存草稿
           </button>
+          {page.slug === "home" ? (
+            <Link href="/admin/navigation" className="inline-flex items-center rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold">
+              编辑 Footer
+            </Link>
+          ) : null}
           {canPublish ? (
             <button
               type="button"
