@@ -5,7 +5,11 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { ManagedCompanyStrength } from "@/components/site/ManagedCompanyStrength";
 import { ManagedWhyChoose } from "@/components/site/ManagedWhyChoose";
-import { defaultHomepageDocument } from "@/lib/page-builder/default-homepage";
+import {
+  defaultHomepageDocument,
+  homepageRedesignDocument,
+  isHomepageRedesign,
+} from "@/lib/page-builder/default-homepage";
 import { parsePublishedPage } from "@/lib/repositories/page-repository";
 import type { PageNode } from "@/lib/page-builder/schema";
 
@@ -42,6 +46,16 @@ describe("published homepage resolution", () => {
       }),
     ).toBeNull();
     expect(parsePublishedPage(null)).toBeNull();
+  });
+
+  it("recognizes only the explicit redesign takeover marker", () => {
+    expect(isHomepageRedesign(homepageRedesignDocument)).toBe(true);
+    expect(isHomepageRedesign(defaultHomepageDocument)).toBe(false);
+    expect(isHomepageRedesign({ ...homepageRedesignDocument, renderMode: "AUGMENT_LEGACY" })).toBe(false);
+    expect(isHomepageRedesign({
+      ...homepageRedesignDocument,
+      nodes: homepageRedesignDocument.nodes.slice(1),
+    })).toBe(false);
   });
 });
 

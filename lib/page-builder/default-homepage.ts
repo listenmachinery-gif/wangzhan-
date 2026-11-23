@@ -2,6 +2,11 @@ import type { PageDocument } from "@/lib/page-builder/schema";
 
 export { homepageRedesignDocument } from "@/lib/homepage/homepage-content";
 
+export function isHomepageRedesign(document: PageDocument | null | undefined) {
+  return document?.renderMode === "REPLACE_LEGACY"
+    && document.nodes[0]?.type === "HOME_HERO";
+}
+
 export const defaultHomepageDocument: PageDocument = {
   schemaVersion: 1,
   nodes: [
