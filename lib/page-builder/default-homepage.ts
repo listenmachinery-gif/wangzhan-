@@ -1,5 +1,7 @@
 import type { PageDocument } from "@/lib/page-builder/schema";
 
+export { homepageRedesignDocument } from "@/lib/homepage/homepage-content";
+
 export const defaultHomepageDocument: PageDocument = {
   schemaVersion: 1,
   nodes: [

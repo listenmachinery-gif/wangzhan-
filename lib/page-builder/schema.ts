@@ -38,6 +38,12 @@ export const PAGE_COMPONENT_TYPES = [
   "INQUIRY_FORM",
   "MEDIA_HERO",
   "MEDIA_SHOWCASE",
+  "HOME_HERO",
+  "HOME_ABOUT",
+  "HOME_PRODUCT_SHOWCASE",
+  "HOME_WHY_CHOOSE",
+  "HOME_NEWS_INSIGHTS",
+  "HOME_CONTACT_CTA",
 ] as const;
 
 export type PageComponentType = (typeof PAGE_COMPONENT_TYPES)[number];
