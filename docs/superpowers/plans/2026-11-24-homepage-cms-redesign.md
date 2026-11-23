@@ -141,4 +141,3 @@
 - [ ] Verify Preview core routes, admin authentication boundary and inquiry API behavior.
 - [ ] Merge the prerequisite branch chain through the repository's existing PR flow, apply the guarded homepage content publication, deploy production, and verify `www.zyroncnc.com`.
 - [ ] Record production deployment ID, final commit, public route checks and rollback version.
-
