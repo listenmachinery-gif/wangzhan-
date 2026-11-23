@@ -54,6 +54,10 @@ describe("published homepage resolution", () => {
     expect(isHomepageRedesign({ ...homepageRedesignDocument, renderMode: "AUGMENT_LEGACY" })).toBe(false);
     expect(isHomepageRedesign({
       ...homepageRedesignDocument,
+      nodes: [...homepageRedesignDocument.nodes.slice(1), homepageRedesignDocument.nodes[0]],
+    })).toBe(true);
+    expect(isHomepageRedesign({
+      ...homepageRedesignDocument,
       nodes: homepageRedesignDocument.nodes.slice(1),
     })).toBe(false);
   });

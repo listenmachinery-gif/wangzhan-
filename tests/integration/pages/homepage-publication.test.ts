@@ -95,4 +95,45 @@ describe("guarded homepage redesign publication", () => {
     expect(second).toMatchObject({ changed: false, slug: "home" });
     await expect(db.pageVersion.count({ where: { pageId: home.id } })).resolves.toBe(3);
   });
+
+  it("snapshots distinct unversioned draft and published content before replacement", async () => {
+    const oldPublished = {
+      ...defaultHomepageDocument,
+      nodes: defaultHomepageDocument.nodes.map((node, index) => index === 0
+        ? { ...node, content: { ...(node.content as Record<string, unknown>), heading: "Previous live homepage" } }
+        : node),
+    };
+    const home = await db.sitePage.create({ data: {
+      name: "Home",
+      slug: "home",
+      pageType: "HOME",
+      draftContent: defaultHomepageDocument as never,
+      publishedContent: oldPublished as never,
+      status: "PUBLISHED",
+      version: 7,
+      publishedVersion: 6,
+      publishedAt: new Date(),
+    } });
+
+    await publishHomepageRedesign({
+      database: db,
+      env: {
+        DATABASE_URL: "postgresql://test",
+        VERCEL_ENV: "production",
+        ZYRON_HOMEPAGE_RELEASE: "APPROVED_2026_11_24",
+      },
+      revalidate: () => undefined,
+    });
+
+    const versions = await db.pageVersion.findMany({
+      where: { pageId: home.id },
+      orderBy: { version: "asc" },
+    });
+    expect(versions).toEqual([
+      expect.objectContaining({ version: 8, action: "SAVE", snapshot: defaultHomepageDocument }),
+      expect.objectContaining({ version: 9, action: "SAVE", snapshot: oldPublished }),
+      expect.objectContaining({ version: 10, action: "SAVE", snapshot: homepageRedesignDocument }),
+      expect.objectContaining({ version: 11, action: "PUBLISH", snapshot: homepageRedesignDocument }),
+    ]);
+  });
 });

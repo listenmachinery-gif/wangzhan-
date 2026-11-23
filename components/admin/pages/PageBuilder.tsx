@@ -205,6 +205,7 @@ function StructuredRepeaterEditor({
                   onSelect={(media) => update(index, {
                     [mediaKey]: media.url,
                     ...(Object.hasOwn(item, "alt") && media.altText ? { alt: media.altText } : {}),
+                    ...(Object.hasOwn(item, "imageAlt") && media.altText ? { imageAlt: media.altText } : {}),
                   })}
                 />
               </div>

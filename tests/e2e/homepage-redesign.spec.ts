@@ -129,7 +129,7 @@ for (const [name, width, height] of viewports) {
       }
       window.scrollTo(0, document.documentElement.scrollHeight);
     });
-    await page.waitForFunction(() => Array.from(document.querySelectorAll("main img")).every((image) => image.complete && image.naturalWidth > 0));
+    await page.waitForFunction(() => Array.from(document.querySelectorAll<HTMLImageElement>("main img")).every((image) => image.complete && image.naturalWidth > 0));
     await expect(page.getByText("3,500", { exact: true })).toBeVisible();
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: `.playwright/screenshots/homepage-redesign/${name}.png`, fullPage: true });

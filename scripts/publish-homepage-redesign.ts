@@ -82,6 +82,24 @@ export async function publishHomepageRedesign({
     });
   } else {
     const currentDraft = parsePageDocument(page.draftContent);
+    const currentPublished = page.publishedContent
+      ? parsePageDocument(page.publishedContent)
+      : null;
+    const preservedSnapshots = (await service.versions(principal, page.id))
+      .map((version) => parsePageDocument(version.snapshot));
+    const preserveBeforeOverwrite = async (document: typeof currentDraft) => {
+      if (preservedSnapshots.some((snapshot) => sameDocument(snapshot, document))) return;
+      page = await service.saveDraft(principal, page!.id, {
+        version: page!.version,
+        document,
+      });
+      preservedSnapshots.push(document);
+    };
+
+    await preserveBeforeOverwrite(currentDraft);
+    if (currentPublished && !sameDocument(currentPublished, currentDraft)) {
+      await preserveBeforeOverwrite(currentPublished);
+    }
     if (!sameDocument(currentDraft, homepageRedesignDocument)) {
       page = await service.saveDraft(principal, page.id, {
         version: page.version,

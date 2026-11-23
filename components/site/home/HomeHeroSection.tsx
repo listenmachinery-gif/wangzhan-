@@ -14,17 +14,19 @@ export type HomeHeroContent = {
 export function HomeHeroSection({ content }: { content: HomeHeroContent }) {
   return (
     <section className="relative isolate overflow-hidden bg-[#0B0D10] text-white">
-      <div className="relative min-h-[650px] sm:min-h-[720px] lg:min-h-[min(800px,calc(100vh-84px))]">
-        <Image
-          src={content.image}
-          alt={content.alt}
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center sm:object-[58%_center]"
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,13,16,0.96)_0%,rgba(11,13,16,0.82)_32%,rgba(11,13,16,0.12)_68%,rgba(11,13,16,0.04)_100%)]" />
-        <div className="relative z-10 mx-auto flex min-h-[650px] max-w-[1440px] items-center px-5 py-24 sm:min-h-[720px] sm:px-8 lg:min-h-[min(800px,calc(100vh-84px))]">
+      <div className="relative lg:min-h-[min(800px,calc(100vh-84px))]">
+        <div className="relative h-[230px] w-full sm:h-[420px] lg:absolute lg:inset-0 lg:h-auto">
+          <Image
+            src={content.image}
+            alt={content.alt}
+            fill
+            priority
+            sizes="100vw"
+            className="object-contain object-center lg:object-cover lg:object-[58%_center]"
+          />
+          <div className="absolute inset-0 hidden bg-[linear-gradient(90deg,rgba(11,13,16,0.96)_0%,rgba(11,13,16,0.82)_32%,rgba(11,13,16,0.12)_68%,rgba(11,13,16,0.04)_100%)] lg:block" />
+        </div>
+        <div className="relative z-10 mx-auto flex max-w-[1440px] items-center px-5 pb-16 pt-10 sm:px-8 sm:pb-20 sm:pt-12 lg:min-h-[min(800px,calc(100vh-84px))] lg:py-24">
           <div className="max-w-[610px]">
             <p data-page-text="eyebrow" className="text-xs font-semibold uppercase tracking-[0.2em] text-[#80C900] sm:text-sm">
               {content.eyebrow}

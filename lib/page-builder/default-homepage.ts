@@ -4,7 +4,7 @@ export { homepageRedesignDocument } from "@/lib/homepage/homepage-content";
 
 export function isHomepageRedesign(document: PageDocument | null | undefined) {
   return document?.renderMode === "REPLACE_LEGACY"
-    && document.nodes[0]?.type === "HOME_HERO";
+    && document.nodes.some((node) => node.type === "HOME_HERO");
 }
 
 export const defaultHomepageDocument: PageDocument = {
