@@ -100,7 +100,8 @@ export async function publishHomepageRedesign({
     if (currentPublished && !sameDocument(currentPublished, currentDraft)) {
       await preserveBeforeOverwrite(currentPublished);
     }
-    if (!sameDocument(currentDraft, homepageRedesignDocument)) {
+    const latestDraft = parsePageDocument(page.draftContent);
+    if (!sameDocument(latestDraft, homepageRedesignDocument)) {
       page = await service.saveDraft(principal, page.id, {
         version: page.version,
         document: homepageRedesignDocument,

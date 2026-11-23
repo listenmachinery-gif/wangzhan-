@@ -136,4 +136,41 @@ describe("guarded homepage redesign publication", () => {
       expect.objectContaining({ version: 11, action: "PUBLISH", snapshot: homepageRedesignDocument }),
     ]);
   });
+
+  it("keeps the redesign draft active after preserving different legacy published content", async () => {
+    const home = await db.sitePage.create({ data: {
+      name: "Home",
+      slug: "home",
+      pageType: "HOME",
+      draftContent: homepageRedesignDocument as never,
+      publishedContent: defaultHomepageDocument as never,
+      status: "DRAFT",
+      version: 4,
+      publishedVersion: 3,
+      publishedAt: new Date(),
+    } });
+
+    await publishHomepageRedesign({
+      database: db,
+      env: {
+        DATABASE_URL: "postgresql://test",
+        VERCEL_ENV: "production",
+        ZYRON_HOMEPAGE_RELEASE: "APPROVED_2026_11_24",
+      },
+      revalidate: () => undefined,
+    });
+
+    await expect(db.sitePage.findUniqueOrThrow({ where: { id: home.id } })).resolves.toMatchObject({
+      status: "PUBLISHED",
+      draftContent: homepageRedesignDocument,
+      publishedContent: homepageRedesignDocument,
+      version: 8,
+    });
+    await expect(db.pageVersion.findMany({ where: { pageId: home.id }, orderBy: { version: "asc" } })).resolves.toEqual([
+      expect.objectContaining({ version: 5, snapshot: homepageRedesignDocument }),
+      expect.objectContaining({ version: 6, snapshot: defaultHomepageDocument }),
+      expect.objectContaining({ version: 7, snapshot: homepageRedesignDocument }),
+      expect.objectContaining({ version: 8, action: "PUBLISH", snapshot: homepageRedesignDocument }),
+    ]);
+  });
 });
