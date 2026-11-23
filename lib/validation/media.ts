@@ -8,6 +8,7 @@ export const mediaMetadataSchema = z.object({
 
 export const mediaListQuerySchema = z.object({
   query: z.string().trim().max(100).optional(),
+  kind: z.enum(["image", "video"]).optional(),
   cursor: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(100).default(24),
 });

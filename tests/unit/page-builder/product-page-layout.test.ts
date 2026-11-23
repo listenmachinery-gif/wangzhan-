@@ -29,6 +29,25 @@ describe("product page layout", () => {
     expect(layout.before.map(({ id }) => id)).toEqual(["before"]);
     expect(layout.replacement.map(({ id }) => id)).toEqual(["replace"]);
     expect(layout.after.map(({ id }) => id)).toEqual(["default-after", "after"]);
+    expect(layout.inner).toEqual([]);
+  });
+
+  it("keeps named product slots inside the standardized product layout", () => {
+    const document: PageDocument = {
+      schemaVersion: 1,
+      nodes: [
+        node("after-hero", "PRODUCT_AFTER_HERO"),
+        node("before-inquiry", "PRODUCT_BEFORE_INQUIRY"),
+      ],
+    };
+
+    const layout = resolveProductPageLayout(document);
+
+    expect(layout.before).toEqual([]);
+    expect(layout.after).toEqual([]);
+    expect(layout.inner.map(({ id }) => id)).toEqual(["after-hero", "before-inquiry"]);
+    expect(layout.slots.PRODUCT_AFTER_HERO?.map(({ id }) => id)).toEqual(["after-hero"]);
+    expect(layout.slots.PRODUCT_BEFORE_INQUIRY?.map(({ id }) => id)).toEqual(["before-inquiry"]);
   });
 
   it("renders every node in document order as replacement content for a full CMS takeover", () => {
@@ -46,6 +65,7 @@ describe("product page layout", () => {
 
     expect(layout.before).toEqual([]);
     expect(layout.after).toEqual([]);
+    expect(layout.inner).toEqual([]);
     expect(layout.replacement.map(({ id }) => id)).toEqual([
       "hero",
       "specifications",

@@ -4,6 +4,12 @@ import { Factory, Headphones, PackageCheck, Settings, Wrench } from "lucide-reac
 
 import type { PageComponentType } from "@/lib/page-builder/schema";
 import { InquiryForm } from "@/components/InquiryForm";
+import { HomeAboutSection, type HomeAboutContent } from "@/components/site/home/HomeAboutSection";
+import { HomeContactSection, type HomeContactContent } from "@/components/site/home/HomeContactSection";
+import { HomeHeroSection, type HomeHeroContent } from "@/components/site/home/HomeHeroSection";
+import { HomeNewsInsights, type HomeNewsInsightsContent } from "@/components/site/home/HomeNewsInsights";
+import { HomeProductShowcase, type HomeProductShowcaseContent } from "@/components/site/home/HomeProductShowcase";
+import { HomeWhyChooseSection, type HomeWhyChooseContent } from "@/components/site/home/HomeWhyChooseSection";
 import { productCategories } from "@/data/products";
 
 type Content = Record<string, unknown>;
@@ -39,6 +45,12 @@ function Advantages({ content }: { content: Content }) {
 
 export function renderNodeContent(type: PageComponentType, content: Content, children: ReactNode) {
   switch (type) {
+    case "HOME_HERO": return <HomeHeroSection content={content as HomeHeroContent} />;
+    case "HOME_ABOUT": return <HomeAboutSection content={content as HomeAboutContent} />;
+    case "HOME_PRODUCT_SHOWCASE": return <HomeProductShowcase content={content as HomeProductShowcaseContent} />;
+    case "HOME_WHY_CHOOSE": return <HomeWhyChooseSection content={content as HomeWhyChooseContent} />;
+    case "HOME_NEWS_INSIGHTS": return <HomeNewsInsights content={content as HomeNewsInsightsContent} />;
+    case "HOME_CONTACT_CTA": return <HomeContactSection content={content as HomeContactContent} />;
     case "HEADING": { const level = Math.min(6, Math.max(1, number(content.level))) as 1 | 2 | 3 | 4 | 5 | 6; const Tag = `h${level}` as keyof React.JSX.IntrinsicElements; return <Tag data-page-text="text" className="font-semibold">{string(content.text)}</Tag>; }
     case "PARAGRAPH": return <p data-page-text="text">{string(content.text)}</p>;
     case "IMAGE": return <figure><SafeImage src={string(content.src)} alt={string(content.alt)} className="h-auto w-full" />{content.caption ? <figcaption>{string(content.caption)}</figcaption> : null}</figure>;
@@ -52,8 +64,8 @@ export function renderNodeContent(type: PageComponentType, content: Content, chi
     case "ROW": return <div aria-label={string(content.label)} className="flex flex-wrap gap-6">{children}</div>;
     case "COLUMNS":
     case "GRID": return <div aria-label={string(content.label)} className="grid gap-6" style={{ gridTemplateColumns: `repeat(${number(content.columns)}, minmax(0, 1fr))` }}>{children}</div>;
-    case "TABS": return <section className="grid gap-3">{items(content.items).map((item) => <article key={item.title}><h3 className="font-semibold">{item.title}</h3><p>{item.body}</p></article>)}</section>;
-    case "ACCORDION": return <section>{items(content.items).map((item) => <details key={item.title}><summary className="font-semibold">{item.title}</summary><p className="py-3">{item.body}</p></details>)}</section>;
+    case "TABS": return <section className="grid gap-3">{items(content.items).map((item, index) => <article key={`${item.title}-${index}`}><h3 className="font-semibold">{item.title}</h3><p>{item.body}</p></article>)}</section>;
+    case "ACCORDION": return <section>{items(content.items).map((item, index) => <details key={`${item.title}-${index}`}><summary className="font-semibold">{item.title}</summary><p className="py-3">{item.body}</p></details>)}</section>;
     case "HERO": return <section className="relative min-h-[560px] overflow-hidden bg-black text-white"><SafeImage src={string(content.image)} alt={string(content.alt)} className="absolute inset-0 h-full w-full object-cover opacity-55" /><div className="relative mx-auto max-w-[1440px] px-5 py-32"><p data-page-text="eyebrow" className="text-[#76B900]">{string(content.eyebrow)}</p><h1 data-page-text="title" className="mt-4 max-w-4xl text-5xl font-semibold">{string(content.title)}</h1><p data-page-text="description" className="mt-5 max-w-2xl leading-8">{string(content.description)}</p><Link data-page-text="primaryLabel" href={string(content.primaryHref)} className="mt-8 inline-flex bg-[#76B900] px-5 py-3 font-semibold">{string(content.primaryLabel)}</Link></div></section>;
     case "PRODUCT_CARDS":
     case "CATEGORY_CARDS":
@@ -65,13 +77,52 @@ export function renderNodeContent(type: PageComponentType, content: Content, chi
     case "FACTORY_STATS": return <FactoryStats content={content} />;
     case "ADVANTAGES": return <Advantages content={content} />;
     case "CERTIFICATES": return <section className="mx-auto max-w-[1440px] px-5 py-12"><h2 className="text-3xl font-semibold">{string(content.heading)}</h2><ul className="mt-6 grid gap-3">{(content.items as string[]).map((item) => <li key={item} className="border-l-2 border-[#76B900] pl-4">{item}</li>)}</ul></section>;
-    case "APPLICATIONS": return <section className="mx-auto max-w-[1440px] px-5 py-12"><h2 className="text-3xl font-semibold">{string(content.heading)}</h2><div className="mt-6 grid gap-4 md:grid-cols-3">{items(content.items).map((item) => <article key={item.title} className="border p-5"><h3 className="font-semibold">{item.title}</h3><p className="mt-2 text-sm">{item.body}</p></article>)}</div></section>;
-    case "FAQ": return <section className="mx-auto max-w-4xl px-5 py-12"><h2 data-page-text="heading" className="text-3xl font-semibold">{string(content.heading)}</h2>{items(content.items).map((item) => <details key={item.title} className="border-b py-4"><summary className="font-semibold">{item.title}</summary><p className="pt-3">{item.body}</p></details>)}</section>;
+    case "APPLICATIONS": return <section className="mx-auto max-w-[1440px] px-5 py-12"><h2 className="text-3xl font-semibold">{string(content.heading)}</h2><div className="mt-6 grid gap-4 md:grid-cols-3">{items(content.items).map((item, index) => <article key={`${item.title}-${index}`} className="border p-5"><h3 className="font-semibold">{item.title}</h3><p className="mt-2 text-sm">{item.body}</p></article>)}</div></section>;
+    case "FAQ": return <section className="mx-auto max-w-4xl px-5 py-12"><h2 data-page-text="heading" className="text-3xl font-semibold">{string(content.heading)}</h2>{items(content.items).map((item, index) => <details key={`${item.title}-${index}`} className="border-b py-4"><summary className="font-semibold">{item.title}</summary><p className="pt-3">{item.body}</p></details>)}</section>;
     case "INQUIRY_CTA":
     case "DOWNLOAD_CATALOG": return <section className="mx-auto my-12 max-w-[1440px] bg-[#0B0D10] px-8 py-12 text-white"><h2 data-page-text="heading" className="text-3xl font-semibold">{string(content.heading)}</h2><p data-page-text="description" className="mt-3">{string(content.description)}</p><Link data-page-text="label" href={string(content.href)} className="mt-6 inline-flex bg-[#76B900] px-5 py-3 font-semibold">{string(content.label)}</Link></section>;
     case "SPLIT_FEATURE": return <section className="mx-auto grid max-w-[1440px] gap-10 px-5 py-16 sm:px-8 lg:grid-cols-2 lg:items-center lg:py-24"><div className={content.reverse ? "lg:order-2" : ""}><p data-page-text="eyebrow" className="text-sm font-semibold uppercase tracking-[0.18em] text-[#76B900]">{string(content.eyebrow)}</p><h2 data-page-text="title" className="mt-4 max-w-2xl text-4xl font-semibold leading-tight sm:text-5xl">{string(content.title)}</h2><p data-page-text="body" className="mt-6 max-w-xl whitespace-pre-line text-base leading-8 text-neutral-600">{string(content.body)}</p><Link data-page-text="ctaLabel" href={string(content.ctaHref)} className="mt-8 inline-flex border-b-2 border-[#76B900] pb-2 font-semibold">{string(content.ctaLabel)}</Link></div><SafeImage src={string(content.image)} alt={string(content.imageAlt)} className="aspect-[4/3] w-full rounded-sm bg-neutral-100 object-contain" /></section>;
     case "TIMELINE": return <section className="mx-auto max-w-[1440px] px-5 py-16 sm:px-8"><h2 className="text-4xl font-semibold">{string(content.heading)}</h2><div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">{(Array.isArray(content.items) ? content.items : []).map((item: { year: string; title: string; body: string }, index: number) => <article key={index} className="border-t-2 border-[#76B900] pt-5"><p className="text-3xl font-semibold text-[#76B900]">{item.year}</p><h3 className="mt-4 text-xl font-semibold">{item.title}</h3><p className="mt-3 text-sm leading-7 text-neutral-600">{item.body}</p></article>)}</div></section>;
     case "RESOURCE_LINKS": return <section className="mx-auto max-w-[1440px] px-5 py-16 sm:px-8"><h2 className="text-4xl font-semibold">{string(content.heading)}</h2><p className="mt-4 max-w-2xl leading-7 text-neutral-600">{string(content.description)}</p><div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">{items(content.items).map((item, index) => <Link key={index} href={item.href ?? "/contact"} className="group border border-neutral-200 bg-white p-7 transition hover:border-[#76B900]"><h3 className="text-xl font-semibold">{item.title}</h3><p className="mt-3 text-sm leading-7 text-neutral-600">{item.description}</p><span className="mt-6 inline-flex border-b border-[#76B900] pb-1 text-sm font-semibold">Explore resource</span></Link>)}</div></section>;
+    case "MEDIA_HERO": {
+      const split = content.layout === "split";
+      const hasVideo = content.mediaKind === "video" && Boolean(string(content.videoSrc));
+      const media = hasVideo ? (
+        <video className="h-full w-full object-cover" src={string(content.videoSrc)} poster={string(content.poster) || string(content.image)} autoPlay muted loop playsInline preload="metadata" aria-label={string(content.alt)} />
+      ) : <SafeImage src={string(content.image)} alt={string(content.alt)} className="h-full w-full object-cover" />;
+      const copy = <div className={split ? "flex max-w-2xl flex-col justify-center px-5 py-16 sm:px-10 lg:px-16 lg:py-24" : "relative z-10 flex min-h-[640px] max-w-[1440px] flex-col justify-center px-5 py-20 text-white sm:px-8 lg:min-h-[740px]"}>
+        <p data-page-text="eyebrow" className={split ? "text-sm font-semibold uppercase tracking-[0.2em] text-[#76B900]" : "text-sm font-semibold uppercase tracking-[0.2em] text-[#80C900]"}>{string(content.eyebrow)}</p>
+        <h1 data-page-text="title" className="mt-5 max-w-4xl text-4xl font-semibold leading-[1.06] tracking-tight sm:text-6xl xl:text-7xl">{string(content.title)}</h1>
+        <p data-page-text="description" className={split ? "mt-6 max-w-2xl text-lg leading-8 text-neutral-600" : "mt-6 max-w-2xl text-lg leading-8 text-white/85"}>{string(content.description)}</p>
+        <div className="mt-8 flex flex-wrap gap-3">
+          {string(content.primaryLabel) ? <Link data-page-text="primaryLabel" href={string(content.primaryHref)} className="inline-flex min-h-12 items-center justify-center bg-[#76B900] px-6 py-3 text-sm font-semibold text-[#0B0D10]">{string(content.primaryLabel)}</Link> : null}
+          {string(content.secondaryLabel) ? <Link data-page-text="secondaryLabel" href={string(content.secondaryHref)} className={split ? "inline-flex min-h-12 items-center justify-center border border-neutral-300 px-6 py-3 text-sm font-semibold text-neutral-950" : "inline-flex min-h-12 items-center justify-center border border-white/50 px-6 py-3 text-sm font-semibold text-white"}>{string(content.secondaryLabel)}</Link> : null}
+        </div>
+      </div>;
+      return split ? <section className="grid min-h-[590px] bg-white text-[#16191d] lg:grid-cols-2">
+        <div className={content.mediaSide === "left" ? "lg:order-2" : ""}>{copy}</div>
+        <div className={"relative min-h-[380px] bg-neutral-100 " + (content.mediaSide === "left" ? "lg:order-1" : "")}>{media}</div>
+      </section> : <section className="relative isolate overflow-hidden bg-[#0B0D10]">
+        <div className="absolute inset-0 -z-20">{media}</div>
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/90 via-black/55 to-black/20" />
+        <div className="mx-auto max-w-[1440px]">{copy}</div>
+      </section>;
+    }
+    case "MEDIA_SHOWCASE": return <section className="bg-[#F5F5F7] px-5 py-16 sm:px-8 lg:py-24">
+      <div className="mx-auto max-w-[1440px]">
+        <p data-page-text="eyebrow" className="text-sm font-semibold uppercase tracking-[0.2em] text-[#76B900]">{string(content.eyebrow)}</p>
+        <h2 data-page-text="heading" className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">{string(content.heading)}</h2>
+        <p data-page-text="description" className="mt-5 max-w-3xl leading-8 text-neutral-600">{string(content.description)}</p>
+        <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {(Array.isArray(content.items) ? content.items : []).map((item: {title:string;description:string;src:string;mediaKind:"image"|"video";alt:string}, index: number) => <article key={index} className="overflow-hidden bg-white">
+            <div className="aspect-[4/3] overflow-hidden bg-neutral-100">
+              {item.mediaKind === "video" ? <video className="h-full w-full object-cover" src={item.src} controls preload="metadata" aria-label={item.alt || item.title} playsInline /> : <SafeImage src={item.src} alt={item.alt || item.title} className="h-full w-full object-cover" />}
+            </div>
+            <div className="p-6"><h3 className="text-xl font-semibold">{item.title}</h3><p className="mt-3 text-sm leading-7 text-neutral-600">{item.description}</p></div>
+          </article>)}
+        </div>
+      </div>
+    </section>;
     case "INQUIRY_FORM": return <section className="mx-auto max-w-[1100px] px-5 py-16 sm:px-8"><InquiryForm productCategories={productCategories} eyebrow={string(content.eyebrow)} heading={string(content.heading)} description={string(content.description)} /></section>;
     case "WHATSAPP_CTA": return <section className="mx-auto my-12 max-w-[1440px] border px-8 py-10"><h2 className="text-3xl font-semibold">{string(content.heading)}</h2><a href={string(content.href)} rel="noreferrer" target="_blank" className="mt-6 inline-flex bg-[#25D366] px-5 py-3 font-semibold text-white">{string(content.label)}</a></section>;
   }

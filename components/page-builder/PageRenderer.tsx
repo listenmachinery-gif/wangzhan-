@@ -168,9 +168,11 @@ function typographyOverrides(nodes: PageNode[]): string {
 }
 
 function elementTypographyOverrides(nodes: PageNode[]): string {
-  const rules: string[] = [];
+  const desktop: string[] = [];
+  const tablet: string[] = [];
+  const mobile: string[] = [];
   const visit = (node: PageNode) => {
-    Object.entries(node.textStyles ?? {}).forEach(([key, style]) => {
+    const build = (styles: typeof node.textStyles, target: string[]) => Object.entries(styles ?? {}).forEach(([key, style]) => {
       const declarations = [
         style.color ? `color:${style.color}!important` : "",
         style.fontSize !== undefined ? `font-size:${style.fontSize}px!important` : "",
@@ -181,13 +183,20 @@ function elementTypographyOverrides(nodes: PageNode[]): string {
         style.textAlign ? `text-align:${style.textAlign}!important` : "",
       ].filter(Boolean);
       if (declarations.length) {
-        rules.push(`[data-page-node="${node.id}"] [data-page-text="${key}"]{${declarations.join(";")}}`);
+        target.push(`[data-page-node="${node.id}"] [data-page-text="${key}"]{${declarations.join(";")}}`);
       }
     });
+    build(node.textStyles, desktop);
+    build(node.responsiveTextStyles?.tablet, tablet);
+    build(node.responsiveTextStyles?.mobile, mobile);
     node.children?.forEach(visit);
   };
   nodes.forEach(visit);
-  return rules.join("");
+  return [
+    desktop.join(""),
+    tablet.length ? `@media(min-width:640px) and (max-width:1023px){${tablet.join("")}}` : "",
+    mobile.length ? `@media(max-width:639px){${mobile.join("")}}` : "",
+  ].join("");
 }
 
 function renderNode(node: PageNode): ReactNode {

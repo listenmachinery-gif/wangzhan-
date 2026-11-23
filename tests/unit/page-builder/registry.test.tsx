@@ -115,6 +115,10 @@ describe("page builder component registry", () => {
           title: { color: "#76B900", fontSize: 64, fontWeight: "bold" },
           description: { color: "#FFFFFF", fontSize: 18, lineHeight: 1.7 },
         },
+        responsiveTextStyles: {
+          tablet: { title: { fontSize: 44 } },
+          mobile: { title: { fontSize: 28, textAlign: "center" } },
+        },
       }],
     };
 
@@ -124,6 +128,10 @@ describe("page builder component registry", () => {
     expect(container.querySelector('[data-page-text="description"]')).toBeInTheDocument();
     expect(stylesheet).toContain('[data-page-node="styled-hero"] [data-page-text="title"]');
     expect(stylesheet).toContain("font-size:64px!important");
+    expect(stylesheet).toContain("@media(min-width:640px) and (max-width:1023px)");
+    expect(stylesheet).toContain("font-size:44px!important");
+    expect(stylesheet).toContain("@media(max-width:639px)");
+    expect(stylesheet).toContain("font-size:28px!important");
   });
 
   it("rejects protocol-relative and remote image sources", () => {

@@ -12,7 +12,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { PageBuilder } from "@/components/admin/pages/PageBuilder";
-import { defaultHomepageDocument } from "@/lib/page-builder/default-homepage";
+import { defaultHomepageDocument, homepageRedesignDocument } from "@/lib/page-builder/default-homepage";
 
 const page = {
   id: "home-page",
@@ -26,6 +26,29 @@ const page = {
 afterEach(cleanup);
 
 describe("PageBuilder", () => {
+  const showcasePage = {
+    ...page,
+    id: "showcase-page",
+    name: "Showcase",
+    slug: "showcase",
+    document: {
+      schemaVersion: 1 as const,
+      nodes: [{
+        id: "showcase-media",
+        type: "MEDIA_SHOWCASE" as const,
+        content: {
+          eyebrow: "Showcase",
+          heading: "Machinery in Action",
+          description: "Real machinery media.",
+          items: [
+            { title: "First", description: "First item", src: "/first.jpg", mediaKind: "image", alt: "First" },
+            { title: "Second", description: "Second item", src: "/second.jpg", mediaKind: "image", alt: "Second" },
+          ],
+        },
+      }],
+    },
+  };
+
   it("adds, selects, duplicates, and deletes real registered components", async () => {
     const user = userEvent.setup();
     render(<PageBuilder page={page} canPublish onPersist={vi.fn()} />);
@@ -102,6 +125,31 @@ describe("PageBuilder", () => {
     );
   });
 
+  it("edits per-element typography independently for tablet and mobile", async () => {
+    const onPersist = vi.fn().mockResolvedValue({ version: 2 });
+    const user = userEvent.setup();
+    render(<PageBuilder page={page} canPublish onPersist={onPersist} />);
+
+    await user.selectOptions(screen.getByRole("combobox", { name: "文字元素" }), "heading");
+    await user.click(screen.getByRole("button", { name: "平板预览" }));
+    fireEvent.change(screen.getByRole("spinbutton", { name: "单独文字字号" }), { target: { value: "36" } });
+    await user.selectOptions(screen.getByRole("combobox", { name: "单独文字字体" }), "serif");
+    await user.selectOptions(screen.getByRole("combobox", { name: "单独文字对齐" }), "right");
+    await user.click(screen.getByRole("button", { name: "手机预览" }));
+    expect(screen.getByRole("spinbutton", { name: "单独文字字号" })).toHaveValue(null);
+    fireEvent.change(screen.getByRole("spinbutton", { name: "单独文字字号" }), { target: { value: "24" } });
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+
+    await waitFor(() => expect(onPersist).toHaveBeenCalledTimes(1));
+    expect(onPersist.mock.calls[0][0].document.nodes[0]).toMatchObject({
+      responsiveTextStyles: {
+        tablet: { heading: { fontSize: 36, fontFamily: "serif", textAlign: "right" } },
+        mobile: { heading: { fontSize: 24 } },
+      },
+    });
+    expect(onPersist.mock.calls[0][0].document.nodes[0].textStyles?.heading).toBeUndefined();
+  });
+
   it("serializes and coalesces concurrent saves for the same edit revision", async () => {
     let finishSave: (value: { version: number }) => void = () => undefined;
     const onPersist = vi.fn(
@@ -131,6 +179,97 @@ describe("PageBuilder", () => {
     expect(screen.queryByRole("button", { name: "添加 Section 容器" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "添加 横向布局" })).not.toBeInTheDocument();
     expect(screen.queryByText("布局")).not.toBeInTheDocument();
+  });
+
+  it("edits media repeaters with add, remove, reorder, and independent library replacement", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({
+      items: [{ id: "media-new", originalName: "replacement.jpg", mimeType: "image/jpeg", altText: "Replacement", category: "Products", previewUrl: "https://preview.example/replacement.jpg" }],
+      nextCursor: null,
+    })));
+    const onPersist = vi.fn().mockResolvedValue({ version: 2 });
+    const user = userEvent.setup();
+    render(<PageBuilder page={showcasePage} canPublish onPersist={onPersist} />);
+
+    expect(screen.getAllByTestId("media-repeater-item")).toHaveLength(2);
+    await user.click(screen.getByRole("button", { name: "下移第 1 项" }));
+    expect(screen.getByRole("textbox", { name: "第 1 项 标题" })).toHaveValue("Second");
+
+    await user.click(screen.getByRole("button", { name: "添加媒体项目" }));
+    expect(screen.getAllByTestId("media-repeater-item")).toHaveLength(3);
+    await user.click(screen.getByRole("button", { name: "移除第 3 项" }));
+    expect(screen.getAllByTestId("media-repeater-item")).toHaveLength(2);
+
+    await user.click(screen.getByRole("button", { name: "替换第 1 项图片" }));
+    await user.click(await screen.findByRole("button", { name: /replacement\.jpg/ }));
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+
+    await waitFor(() => expect(onPersist).toHaveBeenCalledTimes(1));
+    const saved = onPersist.mock.calls[0][0].document.nodes[0].content.items;
+    expect(saved[0]).toMatchObject({ title: "Second", src: "/api/media/media-new", alt: "Replacement" });
+    expect(fetchMock.mock.calls[0][0]).toContain("kind=image");
+    fetchMock.mockRestore();
+  });
+
+  it("edits ordinary card and FAQ repeaters without requiring raw JSON", async () => {
+    const faqPage = {
+      ...page,
+      document: {
+        schemaVersion: 1 as const,
+        nodes: [{
+          id: "faq",
+          type: "FAQ" as const,
+          content: { heading: "FAQ", items: [{ title: "Question", body: "Answer" }] },
+        }],
+      },
+    };
+    const user = userEvent.setup();
+    render(<PageBuilder page={faqPage} canPublish onPersist={vi.fn()} />);
+
+    expect(screen.getByRole("textbox", { name: "第 1 项 标题" })).toHaveValue("Question");
+    expect(screen.getByRole("textbox", { name: "第 1 项 正文" })).toHaveValue("Answer");
+    expect(screen.queryByRole("textbox", { name: "问答" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "添加项目" }));
+    expect(screen.getAllByTestId("structured-repeater-item")).toHaveLength(2);
+  });
+
+  it("edits homepage insight publication status with a structured selector", async () => {
+    const user = userEvent.setup();
+    render(<PageBuilder page={{ ...page, document: homepageRedesignDocument }} canPublish onPersist={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: "选择 首页行业洞察" }));
+    const statuses = screen.getAllByRole("combobox", { name: /第 \d+ 项 发布状态/ });
+    expect(statuses).toHaveLength(3);
+    expect(statuses[0]).toHaveValue("draft");
+    await user.selectOptions(statuses[0], "published");
+    expect(statuses[0]).toHaveValue("published");
+  });
+
+  it("supports global hide/restore, background media, width, gap, and image fit controls", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({
+      items: [{ id: "background-1", originalName: "factory-bg.jpg", mimeType: "image/jpeg", altText: "Factory", category: "Factory", previewUrl: "https://preview.example/factory.jpg" }],
+    })));
+    const onPersist = vi.fn().mockResolvedValue({ version: 2 });
+    const user = userEvent.setup();
+    render(<PageBuilder page={page} canPublish onPersist={onPersist} />);
+
+    await user.click(screen.getByRole("button", { name: "隐藏当前组件" }));
+    expect(screen.getByRole("button", { name: "恢复当前组件" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "恢复当前组件" }));
+    await user.selectOptions(screen.getByRole("combobox", { name: "区块宽度" }), "full");
+    fireEvent.change(screen.getByRole("spinbutton", { name: "元素间距" }), { target: { value: "32" } });
+    await user.selectOptions(screen.getByRole("combobox", { name: "图片适配" }), "contain");
+    await user.click(screen.getByRole("button", { name: "从媒体库选择背景图片" }));
+    await user.click(await screen.findByRole("button", { name: /factory-bg\.jpg/ }));
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+
+    await waitFor(() => expect(onPersist).toHaveBeenCalledTimes(1));
+    expect(onPersist.mock.calls[0][0].document.nodes[0].style).toMatchObject({
+      visible: true,
+      width: "full",
+      gap: 32,
+      objectFit: "contain",
+      backgroundImage: "/api/media/background-1",
+    });
   });
 
   it("invalidates queued saves before rolling back", async () => {

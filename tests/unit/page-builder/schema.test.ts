@@ -46,6 +46,10 @@ describe("page builder document schema", () => {
             tablet: { columns: 2 },
             mobile: { columns: 1, paddingY: 32, visible: true },
           },
+          responsiveTextStyles: {
+            tablet: { heading: { fontSize: 36, textAlign: "left" } },
+            mobile: { heading: { fontSize: 24, textAlign: "center" } },
+          },
           children: [],
         },
       ],
@@ -56,6 +60,7 @@ describe("page builder document schema", () => {
       type: "FACTORY_STATS",
       placement: "BEFORE_LEGACY",
       responsive: { mobile: { columns: 1 } },
+      responsiveTextStyles: { mobile: { heading: { fontSize: 24 } } },
     });
   });
 

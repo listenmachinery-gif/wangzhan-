@@ -1,15 +1,21 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, type Ref } from "react";
 import { Send } from "lucide-react";
 import { useInquiryTracking } from "@/components/analytics/useInquiryTracking";
 import type { ProductCategory } from "@/data/products";
 
 type InquiryFormProps = {
   productCategories: ProductCategory[];
+  productOptions?: string[];
   eyebrow?: string;
   heading?: string;
   description?: string;
+  privacyText?: string;
+  variant?: "default" | "homepage";
+  firstInputRef?: Ref<HTMLInputElement>;
+  headingLevel?: "h2" | "h3";
+  submitLabel?: string;
 };
 
 type SubmitState = "idle" | "sending" | "success" | "error";
@@ -40,10 +46,24 @@ function buildMailto(formData: FormData) {
   return `mailto:info@zyroncnc.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
-export function InquiryForm({ productCategories, eyebrow = "Inquiry Form", heading = "Tell us what you need.", description }: InquiryFormProps) {
+export function InquiryForm({
+  productCategories,
+  productOptions,
+  eyebrow = "Inquiry Form",
+  heading = "Tell us what you need.",
+  description,
+  privacyText,
+  variant = "default",
+  firstInputRef,
+  headingLevel = "h2",
+  submitLabel = "Send Inquiry",
+}: InquiryFormProps) {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [message, setMessage] = useState("");
   const { trackStart, trackSuccessfulSubmit } = useInquiryTracking("general-inquiry");
+  const homepage = variant === "homepage";
+  const Heading = headingLevel;
+  const options = productOptions ?? productCategories.map((category) => category.name);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -84,22 +104,23 @@ export function InquiryForm({ productCategories, eyebrow = "Inquiry Form", headi
   }
 
   return (
-    <form onSubmit={handleSubmit} onFocusCapture={trackStart} className="rounded-md bg-white p-7 shadow-sm lg:p-9">
-      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ignition">{eyebrow}</p>
-      <h2 className="mt-3 text-3xl font-semibold text-neutral-950">{heading}</h2>
+    <form onSubmit={handleSubmit} onFocusCapture={trackStart} className={`rounded-md bg-white p-7 text-neutral-950 shadow-sm lg:p-9 ${homepage ? "border border-white/10" : ""}`}>
+      {eyebrow ? <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ignition">{eyebrow}</p> : null}
+      <Heading className={`${eyebrow ? "mt-3" : ""} text-3xl font-semibold text-neutral-950`}>{heading}</Heading>
       {description ? <p className="mt-3 text-sm leading-6 text-neutral-600">{description}</p> : null}
       <div className="mt-7 grid gap-4 md:grid-cols-2">
         <label className="grid gap-2 text-sm font-semibold text-neutral-700">
-          Name
+          {homepage ? "Your Name *" : "Name"}
           <input
+            ref={firstInputRef}
             name="name"
             required
             className="h-11 rounded-sm border border-neutral-200 px-3 font-normal outline-none transition focus:border-ignition"
-            placeholder="Your name"
+            placeholder={homepage ? "Enter your name" : "Your name"}
           />
         </label>
         <label className="grid gap-2 text-sm font-semibold text-neutral-700">
-          Email
+          {homepage ? "Business Email *" : "Email"}
           <input
             name="email"
             type="email"
@@ -108,40 +129,46 @@ export function InquiryForm({ productCategories, eyebrow = "Inquiry Form", headi
             placeholder="name@company.com"
           />
         </label>
+        {!homepage ? (
+          <label className="grid gap-2 text-sm font-semibold text-neutral-700">
+            WhatsApp / Phone
+            <input
+              name="whatsapp"
+              className="h-11 rounded-sm border border-neutral-200 px-3 font-normal outline-none transition focus:border-ignition"
+              placeholder="+86 156 5553 7083"
+            />
+          </label>
+        ) : null}
         <label className="grid gap-2 text-sm font-semibold text-neutral-700">
-          WhatsApp / Phone
-          <input
-            name="whatsapp"
-            className="h-11 rounded-sm border border-neutral-200 px-3 font-normal outline-none transition focus:border-ignition"
-            placeholder="+86 156 5553 7083"
-          />
-        </label>
-        <label className="grid gap-2 text-sm font-semibold text-neutral-700">
-          Product Interest
+          {homepage ? "Machine Interest *" : "Product Interest"}
           <select
             name="productInterest"
+            required={homepage}
+            defaultValue={homepage ? "" : undefined}
             className="h-11 rounded-sm border border-neutral-200 px-3 font-normal outline-none transition focus:border-ignition"
           >
-            {productCategories.map((category) => (
-              <option key={category.id}>{category.name}</option>
-            ))}
+            {homepage ? <option value="" disabled>Select a machine category</option> : null}
+            {options.map((option) => <option key={option} value={option}>{option}</option>)}
           </select>
         </label>
+        {!homepage ? (
+          <label className="grid gap-2 text-sm font-semibold text-neutral-700 md:col-span-2">
+            Destination Country
+            <input
+              name="destinationCountry"
+              className="h-11 rounded-sm border border-neutral-200 px-3 font-normal outline-none transition focus:border-ignition"
+              placeholder="Country / region"
+            />
+          </label>
+        ) : null}
         <label className="grid gap-2 text-sm font-semibold text-neutral-700 md:col-span-2">
-          Destination Country
-          <input
-            name="destinationCountry"
-            className="h-11 rounded-sm border border-neutral-200 px-3 font-normal outline-none transition focus:border-ignition"
-            placeholder="Country / region"
-          />
-        </label>
-        <label className="grid gap-2 text-sm font-semibold text-neutral-700 md:col-span-2">
-          Production Requirement
+          {homepage ? "Your Requirements *" : "Production Requirement"}
           <textarea
             name="requirement"
             required
+            maxLength={homepage ? 3000 : 10000}
             className="min-h-32 rounded-sm border border-neutral-200 px-3 py-3 font-normal outline-none transition focus:border-ignition"
-            placeholder="Material, thickness, working length, daily output, voltage, and any optional configuration."
+            placeholder={homepage ? "Tell us about your materials, thickness, working length, production capacity, or other requirements." : "Material, thickness, working length, daily output, voltage, and any optional configuration."}
           />
         </label>
       </div>
@@ -153,9 +180,10 @@ export function InquiryForm({ productCategories, eyebrow = "Inquiry Form", headi
         disabled={submitState === "sending"}
         className="mt-6 inline-flex items-center gap-2 rounded-sm bg-ignition px-5 py-3 text-sm font-semibold text-white transition hover:bg-neon disabled:cursor-not-allowed disabled:opacity-65"
       >
-        {submitState === "sending" ? "Sending..." : "Send Inquiry"}
+        {submitState === "sending" ? "Sending..." : submitLabel}
         <Send size={16} />
       </button>
+      {privacyText ? <p className="mt-4 text-xs leading-5 text-neutral-500">{privacyText}</p> : null}
       {message ? (
         <p className={`mt-4 text-sm leading-6 ${submitState === "success" ? "text-green-700" : "text-red-600"}`}>
           {message}

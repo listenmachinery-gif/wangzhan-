@@ -20,5 +20,9 @@ describe("page service transaction errors", () => {
       "/products/series/shearing-machines",
       "/products",
     ]);
+    expect(publicPathsForPageSlug("factory")).toEqual(["/factory"]);
+    expect(publicPathsForPageSlug("support")).toEqual(["/support"]);
+    expect(publicPathsForPageSlug("showcase")).toEqual(["/showcase"]);
+    expect(publicPathsForPageSlug("contact")).toEqual(["/contact"]);
   });
 });
