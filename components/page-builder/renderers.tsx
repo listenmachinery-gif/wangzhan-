@@ -4,6 +4,12 @@ import { Factory, Headphones, PackageCheck, Settings, Wrench } from "lucide-reac
 
 import type { PageComponentType } from "@/lib/page-builder/schema";
 import { InquiryForm } from "@/components/InquiryForm";
+import { HomeAboutSection, type HomeAboutContent } from "@/components/site/home/HomeAboutSection";
+import { HomeContactSection, type HomeContactContent } from "@/components/site/home/HomeContactSection";
+import { HomeHeroSection, type HomeHeroContent } from "@/components/site/home/HomeHeroSection";
+import { HomeNewsInsights, type HomeNewsInsightsContent } from "@/components/site/home/HomeNewsInsights";
+import { HomeProductShowcase, type HomeProductShowcaseContent } from "@/components/site/home/HomeProductShowcase";
+import { HomeWhyChooseSection, type HomeWhyChooseContent } from "@/components/site/home/HomeWhyChooseSection";
 import { productCategories } from "@/data/products";
 
 type Content = Record<string, unknown>;
@@ -39,6 +45,12 @@ function Advantages({ content }: { content: Content }) {
 
 export function renderNodeContent(type: PageComponentType, content: Content, children: ReactNode) {
   switch (type) {
+    case "HOME_HERO": return <HomeHeroSection content={content as HomeHeroContent} />;
+    case "HOME_ABOUT": return <HomeAboutSection content={content as HomeAboutContent} />;
+    case "HOME_PRODUCT_SHOWCASE": return <HomeProductShowcase content={content as HomeProductShowcaseContent} />;
+    case "HOME_WHY_CHOOSE": return <HomeWhyChooseSection content={content as HomeWhyChooseContent} />;
+    case "HOME_NEWS_INSIGHTS": return <HomeNewsInsights content={content as HomeNewsInsightsContent} />;
+    case "HOME_CONTACT_CTA": return <HomeContactSection content={content as HomeContactContent} />;
     case "HEADING": { const level = Math.min(6, Math.max(1, number(content.level))) as 1 | 2 | 3 | 4 | 5 | 6; const Tag = `h${level}` as keyof React.JSX.IntrinsicElements; return <Tag data-page-text="text" className="font-semibold">{string(content.text)}</Tag>; }
     case "PARAGRAPH": return <p data-page-text="text">{string(content.text)}</p>;
     case "IMAGE": return <figure><SafeImage src={string(content.src)} alt={string(content.alt)} className="h-auto w-full" />{content.caption ? <figcaption>{string(content.caption)}</figcaption> : null}</figure>;

@@ -10,6 +10,7 @@ import { ManagedWhyChoose } from "@/components/site/ManagedWhyChoose";
 import { LatestShippingHighlights } from "@/components/site/LatestShippingHighlights";
 import { companyVerificationHighlights } from "@/data/company";
 import { getCategoryHref, productCategories } from "@/data/products";
+import { isHomepageRedesign } from "@/lib/page-builder/default-homepage";
 import { listActiveBanners } from "@/lib/repositories/banner-repository";
 import { getPublishedPageBySlug } from "@/lib/repositories/page-repository";
 import { listLatestPublishedShippingHighlights } from "@/lib/repositories/shipping-highlight-repository";
@@ -52,8 +53,9 @@ export default async function Home() {
     getPublishedPageBySlug("home"),
     listLatestPublishedShippingHighlights(3),
   ]);
-  // A full CMS template is opt-in; legacy homepage remains intact until published with a HERO block.
-  if (publishedPage?.nodes.some((node) => node.type === "HERO")) {
+  // Full CMS takeover is opt-in. The legacy HERO behavior remains compatible,
+  // while the redesign requires its explicit HOME_HERO + REPLACE_LEGACY marker.
+  if (publishedPage && (isHomepageRedesign(publishedPage) || publishedPage.nodes.some((node) => node.type === "HERO"))) {
     return <main className="bg-[#f4f6f8] text-[#101214]"><PageRenderer document={publishedPage} /></main>;
   }
   const managedFactory = publishedPage?.nodes.find((node) => node.type === "FACTORY_STATS");

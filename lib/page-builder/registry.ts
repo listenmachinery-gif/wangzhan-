@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { homepageRedesignDocument } from "@/lib/homepage/homepage-content";
 import type { PageComponentType } from "@/lib/page-builder/schema";
 
 export type EditorFieldKind = "text" | "textarea" | "url" | "number" | "list" | "json";
@@ -26,6 +27,11 @@ const itemSchema = z.object({ title: shortText, body: text }).strict();
 
 function define(definition: ComponentDefinition) {
   return definition;
+}
+
+function homepageDefaultContent(type: PageComponentType): Record<string, unknown> {
+  const node = homepageRedesignDocument.nodes.find((candidate) => candidate.type === type);
+  return (node?.content ?? {}) as Record<string, unknown>;
 }
 
 export const componentRegistry: ComponentDefinition[] = [
@@ -145,6 +151,200 @@ componentRegistry.push(
       { key: "heading", label: "标题", kind: "text" },
       { key: "description", label: "介绍", kind: "textarea" },
       { key: "items", label: "素材（支持媒体库单项替换）", kind: "json" },
+    ],
+  }),
+);
+
+const homepageStatSchema = z.object({
+  value: z.number().int().min(0).max(1_000_000),
+  suffix: shortText,
+  unit: shortText,
+  label: shortText.min(1),
+}).strict();
+
+const homepageProductSchema = z.object({
+  id: shortText.min(1),
+  name: shortText.min(1),
+  eyebrow: shortText,
+  headline: shortText.min(1),
+  description: text,
+  buttonText: shortText.min(1),
+  image: mediaUrl,
+  href: url,
+  alt: shortText.min(1),
+}).strict();
+
+const homepageAdvantageSchema = z.object({
+  number: shortText.min(1),
+  title: shortText.min(1),
+  body: text,
+}).strict();
+
+const homepageNewsSchema = z.object({
+  id: shortText.min(1),
+  category: shortText.min(1),
+  title: shortText.min(1),
+  excerpt: text,
+  image: mediaUrl,
+  imageAlt: shortText.min(1),
+  href: optionalUrl,
+  status: z.enum(["draft", "published"]),
+  featured: z.boolean(),
+}).strict();
+
+componentRegistry.push(
+  define({
+    type: "HOME_HERO",
+    label: "首页设备横幅",
+    group: "营销",
+    description: "首页首屏设备主视觉、文案和产品入口",
+    defaultContent: homepageDefaultContent("HOME_HERO"),
+    contentSchema: z.object({
+      eyebrow: shortText,
+      title: shortText.min(1),
+      description: text,
+      primaryLabel: shortText.min(1),
+      primaryHref: url,
+      image: mediaUrl,
+      alt: shortText.min(1),
+    }).strict(),
+    editorFields: [
+      { key: "eyebrow", label: "眉题", kind: "text" },
+      { key: "title", label: "主标题", kind: "text" },
+      { key: "description", label: "介绍", kind: "textarea" },
+      { key: "primaryLabel", label: "按钮文字", kind: "text" },
+      { key: "primaryHref", label: "按钮链接", kind: "url" },
+      { key: "image", label: "设备图片（媒体库可替换）", kind: "url" },
+      { key: "alt", label: "图片替代文字", kind: "text" },
+    ],
+  }),
+  define({
+    type: "HOME_ABOUT",
+    label: "首页品牌与实力",
+    group: "外贸业务",
+    description: "工厂照片、品牌介绍和已确认企业数据",
+    defaultContent: homepageDefaultContent("HOME_ABOUT"),
+    contentSchema: z.object({
+      eyebrow: shortText,
+      title: shortText.min(1),
+      description: text,
+      image: mediaUrl,
+      imageAlt: shortText.min(1),
+      ctaLabel: shortText.min(1),
+      ctaHref: url,
+      stats: z.array(homepageStatSchema).min(1).max(8),
+    }).strict(),
+    editorFields: [
+      { key: "eyebrow", label: "眉题", kind: "text" },
+      { key: "title", label: "主标题", kind: "text" },
+      { key: "description", label: "品牌介绍", kind: "textarea" },
+      { key: "image", label: "工厂图片（媒体库可替换）", kind: "url" },
+      { key: "imageAlt", label: "图片替代文字", kind: "text" },
+      { key: "stats", label: "企业实力数据", kind: "json" },
+      { key: "ctaLabel", label: "链接文字", kind: "text" },
+      { key: "ctaHref", label: "链接地址", kind: "url" },
+    ],
+  }),
+  define({
+    type: "HOME_PRODUCT_SHOWCASE",
+    label: "首页八大产品",
+    group: "外贸业务",
+    description: "可点击切换的八大产品系列、专属文案、图片和链接",
+    defaultContent: homepageDefaultContent("HOME_PRODUCT_SHOWCASE"),
+    contentSchema: z.object({
+      eyebrow: shortText,
+      heading: shortText.min(1),
+      description: text,
+      items: z.array(homepageProductSchema).min(1).max(12),
+    }).strict(),
+    editorFields: [
+      { key: "eyebrow", label: "眉题", kind: "text" },
+      { key: "heading", label: "主标题", kind: "text" },
+      { key: "description", label: "介绍", kind: "textarea" },
+      { key: "items", label: "产品系列（单项图片可从媒体库替换）", kind: "json" },
+    ],
+  }),
+  define({
+    type: "HOME_WHY_CHOOSE",
+    label: "首页品牌优势",
+    group: "外贸业务",
+    description: "品牌科技形象、核心优势和公司入口",
+    defaultContent: homepageDefaultContent("HOME_WHY_CHOOSE"),
+    contentSchema: z.object({
+      eyebrow: shortText,
+      title: shortText.min(1),
+      description: text,
+      image: mediaUrl,
+      imageAlt: shortText.min(1),
+      items: z.array(homepageAdvantageSchema).min(1).max(8),
+      ctaLabel: shortText.min(1),
+      ctaHref: url,
+    }).strict(),
+    editorFields: [
+      { key: "eyebrow", label: "眉题", kind: "text" },
+      { key: "title", label: "主标题", kind: "text" },
+      { key: "description", label: "品牌介绍", kind: "textarea" },
+      { key: "image", label: "品牌图片（媒体库可替换）", kind: "url" },
+      { key: "imageAlt", label: "图片替代文字", kind: "text" },
+      { key: "items", label: "核心优势", kind: "json" },
+      { key: "ctaLabel", label: "按钮文字", kind: "text" },
+      { key: "ctaHref", label: "按钮链接", kind: "url" },
+    ],
+  }),
+  define({
+    type: "HOME_NEWS_INSIGHTS",
+    label: "首页行业洞察",
+    group: "外贸业务",
+    description: "只展示状态为已发布且拥有真实详情链接的行业文章",
+    defaultContent: homepageDefaultContent("HOME_NEWS_INSIGHTS"),
+    contentSchema: z.object({
+      eyebrow: shortText,
+      heading: shortText.min(1),
+      description: text,
+      viewAllLabel: shortText.min(1),
+      viewAllHref: url,
+      items: z.array(homepageNewsSchema).max(12),
+    }).strict(),
+    editorFields: [
+      { key: "eyebrow", label: "眉题", kind: "text" },
+      { key: "heading", label: "主标题", kind: "text" },
+      { key: "description", label: "介绍", kind: "textarea" },
+      { key: "viewAllLabel", label: "全部文章入口文字", kind: "text" },
+      { key: "viewAllHref", label: "全部文章入口", kind: "url" },
+      { key: "items", label: "文章（草稿 / 已发布）", kind: "json" },
+    ],
+  }),
+  define({
+    type: "HOME_CONTACT_CTA",
+    label: "首页询价转化",
+    group: "营销",
+    description: "复用真实询盘接口的首页报价表单和联系入口",
+    defaultContent: homepageDefaultContent("HOME_CONTACT_CTA"),
+    contentSchema: z.object({
+      eyebrow: shortText,
+      title: shortText.min(1),
+      description: text,
+      emphasis: shortText,
+      primaryLabel: shortText.min(1),
+      secondaryLabel: shortText.min(1),
+      secondaryHref: url,
+      formTitle: shortText.min(1),
+      formDescription: text,
+      privacyText: text,
+      machineOptions: z.array(shortText.min(1)).min(1).max(20),
+    }).strict(),
+    editorFields: [
+      { key: "eyebrow", label: "眉题", kind: "text" },
+      { key: "title", label: "主标题", kind: "text" },
+      { key: "description", label: "介绍", kind: "textarea" },
+      { key: "emphasis", label: "品牌强调语", kind: "text" },
+      { key: "primaryLabel", label: "主按钮文字", kind: "text" },
+      { key: "secondaryLabel", label: "联系入口文字", kind: "text" },
+      { key: "secondaryHref", label: "联系入口", kind: "url" },
+      { key: "formTitle", label: "表单标题", kind: "text" },
+      { key: "formDescription", label: "表单说明", kind: "textarea" },
+      { key: "machineOptions", label: "设备选项", kind: "list" },
+      { key: "privacyText", label: "隐私说明", kind: "textarea" },
     ],
   }),
 );
