@@ -36,10 +36,25 @@ export function getMachinesMenuConfig(config?: MachinesMenuConfig) {
 export function hydrateMachinesNavigation(snapshot: NavigationSnapshot): NavigationSnapshot {
   const hydrated = structuredClone(snapshot);
   hydrated.machines ??= structuredClone(DEFAULT_NAVIGATION.machines!);
-  hydrated.machines.settings = {
-    ...structuredClone(DEFAULT_NAVIGATION.machines!.settings),
-    ...hydrated.machines.settings,
-  };
+  const defaults = structuredClone(DEFAULT_NAVIGATION.machines!.settings);
+  const existing = hydrated.machines.settings;
+  hydrated.machines.settings = existing.visualPresetVersion === 2
+    ? { ...defaults, ...existing }
+    : {
+        ...defaults,
+        showCounts: existing.showCounts,
+        showDescriptions: existing.showDescriptions,
+        showImages: existing.showImages,
+        showEmptyCategories: existing.showEmptyCategories,
+        backdrop: existing.backdrop,
+        openDelayMs: existing.openDelayMs,
+        closeDelayMs: existing.closeDelayMs,
+        mobileShowImages: existing.mobileShowImages,
+        mobileShowDescriptions: existing.mobileShowDescriptions,
+        mobileStickyCta: existing.mobileStickyCta,
+        ctaLabel: existing.ctaLabel,
+        ctaHref: existing.ctaHref,
+      };
   return hydrated;
 }
 
@@ -68,7 +83,7 @@ export function buildMachinesMenuView(
         ? productsByCategory.get(category.id) ?? []
         : item.products.filter((entry) => entry.enabled).sort((a, b) => a.sortOrder - b.sortOrder).flatMap((entry) => {
             const product = productMap.get(entry.productId);
-            return product && product.categoryId === category.id ? [{ product, entry }] : [];
+            return product ? [{ product, entry }] : [];
           });
       const resolvedProducts: MachinesMenuProduct[] = sourceProducts.map((source) => {
         const product = "product" in source ? source.product : source;
@@ -79,7 +94,7 @@ export function buildMachinesMenuView(
           description: override?.shortDescriptionOverride ?? product.tagline,
           image: override?.imageOverride ?? product.image,
           alt: override?.altOverride ?? product.name,
-          href: `/products/${product.id}`,
+          href: override?.hrefOverride ?? `/products/${product.id}`,
         };
       });
       if (resolvedProducts.length === 0 && !settings.showEmptyCategories) return [];
@@ -88,7 +103,7 @@ export function buildMachinesMenuView(
         name: item.displayName ?? category.navLabel,
         description: item.description ?? category.summary,
         image: item.image ?? category.image,
-        href: getCategoryHref(category.id),
+        href: item.hrefOverride ?? getCategoryHref(category.id),
         count: resolvedProducts.length,
         isDefault: item.isDefault,
         products: resolvedProducts,

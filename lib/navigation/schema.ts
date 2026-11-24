@@ -31,6 +31,7 @@ export type MachinesProductConfig = {
   shortDescriptionOverride?: string;
   imageOverride?: string;
   altOverride?: string;
+  hrefOverride?: string;
   sortOrder: number;
   enabled: boolean;
 };
@@ -40,6 +41,7 @@ export type MachinesCategoryConfig = {
   displayName?: string;
   description?: string;
   image?: string;
+  hrefOverride?: string;
   sortOrder: number;
   enabled: boolean;
   isDefault: boolean;
@@ -51,6 +53,7 @@ export type MachinesMenuConfig = {
   mode: "MANUAL" | "AUTO";
   categories: MachinesCategoryConfig[];
   settings: {
+    visualPresetVersion?: 2;
     desktopColumns: 3 | 4;
     showCounts: boolean;
     showDescriptions: boolean;
@@ -177,6 +180,7 @@ const machinesProductSchema: z.ZodType<MachinesProductConfig> = z.object({
   shortDescriptionOverride: z.string().trim().min(1).max(240).optional(),
   imageOverride: internalMediaSchema.optional(),
   altOverride: z.string().trim().min(1).max(160).optional(),
+  hrefOverride: hrefSchema.optional(),
   sortOrder: z.number().int().min(0).max(999),
   enabled: z.boolean(),
 }).strict();
@@ -186,6 +190,7 @@ const machinesCategorySchema: z.ZodType<MachinesCategoryConfig> = z.object({
   displayName: labelSchema.optional(),
   description: z.string().trim().min(1).max(300).optional(),
   image: internalMediaSchema.optional(),
+  hrefOverride: hrefSchema.optional(),
   sortOrder: z.number().int().min(0).max(999),
   enabled: z.boolean(),
   isDefault: z.boolean(),
@@ -203,6 +208,7 @@ const machinesMenuSchema: z.ZodType<MachinesMenuConfig> = z.object({
   mode: z.enum(["MANUAL", "AUTO"]),
   categories: z.array(machinesCategorySchema).max(30),
   settings: z.object({
+    visualPresetVersion: z.literal(2).optional(),
     desktopColumns: z.union([z.literal(3), z.literal(4)]),
     showCounts: z.boolean(),
     showDescriptions: z.boolean(),

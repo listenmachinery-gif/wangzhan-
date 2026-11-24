@@ -74,8 +74,17 @@ describe("managed navigation schema", () => {
   it("accepts managed Machines settings while rejecting duplicate category references", () => {
     const snapshot = structuredClone(DEFAULT_NAVIGATION);
     snapshot.machines!.settings.desktopColumns = 4;
+    snapshot.machines!.settings.visualPresetVersion = 2;
     snapshot.machines!.settings.openDelayMs = 120;
+    snapshot.machines!.categories[0].hrefOverride = "/products/custom-shears";
+    snapshot.machines!.categories[0].products = [{
+      productId: "compact-electric-shearing-machine",
+      hrefOverride: "/products/custom-compact-shear",
+      sortOrder: 0,
+      enabled: true,
+    }];
     expect(parseNavigationSnapshot(snapshot).machines?.settings.desktopColumns).toBe(4);
+    expect(parseNavigationSnapshot(snapshot).machines?.categories[0].hrefOverride).toBe("/products/custom-shears");
 
     snapshot.machines!.categories[1].categoryId = snapshot.machines!.categories[0].categoryId;
     expect(() => parseNavigationSnapshot(snapshot)).toThrow(/duplicate machines category/i);
@@ -100,7 +109,7 @@ describe("managed navigation schema", () => {
     delete legacySettings.rightLinkFontSize;
     delete legacySettings.rightLinkColor;
 
-    expect(parseNavigationSnapshot(legacy).machines?.settings.desktopColumns).toBe(3);
+    expect(parseNavigationSnapshot(legacy).machines?.settings.desktopColumns).toBe(4);
 
     const invalid = structuredClone(DEFAULT_NAVIGATION);
     (invalid.machines!.settings as Record<string, unknown>).categoryTextColor = "red";
@@ -115,6 +124,21 @@ describe("managed navigation schema", () => {
     const snapshot = structuredClone(DEFAULT_NAVIGATION);
     snapshot.machines!.categories[0].image = "https://temporary-cdn.example/menu.jpg";
     expect(() => parseNavigationSnapshot(snapshot)).toThrow(/permanent internal path/i);
+  });
+
+  it("rejects unsafe category and product menu URL overrides", () => {
+    const snapshot = structuredClone(DEFAULT_NAVIGATION);
+    snapshot.machines!.categories[0].hrefOverride = "javascript:alert(1)";
+    expect(() => parseNavigationSnapshot(snapshot)).toThrow();
+
+    snapshot.machines!.categories[0].hrefOverride = "/products/series/shearing-machines";
+    snapshot.machines!.categories[0].products = [{
+      productId: "compact-electric-shearing-machine",
+      hrefOverride: "//unsafe.example/product",
+      sortOrder: 0,
+      enabled: true,
+    }];
+    expect(() => parseNavigationSnapshot(snapshot)).toThrow();
   });
 
   it("accepts a valid version-one navigation document", () => {
