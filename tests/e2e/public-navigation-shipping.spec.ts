@@ -26,16 +26,16 @@ test("keeps navigation, compatibility routes, and responsive layouts usable", as
   }
 });
 
-test("uses the shared Machines catalogue on desktop and mobile", async ({ page }) => {
+test("uses the shared Products catalogue on desktop and mobile", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Machines menu" }).click();
-  const megaMenu = page.getByRole("region", { name: "Machines mega menu" });
+  await page.getByRole("button", { name: "Open Products menu" }).click();
+  const megaMenu = page.getByRole("region", { name: "Products mega menu" });
   await expect(megaMenu).toBeVisible();
-  await megaMenu.getByRole("tab", { name: /PRESS BRAKES/i }).click();
+  await megaMenu.getByRole("tab", { name: /PRESS BRAKES/i }).hover();
   await expect(megaMenu.getByRole("link", { name: /Press Brake/i }).first()).toBeVisible();
-  await expect(megaMenu.getByRole("link", { name: "View All PRESS BRAKES" })).toHaveAttribute("href", "/products/series/bending-machines");
-  await megaMenu.getByRole("tab", { name: /RECTANGULAR DUCT MACHINES/i }).click();
+  await expect(megaMenu.getByRole("link", { name: "View all PRESS BRAKES" })).toHaveAttribute("href", "/products/series/bending-machines");
+  await megaMenu.getByRole("tab", { name: /RECTANGULAR DUCT MACHINES/i }).hover();
   const productScroll = megaMenu.getByRole("region", { name: "RECTANGULAR DUCT MACHINES products" });
   await expect(productScroll).toBeVisible();
   await productScroll.evaluate((element) => { element.scrollTop = element.scrollHeight; });
@@ -47,7 +47,7 @@ test("uses the shared Machines catalogue on desktop and mobile", async ({ page }
   await page.getByRole("button", { name: "Open navigation" }).click();
   const drawer = page.getByRole("dialog", { name: "Site navigation" });
   await drawer.getByRole("button", { name: "PRODUCTS" }).click();
-  await expect(drawer.getByRole("heading", { name: "Machines" })).toBeVisible();
+  await expect(drawer.getByRole("heading", { name: "Products" })).toBeVisible();
   await drawer.getByRole("button", { name: /SHEARING MACHINES/i }).click();
   await expect(drawer.getByRole("heading", { name: "SHEARING MACHINES" })).toBeVisible();
   await expect(drawer.getByRole("link", { name: /Shear/i }).first()).toBeVisible();

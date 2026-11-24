@@ -48,7 +48,7 @@ describe("NavigationEditor", () => {
     expect(screen.getByRole("textbox", { name: "SUPPORT 子菜单 4 名称" })).toBeInTheDocument();
   });
 
-  it("configures Machines categories, display settings, and saves them in the navigation draft", async () => {
+  it("configures Products categories, display settings, and saves them in the navigation draft", async () => {
     const user = userEvent.setup();
     vi.spyOn(globalThis, "fetch").mockImplementation((_input, init) => {
       const payload = JSON.parse(String(init?.body));
@@ -59,7 +59,7 @@ describe("NavigationEditor", () => {
     });
     renderEditor();
 
-    await user.click(screen.getByRole("button", { name: "Machines 菜单" }));
+    await user.click(screen.getByRole("button", { name: "PRODUCTS 菜单" }));
     await user.selectOptions(screen.getByRole("combobox", { name: "产品同步模式" }), "MANUAL");
     await user.selectOptions(screen.getByRole("combobox", { name: "桌面产品列数" }), "4");
     const name = screen.getByRole("textbox", { name: "系列 1 显示名称" });
@@ -70,7 +70,7 @@ describe("NavigationEditor", () => {
     expect(await screen.findByRole("status")).toHaveTextContent("草稿已保存");
   });
 
-  it("saves managed typography and spacing controls for the Machines menu", async () => {
+  it("saves managed typography and spacing controls for the Products menu", async () => {
     const user = userEvent.setup();
     vi.spyOn(globalThis, "fetch").mockImplementation((_input, init) => {
       const payload = JSON.parse(String(init?.body));
@@ -85,7 +85,7 @@ describe("NavigationEditor", () => {
     });
     renderEditor();
 
-    await user.click(screen.getByRole("button", { name: "Machines 菜单" }));
+    await user.click(screen.getByRole("button", { name: "PRODUCTS 菜单" }));
     await user.clear(screen.getByRole("spinbutton", { name: "左侧分类字号" }));
     await user.type(screen.getByRole("spinbutton", { name: "左侧分类字号" }), "16");
     await user.clear(screen.getByRole("textbox", { name: "左侧分类文字颜色" }));
@@ -119,10 +119,11 @@ describe("NavigationEditor", () => {
     });
     renderEditor();
 
-    await user.click(screen.getByRole("button", { name: "Machines 菜单" }));
+    await user.click(screen.getByRole("button", { name: "PRODUCTS 菜单" }));
     await user.selectOptions(screen.getByRole("combobox", { name: "产品同步模式" }), "MANUAL");
-    await user.click(screen.getAllByText(/产品选择与显示覆盖/)[0]);
-    await user.click(screen.getByRole("checkbox", { name: new RegExp(firstProduct.name, "i") }));
+    const firstCategoryEditor = screen.getAllByText(/产品选择与显示覆盖/)[0].closest("details")!;
+    await user.click(within(firstCategoryEditor).getByText(/产品选择与显示覆盖/));
+    await user.click(within(firstCategoryEditor).getByRole("checkbox", { name: new RegExp(firstProduct.name, "i") }));
     expect(screen.getByRole("button", { name: `移除产品 ${firstProduct.name}` })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "从媒体资源选择图片" }));
     await user.click(await screen.findByText("replacement.png"));
@@ -131,7 +132,42 @@ describe("NavigationEditor", () => {
     expect(await screen.findByRole("status")).toHaveTextContent("草稿已保存");
     await user.click(screen.getByRole("button", { name: `移除产品 ${firstProduct.name}` }));
     expect(screen.queryByRole("button", { name: `移除产品 ${firstProduct.name}` })).not.toBeInTheDocument();
-    expect(screen.getByRole("checkbox", { name: new RegExp(firstProduct.name, "i") })).not.toBeChecked();
+    expect(within(firstCategoryEditor).getByRole("checkbox", { name: new RegExp(firstProduct.name, "i") })).not.toBeChecked();
+  });
+
+  it("supports Products link overrides, filtered batch add, and moving a card between menu categories", async () => {
+    const user = userEvent.setup();
+    const sourceCategory = DEFAULT_NAVIGATION.machines!.categories[0];
+    const targetCategory = DEFAULT_NAVIGATION.machines!.categories[1];
+    const firstProduct = products.find((product) => product.categoryId === sourceCategory.categoryId)!;
+
+    vi.spyOn(globalThis, "fetch").mockImplementation((_input, init) => {
+      const payload = JSON.parse(String(init?.body));
+      const source = payload.document.machines.categories.find((category: { categoryId: string }) => category.categoryId === sourceCategory.categoryId);
+      const target = payload.document.machines.categories.find((category: { categoryId: string }) => category.categoryId === targetCategory.categoryId);
+      expect(source.hrefOverride).toBe("/products/custom-shears");
+      expect(source.products.find((product: { productId: string }) => product.productId === firstProduct.id)?.enabled).not.toBe(true);
+      expect(target.products.find((product: { productId: string }) => product.productId === firstProduct.id)).toMatchObject({
+        enabled: true,
+        hrefOverride: "/products/custom-machine",
+      });
+      return response({ version: 4, status: "DRAFT", draftContent: payload.document });
+    });
+
+    renderEditor();
+    await user.click(screen.getByRole("button", { name: "PRODUCTS 菜单" }));
+    await user.selectOptions(screen.getByRole("combobox", { name: "产品同步模式" }), "MANUAL");
+    await user.type(screen.getByRole("textbox", { name: "系列 1 入口地址" }), "/products/custom-shears");
+
+    const sourceEditor = screen.getAllByText(/产品选择与显示覆盖/)[0].closest("details")!;
+    await user.click(within(sourceEditor).getByText(/产品选择与显示覆盖/));
+    await user.type(within(sourceEditor).getByRole("searchbox", { name: "搜索可添加产品" }), firstProduct.name);
+    await user.click(within(sourceEditor).getByRole("button", { name: "批量加入筛选结果" }));
+    await user.type(within(sourceEditor).getByRole("textbox", { name: `产品 ${firstProduct.name} 跳转地址` }), "/products/custom-machine");
+    await user.selectOptions(within(sourceEditor).getByRole("combobox", { name: `移动 ${firstProduct.name} 到其他分类` }), targetCategory.categoryId);
+
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+    expect(await screen.findByRole("status")).toHaveTextContent("草稿已保存");
   });
 
   it("saves a draft and publishes the returned version", async () => {

@@ -76,9 +76,9 @@ export function NavigationEditor({
   products = [],
 }: NavigationEditorProps) {
   const router = useRouter();
-  const [document, setDocument] = useState(() => {
-    return hydrateMachinesNavigation(initialDocument);
-  });
+  const initialHydratedDocument = useRef(hydrateMachinesNavigation(initialDocument));
+  const lastSavedDocument = useRef(initialHydratedDocument.current);
+  const [document, setDocument] = useState(() => initialHydratedDocument.current);
   const [version, setVersion] = useState(initialVersion);
   const [status, setStatus] = useState(initialStatus);
   const [busy, setBusy] = useState(false);
@@ -222,7 +222,9 @@ export function NavigationEditor({
       const updated = result as RequestResult;
       setVersion(updated.version);
       setStatus(updated.status);
-      setDocument(hydrateMachinesNavigation(updated.draftContent));
+      const hydratedDocument = hydrateMachinesNavigation(updated.draftContent);
+      lastSavedDocument.current = hydratedDocument;
+      setDocument(hydratedDocument);
       setMessage(success);
       router.refresh();
     } catch (caught) {
@@ -253,6 +255,11 @@ export function NavigationEditor({
           </div>
           <div className="flex flex-wrap gap-2">
             {canWrite ? (
+              <button type="button" disabled={busy} onClick={() => { setDocument(structuredClone(lastSavedDocument.current)); setMessage("未保存修改已撤销"); setError(""); }} className="inline-flex h-10 items-center gap-2 rounded-admin-sm border border-admin-border px-4 text-sm font-semibold text-admin-muted transition hover:border-neutral-400 hover:text-admin-ink disabled:opacity-50">
+                <RotateCcw className="size-4" aria-hidden />撤销未保存修改
+              </button>
+            ) : null}
+            {canWrite ? (
               <button type="button" disabled={busy} onClick={() => void request("/api/admin/navigation", "PATCH", { version, document }, "草稿已保存")} className="inline-flex h-10 items-center gap-2 rounded-admin-sm border border-admin-border px-4 text-sm font-semibold text-admin-ink transition hover:border-neutral-400 disabled:opacity-50">
                 <Save className="size-4" aria-hidden />保存草稿
               </button>
@@ -270,7 +277,7 @@ export function NavigationEditor({
 
         <div className="flex gap-2 rounded-admin-lg border border-admin-border bg-white p-2 shadow-admin-sm" aria-label="导航管理模块">
           <button type="button" aria-pressed={section === "navigation"} onClick={() => setSection("navigation")} className={`h-10 rounded-admin-sm px-4 text-sm font-semibold ${section === "navigation" ? "bg-admin-ink text-white" : "text-admin-muted hover:bg-admin-canvas"}`}>主导航与页脚</button>
-          <button type="button" aria-pressed={section === "machines"} onClick={() => setSection("machines")} className={`h-10 rounded-admin-sm px-4 text-sm font-semibold ${section === "machines" ? "bg-admin-ink text-white" : "text-admin-muted hover:bg-admin-canvas"}`}>Machines 菜单</button>
+          <button type="button" aria-pressed={section === "machines"} onClick={() => setSection("machines")} className={`h-10 rounded-admin-sm px-4 text-sm font-semibold ${section === "machines" ? "bg-admin-ink text-white" : "text-admin-muted hover:bg-admin-canvas"}`}>PRODUCTS 菜单</button>
         </div>
 
         {section === "machines" ? <MachinesMenuEditor value={document.machines!} categories={categories} products={products} disabled={!canWrite} onChange={(machines) => setDocument((current) => ({ ...current, machines }))} /> : null}
