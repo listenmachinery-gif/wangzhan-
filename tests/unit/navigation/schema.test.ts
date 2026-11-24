@@ -59,6 +59,32 @@ describe("managed navigation schema", () => {
     expect(DEFAULT_NAVIGATION.footer?.brandName).toBe("ZYRON Heavy Industry");
     expect(Object.isFrozen(DEFAULT_NAVIGATION)).toBe(true);
     expect(Object.isFrozen(DEFAULT_NAVIGATION.primary)).toBe(true);
+    expect(DEFAULT_NAVIGATION.machines?.categories.map((item) => item.categoryId)).toEqual([
+      "shearing-machines",
+      "bending-machines",
+      "laser-cutting-machines",
+      "plate-rolling-machines",
+      "press-machines",
+      "rectangular-duct-production",
+      "round-duct-production",
+      "shredders",
+    ]);
+  });
+
+  it("accepts managed Machines settings while rejecting duplicate category references", () => {
+    const snapshot = structuredClone(DEFAULT_NAVIGATION);
+    snapshot.machines!.settings.desktopColumns = 4;
+    snapshot.machines!.settings.openDelayMs = 120;
+    expect(parseNavigationSnapshot(snapshot).machines?.settings.desktopColumns).toBe(4);
+
+    snapshot.machines!.categories[1].categoryId = snapshot.machines!.categories[0].categoryId;
+    expect(() => parseNavigationSnapshot(snapshot)).toThrow(/duplicate machines category/i);
+  });
+
+  it("keeps Machines media references on permanent internal paths", () => {
+    const snapshot = structuredClone(DEFAULT_NAVIGATION);
+    snapshot.machines!.categories[0].image = "https://temporary-cdn.example/menu.jpg";
+    expect(() => parseNavigationSnapshot(snapshot)).toThrow(/permanent internal path/i);
   });
 
   it("accepts a valid version-one navigation document", () => {

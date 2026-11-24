@@ -4,6 +4,9 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowUp, ChevronDown, History, Plus, RotateCcw, Save, Send, Trash2 } from "lucide-react";
 
+import { MachinesMenuEditor } from "@/components/admin/navigation/MachinesMenuEditor";
+import type { Product, ProductCategory } from "@/data/products";
+import { hydrateMachinesNavigation } from "@/lib/navigation/machines-menu";
 import type { NavigationNode, NavigationSnapshot } from "@/lib/navigation/schema";
 
 type NavigationVersion = {
@@ -22,6 +25,8 @@ type NavigationEditorProps = {
   versions: NavigationVersion[];
   canWrite?: boolean;
   canPublish?: boolean;
+  categories?: ProductCategory[];
+  products?: Product[];
 };
 
 type RequestResult = {
@@ -67,14 +72,19 @@ export function NavigationEditor({
   versions,
   canWrite = true,
   canPublish = true,
+  categories = [],
+  products = [],
 }: NavigationEditorProps) {
   const router = useRouter();
-  const [document, setDocument] = useState(() => structuredClone(initialDocument));
+  const [document, setDocument] = useState(() => {
+    return hydrateMachinesNavigation(initialDocument);
+  });
   const [version, setVersion] = useState(initialVersion);
   const [status, setStatus] = useState(initialStatus);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [section, setSection] = useState<"navigation" | "machines">("navigation");
   const sequence = useRef(0);
 
   function newNode(kind: NavigationNode["kind"] = "LINK"): NavigationNode {
@@ -212,7 +222,7 @@ export function NavigationEditor({
       const updated = result as RequestResult;
       setVersion(updated.version);
       setStatus(updated.status);
-      setDocument(structuredClone(updated.draftContent));
+      setDocument(hydrateMachinesNavigation(updated.draftContent));
       setMessage(success);
       router.refresh();
     } catch (caught) {
@@ -258,6 +268,14 @@ export function NavigationEditor({
         {error ? <p role="alert" className="rounded-admin-sm border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{error}</p> : null}
         {message ? <p role="status" className="rounded-admin-sm border border-lime-200 bg-lime-50 px-4 py-3 text-sm font-medium text-lime-800">{message}</p> : null}
 
+        <div className="flex gap-2 rounded-admin-lg border border-admin-border bg-white p-2 shadow-admin-sm" aria-label="导航管理模块">
+          <button type="button" aria-pressed={section === "navigation"} onClick={() => setSection("navigation")} className={`h-10 rounded-admin-sm px-4 text-sm font-semibold ${section === "navigation" ? "bg-admin-ink text-white" : "text-admin-muted hover:bg-admin-canvas"}`}>主导航与页脚</button>
+          <button type="button" aria-pressed={section === "machines"} onClick={() => setSection("machines")} className={`h-10 rounded-admin-sm px-4 text-sm font-semibold ${section === "machines" ? "bg-admin-ink text-white" : "text-admin-muted hover:bg-admin-canvas"}`}>Machines 菜单</button>
+        </div>
+
+        {section === "machines" ? <MachinesMenuEditor value={document.machines!} categories={categories} products={products} disabled={!canWrite} onChange={(machines) => setDocument((current) => ({ ...current, machines }))} /> : null}
+
+        <div className={section === "navigation" ? "space-y-5" : "hidden"}>
         <div className="rounded-admin-lg border border-admin-border bg-white shadow-admin-sm">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-admin-border px-5 py-4">
             <div>
@@ -467,6 +485,7 @@ export function NavigationEditor({
               </article>
             ))}
           </div>
+        </div>
         </div>
       </section>
 

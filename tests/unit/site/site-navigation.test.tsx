@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -8,6 +8,9 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { productCategories, products } from "@/data/products";
 import { DEFAULT_NAVIGATION } from "@/lib/navigation/default-navigation";
+import { buildMachinesMenuView } from "@/lib/navigation/machines-menu";
+
+const machinesMenu = buildMachinesMenuView(DEFAULT_NAVIGATION.machines, productCategories, products);
 
 const repositoryMocks = vi.hoisted(() => ({
   resolvePublicNavigation: vi.fn(),
@@ -35,7 +38,7 @@ describe("public managed site navigation", () => {
   it("renders the approved desktop, mobile, product, and footer navigation", () => {
     const { container } = render(
       <>
-        <SiteHeader navigation={DEFAULT_NAVIGATION} categories={productCategories} products={products} />
+        <SiteHeader navigation={DEFAULT_NAVIGATION} machinesMenu={machinesMenu} />
         <SiteFooter navigation={DEFAULT_NAVIGATION} />
       </>,
     );
@@ -75,7 +78,7 @@ describe("public managed site navigation", () => {
 
   it("opens the mobile navigation as a dialog and closes it with Escape", async () => {
     const user = userEvent.setup();
-    render(<SiteHeader navigation={DEFAULT_NAVIGATION} categories={productCategories} products={products} />);
+    render(<SiteHeader navigation={DEFAULT_NAVIGATION} machinesMenu={machinesMenu} />);
 
     const trigger = screen.getByRole("button", { name: "Open navigation" });
     await user.click(trigger);
@@ -86,12 +89,53 @@ describe("public managed site navigation", () => {
     expect(trigger).toHaveFocus();
   });
 
+  it("opens the Machines menu, switches categories, and exposes real product links", async () => {
+    const user = userEvent.setup();
+    render(<SiteHeader navigation={DEFAULT_NAVIGATION} machinesMenu={machinesMenu} />);
+
+    const trigger = screen.getByRole("button", { name: "Open Machines menu" });
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("region", { name: "Machines mega menu" })).toBeInTheDocument();
+    const laserCategory = screen.getByRole("tab", { name: /LASER CUTTING MACHINES/i });
+    await user.click(laserCategory);
+    expect(screen.getAllByRole("link", { name: /fiber laser/i }).length).toBeGreaterThan(0);
+    await user.keyboard("{Escape}");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("drills from the mobile root into Machines and a product category", async () => {
+    const user = userEvent.setup();
+    render(<SiteHeader navigation={DEFAULT_NAVIGATION} machinesMenu={machinesMenu} />);
+    await user.click(screen.getByRole("button", { name: "Open navigation" }));
+    const dialog = screen.getByRole("dialog", { name: "Site navigation" });
+    await user.click(within(dialog).getByRole("button", { name: "PRODUCTS" }));
+    expect(screen.getByRole("heading", { name: "Machines" })).toBeInTheDocument();
+    await user.click(within(dialog).getByRole("button", { name: /SHEARING MACHINES/i }));
+    expect(screen.getByRole("heading", { name: "SHEARING MACHINES" })).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /shear/i }).length).toBeGreaterThan(0);
+  });
+
   it("uses compatibility catalogue data when the database has no published categories", async () => {
     const view = await getSiteNavigationView();
 
     expect(view.navigation).toEqual(DEFAULT_NAVIGATION);
     expect(view.categories).toEqual(productCategories);
     expect(view.products).toEqual(products);
+    expect(view.machinesMenu.categories).toHaveLength(8);
+  });
+
+  it("hydrates a legacy published PRODUCTS snapshot without changing its navigation label", async () => {
+    const legacy = structuredClone(DEFAULT_NAVIGATION);
+    legacy.primary.find((item) => item.kind === "PRODUCT_DIRECTORY")!.label = "PRODUCTS";
+    delete legacy.machines;
+    repositoryMocks.resolvePublicNavigation.mockResolvedValue(legacy);
+
+    const view = await getSiteNavigationView();
+
+    expect(view.navigation.primary.find((item) => item.kind === "PRODUCT_DIRECTORY")?.label).toBe("PRODUCTS");
+    expect(view.navigation.machines?.categories).toHaveLength(8);
+    expect(view.navigation.primary.find((item) => item.id === "home")?.label).toBe("HOME");
   });
 
   it("prefers published database categories and products when present", async () => {
