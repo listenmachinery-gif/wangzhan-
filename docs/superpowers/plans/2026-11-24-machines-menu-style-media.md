@@ -80,5 +80,5 @@
 
 - [x] Run TypeScript, lint, full tests, production build, and targeted Playwright navigation checks.
 - [x] Review the diff for accidental product, URL, SEO, secret, or database changes.
-- [ ] Commit to `codex/machines-menu-style-media-20261124`, push, update/create Draft PR, and verify a Vercel Preview deployment.
-- [ ] Record Preview URL and rollback instructions; do not promote to production.
+- [x] Commit to `codex/machines-menu-style-media-20261124`, push, update/create Draft PR, and verify a Vercel Preview deployment.
+- [x] Record Preview URL and rollback instructions; do not promote to production.
