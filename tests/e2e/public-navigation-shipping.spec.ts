@@ -26,7 +26,7 @@ test("keeps navigation, compatibility routes, and responsive layouts usable", as
   }
 });
 
-test("uses the shared Machines catalogue on desktop and mobile", async ({ page }) => {
+test("uses the shared Products catalogue on desktop and mobile", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
   await page.getByRole("button", { name: "Open Products menu" }).click();
@@ -47,7 +47,7 @@ test("uses the shared Machines catalogue on desktop and mobile", async ({ page }
   await page.getByRole("button", { name: "Open navigation" }).click();
   const drawer = page.getByRole("dialog", { name: "Site navigation" });
   await drawer.getByRole("button", { name: "PRODUCTS" }).click();
-  await expect(drawer.getByRole("heading", { name: "Machines" })).toBeVisible();
+  await expect(drawer.getByRole("heading", { name: "Products" })).toBeVisible();
   await drawer.getByRole("button", { name: /SHEARING MACHINES/i }).click();
   await expect(drawer.getByRole("heading", { name: "SHEARING MACHINES" })).toBeVisible();
   await expect(drawer.getByRole("link", { name: /Shear/i }).first()).toBeVisible();

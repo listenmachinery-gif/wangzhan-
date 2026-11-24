@@ -157,7 +157,7 @@ describe("public managed site navigation", () => {
     await waitFor(() => expect(screen.getByRole("region", { name: "Products mega menu" })).toBeInTheDocument());
   });
 
-  it("drills from the mobile root into Machines and a product category", async () => {
+  it("drills from the mobile root into Products and a product category", async () => {
     const user = userEvent.setup();
     render(<SiteHeader navigation={DEFAULT_NAVIGATION} machinesMenu={machinesMenu} />);
     await user.click(screen.getByRole("button", { name: "Open navigation" }));
