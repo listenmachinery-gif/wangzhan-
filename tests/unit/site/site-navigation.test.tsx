@@ -130,6 +130,20 @@ describe("public managed site navigation", () => {
     expect(screen.getByRole("link", { name: "View All LASER CUTTING MACHINES" })).toHaveAttribute("href", "/products/series/laser-cutting-machines");
   });
 
+  it("presents the desktop menu as an indexed industrial product directory", async () => {
+    const user = userEvent.setup();
+    render(<SiteHeader navigation={DEFAULT_NAVIGATION} machinesMenu={machinesMenu} />);
+
+    await user.click(screen.getByRole("button", { name: "Open Machines menu" }));
+
+    expect(screen.getByText(/product directory/i)).toBeInTheDocument();
+    expect(screen.getByText(/08 series/i)).toBeInTheDocument();
+    expect(screen.getByText(/series 01/i)).toBeInTheDocument();
+    const productDirectory = screen.getByRole("region", { name: "SHEARING MACHINES products" });
+    expect(within(productDirectory).getByText(/catalogue 01/i)).toBeInTheDocument();
+    expect(within(productDirectory).getAllByRole("link").length).toBeGreaterThan(1);
+  });
+
   it("drills from the mobile root into Machines and a product category", async () => {
     const user = userEvent.setup();
     render(<SiteHeader navigation={DEFAULT_NAVIGATION} machinesMenu={machinesMenu} />);
