@@ -8,6 +8,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
 import { DEFAULT_NAVIGATION } from "@/lib/navigation/default-navigation";
 import type { NavigationSnapshot } from "@/lib/navigation/schema";
+import { productCategories, products } from "@/data/products";
 
 import { NavigationEditor } from "@/components/admin/navigation/NavigationEditor";
 
@@ -21,7 +22,7 @@ function response(body: unknown, status = 200) {
 }
 
 function renderEditor(document: NavigationSnapshot = structuredClone(DEFAULT_NAVIGATION)) {
-  return render(<NavigationEditor initialDocument={document} version={3} status="PUBLISHED" versions={versions} />);
+  return render(<NavigationEditor initialDocument={document} version={3} status="PUBLISHED" versions={versions} categories={productCategories} products={products} />);
 }
 
 describe("NavigationEditor", () => {
@@ -45,6 +46,28 @@ describe("NavigationEditor", () => {
 
     await user.click(screen.getByRole("button", { name: "为 SUPPORT 新增子项" }));
     expect(screen.getByRole("textbox", { name: "SUPPORT 子菜单 4 名称" })).toBeInTheDocument();
+  });
+
+  it("configures Machines categories, display settings, and saves them in the navigation draft", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(globalThis, "fetch").mockImplementation((_input, init) => {
+      const payload = JSON.parse(String(init?.body));
+      expect(payload.document.machines.mode).toBe("MANUAL");
+      expect(payload.document.machines.settings.desktopColumns).toBe(4);
+      expect(payload.document.machines.categories[0].displayName).toBe("SHEET METAL SHEARS");
+      return response({ version: 4, status: "DRAFT", draftContent: payload.document });
+    });
+    renderEditor();
+
+    await user.click(screen.getByRole("button", { name: "Machines 菜单" }));
+    await user.selectOptions(screen.getByRole("combobox", { name: "产品同步模式" }), "MANUAL");
+    await user.selectOptions(screen.getByRole("combobox", { name: "桌面产品列数" }), "4");
+    const name = screen.getByRole("textbox", { name: "系列 1 显示名称" });
+    await user.clear(name);
+    await user.type(name, "SHEET METAL SHEARS");
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent("草稿已保存");
   });
 
   it("saves a draft and publishes the returned version", async () => {

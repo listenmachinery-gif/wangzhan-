@@ -7,11 +7,11 @@ import { getSiteNavigationView } from "@/lib/repositories/site-navigation-view";
 export const dynamic = "force-dynamic";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const { navigation, categories, products } = await getSiteNavigationView();
+  const { navigation, machinesMenu } = await getSiteNavigationView();
 
   return (
     <AnalyticsConsentProvider>
-      <SiteHeader navigation={navigation} categories={categories} products={products} />
+      <SiteHeader navigation={navigation} machinesMenu={machinesMenu} />
       {children}
       <SiteFooter navigation={navigation} />
       <PublicChatWidget />

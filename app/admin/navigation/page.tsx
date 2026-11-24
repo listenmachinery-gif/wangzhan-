@@ -1,15 +1,19 @@
 import { NavigationEditor } from "@/components/admin/navigation/NavigationEditor";
+import { productCategories, products } from "@/data/products";
 import { requirePermission } from "@/lib/auth/guards";
 import { can } from "@/lib/auth/permissions";
 import { parseNavigationSnapshot } from "@/lib/navigation/schema";
 import { NavigationService } from "@/lib/services/navigation-service";
+import { listPublishedCategories } from "@/lib/repositories/category-repository";
+import { buildPublicCatalogueView } from "@/lib/repositories/public-catalogue-view";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminNavigationPage() {
   const principal = await requirePermission("navigation.read");
   const service = new NavigationService();
-  const [record, versions] = await Promise.all([service.get(principal), service.versions(principal)]);
+  const [record, versions, publishedCategories] = await Promise.all([service.get(principal), service.versions(principal), listPublishedCategories()]);
+  const catalogue = publishedCategories.length ? buildPublicCatalogueView(publishedCategories) : { categories: productCategories, products };
 
   return (
     <div className="space-y-6">
@@ -29,6 +33,8 @@ export default async function AdminNavigationPage() {
         }))}
         canWrite={can(principal, "navigation.write")}
         canPublish={can(principal, "navigation.publish")}
+        categories={catalogue.categories}
+        products={catalogue.products}
       />
     </div>
   );

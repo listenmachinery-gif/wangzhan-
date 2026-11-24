@@ -25,12 +25,55 @@ export type FooterNavigationGroup = {
   items: NavigationNode[];
 };
 
+export type MachinesProductConfig = {
+  productId: string;
+  displayNameOverride?: string;
+  shortDescriptionOverride?: string;
+  imageOverride?: string;
+  altOverride?: string;
+  sortOrder: number;
+  enabled: boolean;
+};
+
+export type MachinesCategoryConfig = {
+  categoryId: string;
+  displayName?: string;
+  description?: string;
+  image?: string;
+  sortOrder: number;
+  enabled: boolean;
+  isDefault: boolean;
+  products: MachinesProductConfig[];
+};
+
+export type MachinesMenuConfig = {
+  enabled: boolean;
+  mode: "MANUAL" | "AUTO";
+  categories: MachinesCategoryConfig[];
+  settings: {
+    desktopColumns: 3 | 4;
+    showCounts: boolean;
+    showDescriptions: boolean;
+    showImages: boolean;
+    showEmptyCategories: boolean;
+    backdrop: boolean;
+    openDelayMs: number;
+    closeDelayMs: number;
+    mobileShowImages: boolean;
+    mobileShowDescriptions: boolean;
+    mobileStickyCta: boolean;
+    ctaLabel: string;
+    ctaHref: string;
+  };
+};
+
 export type NavigationSnapshot = {
   schemaVersion: 1;
   primary: NavigationNode[];
   quote: NavigationNode;
   languages: LanguageNavigationLink[];
   footerGroups: FooterNavigationGroup[];
+  machines?: MachinesMenuConfig;
   footer?: {
     brandName: string;
     description: string;
@@ -80,6 +123,7 @@ function validateHref(href: string) {
 }
 
 const hrefSchema = z.string().trim().min(1).max(500).refine(validateHref, "Navigation href must be an internal path or HTTPS URL.");
+const internalMediaSchema = z.string().trim().min(1).max(500).refine(validateInternalHref, "Machines media must use a permanent internal path.");
 
 const navigationNodeSchema: z.ZodType<NavigationNode> = z.lazy(() => z.object({
   id: idSchema,
@@ -110,6 +154,63 @@ const footerNavigationGroupSchema: z.ZodType<FooterNavigationGroup> = z.object({
   label: labelSchema,
   items: z.array(navigationNodeSchema).max(30),
 }).strict();
+
+const machinesProductSchema: z.ZodType<MachinesProductConfig> = z.object({
+  productId: idSchema,
+  displayNameOverride: labelSchema.optional(),
+  shortDescriptionOverride: z.string().trim().min(1).max(240).optional(),
+  imageOverride: internalMediaSchema.optional(),
+  altOverride: z.string().trim().min(1).max(160).optional(),
+  sortOrder: z.number().int().min(0).max(999),
+  enabled: z.boolean(),
+}).strict();
+
+const machinesCategorySchema: z.ZodType<MachinesCategoryConfig> = z.object({
+  categoryId: idSchema,
+  displayName: labelSchema.optional(),
+  description: z.string().trim().min(1).max(300).optional(),
+  image: internalMediaSchema.optional(),
+  sortOrder: z.number().int().min(0).max(999),
+  enabled: z.boolean(),
+  isDefault: z.boolean(),
+  products: z.array(machinesProductSchema).max(120),
+}).strict().superRefine((category, context) => {
+  const productIds = new Set<string>();
+  category.products.forEach((product, index) => {
+    if (productIds.has(product.productId)) context.addIssue({ code: "custom", path: ["products", index, "productId"], message: `Duplicate Machines product: ${product.productId}` });
+    productIds.add(product.productId);
+  });
+});
+
+const machinesMenuSchema: z.ZodType<MachinesMenuConfig> = z.object({
+  enabled: z.boolean(),
+  mode: z.enum(["MANUAL", "AUTO"]),
+  categories: z.array(machinesCategorySchema).max(30),
+  settings: z.object({
+    desktopColumns: z.union([z.literal(3), z.literal(4)]),
+    showCounts: z.boolean(),
+    showDescriptions: z.boolean(),
+    showImages: z.boolean(),
+    showEmptyCategories: z.boolean(),
+    backdrop: z.boolean(),
+    openDelayMs: z.number().int().min(0).max(1_000),
+    closeDelayMs: z.number().int().min(0).max(2_000),
+    mobileShowImages: z.boolean(),
+    mobileShowDescriptions: z.boolean(),
+    mobileStickyCta: z.boolean(),
+    ctaLabel: labelSchema,
+    ctaHref: hrefSchema,
+  }).strict(),
+}).strict().superRefine((machines, context) => {
+  const categoryIds = new Set<string>();
+  let defaults = 0;
+  machines.categories.forEach((category, index) => {
+    if (categoryIds.has(category.categoryId)) context.addIssue({ code: "custom", path: ["categories", index, "categoryId"], message: `Duplicate Machines category: ${category.categoryId}` });
+    categoryIds.add(category.categoryId);
+    if (category.enabled && category.isDefault) defaults += 1;
+  });
+  if (defaults > 1) context.addIssue({ code: "custom", path: ["categories"], message: "Only one enabled Machines category can be the default." });
+});
 
 function validateDocumentStructure(snapshot: NavigationSnapshot, context: z.RefinementCtx) {
   const identifiers = new Set<string>();
@@ -150,6 +251,7 @@ export const navigationSnapshotSchema: z.ZodType<NavigationSnapshot> = z.object(
   quote: navigationNodeSchema,
   languages: z.array(languageNavigationLinkSchema).max(30),
   footerGroups: z.array(footerNavigationGroupSchema).max(12),
+  machines: machinesMenuSchema.optional(),
   footer: z.object({
     brandName: labelSchema,
     description: z.string().trim().min(1).max(1_000),
