@@ -142,6 +142,7 @@ describe("public managed site navigation", () => {
     const productDirectory = screen.getByRole("region", { name: "SHEARING MACHINES products" });
     expect(within(productDirectory).getByText(/catalogue 01/i)).toBeInTheDocument();
     expect(within(productDirectory).getAllByRole("link").length).toBeGreaterThan(1);
+    expect(within(productDirectory).getAllByRole("img")[0]).toHaveAttribute("loading", "eager");
   });
 
   it("drills from the mobile root into Machines and a product category", async () => {
