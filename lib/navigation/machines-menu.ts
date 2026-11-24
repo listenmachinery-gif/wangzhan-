@@ -26,7 +26,7 @@ export type MachinesMenuCategory = {
 export type MachinesMenuView = {
   enabled: boolean;
   categories: MachinesMenuCategory[];
-  settings: MachinesMenuConfig["settings"];
+  settings: Required<MachinesMenuConfig["settings"]>;
 };
 
 export function getMachinesMenuConfig(config?: MachinesMenuConfig) {
@@ -36,6 +36,10 @@ export function getMachinesMenuConfig(config?: MachinesMenuConfig) {
 export function hydrateMachinesNavigation(snapshot: NavigationSnapshot): NavigationSnapshot {
   const hydrated = structuredClone(snapshot);
   hydrated.machines ??= structuredClone(DEFAULT_NAVIGATION.machines!);
+  hydrated.machines.settings = {
+    ...structuredClone(DEFAULT_NAVIGATION.machines!.settings),
+    ...hydrated.machines.settings,
+  };
   return hydrated;
 }
 
@@ -45,6 +49,10 @@ export function buildMachinesMenuView(
   products: Product[],
 ): MachinesMenuView {
   const config = getMachinesMenuConfig(input);
+  const settings: Required<MachinesMenuConfig["settings"]> = {
+    ...structuredClone(DEFAULT_NAVIGATION.machines!.settings),
+    ...config.settings,
+  } as Required<MachinesMenuConfig["settings"]>;
   const categoryMap = new Map(categories.map((category) => [category.id, category]));
   const productMap = new Map(products.map((product) => [product.id, product]));
   const productsByCategory = new Map<string, Product[]>();
@@ -74,7 +82,7 @@ export function buildMachinesMenuView(
           href: `/products/${product.id}`,
         };
       });
-      if (resolvedProducts.length === 0 && !config.settings.showEmptyCategories) return [];
+      if (resolvedProducts.length === 0 && !settings.showEmptyCategories) return [];
       return [{
         id: category.id,
         name: item.displayName ?? category.navLabel,
@@ -88,5 +96,5 @@ export function buildMachinesMenuView(
     });
 
   if (resolved.length > 0 && !resolved.some((item) => item.isDefault)) resolved[0] = { ...resolved[0], isDefault: true };
-  return { enabled: config.enabled, categories: resolved, settings: config.settings };
+  return { enabled: config.enabled, categories: resolved, settings };
 }

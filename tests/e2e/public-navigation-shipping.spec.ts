@@ -34,6 +34,12 @@ test("uses the shared Machines catalogue on desktop and mobile", async ({ page }
   await expect(megaMenu).toBeVisible();
   await megaMenu.getByRole("tab", { name: /PRESS BRAKES/i }).click();
   await expect(megaMenu.getByRole("link", { name: /Press Brake/i }).first()).toBeVisible();
+  await expect(megaMenu.getByRole("link", { name: "View All PRESS BRAKES" })).toHaveAttribute("href", "/products/series/bending-machines");
+  await megaMenu.getByRole("tab", { name: /RECTANGULAR DUCT MACHINES/i }).click();
+  const productScroll = megaMenu.getByRole("region", { name: "RECTANGULAR DUCT MACHINES products" });
+  await expect(productScroll).toBeVisible();
+  await productScroll.evaluate((element) => { element.scrollTop = element.scrollHeight; });
+  expect(await productScroll.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
   await page.keyboard.press("Escape");
   await expect(megaMenu).toBeHidden();
 
