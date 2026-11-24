@@ -64,6 +64,21 @@ export type MachinesMenuConfig = {
     mobileStickyCta: boolean;
     ctaLabel: string;
     ctaHref: string;
+    categoryFontSize?: number;
+    categoryTextColor?: string;
+    categoryActiveTextColor?: string;
+    categoryRowGap?: number;
+    categoryRowPaddingY?: number;
+    rightHeadingFontSize?: number;
+    rightHeadingColor?: string;
+    rightDescriptionFontSize?: number;
+    rightDescriptionColor?: string;
+    productTitleFontSize?: number;
+    productTitleColor?: string;
+    productDescriptionFontSize?: number;
+    productDescriptionColor?: string;
+    rightLinkFontSize?: number;
+    rightLinkColor?: string;
   };
 };
 
@@ -124,6 +139,7 @@ function validateHref(href: string) {
 
 const hrefSchema = z.string().trim().min(1).max(500).refine(validateHref, "Navigation href must be an internal path or HTTPS URL.");
 const internalMediaSchema = z.string().trim().min(1).max(500).refine(validateInternalHref, "Machines media must use a permanent internal path.");
+const hexColorSchema = z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Machines colors must use six-digit hex values.");
 
 const navigationNodeSchema: z.ZodType<NavigationNode> = z.lazy(() => z.object({
   id: idSchema,
@@ -200,6 +216,21 @@ const machinesMenuSchema: z.ZodType<MachinesMenuConfig> = z.object({
     mobileStickyCta: z.boolean(),
     ctaLabel: labelSchema,
     ctaHref: hrefSchema,
+    categoryFontSize: z.number().int().min(10).max(20).optional(),
+    categoryTextColor: hexColorSchema.optional(),
+    categoryActiveTextColor: hexColorSchema.optional(),
+    categoryRowGap: z.number().int().min(0).max(20).optional(),
+    categoryRowPaddingY: z.number().int().min(6).max(24).optional(),
+    rightHeadingFontSize: z.number().int().min(18).max(40).optional(),
+    rightHeadingColor: hexColorSchema.optional(),
+    rightDescriptionFontSize: z.number().int().min(11).max(22).optional(),
+    rightDescriptionColor: hexColorSchema.optional(),
+    productTitleFontSize: z.number().int().min(11).max(22).optional(),
+    productTitleColor: hexColorSchema.optional(),
+    productDescriptionFontSize: z.number().int().min(10).max(20).optional(),
+    productDescriptionColor: hexColorSchema.optional(),
+    rightLinkFontSize: z.number().int().min(10).max(18).optional(),
+    rightLinkColor: hexColorSchema.optional(),
   }).strict(),
 }).strict().superRefine((machines, context) => {
   const categoryIds = new Set<string>();

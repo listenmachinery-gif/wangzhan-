@@ -104,6 +104,32 @@ describe("public managed site navigation", () => {
     expect(trigger).toHaveAttribute("aria-expanded", "false");
   });
 
+  it("applies managed menu typography, exposes a product scroll region, and links to the active series", async () => {
+    const user = userEvent.setup();
+    const config = structuredClone(DEFAULT_NAVIGATION.machines!);
+    config.settings.categoryFontSize = 16;
+    config.settings.categoryTextColor = "#123456";
+    config.settings.categoryActiveTextColor = "#654321";
+    config.settings.rightHeadingFontSize = 32;
+    config.settings.rightHeadingColor = "#234567";
+    config.settings.productTitleFontSize = 18;
+    config.settings.productTitleColor = "#345678";
+    const styledMenu = buildMachinesMenuView(config, productCategories, products);
+
+    render(<SiteHeader navigation={DEFAULT_NAVIGATION} machinesMenu={styledMenu} />);
+    await user.click(screen.getByRole("button", { name: "Open Machines menu" }));
+
+    const shearingTab = screen.getByRole("tab", { name: /SHEARING MACHINES/i });
+    expect(shearingTab).toHaveStyle({ fontSize: "16px", color: "#654321" });
+    expect(screen.getByRole("heading", { name: "SHEARING MACHINES" })).toHaveStyle({ fontSize: "32px", color: "#234567" });
+    expect(screen.getByRole("region", { name: "SHEARING MACHINES products" })).toHaveAttribute("tabindex", "0");
+    expect(screen.getByRole("link", { name: "View All SHEARING MACHINES" })).toHaveAttribute("href", "/products/series/shearing-machines");
+    expect(within(screen.getByRole("region", { name: "SHEARING MACHINES products" })).getByText(styledMenu.categories[0].products[0].name)).toHaveStyle({ fontSize: "18px", color: "#345678" });
+
+    await user.click(screen.getByRole("tab", { name: /LASER CUTTING MACHINES/i }));
+    expect(screen.getByRole("link", { name: "View All LASER CUTTING MACHINES" })).toHaveAttribute("href", "/products/series/laser-cutting-machines");
+  });
+
   it("drills from the mobile root into Machines and a product category", async () => {
     const user = userEvent.setup();
     render(<SiteHeader navigation={DEFAULT_NAVIGATION} machinesMenu={machinesMenu} />);

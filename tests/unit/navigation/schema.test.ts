@@ -81,6 +81,36 @@ describe("managed navigation schema", () => {
     expect(() => parseNavigationSnapshot(snapshot)).toThrow(/duplicate machines category/i);
   });
 
+  it("accepts legacy Machines settings and validates new visual controls", () => {
+    const legacy = structuredClone(DEFAULT_NAVIGATION);
+    const legacySettings = legacy.machines!.settings as Record<string, unknown>;
+    delete legacySettings.categoryFontSize;
+    delete legacySettings.categoryTextColor;
+    delete legacySettings.categoryActiveTextColor;
+    delete legacySettings.categoryRowGap;
+    delete legacySettings.categoryRowPaddingY;
+    delete legacySettings.rightHeadingFontSize;
+    delete legacySettings.rightHeadingColor;
+    delete legacySettings.rightDescriptionFontSize;
+    delete legacySettings.rightDescriptionColor;
+    delete legacySettings.productTitleFontSize;
+    delete legacySettings.productTitleColor;
+    delete legacySettings.productDescriptionFontSize;
+    delete legacySettings.productDescriptionColor;
+    delete legacySettings.rightLinkFontSize;
+    delete legacySettings.rightLinkColor;
+
+    expect(parseNavigationSnapshot(legacy).machines?.settings.desktopColumns).toBe(3);
+
+    const invalid = structuredClone(DEFAULT_NAVIGATION);
+    (invalid.machines!.settings as Record<string, unknown>).categoryTextColor = "red";
+    expect(() => parseNavigationSnapshot(invalid)).toThrow();
+
+    (invalid.machines!.settings as Record<string, unknown>).categoryTextColor = "#525252";
+    (invalid.machines!.settings as Record<string, unknown>).productTitleFontSize = 48;
+    expect(() => parseNavigationSnapshot(invalid)).toThrow();
+  });
+
   it("keeps Machines media references on permanent internal paths", () => {
     const snapshot = structuredClone(DEFAULT_NAVIGATION);
     snapshot.machines!.categories[0].image = "https://temporary-cdn.example/menu.jpg";

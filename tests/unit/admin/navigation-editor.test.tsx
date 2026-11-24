@@ -70,6 +70,70 @@ describe("NavigationEditor", () => {
     expect(await screen.findByRole("status")).toHaveTextContent("草稿已保存");
   });
 
+  it("saves managed typography and spacing controls for the Machines menu", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(globalThis, "fetch").mockImplementation((_input, init) => {
+      const payload = JSON.parse(String(init?.body));
+      expect(payload.document.machines.settings).toMatchObject({
+        categoryFontSize: 16,
+        categoryTextColor: "#123456",
+        categoryRowGap: 10,
+        rightHeadingFontSize: 32,
+        productTitleColor: "#345678",
+      });
+      return response({ version: 4, status: "DRAFT", draftContent: payload.document });
+    });
+    renderEditor();
+
+    await user.click(screen.getByRole("button", { name: "Machines 菜单" }));
+    await user.clear(screen.getByRole("spinbutton", { name: "左侧分类字号" }));
+    await user.type(screen.getByRole("spinbutton", { name: "左侧分类字号" }), "16");
+    await user.clear(screen.getByRole("textbox", { name: "左侧分类文字颜色" }));
+    await user.type(screen.getByRole("textbox", { name: "左侧分类文字颜色" }), "#123456");
+    await user.clear(screen.getByRole("spinbutton", { name: "分类行间距" }));
+    await user.type(screen.getByRole("spinbutton", { name: "分类行间距" }), "10");
+    await user.clear(screen.getByRole("spinbutton", { name: "右侧标题字号" }));
+    await user.type(screen.getByRole("spinbutton", { name: "右侧标题字号" }), "32");
+    await user.clear(screen.getByRole("textbox", { name: "产品标题颜色" }));
+    await user.type(screen.getByRole("textbox", { name: "产品标题颜色" }), "#345678");
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent("草稿已保存");
+  });
+
+  it("selects a permanent media-library image and explicitly removes a product card", async () => {
+    const user = userEvent.setup();
+    const categoryId = DEFAULT_NAVIGATION.machines!.categories[0].categoryId;
+    const firstProduct = products.find((product) => product.categoryId === categoryId)!;
+    vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
+      if (String(input).startsWith("/api/admin/media")) {
+        return response({
+          items: [{ id: "media-1", originalName: "replacement.png", mimeType: "image/png", altText: "Replacement machine", category: "machines", previewUrl: "/api/media/media-1" }],
+          nextCursor: null,
+        });
+      }
+      const payload = JSON.parse(String(init?.body));
+      const savedProduct = payload.document.machines.categories[0].products.find((product: { productId: string }) => product.productId === firstProduct.id);
+      expect(savedProduct).toMatchObject({ imageOverride: "/api/media/media-1", altOverride: "Replacement machine", enabled: true });
+      return response({ version: 4, status: "DRAFT", draftContent: payload.document });
+    });
+    renderEditor();
+
+    await user.click(screen.getByRole("button", { name: "Machines 菜单" }));
+    await user.selectOptions(screen.getByRole("combobox", { name: "产品同步模式" }), "MANUAL");
+    await user.click(screen.getAllByText(/产品选择与显示覆盖/)[0]);
+    await user.click(screen.getByRole("checkbox", { name: new RegExp(firstProduct.name, "i") }));
+    expect(screen.getByRole("button", { name: `移除产品 ${firstProduct.name}` })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "从媒体资源选择图片" }));
+    await user.click(await screen.findByText("replacement.png"));
+    expect(screen.getAllByAltText("Replacement machine").length).toBeGreaterThan(0);
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+    expect(await screen.findByRole("status")).toHaveTextContent("草稿已保存");
+    await user.click(screen.getByRole("button", { name: `移除产品 ${firstProduct.name}` }));
+    expect(screen.queryByRole("button", { name: `移除产品 ${firstProduct.name}` })).not.toBeInTheDocument();
+    expect(screen.getByRole("checkbox", { name: new RegExp(firstProduct.name, "i") })).not.toBeChecked();
+  });
+
   it("saves a draft and publishes the returned version", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.spyOn(globalThis, "fetch")

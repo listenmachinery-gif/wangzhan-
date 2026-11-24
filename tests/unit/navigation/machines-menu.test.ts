@@ -16,6 +16,24 @@ const products: Product[] = [
 ];
 
 describe("Machines menu resolver", () => {
+  it("hydrates legacy visual settings with safe runtime defaults", () => {
+    const config = structuredClone(DEFAULT_NAVIGATION.machines!);
+    const settings = config.settings as Record<string, unknown>;
+    delete settings.categoryFontSize;
+    delete settings.categoryTextColor;
+    delete settings.productTitleFontSize;
+    delete settings.productTitleColor;
+
+    const view = buildMachinesMenuView(config, categories, products);
+
+    expect(view.settings).toMatchObject({
+      categoryFontSize: 12,
+      categoryTextColor: "#525252",
+      productTitleFontSize: 14,
+      productTitleColor: "#171717",
+    });
+  });
+
   it("merges display overrides with real routes and filters disabled product references", () => {
     const config = structuredClone(DEFAULT_NAVIGATION.machines!);
     config.mode = "MANUAL";
