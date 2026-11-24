@@ -109,7 +109,7 @@ describe("public managed site navigation", () => {
     render(<SiteHeader navigation={DEFAULT_NAVIGATION} machinesMenu={machinesMenu} />);
     await user.click(screen.getByRole("button", { name: "Open navigation" }));
     const dialog = screen.getByRole("dialog", { name: "Site navigation" });
-    await user.click(within(dialog).getByRole("button", { name: "MACHINES" }));
+    await user.click(within(dialog).getByRole("button", { name: "PRODUCTS" }));
     expect(screen.getByRole("heading", { name: "Machines" })).toBeInTheDocument();
     await user.click(within(dialog).getByRole("button", { name: /SHEARING MACHINES/i }));
     expect(screen.getByRole("heading", { name: "SHEARING MACHINES" })).toBeInTheDocument();
@@ -125,7 +125,7 @@ describe("public managed site navigation", () => {
     expect(view.machinesMenu.categories).toHaveLength(8);
   });
 
-  it("upgrades a legacy published PRODUCTS snapshot without changing its other navigation", async () => {
+  it("hydrates a legacy published PRODUCTS snapshot without changing its navigation label", async () => {
     const legacy = structuredClone(DEFAULT_NAVIGATION);
     legacy.primary.find((item) => item.kind === "PRODUCT_DIRECTORY")!.label = "PRODUCTS";
     delete legacy.machines;
@@ -133,7 +133,7 @@ describe("public managed site navigation", () => {
 
     const view = await getSiteNavigationView();
 
-    expect(view.navigation.primary.find((item) => item.kind === "PRODUCT_DIRECTORY")?.label).toBe("MACHINES");
+    expect(view.navigation.primary.find((item) => item.kind === "PRODUCT_DIRECTORY")?.label).toBe("PRODUCTS");
     expect(view.navigation.machines?.categories).toHaveLength(8);
     expect(view.navigation.primary.find((item) => item.id === "home")?.label).toBe("HOME");
   });

@@ -36,7 +36,6 @@ export function getMachinesMenuConfig(config?: MachinesMenuConfig) {
 export function hydrateMachinesNavigation(snapshot: NavigationSnapshot): NavigationSnapshot {
   const hydrated = structuredClone(snapshot);
   hydrated.machines ??= structuredClone(DEFAULT_NAVIGATION.machines!);
-  hydrated.primary = hydrated.primary.map((item) => item.kind === "PRODUCT_DIRECTORY" && item.label === "PRODUCTS" ? { ...item, label: "MACHINES" } : item);
   return hydrated;
 }
 

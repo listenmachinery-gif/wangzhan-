@@ -40,7 +40,7 @@ test("uses the shared Machines catalogue on desktop and mobile", async ({ page }
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("button", { name: "Open navigation" }).click();
   const drawer = page.getByRole("dialog", { name: "Site navigation" });
-  await drawer.getByRole("button", { name: "MACHINES" }).click();
+  await drawer.getByRole("button", { name: "PRODUCTS" }).click();
   await expect(drawer.getByRole("heading", { name: "Machines" })).toBeVisible();
   await drawer.getByRole("button", { name: /SHEARING MACHINES/i }).click();
   await expect(drawer.getByRole("heading", { name: "SHEARING MACHINES" })).toBeVisible();

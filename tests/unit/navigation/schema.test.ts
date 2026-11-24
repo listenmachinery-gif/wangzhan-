@@ -44,7 +44,7 @@ describe("managed navigation schema", () => {
     expect(DEFAULT_NAVIGATION.primary.map((item) => item.label)).toEqual([
       "HOME",
       "ABOUT ZYRON",
-      "MACHINES",
+      "PRODUCTS",
       "SUPPORT",
       "SHOWCASE",
       "CONTACT",

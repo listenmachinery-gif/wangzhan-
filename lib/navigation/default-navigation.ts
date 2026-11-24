@@ -13,7 +13,7 @@ export const DEFAULT_NAVIGATION = deepFreeze<NavigationSnapshot>({
   primary: [
     { id: "home", kind: "LINK", label: "HOME", href: "/", visible: true },
     { id: "about-zyron", kind: "LINK", label: "ABOUT ZYRON", href: "/factory", visible: true },
-    { id: "products", kind: "PRODUCT_DIRECTORY", label: "MACHINES", href: "/products", visible: true },
+    { id: "products", kind: "PRODUCT_DIRECTORY", label: "PRODUCTS", href: "/products", visible: true },
     {
       id: "support",
       kind: "GROUP",
