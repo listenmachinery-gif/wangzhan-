@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -89,16 +89,17 @@ describe("public managed site navigation", () => {
     expect(trigger).toHaveFocus();
   });
 
-  it("opens the Machines menu, switches categories, and exposes real product links", async () => {
+  it("opens the Products menu, switches categories, and exposes real product links", async () => {
     const user = userEvent.setup();
     render(<SiteHeader navigation={DEFAULT_NAVIGATION} machinesMenu={machinesMenu} />);
 
-    const trigger = screen.getByRole("button", { name: "Open Machines menu" });
+    const trigger = screen.getByRole("button", { name: "Open Products menu" });
     await user.click(trigger);
     expect(trigger).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("region", { name: "Machines mega menu" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Products mega menu" })).toBeInTheDocument();
     const laserCategory = screen.getByRole("tab", { name: /LASER CUTTING MACHINES/i });
-    await user.click(laserCategory);
+    fireEvent.pointerEnter(laserCategory);
+    await waitFor(() => expect(screen.getByRole("region", { name: "LASER CUTTING MACHINES products" })).toBeInTheDocument());
     expect(screen.getAllByRole("link", { name: /fiber laser/i }).length).toBeGreaterThan(0);
     await user.keyboard("{Escape}");
     expect(trigger).toHaveAttribute("aria-expanded", "false");
@@ -117,32 +118,43 @@ describe("public managed site navigation", () => {
     const styledMenu = buildMachinesMenuView(config, productCategories, products);
 
     render(<SiteHeader navigation={DEFAULT_NAVIGATION} machinesMenu={styledMenu} />);
-    await user.click(screen.getByRole("button", { name: "Open Machines menu" }));
+    await user.click(screen.getByRole("button", { name: "Open Products menu" }));
 
     const shearingTab = screen.getByRole("tab", { name: /SHEARING MACHINES/i });
     expect(shearingTab).toHaveStyle({ fontSize: "16px", color: "#654321" });
-    expect(screen.getByRole("heading", { name: "SHEARING MACHINES" })).toHaveStyle({ fontSize: "32px", color: "#234567" });
     expect(screen.getByRole("region", { name: "SHEARING MACHINES products" })).toHaveAttribute("tabindex", "0");
-    expect(screen.getByRole("link", { name: "View All SHEARING MACHINES" })).toHaveAttribute("href", "/products/series/shearing-machines");
+    expect(screen.getByRole("link", { name: "View all SHEARING MACHINES" })).toHaveAttribute("href", "/products/series/shearing-machines");
     expect(within(screen.getByRole("region", { name: "SHEARING MACHINES products" })).getByText(styledMenu.categories[0].products[0].name)).toHaveStyle({ fontSize: "18px", color: "#345678" });
 
-    await user.click(screen.getByRole("tab", { name: /LASER CUTTING MACHINES/i }));
-    expect(screen.getByRole("link", { name: "View All LASER CUTTING MACHINES" })).toHaveAttribute("href", "/products/series/laser-cutting-machines");
+    fireEvent.pointerEnter(screen.getByRole("tab", { name: /LASER CUTTING MACHINES/i }));
+    await waitFor(() => expect(screen.getByRole("link", { name: "View all LASER CUTTING MACHINES" })).toHaveAttribute("href", "/products/series/laser-cutting-machines"));
   });
 
-  it("presents the desktop menu as an indexed industrial product directory", async () => {
+  it("presents the desktop menu as a restrained four-column dark product directory", async () => {
     const user = userEvent.setup();
     render(<SiteHeader navigation={DEFAULT_NAVIGATION} machinesMenu={machinesMenu} />);
 
-    await user.click(screen.getByRole("button", { name: "Open Machines menu" }));
+    await user.click(screen.getByRole("button", { name: "Open Products menu" }));
 
-    expect(screen.getByText(/product directory/i)).toBeInTheDocument();
-    expect(screen.getByText(/08 series/i)).toBeInTheDocument();
-    expect(screen.getByText(/series 01/i)).toBeInTheDocument();
+    const menu = screen.getByRole("region", { name: "Products mega menu" });
+    expect(menu).toHaveAttribute("data-layout", "accurl-dark");
+    expect(menu).toHaveAttribute("data-columns", "4");
+    expect(within(menu).queryByText(/product directory/i)).not.toBeInTheDocument();
+    expect(within(menu).queryByText(/catalogue 01/i)).not.toBeInTheDocument();
     const productDirectory = screen.getByRole("region", { name: "SHEARING MACHINES products" });
-    expect(within(productDirectory).getByText(/catalogue 01/i)).toBeInTheDocument();
     expect(within(productDirectory).getAllByRole("link").length).toBeGreaterThan(1);
     expect(within(productDirectory).getAllByRole("img")[0]).toHaveAttribute("loading", "eager");
+    expect(screen.getByRole("link", { name: "View all SHEARING MACHINES" })).toHaveAttribute("href", "/products/series/shearing-machines");
+    expect(within(menu).queryByText(/Technical Support/i)).not.toBeInTheDocument();
+  });
+
+  it("opens the Products menu from pointer hover after the configured intent delay", async () => {
+    render(<SiteHeader navigation={DEFAULT_NAVIGATION} machinesMenu={machinesMenu} />);
+
+    const productsLink = screen.getByRole("link", { name: "PRODUCTS" });
+    fireEvent.pointerEnter(productsLink.parentElement!);
+
+    await waitFor(() => expect(screen.getByRole("region", { name: "Products mega menu" })).toBeInTheDocument());
   });
 
   it("drills from the mobile root into Machines and a product category", async () => {
@@ -151,7 +163,7 @@ describe("public managed site navigation", () => {
     await user.click(screen.getByRole("button", { name: "Open navigation" }));
     const dialog = screen.getByRole("dialog", { name: "Site navigation" });
     await user.click(within(dialog).getByRole("button", { name: "PRODUCTS" }));
-    expect(screen.getByRole("heading", { name: "Machines" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Products" })).toBeInTheDocument();
     await user.click(within(dialog).getByRole("button", { name: /SHEARING MACHINES/i }));
     expect(screen.getByRole("heading", { name: "SHEARING MACHINES" })).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /shear/i }).length).toBeGreaterThan(0);

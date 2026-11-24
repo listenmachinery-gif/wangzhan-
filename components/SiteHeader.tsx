@@ -18,6 +18,7 @@ export function SiteHeader({ navigation, machinesMenu }: SiteHeaderProps) {
   const [mobileLevel, setMobileLevel] = useState<MobileLevel>({ kind: "root" });
   const [machinesOpen, setMachinesOpen] = useState(false);
   const [activeCategoryId, setActiveCategoryId] = useState(() => defaultCategory(machinesMenu)?.id ?? "");
+  const headerRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const machinesButtonRef = useRef<HTMLButtonElement>(null);
@@ -66,6 +67,18 @@ export function SiteHeader({ navigation, machinesMenu }: SiteHeaderProps) {
     return () => { document.body.style.overflow = previousOverflow; };
   }, [mobileOpen]);
 
+  useEffect(() => {
+    if (!machinesOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!headerRef.current?.contains(event.target as Node)) {
+        clearTimers();
+        setMachinesOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [machinesOpen]);
+
   const closeMobile = () => {
     setMobileOpen(false);
     setMobileLevel({ kind: "root" });
@@ -83,16 +96,16 @@ export function SiteHeader({ navigation, machinesMenu }: SiteHeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0B0D10]/95 backdrop-blur-xl">
+    <header ref={headerRef} className="sticky top-0 z-50 border-b border-white/10 bg-[#0B0D10]/95 backdrop-blur-xl">
       <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-5 sm:px-8">
         <Link href="/" className="group flex items-center gap-3" aria-label="ZYRON Heavy Industry homepage">
           <span className="relative block h-12 w-[190px] overflow-hidden" aria-hidden="true"><Image src="/brand/zyron-header-logo-2026.png" alt="" fill priority sizes="190px" className="object-cover object-center" /></span>
         </Link>
-        <nav className="hidden h-full items-center gap-9 xl:flex" aria-label="Primary navigation">
+        <nav className="hidden h-full items-center gap-5 lg:flex xl:gap-9" aria-label="Primary navigation">
           {primary.map((item) => item.kind === "PRODUCT_DIRECTORY" && item.href ? (
             <div key={item.id} className="flex h-full items-center gap-1" onPointerEnter={() => openMachines()} onPointerLeave={() => closeMachines()}>
               <Link href={item.href} onFocus={() => openMachines(true)} className="inline-flex h-full items-center text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:text-ignition">{item.label}</Link>
-              <button ref={machinesButtonRef} type="button" aria-label="Open Machines menu" aria-expanded={machinesOpen} aria-controls="machines-mega-menu" onClick={() => machinesOpen ? closeMachines(true) : openMachines(true)} className="grid size-8 place-items-center text-white transition hover:text-ignition"><ChevronDown size={15} className={machinesOpen ? "rotate-180" : ""} /></button>
+              <button ref={machinesButtonRef} type="button" aria-label="Open Products menu" aria-expanded={machinesOpen} aria-controls="products-mega-menu" onClick={() => machinesOpen ? closeMachines(true) : openMachines(true)} className="grid size-8 place-items-center text-white transition hover:text-ignition"><ChevronDown size={15} className={machinesOpen ? "rotate-180" : ""} /></button>
             </div>
           ) : <DesktopNavigationItem key={item.id} item={item} />)}
         </nav>
@@ -100,20 +113,20 @@ export function SiteHeader({ navigation, machinesMenu }: SiteHeaderProps) {
           {navigation.quote.visible && navigation.quote.href ? <Link href={navigation.quote.href} className="inline-flex h-10 items-center justify-center rounded-sm border border-white/40 px-5 text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:border-ignition hover:bg-ignition">{navigation.quote.label}</Link> : null}
           {languages.length > 0 ? <LanguageMenu languages={languages} /> : null}
         </div>
-        <button ref={menuButtonRef} type="button" aria-label="Open navigation" aria-expanded={mobileOpen} aria-controls="mobile-site-navigation" onClick={() => { setMobileLevel({ kind: "root" }); setMobileOpen(true); }} className="grid h-11 w-11 place-items-center rounded-sm text-white transition hover:text-ignition focus-visible:outline focus-visible:outline-2 focus-visible:outline-ignition xl:hidden"><Menu size={21} /></button>
+        <button ref={menuButtonRef} type="button" aria-label="Open navigation" aria-expanded={mobileOpen} aria-controls="mobile-site-navigation" onClick={() => { setMobileLevel({ kind: "root" }); setMobileOpen(true); }} className="grid h-11 w-11 place-items-center rounded-sm text-white transition hover:text-ignition focus-visible:outline focus-visible:outline-2 focus-visible:outline-ignition lg:hidden"><Menu size={21} /></button>
       </div>
 
       {machinesOpen && machinesMenu.enabled ? (
         <>
-          {machinesMenu.settings.backdrop ? <button type="button" aria-label="Close Machines menu" onClick={() => closeMachines(true)} className="fixed inset-x-0 bottom-0 top-[72px] -z-10 bg-black/45" /> : null}
-          <div id="machines-mega-menu" role="region" aria-label="Machines mega menu" onPointerEnter={() => openMachines(true)} onPointerLeave={() => closeMachines()} className="fixed inset-x-0 top-[72px] border-t border-neutral-200 bg-white text-neutral-950 shadow-[0_28px_80px_rgba(0,0,0,.28)]">
+          {machinesMenu.settings.backdrop ? <button type="button" aria-label="Close Products menu" onClick={() => closeMachines(true)} className="fixed inset-x-0 bottom-0 top-[72px] -z-10 bg-black/55" /> : null}
+          <div id="products-mega-menu" role="region" aria-label="Products mega menu" data-layout="accurl-dark" data-columns={machinesMenu.settings.desktopColumns} onPointerEnter={() => openMachines(true)} onPointerLeave={() => closeMachines()} onClickCapture={(event) => { if ((event.target as HTMLElement).closest("a")) closeMachines(true); }} className="fixed inset-x-0 top-[72px] overflow-hidden border-t border-[#2A2D32] bg-[#0B0D10] text-white">
             <MachinesDesktopPanel view={machinesMenu} activeCategoryId={activeCategoryId} onActiveCategory={setActiveCategoryId} />
           </div>
         </>
       ) : null}
 
       {mobileOpen ? (
-        <div ref={mobileDialogRef} onKeyDown={trapMobileFocus} className="fixed inset-0 z-[80] bg-white xl:hidden" role="dialog" aria-modal="true" aria-label="Site navigation">
+        <div ref={mobileDialogRef} onKeyDown={trapMobileFocus} className="fixed inset-0 z-[80] bg-white lg:hidden" role="dialog" aria-modal="true" aria-label="Site navigation">
           <div id="mobile-site-navigation" className="flex h-[100dvh] flex-col overflow-hidden bg-white" onClick={(event) => { if ((event.target as HTMLElement).closest("a")) closeMobile(); }}>
             <div className="flex h-[72px] shrink-0 items-center justify-between border-b border-neutral-200 px-5">
               {mobileLevel.kind === "root" ? <p className="text-sm font-semibold uppercase tracking-[0.12em]">Navigation</p> : <button type="button" onClick={() => setMobileLevel(mobileLevel.kind === "category" ? { kind: "machines" } : { kind: "root" })} className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold"><ArrowLeft size={18} />Back</button>}
@@ -133,41 +146,34 @@ export function SiteHeader({ navigation, machinesMenu }: SiteHeaderProps) {
 }
 
 export function MachinesDesktopPanel({ view, activeCategoryId, onActiveCategory, compact = false }: { view: MachinesMenuView; activeCategoryId: string; onActiveCategory: (id: string) => void; compact?: boolean }) {
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const active = view.categories.find((item) => item.id === activeCategoryId) ?? defaultCategory(view);
-  if (!active) return <div className="p-8 text-sm text-neutral-500">No published machines are available.</div>;
-  const activeIndex = Math.max(0, view.categories.findIndex((item) => item.id === active.id));
-  const seriesNumber = formatCatalogueIndex(activeIndex);
-  return <div className={`mx-auto grid max-h-[calc(100dvh-72px)] max-w-[1440px] overflow-hidden border-x border-neutral-200 bg-white ${compact ? "h-[420px] grid-cols-[240px_1fr]" : "h-[min(640px,calc(100dvh-72px))] min-h-[510px] grid-cols-[320px_1fr]"}`}>
-    <aside className="flex min-h-0 flex-col border-r border-neutral-300 bg-[#ECEDEA]">
-      <div className="shrink-0 border-b border-neutral-300 px-6 py-5">
-        <div className="flex items-end justify-between gap-4">
-          <div><p className="text-[10px] font-bold uppercase tracking-[0.24em] text-neutral-950">Product Directory</p><p className="mt-1 text-[11px] leading-5 text-neutral-500">ZYRON machinery portfolio</p></div>
-          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-500">{String(view.categories.length).padStart(2, "0")} Series</span>
-        </div>
-      </div>
-      <div role="tablist" aria-label="Machine categories" className="grid min-h-0 flex-1 content-start overflow-y-auto p-3" style={{ gap: view.settings.categoryRowGap }}>{view.categories.map((category, index) => {
+  useEffect(() => () => { if (hoverTimer.current) clearTimeout(hoverTimer.current); }, []);
+
+  if (!active) return <div className="bg-[#0B0D10] p-8 text-sm text-[#A7A7A7]">No published products are available.</div>;
+
+  function scheduleCategory(categoryId: string) {
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    hoverTimer.current = setTimeout(() => onActiveCategory(categoryId), 110);
+  }
+
+  const columns = view.settings.desktopColumns === 4 ? "lg:grid-cols-3 xl:grid-cols-4" : "lg:grid-cols-3";
+  return <div className={`mx-auto grid overflow-hidden bg-[#0B0D10] text-white ${compact ? "h-[420px] w-full grid-cols-[220px_minmax(0,1fr)] gap-6 p-5" : "h-[min(792px,calc(100dvh-72px))] w-[calc(100%-64px)] max-w-[1280px] grid-cols-[220px_minmax(0,1fr)] gap-6 py-10 pb-12 xl:w-[calc(100%-128px)] xl:grid-cols-[260px_minmax(0,1fr)] xl:gap-10"}`}>
+    <aside className="min-h-0 overflow-y-auto border-r border-[#2A2D32] pr-0 [scrollbar-color:#80C900_#16181C] [scrollbar-width:thin]">
+      <div role="tablist" aria-label="Product categories" className="grid content-start" style={{ gap: view.settings.categoryRowGap }}>{view.categories.map((category, index) => {
         const selected = active.id === category.id;
-        return <button key={category.id} type="button" role="tab" aria-selected={selected} tabIndex={selected ? 0 : -1} onPointerEnter={() => onActiveCategory(category.id)} onFocus={() => onActiveCategory(category.id)} onClick={() => onActiveCategory(category.id)} onKeyDown={(event) => { if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return; event.preventDefault(); const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? view.categories.length - 1 : (index + (event.key === "ArrowDown" ? 1 : -1) + view.categories.length) % view.categories.length; onActiveCategory(view.categories[nextIndex].id); event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[nextIndex]?.focus(); }} className={`group/category grid w-full grid-cols-[34px_minmax(0,1fr)_auto] items-center gap-3 border-l-[3px] px-4 text-left font-semibold tracking-[0.035em] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ignition ${selected ? "border-ignition bg-white shadow-[inset_0_0_0_1px_rgba(11,13,16,.08)]" : "border-transparent hover:border-neutral-400 hover:bg-white"}`} style={{ fontSize: view.settings.categoryFontSize, color: selected ? view.settings.categoryActiveTextColor : view.settings.categoryTextColor, paddingTop: view.settings.categoryRowPaddingY, paddingBottom: view.settings.categoryRowPaddingY }}><span aria-hidden className={`font-mono text-[10px] tracking-[0.12em] ${selected ? "text-ignition" : "text-neutral-400"}`}>{formatCatalogueIndex(index)}</span><span>{category.name}</span>{view.settings.showCounts ? <span className="font-mono text-[10px] text-neutral-400">{String(category.count).padStart(2, "0")}</span> : null}</button>;
+        return <Link key={category.id} href={category.href} role="tab" aria-selected={selected} tabIndex={selected ? 0 : -1} onPointerEnter={() => scheduleCategory(category.id)} onPointerLeave={() => { if (hoverTimer.current) clearTimeout(hoverTimer.current); }} onFocus={() => onActiveCategory(category.id)} onClick={() => onActiveCategory(category.id)} onKeyDown={(event) => { if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return; event.preventDefault(); const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? view.categories.length - 1 : (index + (event.key === "ArrowDown" ? 1 : -1) + view.categories.length) % view.categories.length; onActiveCategory(view.categories[nextIndex].id); event.currentTarget.parentElement?.querySelectorAll<HTMLElement>('[role="tab"]')[nextIndex]?.focus(); }} className={`grid min-h-11 w-full grid-cols-[minmax(0,1fr)_36px] items-center gap-2 border-r-2 pr-3 text-left font-semibold leading-[1.6] transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ignition ${selected ? "border-ignition" : "border-transparent hover:text-white"}`} style={{ fontSize: view.settings.categoryFontSize, color: selected ? view.settings.categoryActiveTextColor : view.settings.categoryTextColor, paddingTop: view.settings.categoryRowPaddingY, paddingBottom: view.settings.categoryRowPaddingY }}><span>{category.name}</span>{view.settings.showCounts ? <span className="text-right text-[13px] font-medium text-[#7F8389]">{category.count}</span> : null}</Link>;
       })}</div>
-      <div className="shrink-0 border-t border-neutral-300 px-6 py-4"><Link href="/products" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-600 transition hover:text-neutral-950">Full catalogue <span aria-hidden>↗</span></Link></div>
     </aside>
-    <div className="flex min-h-0 min-w-0 flex-col">
-      <div className="flex shrink-0 items-start justify-between gap-8 border-b border-neutral-300 px-7 py-6">
-        <div className="min-w-0"><div className="mb-2 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500"><span className="text-ignition">Series {seriesNumber}</span><span className="h-px w-8 bg-neutral-300" /><span>{String(active.count).padStart(2, "0")} machines</span></div><h2 className="font-semibold leading-tight tracking-[-.035em]" style={{ fontSize: view.settings.rightHeadingFontSize, color: view.settings.rightHeadingColor }}>{active.name}</h2>{view.settings.showDescriptions ? <p className="mt-2 max-w-3xl leading-6" style={{ fontSize: view.settings.rightDescriptionFontSize, color: view.settings.rightDescriptionColor }}>{active.description}</p> : null}</div>
-        <Link href={active.href} className="group/link inline-flex h-10 shrink-0 items-center gap-3 border border-neutral-950 px-4 font-bold uppercase tracking-[.14em] transition hover:bg-neutral-950 hover:text-white" style={{ fontSize: view.settings.rightLinkFontSize }}>View series <span aria-hidden className="text-ignition transition group-hover/link:translate-x-0.5">→</span></Link>
-      </div>
-      <div role="region" aria-label={`${active.name} products`} tabIndex={0} className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[#F6F6F3] px-7 py-5 [scrollbar-color:#76B900_#E5E5E5] [scrollbar-width:thin] focus-visible:outline focus-visible:outline-2 focus-visible:outline-ignition">
-        <div className={`grid gap-x-5 gap-y-8 ${view.settings.desktopColumns === 4 ? "grid-cols-4" : "grid-cols-3"}`}>{active.products.map((product, productIndex) => <Link key={product.id} href={product.href} aria-label={product.name} className="group/card min-w-0 border-t-2 border-neutral-300 pt-3 transition hover:border-neutral-950"><span className="mb-2 flex items-center justify-between font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-neutral-500"><span>Catalogue {formatCatalogueIndex(productIndex)}</span><span aria-hidden className="text-ignition">ZY</span></span><span className="relative block aspect-[4/3] overflow-hidden border border-neutral-200 bg-white">{view.settings.showImages ? <Image src={product.image} alt={product.alt} fill loading="eager" sizes="(min-width:1280px) 260px, 22vw" className="object-contain p-4 transition duration-500 ease-out group-hover/card:scale-[1.045]" /> : <span className="grid h-full place-items-center text-[10px] font-bold uppercase tracking-[.18em] text-neutral-400">Product image</span>}</span><span className="mt-3 block font-semibold leading-5 tracking-[-.01em] transition group-hover/card:opacity-65" style={{ fontSize: view.settings.productTitleFontSize, color: view.settings.productTitleColor }}>{product.name}</span>{view.settings.showDescriptions ? <span className="mt-1.5 line-clamp-2 block leading-5" style={{ fontSize: view.settings.productDescriptionFontSize, color: view.settings.productDescriptionColor }}>{product.description}</span> : null}</Link>)}</div>
-      </div>
-      <div className="flex min-h-14 shrink-0 items-center gap-7 border-t-2 border-neutral-950 bg-white px-7 font-bold uppercase tracking-[.12em]" style={{ fontSize: view.settings.rightLinkFontSize }}><Link href={active.href} className="transition hover:opacity-60" style={{ color: view.settings.rightLinkColor }}>View All {active.name}</Link><Link href="/support" className="text-neutral-700 transition hover:text-neutral-950">Technical Support</Link><Link href={view.settings.ctaHref} className="ml-auto inline-flex items-center gap-3 text-neutral-950">{view.settings.ctaLabel} <span aria-hidden className="grid size-7 place-items-center bg-ignition text-neutral-950">→</span></Link></div>
+    <div role="region" aria-label={`${active.name} products`} tabIndex={0} className="min-h-0 overflow-y-auto overscroll-contain pr-1 [scrollbar-color:#80C900_#16181C] [scrollbar-width:thin] focus-visible:outline focus-visible:outline-2 focus-visible:outline-ignition">
+      {active.products.length > 0 ? <div className={`grid gap-6 ${columns}`}>{active.products.map((product) => <Link key={product.id} href={product.href} aria-label={product.name} className="group/card min-w-0"><span className="relative block aspect-[3/2] overflow-hidden border border-[#2A2D32] bg-[#101214]">{view.settings.showImages ? <Image src={product.image} alt={product.alt} fill loading="eager" sizes="(min-width:1280px) 227px, (min-width:1024px) 190px, 96px" className="object-contain p-2 transition-opacity duration-150 group-hover/card:opacity-80" /> : null}</span><span className="mt-2.5 line-clamp-2 block font-bold leading-[1.25] tracking-[-.01em]" style={{ fontSize: view.settings.productTitleFontSize, color: view.settings.productTitleColor }}>{product.name}</span>{view.settings.showDescriptions ? <span className="mt-1.5 line-clamp-3 block leading-[1.4]" style={{ fontSize: view.settings.productDescriptionFontSize, color: view.settings.productDescriptionColor }}>{product.description}</span> : null}</Link>)}</div> : <p className="py-8 text-sm text-[#A7A7A7]">No products are currently published in this category.</p>}
+      <Link href={active.href} className="mt-10 inline-flex min-h-11 items-center gap-3 font-semibold transition-colors hover:text-ignition" style={{ fontSize: view.settings.rightLinkFontSize, color: view.settings.rightLinkColor }}>View all {active.name} <span aria-hidden>→</span></Link>
     </div>
   </div>;
 }
 
-function formatCatalogueIndex(index: number) { return String(index + 1).padStart(2, "0"); }
-
 function MobileRoot({ primary, onMachines }: { primary: NavigationNode[]; onMachines: () => void }) { return <div className="grid">{primary.map((item) => item.kind === "PRODUCT_DIRECTORY" ? <button key={item.id} type="button" onClick={onMachines} className="flex min-h-14 items-center justify-between border-b border-neutral-200 text-left text-base font-semibold">{item.label}<ChevronRight size={18} /></button> : <MobileNavigationItem key={item.id} item={item} />)}</div>; }
-function MobileMachines({ view, onCategory }: { view: MachinesMenuView; onCategory: (id: string) => void }) { return <div><h2 className="text-2xl font-semibold">Machines</h2><Link href="/products" className="mt-2 inline-flex text-sm font-semibold text-ignition">View All Machines</Link><div className="mt-6 grid">{view.categories.map((category) => <button key={category.id} type="button" onClick={() => onCategory(category.id)} className="flex min-h-16 items-center justify-between gap-4 border-b border-neutral-200 text-left"><span><span className="block text-sm font-semibold">{category.name}</span>{view.settings.showCounts ? <span className="mt-1 block text-xs text-neutral-500">{category.count} products</span> : null}</span><ChevronRight size={18} /></button>)}</div></div>; }
+function MobileMachines({ view, onCategory }: { view: MachinesMenuView; onCategory: (id: string) => void }) { return <div><h2 className="text-2xl font-semibold">Products</h2><Link href="/products" className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-ignition">View All Products</Link><div className="mt-6 grid">{view.categories.map((category) => <button key={category.id} type="button" onClick={() => onCategory(category.id)} className="flex min-h-16 items-center justify-between gap-4 border-b border-neutral-200 text-left"><span><span className="block text-sm font-semibold">{category.name}</span>{view.settings.showCounts ? <span className="mt-1 block text-xs text-neutral-500">{category.count} products</span> : null}</span><ChevronRight size={18} /></button>)}</div></div>; }
 function MobileProducts({ category, view }: { category?: MachinesMenuCategory; view: MachinesMenuView }) { if (!category) return null; return <div><h2 className="text-2xl font-semibold">{category.name}</h2><Link href={category.href} className="mt-2 inline-flex text-sm font-semibold text-ignition">View complete series</Link><div className="mt-6 grid">{category.products.map((product) => <Link key={product.id} href={product.href} aria-label={product.name} className="flex min-h-24 items-center gap-4 border-b border-neutral-200 py-3">{view.settings.mobileShowImages ? <span className="relative h-[72px] w-24 shrink-0 bg-[#F5F5F7]"><Image src={product.image} alt={product.alt} fill sizes="96px" className="object-contain p-1" /></span> : null}<span className="min-w-0 flex-1"><span className="block text-sm font-semibold">{product.name}</span>{view.settings.mobileShowDescriptions ? <span className="mt-1 line-clamp-2 block text-xs leading-5 text-neutral-500">{product.description}</span> : null}</span><ChevronRight size={18} /></Link>)}</div></div>; }
 function defaultCategory(view: MachinesMenuView) { return view.categories.find((item) => item.isDefault) ?? view.categories[0]; }
 function DesktopNavigationItem({ item }: { item: NavigationNode }) { return item.kind === "GROUP" ? <SimpleDropdown item={item} /> : item.href ? <Link href={item.href} className="inline-flex h-full items-center text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:text-ignition">{item.label}</Link> : null; }
