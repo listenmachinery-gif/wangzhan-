@@ -204,28 +204,57 @@ export function NavigationEditor({
     });
   }
 
+  async function sendRequest(url: string, method: string, body: unknown) {
+    const response = await fetch(url, {
+      method,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      if (response.status === 409) throw new Error("版本冲突：其他管理员已更新导航，请刷新页面后核对再保存。");
+      throw new Error(result.message ?? "操作失败，请稍后重试。");
+    }
+    return result as RequestResult;
+  }
+
+  function applyResult(updated: RequestResult) {
+    setVersion(updated.version);
+    setStatus(updated.status);
+    const hydratedDocument = hydrateMachinesNavigation(updated.draftContent);
+    lastSavedDocument.current = hydratedDocument;
+    setDocument(hydratedDocument);
+  }
+
   async function request(url: string, method: string, body: unknown, success: string) {
     setBusy(true);
     setMessage("");
     setError("");
     try {
-      const response = await fetch(url, {
-        method,
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const result = await response.json();
-      if (!response.ok) {
-        if (response.status === 409) throw new Error("版本冲突：其他管理员已更新导航，请刷新页面后核对再保存。");
-        throw new Error(result.message ?? "操作失败，请稍后重试。");
-      }
-      const updated = result as RequestResult;
-      setVersion(updated.version);
-      setStatus(updated.status);
-      const hydratedDocument = hydrateMachinesNavigation(updated.draftContent);
-      lastSavedDocument.current = hydratedDocument;
-      setDocument(hydratedDocument);
+      applyResult(await sendRequest(url, method, body));
       setMessage(success);
+      router.refresh();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "操作失败，请稍后重试。");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function publish() {
+    setBusy(true);
+    setMessage("");
+    setError("");
+    try {
+      let publishVersion = version;
+      const hasUnsavedChanges = JSON.stringify(document) !== JSON.stringify(lastSavedDocument.current);
+      if (publishVersion === 0 || hasUnsavedChanges) {
+        const saved = await sendRequest("/api/admin/navigation", "PATCH", { version: publishVersion, document });
+        applyResult(saved);
+        publishVersion = saved.version;
+      }
+      applyResult(await sendRequest("/api/admin/navigation/publish", "POST", { version: publishVersion }));
+      setMessage("导航已发布到前台");
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "操作失败，请稍后重试。");
@@ -265,7 +294,7 @@ export function NavigationEditor({
               </button>
             ) : null}
             {canPublish ? (
-              <button type="button" disabled={busy} onClick={() => void request("/api/admin/navigation/publish", "POST", { version }, "导航已发布到前台")} className="inline-flex h-10 items-center gap-2 rounded-admin-sm bg-ignition px-4 text-sm font-semibold text-white transition hover:bg-neon disabled:opacity-50">
+              <button type="button" disabled={busy} onClick={() => void publish()} className="inline-flex h-10 items-center gap-2 rounded-admin-sm bg-ignition px-4 text-sm font-semibold text-white transition hover:bg-neon disabled:opacity-50">
                 <Send className="size-4" aria-hidden />发布到前台
               </button>
             ) : null}

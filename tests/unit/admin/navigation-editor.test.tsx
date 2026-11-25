@@ -21,8 +21,11 @@ function response(body: unknown, status = 200) {
   return Promise.resolve(new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } }));
 }
 
-function renderEditor(document: NavigationSnapshot = structuredClone(DEFAULT_NAVIGATION)) {
-  return render(<NavigationEditor initialDocument={document} version={3} status="PUBLISHED" versions={versions} categories={productCategories} products={products} />);
+function renderEditor(
+  document: NavigationSnapshot = structuredClone(DEFAULT_NAVIGATION),
+  { version = 3, status = "PUBLISHED" }: { version?: number; status?: string } = {},
+) {
+  return render(<NavigationEditor initialDocument={document} version={version} status={status} versions={versions} categories={productCategories} products={products} />);
 }
 
 describe("NavigationEditor", () => {
@@ -191,6 +194,101 @@ describe("NavigationEditor", () => {
     expect(await screen.findByRole("status")).toHaveTextContent("草稿已保存");
     await user.click(screen.getByRole("button", { name: "发布到前台" }));
     expect(await screen.findByRole("status")).toHaveTextContent("导航已发布");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("creates version 1 before publishing a new version 0 draft with an edited product alt text", async () => {
+    const user = userEvent.setup();
+    const document = structuredClone(DEFAULT_NAVIGATION);
+    const firstCategory = document.machines!.categories[0];
+    const firstProduct = products.find((product) => product.categoryId === firstCategory.categoryId)!;
+    document.machines!.mode = "MANUAL";
+    firstCategory.products = [{ productId: firstProduct.id, sortOrder: 0, enabled: true }];
+    let savedDocument = document;
+
+    const fetchMock = vi.spyOn(globalThis, "fetch")
+      .mockImplementationOnce((_input, init) => {
+        expect(init?.method).toBe("PATCH");
+        const payload = JSON.parse(String(init?.body));
+        expect(payload.version).toBe(0);
+        expect(payload.document.machines.categories[0].products[0].altOverride).toBe("ZYRON 产品替代文字");
+        savedDocument = payload.document;
+        return response({ version: 1, status: "DRAFT", draftContent: savedDocument });
+      })
+      .mockImplementationOnce((_input, init) => {
+        expect(init?.method).toBe("POST");
+        expect(JSON.parse(String(init?.body))).toEqual({ version: 1 });
+        return response({ version: 2, status: "PUBLISHED", draftContent: savedDocument, publishedVersion: 2 });
+      });
+
+    renderEditor(document, { version: 0, status: "DRAFT" });
+    await user.click(screen.getByRole("button", { name: "PRODUCTS 菜单" }));
+    const altInput = screen.getAllByRole("textbox", { name: "图片替代文字" })[0];
+    await user.type(altInput, "ZYRON 产品替代文字");
+    await user.click(screen.getByRole("button", { name: "发布到前台" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent("导航已发布");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(screen.getByText("当前版本 v2")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("ZYRON 产品替代文字")).toBeInTheDocument();
+  });
+
+  it("saves unsaved alt text with the real database version before publishing an existing draft", async () => {
+    const user = userEvent.setup();
+    const document = structuredClone(DEFAULT_NAVIGATION);
+    const firstCategory = document.machines!.categories[0];
+    const firstProduct = products.find((product) => product.categoryId === firstCategory.categoryId)!;
+    document.machines!.mode = "MANUAL";
+    firstCategory.products = [{ productId: firstProduct.id, sortOrder: 0, enabled: true }];
+    let savedDocument = document;
+
+    const fetchMock = vi.spyOn(globalThis, "fetch")
+      .mockImplementationOnce((_input, init) => {
+        expect(init?.method).toBe("PATCH");
+        const payload = JSON.parse(String(init?.body));
+        expect(payload.version).toBe(3);
+        expect(payload.document.machines.categories[0].products[0].altOverride).toBe("已保存的 Alt Text");
+        savedDocument = payload.document;
+        return response({ version: 4, status: "DRAFT", draftContent: savedDocument });
+      })
+      .mockImplementationOnce((_input, init) => {
+        expect(init?.method).toBe("POST");
+        expect(JSON.parse(String(init?.body))).toEqual({ version: 4 });
+        return response({ version: 5, status: "PUBLISHED", draftContent: savedDocument, publishedVersion: 5 });
+      });
+
+    renderEditor(document);
+    await user.click(screen.getByRole("button", { name: "PRODUCTS 菜单" }));
+    await user.type(screen.getAllByRole("textbox", { name: "图片替代文字" })[0], "已保存的 Alt Text");
+    await user.click(screen.getByRole("button", { name: "发布到前台" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent("导航已发布");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(screen.getByText("当前版本 v5")).toBeInTheDocument();
+  });
+
+  it("uses each save response version for the next repeated modification", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.spyOn(globalThis, "fetch")
+      .mockImplementationOnce((_input, init) => {
+        const payload = JSON.parse(String(init?.body));
+        expect(payload.version).toBe(3);
+        return response({ version: 4, status: "DRAFT", draftContent: payload.document });
+      })
+      .mockImplementationOnce((_input, init) => {
+        const payload = JSON.parse(String(init?.body));
+        expect(payload.version).toBe(4);
+        return response({ version: 5, status: "DRAFT", draftContent: payload.document });
+      });
+
+    renderEditor();
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+    expect(await screen.findByText("当前版本 v4")).toBeInTheDocument();
+    await user.clear(screen.getByRole("textbox", { name: "HOME 名称" }));
+    await user.type(screen.getByRole("textbox", { name: "菜单 1 名称" }), "HOME UPDATED");
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+
+    expect(await screen.findByText("当前版本 v5")).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 

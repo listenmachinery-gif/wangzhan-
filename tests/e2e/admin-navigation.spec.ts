@@ -41,6 +41,21 @@ test("saves a navigation draft, publishes across desktop/mobile/footer, and roll
   await page.getByRole("button", { name: "登录 ZYRON CMS" }).click();
   await page.getByRole("link", { name: "导航管理" }).click();
 
+  await page.getByRole("button", { name: "PRODUCTS 菜单" }).click();
+  await page.getByRole("combobox", { name: "产品同步模式" }).selectOption("MANUAL");
+  const firstCategory = page.locator("details").filter({ hasText: "产品选择与显示覆盖" }).first();
+  await firstCategory.getByText(/产品选择与显示覆盖/).click();
+  await firstCategory.locator('input[type="checkbox"]').first().check();
+  await firstCategory.getByRole("textbox", { name: "图片替代文字" }).first().fill("E2E ZYRON product alt text");
+  await page.getByRole("button", { name: "发布到前台" }).click();
+  await expect(page.getByRole("status")).toContainText("导航已发布到前台");
+  await expect(page.getByText("当前版本 v2")).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "PRODUCTS 菜单" }).click();
+  await page.locator("details").filter({ hasText: "产品选择与显示覆盖" }).first().getByText(/产品选择与显示覆盖/).click();
+  await expect(page.locator('input[value="E2E ZYRON product alt text"]')).toBeVisible();
+  await page.getByRole("button", { name: "主导航与页脚" }).click();
+
   await page.getByRole("textbox", { name: "HOME 名称" }).fill("E2E HOME");
   await page.getByRole("textbox", { name: "页脚组 1 链接 1 名称" }).fill("E2E SUPPORT");
   await page.getByRole("button", { name: "保存草稿" }).click();
