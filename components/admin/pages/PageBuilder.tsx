@@ -374,7 +374,15 @@ function FieldEditor({
             <span className="text-xs font-semibold text-neutral-600">
               {field.label}
             </span>
-            {node.type === "MEDIA_HERO" && ["layout","mediaKind","mediaSide"].includes(field.key) ? (
+            {field.kind === "boolean" ? (
+              <input
+                aria-label={field.label}
+                type="checkbox"
+                checked={Boolean(value)}
+                onChange={(event) => onChange({ ...content, [field.key]: event.target.checked })}
+                className="mt-2 size-4 accent-[#76B900]"
+              />
+            ) : node.type === "MEDIA_HERO" && ["layout","mediaKind","mediaSide"].includes(field.key) ? (
               <select
                 aria-label={field.label}
                 value={String(value ?? "")}
