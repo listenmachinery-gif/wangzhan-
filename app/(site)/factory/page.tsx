@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { CompanyPage } from "@/components/company/CompanyPage";
-import { ManagedPageSections } from "@/components/site/ManagedPageSections";
+import { CompanyStructuredData } from "@/components/company/CompanyStructuredData";
 import { PageRenderer } from "@/components/page-builder/PageRenderer";
+import { aboutZyronDocument } from "@/lib/page-builder/about-zyron-content";
 import { getPublishedPageBySlug } from "@/lib/repositories/page-repository";
 import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
 
 export const dynamic = "force-dynamic";
 
 const title =
-  "About ZYRON Heavy Industry | Sheet Metal Machinery Manufacturer";
+  "About ZYRON | Sheet Metal Machinery Manufacturer";
 const description =
-  "Explore ZYRON Heavy Industry’s factory, product range, engineering support, quality control, export packing, and global machinery support.";
-const image = "/brand/factory-showcase.png";
+  "Learn how ZYRON develops sheet metal machinery through engineering review, manufacturing coordination, inspection, delivery preparation, and support.";
+const image = "/images/about/zyron-factory-exterior.webp";
 
 const fallbackMetadata: Metadata = {
   title,
@@ -27,9 +27,9 @@ const fallbackMetadata: Metadata = {
     images: [
       {
         url: image,
-        width: 1672,
-        height: 941,
-        alt: "ZYRON industrial machinery factory exterior in Ma’anshan China",
+        width: 1942,
+        height: 809,
+        alt: "ZYRON Heavy Industry factory exterior and main entrance",
       },
     ],
   },
@@ -47,8 +47,13 @@ export function generateMetadata() {
 
 export default async function FactoryPage() {
   const managed = await getPublishedPageBySlug("company");
-  if (managed?.nodes.some((node) => node.type === "HERO")) {
-    return <main className="bg-[#f4f6f8] text-[#101214]"><PageRenderer document={managed} /></main>;
-  }
-  return <><CompanyPage /><ManagedPageSections slug="company" /></>;
+  const document = managed?.nodes.some((node) => node.type === "ABOUT_HERO")
+    ? managed
+    : aboutZyronDocument;
+  return (
+    <main data-about-zyron-page className="overflow-x-hidden bg-white text-[#101214]">
+      <CompanyStructuredData />
+      <PageRenderer document={document} />
+    </main>
+  );
 }

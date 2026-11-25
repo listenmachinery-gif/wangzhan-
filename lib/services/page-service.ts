@@ -105,6 +105,7 @@ async function syncPageMediaReferences(
 export function publicPathsForPageSlug(slug: string) {
   if (slug === "home") return ["/"];
   if (slug === "products") return ["/products"];
+  if (slug === "company") return ["/factory"];
   if (slug.startsWith("product-") && slug.length > "product-".length) {
     return [`/products/${slug.slice("product-".length)}`, "/products"];
   }

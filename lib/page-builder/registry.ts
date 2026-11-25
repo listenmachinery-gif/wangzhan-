@@ -1,9 +1,10 @@
 import { z } from "zod";
 
 import { homepageRedesignDocument } from "@/lib/homepage/homepage-content";
+import { aboutZyronDocument } from "@/lib/page-builder/about-zyron-content";
 import type { PageComponentType } from "@/lib/page-builder/schema";
 
-export type EditorFieldKind = "text" | "textarea" | "url" | "number" | "list" | "json";
+export type EditorFieldKind = "text" | "textarea" | "url" | "number" | "boolean" | "list" | "json";
 
 export type ComponentDefinition = {
   type: PageComponentType;
@@ -17,7 +18,7 @@ export type ComponentDefinition = {
 
 const text = z.string().max(5_000);
 const shortText = z.string().max(240);
-const url = z.string().max(2_048).refine((value) => (value.startsWith("/") && !value.startsWith("//")) || value.startsWith("https://"), "Use a site-relative or HTTPS URL.");
+const url = z.string().max(2_048).refine((value) => value.startsWith("#") || (value.startsWith("/") && !value.startsWith("//")) || value.startsWith("https://"), "Use a page anchor, site-relative, or HTTPS URL.");
 const optionalUrl = z.union([url, z.literal("")]);
 const mediaUrl = z.string().max(2_048).refine((value) => value.startsWith("/") && !value.startsWith("//"), "Use a site-relative media path.");
 const optionalMediaUrl = z.union([mediaUrl, z.literal("")]);
@@ -31,6 +32,11 @@ function define(definition: ComponentDefinition) {
 
 function homepageDefaultContent(type: PageComponentType): Record<string, unknown> {
   const node = homepageRedesignDocument.nodes.find((candidate) => candidate.type === type);
+  return (node?.content ?? {}) as Record<string, unknown>;
+}
+
+function aboutDefaultContent(type: PageComponentType): Record<string, unknown> {
+  const node = aboutZyronDocument.nodes.find((candidate) => candidate.type === type);
   return (node?.content ?? {}) as Record<string, unknown>;
 }
 
@@ -345,6 +351,140 @@ componentRegistry.push(
       { key: "formDescription", label: "表单说明", kind: "textarea" },
       { key: "machineOptions", label: "设备选项", kind: "list" },
       { key: "privacyText", label: "隐私说明", kind: "textarea" },
+    ],
+  }),
+);
+
+const aboutValueSchema = z.object({ title: shortText.min(1) }).strict();
+const aboutGalleryImageSchema = z.object({
+  src: mediaUrl,
+  alt: shortText.min(1),
+  focus: shortText,
+}).strict();
+const aboutProcessSchema = z.object({
+  number: shortText.min(1),
+  title: shortText.min(1),
+  body: text,
+  src: mediaUrl,
+  alt: shortText.min(1),
+}).strict();
+
+componentRegistry.push(
+  define({
+    type: "ABOUT_HERO",
+    label: "关于 ZYRON · 首屏",
+    group: "营销",
+    description: "斜切工厂主视觉、品牌价值和行动按钮",
+    defaultContent: aboutDefaultContent("ABOUT_HERO"),
+    contentSchema: z.object({
+      enabled: z.boolean(),
+      desktopImage: mediaUrl,
+      mobileImage: mediaUrl,
+      imageAlt: shortText.min(1),
+      eyebrow: shortText,
+      titleLineOne: shortText.min(1),
+      titleLineTwo: shortText.min(1),
+      highlight: shortText,
+      description: text,
+      values: z.array(aboutValueSchema).min(1).max(6),
+      ctaLabel: shortText,
+      ctaHref: url,
+      showCta: z.boolean(),
+      imagePosition: shortText,
+      overlayOpacity: z.number().int().min(40).max(100),
+      showDiagonal: z.boolean(),
+      showMetalDecoration: z.boolean(),
+    }).strict(),
+    editorFields: [
+      { key: "enabled", label: "显示首屏", kind: "boolean" },
+      { key: "desktopImage", label: "桌面端背景图片（媒体库可替换）", kind: "url" },
+      { key: "mobileImage", label: "手机端背景图片（媒体库可替换）", kind: "url" },
+      { key: "imageAlt", label: "图片替代文字", kind: "text" },
+      { key: "eyebrow", label: "品牌标签", kind: "text" },
+      { key: "titleLineOne", label: "主标题第一行", kind: "text" },
+      { key: "titleLineTwo", label: "主标题第二行", kind: "text" },
+      { key: "highlight", label: "绿色高亮文字", kind: "text" },
+      { key: "description", label: "副标题", kind: "textarea" },
+      { key: "values", label: "核心品牌价值", kind: "json" },
+      { key: "ctaLabel", label: "按钮文字", kind: "text" },
+      { key: "ctaHref", label: "按钮链接", kind: "url" },
+      { key: "showCta", label: "显示按钮", kind: "boolean" },
+      { key: "imagePosition", label: "背景图片焦点", kind: "text" },
+      { key: "overlayOpacity", label: "斜切蒙层透明度", kind: "number" },
+      { key: "showDiagonal", label: "显示斜切装饰", kind: "boolean" },
+      { key: "showMetalDecoration", label: "显示底部金属装饰", kind: "boolean" },
+    ],
+  }),
+  define({
+    type: "ABOUT_COMPANY_OVERVIEW",
+    label: "关于 ZYRON · 公司介绍",
+    group: "外贸业务",
+    description: "公司文案、品牌价值与 2×2 工厂图库",
+    defaultContent: aboutDefaultContent("ABOUT_COMPANY_OVERVIEW"),
+    contentSchema: z.object({
+      enabled: z.boolean(),
+      eyebrow: shortText,
+      title: shortText.min(1),
+      highlight: shortText,
+      paragraphs: z.array(text).min(1).max(10),
+      values: z.array(aboutValueSchema).min(1).max(6),
+      ctaLabel: shortText,
+      ctaHref: url,
+      showCta: z.boolean(),
+      showGeometry: z.boolean(),
+      showMetalDecoration: z.boolean(),
+      images: z.array(aboutGalleryImageSchema).min(1).max(8),
+    }).strict(),
+    editorFields: [
+      { key: "enabled", label: "显示模块", kind: "boolean" },
+      { key: "eyebrow", label: "品牌标签", kind: "text" },
+      { key: "title", label: "主标题", kind: "text" },
+      { key: "highlight", label: "绿色高亮文字", kind: "text" },
+      { key: "paragraphs", label: "公司介绍段落", kind: "list" },
+      { key: "values", label: "核心品牌价值", kind: "json" },
+      { key: "ctaLabel", label: "按钮文字", kind: "text" },
+      { key: "ctaHref", label: "按钮链接", kind: "url" },
+      { key: "showCta", label: "显示按钮", kind: "boolean" },
+      { key: "showGeometry", label: "显示背景几何装饰", kind: "boolean" },
+      { key: "showMetalDecoration", label: "显示底部金属装饰", kind: "boolean" },
+      { key: "images", label: "工厂图片（可单独替换和排序）", kind: "json" },
+    ],
+  }),
+  define({
+    type: "ABOUT_MANUFACTURING",
+    label: "关于 ZYRON · 制造能力",
+    group: "外贸业务",
+    description: "制造工艺文字与同步排序的斜切图片矩阵",
+    defaultContent: aboutDefaultContent("ABOUT_MANUFACTURING"),
+    contentSchema: z.object({
+      enabled: z.boolean(),
+      eyebrow: shortText,
+      title: shortText.min(1),
+      highlight: shortText,
+      description: text,
+      processes: z.array(aboutProcessSchema).min(1).max(8),
+      ctaLabel: shortText,
+      ctaHref: optionalUrl,
+      showCta: z.boolean(),
+      showGeometry: z.boolean(),
+      showMetalDecoration: z.boolean(),
+      galleryAngle: z.number().int().min(0).max(24),
+      galleryGap: z.number().int().min(4).max(30),
+    }).strict(),
+    editorFields: [
+      { key: "enabled", label: "显示模块", kind: "boolean" },
+      { key: "eyebrow", label: "品牌标签", kind: "text" },
+      { key: "title", label: "主标题", kind: "text" },
+      { key: "highlight", label: "绿色高亮文字", kind: "text" },
+      { key: "description", label: "介绍", kind: "textarea" },
+      { key: "processes", label: "制造工艺（文字与图片同步排序）", kind: "json" },
+      { key: "ctaLabel", label: "按钮文字", kind: "text" },
+      { key: "ctaHref", label: "按钮链接", kind: "url" },
+      { key: "showCta", label: "显示按钮", kind: "boolean" },
+      { key: "showGeometry", label: "显示背景几何装饰", kind: "boolean" },
+      { key: "showMetalDecoration", label: "显示底部金属装饰", kind: "boolean" },
+      { key: "galleryAngle", label: "图片斜切角度", kind: "number" },
+      { key: "galleryGap", label: "图片间距", kind: "number" },
     ],
   }),
 );

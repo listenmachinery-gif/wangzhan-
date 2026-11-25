@@ -10,6 +10,7 @@ import {
   PageService,
   PageValidationError,
 } from "@/lib/services/page-service";
+import { publicPathsForPageSlug } from "@/lib/services/page-service";
 
 describe("PageService", () => {
   let editor: Principal;
@@ -27,6 +28,10 @@ describe("PageService", () => {
     sales = { id: salesUser.id, email: salesUser.email, name: salesUser.name, roles: ["SALES"] };
     revalidated = [];
     service = new PageService(db, (path) => { revalidated.push(path); });
+  });
+
+  it("maps the company CMS slug to the real About ZYRON route", () => {
+    expect(publicPathsForPageSlug("company")).toEqual(["/factory"]);
   });
 
   afterAll(() => db.$disconnect());

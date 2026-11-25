@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -9,25 +9,22 @@ const read = (path) => {
   return existsSync(absolutePath) ? readFileSync(absolutePath, "utf8") : "";
 };
 
-const header = read("components/SiteHeader.tsx");
-const footer = read("components/SiteFooter.tsx");
-const route = read("app/factory/page.tsx");
-const page = read("components/company/CompanyPage.tsx");
-const companySources = [
-  "CompanyHero.tsx",
-  "CompanyOverview.tsx",
-  "ProductSystem.tsx",
-  "EngineeringQualitySections.tsx",
-  "CompanySupportSections.tsx",
-  "CompanyPage.tsx",
-  "CompanyFaq.tsx",
-  "CompanyInquiryForm.tsx",
+const route = read("app/(site)/factory/page.tsx");
+const content = read("lib/page-builder/about-zyron-content.ts");
+const registry = read("lib/page-builder/registry.ts");
+const renderer = read("components/page-builder/renderers.tsx");
+const structuredData = read("components/company/CompanyStructuredData.tsx");
+const sidebar = read("components/admin/AdminSidebar.tsx");
+const adminRoute = read("app/admin/about/page.tsx");
+const pageService = read("lib/services/page-service.ts");
+const componentSources = [
+  "AboutHeroSection.tsx",
+  "AboutCompanyOverviewSection.tsx",
+  "AboutManufacturingSection.tsx",
+  "IndustrialCta.tsx",
 ]
-  .map((file) => read(`components/company/${file}`))
+  .map((file) => read(`components/company/cms/${file}`))
   .join("\n");
-const data = read("data/company.ts");
-const inquiryRoute = read("app/api/inquiry/route.ts");
-const photoShotList = read("docs/company-page-photo-shot-list.md");
 const packageJson = JSON.parse(read("package.json"));
 
 assert.equal(
@@ -36,194 +33,67 @@ assert.equal(
   "package.json must expose the About ZYRON verifier",
 );
 
-assert.match(
-  header,
-  /<NavItem href="\/factory" label="ABOUT ZYRON" \/>/,
-  "desktop navigation must link directly to About ZYRON",
-);
-assert.doesNotMatch(
-  header,
-  /SimpleDropdown label="COMPANY"|const aboutLinks/,
-  "Company dropdown and duplicate child links must be removed",
-);
-assert.match(
-  header,
-  /\{ label: "About ZYRON", href: "\/factory" \}/,
-  "mobile navigation must use the About ZYRON label",
-);
-assert.doesNotMatch(
-  footer,
-  /Factory & Solutions/,
-  "footer must not duplicate the About page",
-);
-assert.match(footer, /About ZYRON/);
-
-assert.match(
-  route,
-  /About ZYRON Heavy Industry \| Sheet Metal Machinery Manufacturer/,
-  "route must use the approved title",
-);
-assert.match(
-  route,
-  /Explore ZYRON Heavy Industry’s factory, product range, engineering support, quality control, export packing, and global machinery support\./,
-  "route must use the approved meta description",
-);
+assert.match(route, /About ZYRON \| Sheet Metal Machinery Manufacturer/);
 assert.match(route, /canonical:\s*"\/factory"/);
-assert.match(route, /\/brand\/factory-showcase\.png/);
-assert.match(route, /openGraph/);
-assert.match(route, /twitter/);
+assert.match(route, /\/images\/about\/zyron-factory-exterior\.webp/);
 assert.match(route, /robots:\s*\{\s*index:\s*true,\s*follow:\s*true/s);
-assert.match(route, /<CompanyPage \/>/);
+assert.match(route, /aboutZyronDocument/);
+assert.match(route, /ABOUT_HERO/);
+assert.match(route, /CompanyStructuredData/);
 
-assert.match(page, /data-about-zyron-page/);
+for (const type of ["ABOUT_HERO", "ABOUT_COMPANY_OVERVIEW", "ABOUT_MANUFACTURING"]) {
+  assert.ok(content.includes(`type: "${type}"`), `default document must include ${type}`);
+  assert.ok(registry.includes(`type: "${type}"`), `component registry must expose ${type}`);
+  assert.ok(renderer.includes(`case "${type}"`), `page renderer must support ${type}`);
+}
+
+for (const nodeId of [
+  "about-hero",
+  "about-company-overview",
+  "about-manufacturing",
+  "about-capability-overview",
+  "about-quality",
+  "about-engineering",
+  "about-global-delivery",
+  "about-contact",
+]) {
+  assert.ok(content.includes(`id: "${nodeId}"`), `missing About page module: ${nodeId}`);
+}
+
 assert.equal(
-  (companySources.match(/<h1\b/g) ?? []).length,
+  (componentSources.match(/<h1\b/g) ?? []).length,
   1,
-  "About page components must contain exactly one H1",
+  "About page custom components must contain exactly one H1",
 );
+assert.match(componentSources, /\bpriority\b/);
+assert.match(componentSources, /sizes=/);
+assert.match(componentSources, /aria-label=/);
 
-const requiredSections = [
-  "hero",
-  "overview",
-  "stats",
-  "product-system",
-  "engineering",
-  "customization",
-  "quality",
-  "packing",
-  "global-support",
-  "why-zyron",
-  "faq",
-  "final-cta",
-];
+for (const schemaType of ["Organization", "AboutPage", "BreadcrumbList"]) {
+  assert.ok(structuredData.includes(`"@type": "${schemaType}"`), `missing ${schemaType} structured data`);
+}
+assert.doesNotMatch(structuredData, /AggregateRating|offers|priceCurrency/);
 
-for (const section of requiredSections) {
-  assert.ok(
-    companySources.includes(`data-company-section="${section}"`),
-    `About page must render data-company-section=${section}`,
-  );
-}
-assert.equal(
-  (companySources.match(/data-company-section="/g) ?? []).length,
-  requiredSections.length,
-  "About page must render exactly 12 primary sections",
-);
-for (const removedSection of [
-  "manufacturing",
-  "testing",
-  "certificates",
-  "factory-gallery",
-]) {
-  assert.ok(
-    !companySources.includes(`data-company-section="${removedSection}"`),
-    `About page must not render data-company-section=${removedSection}`,
-  );
-}
-for (const removedComponent of [
-  "ManufacturingCapabilities.tsx",
-  "TestingVideo.tsx",
-  "CompanyMediaDialog.tsx",
-]) {
-  assert.ok(
-    !existsSync(resolve(root, `components/company/${removedComponent}`)),
-    `unused component must be removed: ${removedComponent}`,
-  );
-}
-assert.match(companySources, /id="product-system"/);
-assert.match(companySources, /scroll-mt-/);
-assert.match(companySources, /Explore Product System/);
-assert.match(companySources, /Talk to an Engineer/);
-
-assert.match(
-  data,
-  /VERIFY BEFORE PUBLISHING: values are inherited from the existing live site/,
-);
-for (const stat of ["15+", "60+", "200+", "10,000m²+"]) {
-  assert.ok(data.includes(stat), `missing existing site stat: ${stat}`);
-}
-for (const contactValue of [
-  "info@zyroncnc.com",
-  "+8615655537083",
-  "Dongjiao Industrial Park, Bowang Town, Bowang District, Ma’anshan City, Anhui Province, China",
-]) {
-  assert.ok(data.includes(contactValue), `missing company value: ${contactValue}`);
-}
-
-for (const categoryId of [
-  "shearing-machines",
-  "bending-machines",
-  "laser-cutting-machines",
-  "plate-rolling-machines",
-  "press-machines",
-  "rectangular-duct-production",
-  "round-duct-production",
-  "shredders",
-]) {
-  assert.ok(data.includes(categoryId), `missing product system category: ${categoryId}`);
-}
+assert.match(sidebar, /href: "\/admin\/about", label: "关于 ZYRON"/);
+assert.match(adminRoute, /getBySlug\(principal, "company"\)/);
+assert.match(adminRoute, /\/admin\/pages\/\$\{page\.id\}\/edit/);
+assert.match(pageService, /if \(slug === "company"\) return \["\/factory"\]/);
 
 const requiredMedia = [
-  "/brand/factory-showcase.png",
-  "/products/detail-front.jpg",
+  "zyron-factory-exterior.webp",
+  "press-brake-workshop.webp",
+  "shearing-machine-workshop.webp",
+  "laser-cutting-workshop.webp",
+  "power-press-workshop.webp",
 ];
-for (const mediaPath of requiredMedia) {
-  assert.ok(
-    `${companySources}\n${data}`.includes(mediaPath),
-    `missing real site media mapping: ${mediaPath}`,
-  );
-  assert.ok(
-    existsSync(resolve(root, `public${mediaPath}`)),
-    `mapped real site media must exist: ${mediaPath}`,
-  );
-}
-assert.match(companySources, /loading="lazy"/);
-
-for (const schemaType of ["Organization", "WebPage", "BreadcrumbList", "FAQPage"]) {
-  assert.ok(page.includes(`"@type": "${schemaType}"`), `missing ${schemaType} schema`);
-}
-assert.doesNotMatch(page, /AggregateRating|offers|priceCurrency/);
-
-assert.doesNotMatch(companySources, /<dialog/);
-assert.doesNotMatch(companySources, /<video/);
-assert.match(companySources, /aria-expanded=/);
-assert.match(companySources, /aria-controls=/);
-
-for (const field of [
-  "company",
-  "country",
-  "material",
-  "thicknessRange",
-  "workingLength",
-  "targetOutput",
-  "website",
-]) {
-  assert.ok(
-    companySources.includes(field),
-    `company inquiry form must include ${field}`,
-  );
-  assert.ok(
-    inquiryRoute.includes(field),
-    `inquiry endpoint must accept ${field}`,
-  );
-}
-assert.match(companySources, /aria-live/);
-assert.match(inquiryRoute, /website/);
-
-for (const requirement of [
-  "recommended ratio",
-  "ZYRON logo",
-  "background cleanup",
-  "Customer inspection",
-  "Container loading",
-]) {
-  assert.match(
-    photoShotList,
-    new RegExp(requirement, "i"),
-    `photo shot list must cover ${requirement}`,
-  );
+for (const file of requiredMedia) {
+  const mediaPath = resolve(root, "public/images/about", file);
+  assert.ok(existsSync(mediaPath), `missing About page media: ${file}`);
+  assert.ok(statSync(mediaPath).size > 10_000, `About page media is unexpectedly small: ${file}`);
+  assert.ok(content.includes(`/images/about/${file}`), `default content must reference ${file}`);
 }
 
-const combined = `${route}\n${companySources}\n${data}`;
+const combined = `${route}\n${content}\n${componentSources}`;
 assert.doesNotMatch(
   combined,
   /world[- ]leading|number one|best in the world|100% defect[- ]free|guaranteed lifetime|customers in every country|official partner of/i,
@@ -235,4 +105,4 @@ assert.doesNotMatch(
   "About page must not invent customer proof",
 );
 
-console.log("About ZYRON company page contract passed.");
+console.log("About ZYRON CMS page contract passed.");

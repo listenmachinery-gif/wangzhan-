@@ -204,6 +204,12 @@ function renderNode(node: PageNode): ReactNode {
   if (!definition) return null;
   const parsed = definition.contentSchema.safeParse(node.content);
   if (!parsed.success) return null;
+  if (
+    parsed.data &&
+    typeof parsed.data === "object" &&
+    "enabled" in parsed.data &&
+    parsed.data.enabled === false
+  ) return null;
   const children = node.children?.map((child) => (
     <Node key={child.id} node={child} />
   ));
