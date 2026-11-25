@@ -10,6 +10,9 @@ import { HomeHeroSection, type HomeHeroContent } from "@/components/site/home/Ho
 import { HomeNewsInsights, type HomeNewsInsightsContent } from "@/components/site/home/HomeNewsInsights";
 import { HomeProductShowcase, type HomeProductShowcaseContent } from "@/components/site/home/HomeProductShowcase";
 import { HomeWhyChooseSection, type HomeWhyChooseContent } from "@/components/site/home/HomeWhyChooseSection";
+import { AboutHeroSection, type AboutHeroContent } from "@/components/company/cms/AboutHeroSection";
+import { AboutCompanyOverviewSection, type AboutCompanyOverviewContent } from "@/components/company/cms/AboutCompanyOverviewSection";
+import { AboutManufacturingSection, type AboutManufacturingContent } from "@/components/company/cms/AboutManufacturingSection";
 import { productCategories } from "@/data/products";
 
 type Content = Record<string, unknown>;
@@ -45,6 +48,9 @@ function Advantages({ content }: { content: Content }) {
 
 export function renderNodeContent(type: PageComponentType, content: Content, children: ReactNode) {
   switch (type) {
+    case "ABOUT_HERO": return <AboutHeroSection content={content as AboutHeroContent} />;
+    case "ABOUT_COMPANY_OVERVIEW": return <AboutCompanyOverviewSection content={content as AboutCompanyOverviewContent} />;
+    case "ABOUT_MANUFACTURING": return <AboutManufacturingSection content={content as AboutManufacturingContent} />;
     case "HOME_HERO": return <HomeHeroSection content={content as HomeHeroContent} />;
     case "HOME_ABOUT": return <HomeAboutSection content={content as HomeAboutContent} />;
     case "HOME_PRODUCT_SHOWCASE": return <HomeProductShowcase content={content as HomeProductShowcaseContent} />;

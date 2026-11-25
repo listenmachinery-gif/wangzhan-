@@ -18,7 +18,7 @@ export type ComponentDefinition = {
 
 const text = z.string().max(5_000);
 const shortText = z.string().max(240);
-const url = z.string().max(2_048).refine((value) => (value.startsWith("/") && !value.startsWith("//")) || value.startsWith("https://"), "Use a site-relative or HTTPS URL.");
+const url = z.string().max(2_048).refine((value) => value.startsWith("#") || (value.startsWith("/") && !value.startsWith("//")) || value.startsWith("https://"), "Use a page anchor, site-relative, or HTTPS URL.");
 const optionalUrl = z.union([url, z.literal("")]);
 const mediaUrl = z.string().max(2_048).refine((value) => value.startsWith("/") && !value.startsWith("//"), "Use a site-relative media path.");
 const optionalMediaUrl = z.union([mediaUrl, z.literal("")]);
