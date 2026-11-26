@@ -167,6 +167,34 @@ describe("PageBuilder", () => {
     expect(valueTitle).toHaveValue("Reliable\nMachines");
   });
 
+  it("shows every About manufacturing image as a separate media-library slot", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({
+      items: [{ id: "factory-two", originalName: "factory-two.jpg", mimeType: "image/jpeg", altText: "Factory production line two", category: "Factory", previewUrl: "https://preview.example/factory-two.jpg" }],
+      nextCursor: null,
+    })));
+    const onPersist = vi.fn().mockResolvedValue({ version: 2 });
+    const user = userEvent.setup();
+    const aboutPage = { ...page, id: "about-page", slug: "about-zyron", document: aboutZyronDocument };
+    render(<PageBuilder page={aboutPage} canPublish onPersist={onPersist} />);
+
+    await user.click(screen.getByRole("button", { name: "选择 关于 ZYRON · 制造能力" }));
+    expect(screen.getByText("四张图片可分别替换")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "从媒体库替换第 1 张图片" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "从媒体库替换第 2 张图片" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "从媒体库替换第 3 张图片" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "从媒体库替换第 4 张图片" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "从媒体库替换第 2 张图片" }));
+    await user.click(await screen.findByRole("button", { name: /factory-two\.jpg/ }));
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+    await waitFor(() => expect(onPersist).toHaveBeenCalledTimes(1));
+
+    const saved = onPersist.mock.calls[0][0].document.nodes[2].content.processes;
+    expect(saved[0].src).toBe((aboutZyronDocument.nodes[2].content as { processes: { src: string }[] }).processes[0].src);
+    expect(saved[1]).toMatchObject({ src: "/api/media/factory-two", alt: "Factory production line two" });
+    fetchMock.mockRestore();
+  });
+
   it("replaces the global support map through the media library and syncs alt text", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({
       items: [{ id: "map-asset", originalName: "global-map.jpg", mimeType: "image/jpeg", altText: "ZYRON global delivery network", category: "Company", previewUrl: "https://preview.example/global-map.jpg" }],
