@@ -47,6 +47,11 @@ export const PAGE_COMPONENT_TYPES = [
   "ABOUT_HERO",
   "ABOUT_COMPANY_OVERVIEW",
   "ABOUT_MANUFACTURING",
+  "ABOUT_NUMBERS",
+  "ABOUT_QUALITY",
+  "ABOUT_ENGINEERING",
+  "ABOUT_GLOBAL_DELIVERY",
+  "ABOUT_QUOTE",
 ] as const;
 
 export type PageComponentType = (typeof PAGE_COMPONENT_TYPES)[number];

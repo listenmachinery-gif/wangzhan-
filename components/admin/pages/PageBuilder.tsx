@@ -317,7 +317,7 @@ function FieldEditor({
         // Media slots are backed by the existing protected MediaAsset library.
         // Persist a stable /api/media/id path instead of a temporary signed preview URL.
         const fieldIsMedia = field.kind === "url" && (
-          ["src", "image", "poster", "backgroundImage", "backgroundVideo", "videoSrc", "desktopImage", "mobileImage", "tabletImage"].includes(field.key)
+          ["src", "image", "poster", "backgroundImage", "backgroundVideo", "videoSrc", "desktopImage", "mobileImage", "tabletImage", "featureImage"].includes(field.key)
         );
         const kind: LibraryMediaKind = ["videoSrc", "backgroundVideo"].includes(field.key) || (node.type === "VIDEO" && field.key === "src") ? "video" : "image";
         const structuredArray = Array.isArray(value) && value.length > 0 && value.every((entry) =>
@@ -430,7 +430,9 @@ function FieldEditor({
                   onSelect={(media) => {
                     const nextContent: Record<string, unknown> = { ...content, [field.key]: media.url };
                     if (kind === "image") {
-                      const altField = field.key === "image" ? (Object.hasOwn(content, "imageAlt") ? "imageAlt" : "alt") : field.key === "src" ? "alt" : null;
+                      const altField = ["image", "featureImage"].includes(field.key)
+                        ? (Object.hasOwn(content, `${field.key}Alt`) ? `${field.key}Alt` : Object.hasOwn(content, "imageAlt") ? "imageAlt" : "alt")
+                        : field.key === "src" ? "alt" : null;
                       if (altField && Object.hasOwn(content, altField)) nextContent[altField] = media.altText || nextContent[altField];
                     }
                     onChange(nextContent);
