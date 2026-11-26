@@ -174,11 +174,19 @@ describe("PageBuilder", () => {
     })));
     const onPersist = vi.fn().mockResolvedValue({ version: 2 });
     const user = userEvent.setup();
+    const globalNode = aboutZyronDocument.nodes[6];
+    const legacyContent: Record<string, unknown> = {
+      ...(globalNode.content as Record<string, unknown>),
+      mapAriaLabel: "Legacy global support map",
+    };
+    delete legacyContent.mapImage;
+    delete legacyContent.mapImageAlt;
+    delete legacyContent.mapImageFocus;
     const globalOnly = {
       ...page,
       id: "about-global-page",
       slug: "about-global",
-      document: { ...aboutZyronDocument, nodes: [aboutZyronDocument.nodes[6]] },
+      document: { ...aboutZyronDocument, nodes: [{ ...globalNode, content: legacyContent as typeof globalNode.content }] },
     };
     render(<PageBuilder page={globalOnly} canPublish onPersist={onPersist} />);
 

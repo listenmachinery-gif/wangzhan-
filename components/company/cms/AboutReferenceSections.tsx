@@ -129,7 +129,7 @@ export function AboutGlobalDeliverySection({ content }: { content: AboutGlobalDe
           {content.showCta && content.ctaLabel ? <IndustrialCta href={content.ctaHref} label={content.ctaLabel} /> : null}
         </div>
         <div className={styles.worldGraphic}>
-          <Image src={content.mapImage} alt={content.mapImageAlt} fill sizes="(min-width: 1024px) 56vw, 100vw" style={{ objectPosition: content.mapImageFocus || "center" }} />
+          <Image unoptimized={content.mapImage.startsWith("/api/media/")} src={content.mapImage} alt={content.mapImageAlt} fill sizes="(min-width: 1024px) 56vw, 100vw" style={{ objectPosition: content.mapImageFocus || "center" }} />
         </div>
       </div>
       <dl className={styles.proofGrid}>{content.proofPoints.map((item) => <div key={`${item.value}-${item.label}`}><dt>{item.value}</dt><dd>{item.label}</dd></div>)}</dl>

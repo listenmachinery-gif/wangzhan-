@@ -430,10 +430,14 @@ function FieldEditor({
                   onSelect={(media) => {
                     const nextContent: Record<string, unknown> = { ...content, [field.key]: media.url };
                     if (kind === "image") {
-                      const altField = ["image", "featureImage", "mapImage"].includes(field.key)
-                        ? (Object.hasOwn(content, `${field.key}Alt`) ? `${field.key}Alt` : Object.hasOwn(content, "imageAlt") ? "imageAlt" : "alt")
+                      const altField = field.key === "mapImage"
+                        ? "mapImageAlt"
+                        : ["image", "featureImage"].includes(field.key)
+                          ? (Object.hasOwn(content, `${field.key}Alt`) ? `${field.key}Alt` : Object.hasOwn(content, "imageAlt") ? "imageAlt" : "alt")
                         : field.key === "src" ? "alt" : null;
-                      if (altField && Object.hasOwn(content, altField)) nextContent[altField] = media.altText || nextContent[altField];
+                      if (altField && (Object.hasOwn(content, altField) || (field.key === "mapImage" && media.altText))) {
+                        nextContent[altField] = media.altText || nextContent[altField];
+                      }
                     }
                     onChange(nextContent);
                   }}

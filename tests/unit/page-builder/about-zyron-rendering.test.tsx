@@ -67,12 +67,29 @@ describe("About ZYRON PageBuilder rendering", () => {
     expect(container.querySelector('[data-page-text="ctaLabel"]')).toHaveTextContent("Discover Our Story");
     expect(stylesheet).toContain('[data-page-node="about-hero"] [data-page-text="titleLineOne"]');
     expect(stylesheet).toContain("font-size:52px!important");
-    expect(container.querySelector('[data-page-node="about-hero"]')).toHaveClass("[&_[data-page-text]]:whitespace-pre-line");
+    expect(container.querySelector('[data-page-node="about-hero"]')).toHaveClass("whitespace-pre-line");
   });
 
   it("renders the global support visual as CMS media with descriptive alt text", () => {
     render(<PageRenderer document={aboutZyronDocument} />);
     expect(screen.getByRole("img", { name: /global machinery project support/i })).toBeInTheDocument();
+  });
+
+  it("bypasses Next image optimization for a media-library map redirect", () => {
+    const global = aboutZyronDocument.nodes[6];
+    const document = {
+      ...aboutZyronDocument,
+      nodes: [{
+        ...global,
+        content: {
+          ...(global.content as Record<string, unknown>),
+          mapImage: "/api/media/global-map",
+          mapImageAlt: "Replacement global map",
+        },
+      }],
+    };
+    render(<PageRenderer document={document} />);
+    expect(screen.getByRole("img", { name: "Replacement global map" })).toHaveAttribute("src", "/api/media/global-map");
   });
 
   it("keeps the real inquiry fields and descriptive media alternatives", () => {
