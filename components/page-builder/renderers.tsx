@@ -13,6 +13,18 @@ import { HomeWhyChooseSection, type HomeWhyChooseContent } from "@/components/si
 import { AboutHeroSection, type AboutHeroContent } from "@/components/company/cms/AboutHeroSection";
 import { AboutCompanyOverviewSection, type AboutCompanyOverviewContent } from "@/components/company/cms/AboutCompanyOverviewSection";
 import { AboutManufacturingSection, type AboutManufacturingContent } from "@/components/company/cms/AboutManufacturingSection";
+import {
+  AboutEngineeringSection,
+  AboutGlobalDeliverySection,
+  AboutNumbersSection,
+  AboutQualitySection,
+  AboutQuoteSection,
+  type AboutEngineeringContent,
+  type AboutGlobalDeliveryContent,
+  type AboutNumbersContent,
+  type AboutQualityContent,
+  type AboutQuoteContent,
+} from "@/components/company/cms/AboutReferenceSections";
 import { productCategories } from "@/data/products";
 
 type Content = Record<string, unknown>;
@@ -51,6 +63,11 @@ export function renderNodeContent(type: PageComponentType, content: Content, chi
     case "ABOUT_HERO": return <AboutHeroSection content={content as AboutHeroContent} />;
     case "ABOUT_COMPANY_OVERVIEW": return <AboutCompanyOverviewSection content={content as AboutCompanyOverviewContent} />;
     case "ABOUT_MANUFACTURING": return <AboutManufacturingSection content={content as AboutManufacturingContent} />;
+    case "ABOUT_NUMBERS": return <AboutNumbersSection content={content as AboutNumbersContent} />;
+    case "ABOUT_QUALITY": return <AboutQualitySection content={content as AboutQualityContent} />;
+    case "ABOUT_ENGINEERING": return <AboutEngineeringSection content={content as AboutEngineeringContent} />;
+    case "ABOUT_GLOBAL_DELIVERY": return <AboutGlobalDeliverySection content={content as AboutGlobalDeliveryContent} />;
+    case "ABOUT_QUOTE": return <AboutQuoteSection content={content as AboutQuoteContent} />;
     case "HOME_HERO": return <HomeHeroSection content={content as HomeHeroContent} />;
     case "HOME_ABOUT": return <HomeAboutSection content={content as HomeAboutContent} />;
     case "HOME_PRODUCT_SHOWCASE": return <HomeProductShowcase content={content as HomeProductShowcaseContent} />;

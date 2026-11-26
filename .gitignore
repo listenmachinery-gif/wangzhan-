@@ -10,6 +10,7 @@ tsconfig.tsbuildinfo
 .env.*.local
 .env.test
 .playwright/
+.impeccable/
 test-results/
 playwright-report/
 .storage-test/

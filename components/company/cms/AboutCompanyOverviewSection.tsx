@@ -27,9 +27,16 @@ function Highlight({ text, highlight }: { text: string; highlight: string }) {
 export function AboutCompanyOverviewSection({ content }: { content: AboutCompanyOverviewContent }) {
   if (!content.enabled) return null;
   return (
-    <section id="company-overview" className={styles.overview} data-company-section="about-cms-overview">
+    <section id="company-overview" className={styles.overview} data-company-section="about-cms-overview" data-company-layout="gallery-left-copy-right">
       {content.showGeometry ? <div aria-hidden="true" data-about-decoration className={styles.overviewGeometry} /> : null}
       <div className={styles.overviewInner}>
+        <div className={styles.overviewGallery} aria-label="ZYRON manufacturing workshop photography">
+          {content.images.map((image, index) => (
+            <div className={styles.overviewImage} key={`${image.src}-${index}`}>
+              <Image src={image.src} alt={image.alt} fill sizes="(min-width: 1024px) 28vw, 50vw" style={{ objectPosition: image.focus || "center" }} />
+            </div>
+          ))}
+        </div>
         <div className={styles.overviewCopy}>
           <p className={styles.darkEyebrow} data-page-text="eyebrow"><span>{content.eyebrow}</span><i aria-hidden="true" /></p>
           <h2 data-page-text="title" className={styles.overviewTitle}><Highlight text={content.title} highlight={content.highlight} /></h2>
@@ -40,13 +47,6 @@ export function AboutCompanyOverviewSection({ content }: { content: AboutCompany
             {content.values.map((value) => <li key={value.title}>{value.title}</li>)}
           </ul>
           {content.showCta && content.ctaLabel ? <IndustrialCta href={content.ctaHref} label={content.ctaLabel} /> : null}
-        </div>
-        <div className={styles.overviewGallery} aria-label="ZYRON manufacturing workshop photography">
-          {content.images.map((image, index) => (
-            <div className={styles.overviewImage} key={`${image.src}-${index}`}>
-              <Image src={image.src} alt={image.alt} fill sizes="(min-width: 1024px) 28vw, 50vw" style={{ objectPosition: image.focus || "center" }} />
-            </div>
-          ))}
         </div>
       </div>
       {content.showMetalDecoration ? <div aria-hidden="true" data-about-decoration className={styles.overviewMetal} /> : null}

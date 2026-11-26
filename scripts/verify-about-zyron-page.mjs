@@ -21,6 +21,7 @@ const componentSources = [
   "AboutHeroSection.tsx",
   "AboutCompanyOverviewSection.tsx",
   "AboutManufacturingSection.tsx",
+  "AboutReferenceSections.tsx",
   "IndustrialCta.tsx",
 ]
   .map((file) => read(`components/company/cms/${file}`))
@@ -41,7 +42,16 @@ assert.match(route, /aboutZyronDocument/);
 assert.match(route, /ABOUT_HERO/);
 assert.match(route, /CompanyStructuredData/);
 
-for (const type of ["ABOUT_HERO", "ABOUT_COMPANY_OVERVIEW", "ABOUT_MANUFACTURING"]) {
+for (const type of [
+  "ABOUT_HERO",
+  "ABOUT_COMPANY_OVERVIEW",
+  "ABOUT_MANUFACTURING",
+  "ABOUT_NUMBERS",
+  "ABOUT_QUALITY",
+  "ABOUT_ENGINEERING",
+  "ABOUT_GLOBAL_DELIVERY",
+  "ABOUT_QUOTE",
+]) {
   assert.ok(content.includes(`type: "${type}"`), `default document must include ${type}`);
   assert.ok(registry.includes(`type: "${type}"`), `component registry must expose ${type}`);
   assert.ok(renderer.includes(`case "${type}"`), `page renderer must support ${type}`);
@@ -51,11 +61,11 @@ for (const nodeId of [
   "about-hero",
   "about-company-overview",
   "about-manufacturing",
-  "about-capability-overview",
+  "about-numbers",
   "about-quality",
   "about-engineering",
   "about-global-delivery",
-  "about-contact",
+  "about-quote",
 ]) {
   assert.ok(content.includes(`id: "${nodeId}"`), `missing About page module: ${nodeId}`);
 }

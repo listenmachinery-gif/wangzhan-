@@ -32,6 +32,30 @@ describe("About ZYRON PageBuilder rendering", () => {
     expect(screen.getByRole("link", { name: /Explore Our Machines/i })).toHaveAttribute("href", "/products");
   });
 
+  it("renders all eight About modules as semantic live content", () => {
+    const { container } = render(<PageRenderer document={aboutZyronDocument} />);
+
+    expect(container.querySelectorAll("[data-company-section]")).toHaveLength(8);
+    expect(container.querySelector('[data-company-layout="gallery-left-copy-right"]')).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: /Built Around Real Production Needs/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: /Practical Checks for Reliable Performance/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: /Engineered for Precision/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: /Built in China/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: /Your Next Step/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: /Request a Quote/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Send Inquiry/i })).toBeInTheDocument();
+  });
+
+  it("keeps the real inquiry fields and descriptive media alternatives", () => {
+    render(<PageRenderer document={aboutZyronDocument} />);
+
+    expect(screen.getByLabelText(/Name/i)).toBeRequired();
+    expect(screen.getByLabelText(/Email/i)).toBeRequired();
+    expect(screen.getAllByRole("img", { name: /factory exterior/i })).toHaveLength(2);
+    expect(screen.getByRole("img", { name: /workshop inspection/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Explore All Machines/i })).toHaveAttribute("href", "/products");
+  });
+
   it("omits a disabled section and preserves text as live HTML", () => {
     const hero = aboutZyronDocument.nodes[0];
     const document = {
