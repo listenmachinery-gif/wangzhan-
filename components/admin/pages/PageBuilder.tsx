@@ -125,6 +125,35 @@ function StructuredRepeaterEditor({
   return (
     <div className="space-y-3">
       <p className="text-xs font-semibold text-neutral-600">{fieldLabel}</p>
+      {hasMedia && items.length > 1 ? (
+        <section aria-label={`${fieldLabel}媒体快速替换`} className="rounded-lg border border-[#76B900]/35 bg-lime-50/60 p-3">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <strong className="text-xs text-neutral-800">
+              {items.length === 4 ? "四张图片可分别替换" : `共 ${items.length} 个媒体位，可分别替换`}
+            </strong>
+            <span className="text-[11px] text-neutral-500">替换一张不会影响其他图片</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {items.map((item, index) => {
+              const mediaKey = typeof item.src === "string" ? "src" : typeof item.image === "string" ? "image" : null;
+              if (!mediaKey) return null;
+              const mediaKind: LibraryMediaKind = item.mediaKind === "video" ? "video" : "image";
+              return (
+                <MediaAssetPicker
+                  key={`${mediaKey}-${index}`}
+                  label={`从媒体库替换第 ${index + 1} ${mediaKind === "video" ? "个视频" : "张图片"}`}
+                  kind={mediaKind}
+                  onSelect={(media) => update(index, {
+                    [mediaKey]: media.url,
+                    ...(Object.hasOwn(item, "alt") && media.altText ? { alt: media.altText } : {}),
+                    ...(Object.hasOwn(item, "imageAlt") && media.altText ? { imageAlt: media.altText } : {}),
+                  })}
+                />
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
       {items.map((item, index) => {
         const mediaKey = typeof item.src === "string" ? "src" : typeof item.image === "string" ? "image" : null;
         const mediaKind: LibraryMediaKind = item.mediaKind === "video" ? "video" : "image";
