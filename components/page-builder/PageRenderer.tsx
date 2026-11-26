@@ -227,6 +227,7 @@ function Node({ node }: { node: PageNode }) {
   if (content === null) return null;
   return (
     <div
+      className="[&_[data-page-text]]:whitespace-pre-line"
       data-page-component={node.type}
       data-page-node={node.id}
       style={styleToCss(node.style)}

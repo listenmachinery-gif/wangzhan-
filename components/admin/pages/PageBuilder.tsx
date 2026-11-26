@@ -160,7 +160,7 @@ function StructuredRepeaterEditor({
                 </label>
               );
               const label = repeaterFieldLabels[key] ?? key;
-              const multiline = key === "description" || key === "body";
+              const multiline = !["href", "src", "image", "focus", "mediaKind", "status"].includes(key);
               if (typeof value === "boolean") return (
                 <label key={key} className="flex items-center gap-2 text-xs">
                   <input
@@ -317,7 +317,7 @@ function FieldEditor({
         // Media slots are backed by the existing protected MediaAsset library.
         // Persist a stable /api/media/id path instead of a temporary signed preview URL.
         const fieldIsMedia = field.kind === "url" && (
-          ["src", "image", "poster", "backgroundImage", "backgroundVideo", "videoSrc", "desktopImage", "mobileImage", "tabletImage", "featureImage"].includes(field.key)
+          ["src", "image", "poster", "backgroundImage", "backgroundVideo", "videoSrc", "desktopImage", "mobileImage", "tabletImage", "featureImage", "mapImage"].includes(field.key)
         );
         const kind: LibraryMediaKind = ["videoSrc", "backgroundVideo"].includes(field.key) || (node.type === "VIDEO" && field.key === "src") ? "video" : "image";
         const structuredArray = Array.isArray(value) && value.length > 0 && value.every((entry) =>
@@ -396,14 +396,14 @@ function FieldEditor({
                     : [{ value: "right", label: "图片在右" }, { value: "left", label: "图片在左" }]
                 ).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
               </select>
-            ) : field.kind === "textarea" ? (
+            ) : field.kind === "textarea" || field.kind === "text" ? (
               <textarea
                 aria-label={field.label}
                 value={String(value ?? "")}
                 onChange={(event) =>
                   onChange({ ...content, [field.key]: event.target.value })
                 }
-                rows={4}
+                rows={field.kind === "textarea" ? 4 : 2}
                 className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
               />
             ) : (
@@ -430,7 +430,7 @@ function FieldEditor({
                   onSelect={(media) => {
                     const nextContent: Record<string, unknown> = { ...content, [field.key]: media.url };
                     if (kind === "image") {
-                      const altField = ["image", "featureImage"].includes(field.key)
+                      const altField = ["image", "featureImage", "mapImage"].includes(field.key)
                         ? (Object.hasOwn(content, `${field.key}Alt`) ? `${field.key}Alt` : Object.hasOwn(content, "imageAlt") ? "imageAlt" : "alt")
                         : field.key === "src" ? "alt" : null;
                       if (altField && Object.hasOwn(content, altField)) nextContent[altField] = media.altText || nextContent[altField];

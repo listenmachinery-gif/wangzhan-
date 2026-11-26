@@ -16,6 +16,7 @@ type InquiryFormProps = {
   firstInputRef?: Ref<HTMLInputElement>;
   headingLevel?: "h2" | "h3";
   submitLabel?: string;
+  textKeys?: Partial<Record<"eyebrow" | "heading" | "description" | "privacy" | "submit", string>>;
 };
 
 type SubmitState = "idle" | "sending" | "success" | "error";
@@ -57,6 +58,7 @@ export function InquiryForm({
   firstInputRef,
   headingLevel = "h2",
   submitLabel = "Send Inquiry",
+  textKeys,
 }: InquiryFormProps) {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [message, setMessage] = useState("");
@@ -105,9 +107,9 @@ export function InquiryForm({
 
   return (
     <form onSubmit={handleSubmit} onFocusCapture={trackStart} className={`rounded-md bg-white p-7 text-neutral-950 shadow-sm lg:p-9 ${homepage ? "border border-white/10" : ""}`}>
-      {eyebrow ? <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ignition">{eyebrow}</p> : null}
-      <Heading className={`${eyebrow ? "mt-3" : ""} text-3xl font-semibold text-neutral-950`}>{heading}</Heading>
-      {description ? <p className="mt-3 text-sm leading-6 text-neutral-600">{description}</p> : null}
+      {eyebrow ? <p data-page-text={textKeys?.eyebrow} className="text-sm font-semibold uppercase tracking-[0.18em] text-ignition">{eyebrow}</p> : null}
+      <Heading data-page-text={textKeys?.heading} className={`${eyebrow ? "mt-3" : ""} text-3xl font-semibold text-neutral-950`}>{heading}</Heading>
+      {description ? <p data-page-text={textKeys?.description} className="mt-3 text-sm leading-6 text-neutral-600">{description}</p> : null}
       <div className="mt-7 grid gap-4 md:grid-cols-2">
         <label className="grid gap-2 text-sm font-semibold text-neutral-700">
           {homepage ? "Your Name *" : "Name"}
@@ -180,10 +182,10 @@ export function InquiryForm({
         disabled={submitState === "sending"}
         className="mt-6 inline-flex items-center gap-2 rounded-sm bg-ignition px-5 py-3 text-sm font-semibold text-white transition hover:bg-neon disabled:cursor-not-allowed disabled:opacity-65"
       >
-        {submitState === "sending" ? "Sending..." : submitLabel}
+        <span data-page-text={textKeys?.submit}>{submitState === "sending" ? "Sending..." : submitLabel}</span>
         <Send size={16} />
       </button>
-      {privacyText ? <p className="mt-4 text-xs leading-5 text-neutral-500">{privacyText}</p> : null}
+      {privacyText ? <p data-page-text={textKeys?.privacy} className="mt-4 text-xs leading-5 text-neutral-500">{privacyText}</p> : null}
       {message ? (
         <p className={`mt-4 text-sm leading-6 ${submitState === "success" ? "text-green-700" : "text-red-600"}`}>
           {message}
