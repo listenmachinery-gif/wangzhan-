@@ -41,14 +41,57 @@ describe("About ZYRON CMS document", () => {
     );
   });
 
-  it("uses the approved hero copy and avoids unsupported business claims", () => {
+  it("uses the approved hero copy and the requested About numbers content", () => {
     const content = JSON.stringify(aboutZyronDocument);
     expect(content).toContain("Engineered for Precision.");
     expect(content).toContain("Built for the Future.");
     expect(content).toContain("Precision Machinery, Built for Modern Manufacturing.");
-    expect(content).not.toMatch(
-      /world[- ]leading|number one|fortune 500|ISO\s*9001|CE certified|SGS|\b\d{2,}\+\s*(years|countries|customers)|3,?500\s*m|500\s*machines/i,
-    );
+    expect(content).toContain("Built on Experience.\\nDriven by Excellence.");
+    expect(content).toContain('"value":"15+","label":"Years of Experience"');
+    expect(content).toContain('"value":"100+","label":"Countries Served"');
+    expect(content).toContain('"value":"3,500 m²","label":"Manufacturing Area"');
+    expect(content).toContain('"value":"500","label":"Machines per Year"');
+    expect(content).not.toMatch(/world[- ]leading|number one|fortune 500|ISO\s*9001|CE certified|SGS/i);
+  });
+
+  it("pins the requested line breaks and exposes a replaceable global map image", () => {
+    const hero = aboutZyronDocument.nodes.find((node) => node.type === "ABOUT_HERO")!;
+    const overview = aboutZyronDocument.nodes.find((node) => node.type === "ABOUT_COMPANY_OVERVIEW")!;
+    const global = aboutZyronDocument.nodes.find((node) => node.type === "ABOUT_GLOBAL_DELIVERY")!;
+
+    expect((hero.content as { values: Array<{ title: string }> }).values.map((item) => item.title)).toEqual([
+      "Reliable\nMachines",
+      "Professional\nSolutions",
+      "Long-Term\nSupport",
+    ]);
+    expect((overview.content as { values: Array<{ title: string }> }).values.map((item) => item.title)).toEqual([
+      "Comprehensive\nProduct\nRange",
+      "Reliable\nManufacturing\nQuality",
+      "Dedicated\nTechnical\nSupport",
+    ]);
+    expect(global.content).toMatchObject({
+      mapImage: expect.stringMatching(/^\//),
+      mapImageAlt: expect.any(String),
+      mapImageFocus: expect.any(String),
+    });
+  });
+
+  it("keeps the previously published global delivery document renderable during deployment", () => {
+    const definition = getComponentDefinition("ABOUT_GLOBAL_DELIVERY")!;
+    const current = aboutZyronDocument.nodes.find((node) => node.type === "ABOUT_GLOBAL_DELIVERY")!.content as Record<string, unknown>;
+    const legacy: Record<string, unknown> = { ...current, mapAriaLabel: "Global support map" };
+    delete legacy.mapImage;
+    delete legacy.mapImageAlt;
+    delete legacy.mapImageFocus;
+
+    const parsed = definition.contentSchema.safeParse(legacy);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data).toMatchObject({
+        mapImage: "/images/about/zyron-global-delivery-map.png",
+        mapImageFocus: "center",
+      });
+    }
   });
 
   it("keeps every content image editable with descriptive alt text", () => {

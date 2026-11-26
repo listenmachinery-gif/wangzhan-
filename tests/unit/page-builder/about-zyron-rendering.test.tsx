@@ -37,7 +37,7 @@ describe("About ZYRON PageBuilder rendering", () => {
 
     expect(container.querySelectorAll("[data-company-section]")).toHaveLength(8);
     expect(container.querySelector('[data-company-layout="gallery-left-copy-right"]')).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 2, name: /Built Around Real Production Needs/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: /Built on Experience[\s\S]*Driven by Excellence/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: /Practical Checks for Reliable Performance/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: /Engineered for Precision/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: /Built in China/i })).toBeInTheDocument();
@@ -46,12 +46,59 @@ describe("About ZYRON PageBuilder rendering", () => {
     expect(screen.getByRole("button", { name: /Send Inquiry/i })).toBeInTheDocument();
   });
 
+  it("binds About scalar text fields to independently scoped typography styles", () => {
+    const hero = aboutZyronDocument.nodes[0];
+    const document = {
+      ...aboutZyronDocument,
+      nodes: [{
+        ...hero,
+        textStyles: {
+          titleLineOne: { color: "#ff0000", fontSize: 52 },
+          titleLineTwo: { color: "#00ff00", fontSize: 40 },
+          ctaLabel: { fontSize: 19 },
+        },
+      }],
+    };
+    const { container } = render(<PageRenderer document={document} />);
+    const stylesheet = container.querySelector("style")?.textContent ?? "";
+
+    expect(container.querySelector('[data-page-text="titleLineOne"]')).toHaveTextContent("Engineered for Precision.");
+    expect(container.querySelector('[data-page-text="titleLineTwo"]')).toHaveTextContent("Built for the Future.");
+    expect(container.querySelector('[data-page-text="ctaLabel"]')).toHaveTextContent("Discover Our Story");
+    expect(stylesheet).toContain('[data-page-node="about-hero"] [data-page-text="titleLineOne"]');
+    expect(stylesheet).toContain("font-size:52px!important");
+    expect(container.querySelector('[data-page-node="about-hero"]')).toHaveClass("whitespace-pre-line");
+  });
+
+  it("renders the global support visual as CMS media with descriptive alt text", () => {
+    render(<PageRenderer document={aboutZyronDocument} />);
+    expect(screen.getByRole("img", { name: /global machinery project support/i })).toBeInTheDocument();
+  });
+
+  it("bypasses Next image optimization for a media-library map redirect", () => {
+    const global = aboutZyronDocument.nodes[6];
+    const document = {
+      ...aboutZyronDocument,
+      nodes: [{
+        ...global,
+        content: {
+          ...(global.content as Record<string, unknown>),
+          mapImage: "/api/media/global-map",
+          mapImageAlt: "Replacement global map",
+        },
+      }],
+    };
+    render(<PageRenderer document={document} />);
+    expect(screen.getByRole("img", { name: "Replacement global map" })).toHaveAttribute("src", "/api/media/global-map");
+  });
+
   it("keeps the real inquiry fields and descriptive media alternatives", () => {
     render(<PageRenderer document={aboutZyronDocument} />);
 
     expect(screen.getByLabelText(/Name/i)).toBeRequired();
     expect(screen.getByLabelText(/Email/i)).toBeRequired();
-    expect(screen.getAllByRole("img", { name: /factory exterior/i })).toHaveLength(2);
+    expect(screen.getAllByRole("img", { name: /factory exterior/i })).toHaveLength(1);
+    expect(screen.getByRole("img", { name: /sheet metal machinery inside a manufacturing workshop/i })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /workshop inspection/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Explore All Machines/i })).toHaveAttribute("href", "/products");
   });
@@ -64,6 +111,6 @@ describe("About ZYRON PageBuilder rendering", () => {
     };
     const { container } = render(<PageRenderer document={document} />);
 
-    expect(container).toBeEmptyDOMElement();
+    expect(container.querySelector("[data-page-component]")).not.toBeInTheDocument();
   });
 });

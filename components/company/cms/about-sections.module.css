@@ -179,12 +179,15 @@
 .valueStrip li,
 .overviewValues li {
   position: relative;
+  display: flex;
+  align-items: flex-start;
   min-height: 86px;
   padding: 0 clamp(18px, 1.6vw, 30px) 24px;
   color: #fff;
   font-size: clamp(.98rem, 1.15vw, 1.25rem);
   font-weight: 600;
   line-height: 1.25;
+  white-space: pre-line;
 }
 
 .valueStrip li:first-child,
@@ -298,6 +301,10 @@
 
 .overviewValues {
   margin-top: 36px;
+}
+
+.overviewValues li {
+  min-height: 112px;
 }
 
 .overviewGallery {

@@ -22,7 +22,7 @@ export type AboutManufacturingContent = {
 function Highlight({ text, highlight }: { text: string; highlight: string }) {
   const index = highlight ? text.indexOf(highlight) : -1;
   if (index < 0) return <>{text}</>;
-  return <>{text.slice(0, index)}<span>{highlight}</span>{text.slice(index + highlight.length)}</>;
+  return <>{text.slice(0, index)}<span data-page-text="highlight">{highlight}</span>{text.slice(index + highlight.length)}</>;
 }
 
 export function AboutManufacturingSection({ content }: { content: AboutManufacturingContent }) {

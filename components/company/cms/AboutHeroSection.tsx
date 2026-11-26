@@ -26,7 +26,7 @@ export type AboutHeroContent = {
 function Highlight({ text, highlight }: { text: string; highlight: string }) {
   const index = highlight ? text.indexOf(highlight) : -1;
   if (index < 0) return <>{text}</>;
-  return <>{text.slice(0, index)}<span>{highlight}</span>{text.slice(index + highlight.length)}</>;
+  return <>{text.slice(0, index)}<span data-page-text="highlight">{highlight}</span>{text.slice(index + highlight.length)}</>;
 }
 
 export function AboutHeroSection({ content }: { content: AboutHeroContent }) {
@@ -79,8 +79,8 @@ export function AboutHeroSection({ content }: { content: AboutHeroContent }) {
       <div className={styles.heroInner}>
         <div className={styles.heroCopy}>
           <p className={styles.darkEyebrow} data-page-text="eyebrow"><span>{content.eyebrow}</span><i aria-hidden="true" /></p>
-          <h1 data-page-text="titleLineOne" className={styles.heroTitle}>
-            <span>{content.titleLineOne}</span>
+          <h1 className={styles.heroTitle}>
+            <span data-page-text="titleLineOne">{content.titleLineOne}</span>
             {" "}
             <span data-page-text="titleLineTwo"><Highlight text={content.titleLineTwo} highlight={content.highlight} /></span>
           </h1>

@@ -13,6 +13,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { PageBuilder } from "@/components/admin/pages/PageBuilder";
 import { defaultHomepageDocument, homepageRedesignDocument } from "@/lib/page-builder/default-homepage";
+import { aboutZyronDocument } from "@/lib/page-builder/about-zyron-content";
 
 const page = {
   id: "home-page",
@@ -148,6 +149,57 @@ describe("PageBuilder", () => {
       },
     });
     expect(onPersist.mock.calls[0][0].document.nodes[0].textStyles?.heading).toBeUndefined();
+  });
+
+  it("uses multiline editors for text fields and structured text values", async () => {
+    const user = userEvent.setup();
+    const aboutPage = { ...page, id: "about-page", slug: "about-zyron", document: aboutZyronDocument };
+    render(<PageBuilder page={aboutPage} canPublish onPersist={vi.fn()} />);
+
+    const eyebrow = screen.getByRole("textbox", { name: "品牌标签" });
+    expect(eyebrow.tagName).toBe("TEXTAREA");
+    await user.clear(eyebrow);
+    await user.type(eyebrow, "ABOUT{enter}ZYRON");
+    expect(eyebrow).toHaveValue("ABOUT\nZYRON");
+
+    const valueTitle = screen.getByRole("textbox", { name: "第 1 项 标题" });
+    expect(valueTitle.tagName).toBe("TEXTAREA");
+    expect(valueTitle).toHaveValue("Reliable\nMachines");
+  });
+
+  it("replaces the global support map through the media library and syncs alt text", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({
+      items: [{ id: "map-asset", originalName: "global-map.jpg", mimeType: "image/jpeg", altText: "ZYRON global delivery network", category: "Company", previewUrl: "https://preview.example/global-map.jpg" }],
+      nextCursor: null,
+    })));
+    const onPersist = vi.fn().mockResolvedValue({ version: 2 });
+    const user = userEvent.setup();
+    const globalNode = aboutZyronDocument.nodes[6];
+    const legacyContent: Record<string, unknown> = {
+      ...(globalNode.content as Record<string, unknown>),
+      mapAriaLabel: "Legacy global support map",
+    };
+    delete legacyContent.mapImage;
+    delete legacyContent.mapImageAlt;
+    delete legacyContent.mapImageFocus;
+    const globalOnly = {
+      ...page,
+      id: "about-global-page",
+      slug: "about-global",
+      document: { ...aboutZyronDocument, nodes: [{ ...globalNode, content: legacyContent as typeof globalNode.content }] },
+    };
+    render(<PageBuilder page={globalOnly} canPublish onPersist={onPersist} />);
+
+    await user.click(screen.getByRole("button", { name: "从媒体资源库替换" }));
+    await user.click(await screen.findByRole("button", { name: /global-map\.jpg/ }));
+    await user.click(screen.getByRole("button", { name: "保存草稿" }));
+    await waitFor(() => expect(onPersist).toHaveBeenCalledTimes(1));
+
+    expect(onPersist.mock.calls[0][0].document.nodes[0].content).toMatchObject({
+      mapImage: "/api/media/map-asset",
+      mapImageAlt: "ZYRON global delivery network",
+    });
+    fetchMock.mockRestore();
   });
 
   it("serializes and coalesces concurrent saves for the same edit revision", async () => {
