@@ -73,6 +73,30 @@ describe("client analytics events", () => {
     })).toBe(true);
   });
 
+  it("sends product explorer events to GA without unsafe parameters", () => {
+    writeAnalyticsConsent("accepted");
+
+    expect(trackAnalyticsEvent("product_category_select", {
+      category_id: "db-bending",
+      category_name: "Bending Machines",
+    })).toBe(true);
+    expect(trackAnalyticsEvent("product_series_view", {
+      category_id: "db-bending",
+      series_href: "/products/series/bending-machines",
+    })).toBe(true);
+    expect(trackAnalyticsEvent("product_card_click", {
+      product_id: "product-1",
+      product_slug: "servo-press-brake",
+      category_id: "db-bending",
+    })).toBe(true);
+    expect(trackAnalyticsEvent("find_my_machine_click", {
+      link_path: "/contact",
+      placement: "products_explorer_hero",
+    })).toBe(true);
+
+    expect(window.gtag).toHaveBeenCalledTimes(4);
+  });
+
   it("does not report an event as sent until Google collection is re-enabled", () => {
     writeAnalyticsConsent("accepted");
     (window as unknown as Record<string, unknown>)["ga-disable-G-TEST123"] = true;

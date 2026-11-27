@@ -17,6 +17,10 @@ export type AnalyticsEventParams = {
   whatsapp_click: { link_path: string; placement?: string };
   email_click: { link_path: string; placement?: string };
   catalog_download: { asset_name: string; asset_path: string };
+  product_category_select: { category_id: string; category_name: string };
+  product_series_view: { category_id: string; series_href: string };
+  product_card_click: { product_id: string; product_slug: string; category_id: string };
+  find_my_machine_click: { link_path: string; placement: string };
 };
 
 export type AnalyticsEventName = keyof AnalyticsEventParams;
@@ -35,6 +39,10 @@ const allowedKeys: { [K in AnalyticsEventName]: ReadonlySet<keyof AnalyticsEvent
   whatsapp_click: new Set(["link_path", "placement"]),
   email_click: new Set(["link_path", "placement"]),
   catalog_download: new Set(["asset_name", "asset_path"]),
+  product_category_select: new Set(["category_id", "category_name"]),
+  product_series_view: new Set(["category_id", "series_href"]),
+  product_card_click: new Set(["product_id", "product_slug", "category_id"]),
+  find_my_machine_click: new Set(["link_path", "placement"]),
 };
 
 const unsafeKey = /(?:^|_)(?:email|phone|message|lead|session|token|password)(?:_|$)/i;
@@ -98,7 +106,7 @@ function bridgeFirstPartyEvent(
   name: AnalyticsEventName,
   params: Record<string, string | number | boolean>,
 ) {
-  if (name === "page_view") return null;
+  if (name === "page_view" || name === "product_category_select" || name === "product_series_view" || name === "product_card_click" || name === "find_my_machine_click") return null;
   const pendingKey = `${name}:${window.location.pathname}:${JSON.stringify(params)}`;
   if (pendingFirstPartyEvents.has(pendingKey)) return pendingKey;
   const input = firstPartyEvent(name, params);
@@ -124,7 +132,12 @@ function firstPartyEvent(
     whatsapp_click: "WHATSAPP_CLICK",
     email_click: "EMAIL_CLICK",
     catalog_download: "CATALOG_DOWNLOAD",
+    product_category_select: null,
+    product_series_view: null,
+    product_card_click: null,
+    find_my_machine_click: null,
   } as const;
+  if (eventTypes[name] === null) return null;
   const productSlug = typeof params.product_slug === "string" ? params.product_slug : undefined;
   const properties: Record<string, string | number | boolean> = {};
   if (typeof params.form_id === "string") properties.form_kind = params.form_id;
