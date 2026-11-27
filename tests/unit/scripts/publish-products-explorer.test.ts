@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { DEFAULT_PRODUCT_EXPLORER_CONTENT } from "@/lib/product-explorer/config";
 import { buildProductsExplorerDocument } from "@/scripts/publish-products-explorer";
 
 const categories = [
@@ -31,5 +32,26 @@ describe("Products explorer production publisher", () => {
 
   it("refuses publication when any required real category is missing", () => {
     expect(() => buildProductsExplorerDocument(categories.slice(0, 7), { schemaVersion: 1, nodes: [] })).toThrow(/Missing required product category: shredders/);
+  });
+
+  it("preserves manually edited product card overrides when rebuilding category mappings", () => {
+    const productCardOverrides = [{
+      productId: "product-1",
+      title: "Custom card title",
+      summary: "Custom card summary",
+      image: "/api/media/custom-card",
+      imageAlt: "Custom card Alt text",
+    }];
+    const document = buildProductsExplorerDocument(categories, {
+      schemaVersion: 1,
+      nodes: [{
+        id: "existing-products-explorer",
+        type: "PRODUCT_EXPLORER",
+        placement: "REPLACE_LEGACY",
+        content: { ...DEFAULT_PRODUCT_EXPLORER_CONTENT, productCardOverrides },
+      }],
+    });
+
+    expect((document.nodes[0].content as { productCardOverrides: unknown }).productCardOverrides).toEqual(productCardOverrides);
   });
 });
