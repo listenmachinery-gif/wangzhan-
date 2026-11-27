@@ -22,8 +22,17 @@ test("matches the interactive product explorer structure and preserves real link
   await expect(tabs).toHaveCount(8);
   await expect(page.getByRole("tab", { name: "02 Bending" })).toHaveAttribute("aria-selected", "true");
 
+  const background = page.locator("[data-explorer-background] img");
+  const initialBackgroundSource = await background.getAttribute("src");
+  await expect(background).toBeVisible();
+  await expect(page.locator("[data-explorer-machine] img")).toHaveAttribute("alt", "ZYRON press brake series");
+  expect(await page.locator("[data-explorer-machine]").evaluate((element) => getComputedStyle(element).zIndex)).toBe("3");
+  expect(await page.locator("[data-explorer-number]").evaluate((element) => getComputedStyle(element).zIndex)).toBe("1");
+
   await page.getByRole("tab", { name: "01 Shearing" }).click();
   await expect(page.getByRole("tab", { name: "01 Shearing" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator("[data-explorer-machine] img")).toHaveAttribute("alt", "ZYRON shearing machine series");
+  expect(await background.getAttribute("src")).toBe(initialBackgroundSource);
   await expect(page.getByRole("link", { name: /View Series/ }).first()).toHaveAttribute(
     "href",
     "/products/series/shearing-machines",

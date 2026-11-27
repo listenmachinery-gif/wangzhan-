@@ -137,6 +137,16 @@ export function ProductExplorer({ content, categories, nodeId }: ProductExplorer
       style={css}
     >
       <div className={styles.hero}>
+        <div className={styles.heroBackground} data-explorer-background aria-hidden="true">
+          <Image
+            src={content.backgroundImage}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            unoptimized={mediaNeedsUnoptimized(content.backgroundImage)}
+          />
+        </div>
         <div className={styles.heroGlow} aria-hidden="true" />
         <div className={styles.heroInner}>
           <div className={styles.copy}>
@@ -160,8 +170,8 @@ export function ProductExplorer({ content, categories, nodeId }: ProductExplorer
           </div>
 
           <div className={styles.machineStage} aria-live="polite">
-            <span className={styles.watermark} aria-hidden="true">{activeCategory.number}</span>
-            <div className={styles.machineImage}>
+            <span className={styles.watermark} data-explorer-number aria-hidden="true">{activeCategory.number}</span>
+            <div className={styles.machineImage} data-explorer-machine>
               <Image
                 key={activeCategory.heroImage}
                 src={activeCategory.heroImage}

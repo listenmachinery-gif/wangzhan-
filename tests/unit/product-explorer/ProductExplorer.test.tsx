@@ -20,6 +20,11 @@ const categories: ProductExplorerViewCategory[] = DEFAULT_PRODUCT_EXPLORER_CONTE
       : [],
 }));
 
+function renderedImagePath(image: HTMLImageElement | null) {
+  const src = image?.getAttribute("src") ?? "";
+  return new URL(src, "http://localhost").searchParams.get("url") ?? src;
+}
+
 describe("ProductExplorer", () => {
   beforeEach(() => {
     Element.prototype.scrollTo = vi.fn();
@@ -54,6 +59,24 @@ describe("ProductExplorer", () => {
       category_id: "shearing",
       category_name: "Shearing Machines",
     });
+  });
+
+  it("keeps the full-width background fixed while switching only the foreground machine", () => {
+    const { container } = render(<ProductExplorer content={DEFAULT_PRODUCT_EXPLORER_CONTENT} categories={categories} nodeId="products-explorer" />);
+    const background = container.querySelector<HTMLImageElement>("[data-explorer-background] img");
+    const initialMachine = container.querySelector<HTMLImageElement>("[data-explorer-machine] img");
+
+    expect(renderedImagePath(background)).toBe("/products/explorer/industrial-studio-background.webp");
+    expect(renderedImagePath(initialMachine)).toBe("/products/explorer/press-brakes.webp");
+
+    fireEvent.click(screen.getByRole("tab", { name: /01 Shearing/i }));
+
+    expect(renderedImagePath(container.querySelector<HTMLImageElement>("[data-explorer-background] img"))).toBe(
+      "/products/explorer/industrial-studio-background.webp",
+    );
+    expect(renderedImagePath(container.querySelector<HTMLImageElement>("[data-explorer-machine] img"))).toBe(
+      "/products/explorer/shearing-machines.webp",
+    );
   });
 
   it("keeps empty categories usable and exposes real category links", () => {

@@ -54,6 +54,14 @@ export function ProductExplorerEditor({ content, categoryOptions, onChange }: Pr
       <section className="rounded-lg border border-neutral-200 bg-neutral-50 p-3">
         <h4 className="text-xs font-bold text-neutral-900">基础文案</h4>
         <div className="mt-3 space-y-3">
+          <label className="block text-xs font-medium text-neutral-600">全幅背景图片地址
+            <input aria-label="全幅背景图片地址" value={content.backgroundImage} onChange={(event) => update("backgroundImage", event.target.value)} className={fieldClass} />
+          </label>
+          <MediaAssetPicker
+            label="从媒体资源库替换全幅背景图"
+            kind="image"
+            onSelect={(media) => update("backgroundImage", media.url)}
+          />
           {textFields.map(([key, label, rows]) => (
             <label key={key} className="block text-xs font-medium text-neutral-600">
               {label}
@@ -142,11 +150,11 @@ export function ProductExplorerEditor({ content, categoryOptions, onChange }: Pr
               <label className="block text-xs font-medium text-neutral-600">系列按钮文字
                 <textarea aria-label={`第 ${index + 1} 类系列按钮文字`} rows={2} value={category.seriesCtaLabel} onChange={(event) => updateCategory(index, { seriesCtaLabel: event.target.value })} className={textAreaClass} />
               </label>
-              <label className="block text-xs font-medium text-neutral-600">主机图片地址
-                <input aria-label={`第 ${index + 1} 类主机图片地址`} value={category.heroImage} onChange={(event) => updateCategory(index, { heroImage: event.target.value })} className={fieldClass} />
+              <label className="block text-xs font-medium text-neutral-600">透明设备图片地址
+                <input aria-label={`第 ${index + 1} 类透明设备图片地址`} value={category.heroImage} onChange={(event) => updateCategory(index, { heroImage: event.target.value })} className={fieldClass} />
               </label>
               <MediaAssetPicker
-                label={`第 ${index + 1} 类从媒体库替换主机图`}
+                label={`第 ${index + 1} 类从媒体资源库替换设备图`}
                 kind="image"
                 onSelect={(media) => updateCategory(index, { heroImage: media.url, heroAlt: media.altText || category.heroAlt })}
               />
