@@ -41,6 +41,7 @@ for (const viewport of viewports) {
     await expect(explorer).toBeVisible();
     await expect(explorer.locator("img").first()).toBeVisible();
     expect(await explorer.evaluate((element) => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
     await page.screenshot({
       path: `.playwright/screenshots/products-explorer-${viewport.name}.png`,
       fullPage: true,
