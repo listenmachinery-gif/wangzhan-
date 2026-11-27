@@ -64,6 +64,36 @@ describe("product explorer configuration", () => {
     expect(DEFAULT_PRODUCT_EXPLORER_CONTENT.defaultCategoryKey).toBe("bending");
   });
 
+  it("uses one persistent full-width background and eight transparent equipment assets", () => {
+    expect(DEFAULT_PRODUCT_EXPLORER_CONTENT.backgroundImage).toBe(
+      "/products/explorer/industrial-studio-background.webp",
+    );
+    expect(DEFAULT_PRODUCT_EXPLORER_CONTENT.categories.map((item) => item.heroImage)).toEqual([
+      "/products/explorer/shearing-machines.webp",
+      "/products/explorer/press-brakes.webp",
+      "/products/explorer/laser-cutting-machines.webp",
+      "/products/explorer/plate-rolling-machines.webp",
+      "/products/explorer/hydraulic-presses.webp",
+      "/products/explorer/rectangular-duct-machines.webp",
+      "/products/explorer/round-duct-machines.webp",
+      "/products/explorer/shredding-machines.webp",
+    ]);
+  });
+
+  it("fits every complete machine inside the dedicated safety frame without cropping", () => {
+    for (const category of DEFAULT_PRODUCT_EXPLORER_CONTENT.categories) {
+      expect(category.desktopX).toBe(0);
+      expect(category.desktopY).toBe(0);
+      expect(category.tabletX).toBe(0);
+      expect(category.tabletY).toBe(0);
+      expect(category.mobileX).toBe(0);
+      expect(category.mobileY).toBe(0);
+      expect(category.desktopScale).toBeLessThanOrEqual(1);
+      expect(category.tabletScale).toBeLessThanOrEqual(1);
+      expect(category.mobileScale).toBeLessThanOrEqual(1);
+    }
+  });
+
   it("accepts the complete default and rejects reordered or missing slots", () => {
     expect(productExplorerContentSchema.safeParse(DEFAULT_PRODUCT_EXPLORER_CONTENT).success).toBe(true);
     const invalid = {
@@ -71,6 +101,19 @@ describe("product explorer configuration", () => {
       categories: DEFAULT_PRODUCT_EXPLORER_CONTENT.categories.slice(0, 7),
     };
     expect(productExplorerContentSchema.safeParse(invalid).success).toBe(false);
+  });
+
+  it("upgrades previously published content with the fixed background without losing edits", () => {
+    const legacyContent = Object.fromEntries(
+      Object.entries(DEFAULT_PRODUCT_EXPLORER_CONTENT).filter(([key]) => key !== "backgroundImage"),
+    );
+    const parsed = productExplorerContentSchema.parse({
+      ...legacyContent,
+      title: "A previously edited product title",
+    });
+
+    expect(parsed.backgroundImage).toBe("/products/explorer/industrial-studio-background.webp");
+    expect(parsed.title).toBe("A previously edited product title");
   });
 
   it("maps categories by real database id and keeps empty categories", () => {

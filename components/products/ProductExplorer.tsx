@@ -137,9 +137,19 @@ export function ProductExplorer({ content, categories, nodeId }: ProductExplorer
       style={css}
     >
       <div className={styles.hero}>
+        <div className={styles.heroBackground} data-explorer-background aria-hidden="true">
+          <Image
+            src={content.backgroundImage}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            unoptimized={mediaNeedsUnoptimized(content.backgroundImage)}
+          />
+        </div>
         <div className={styles.heroGlow} aria-hidden="true" />
         <div className={styles.heroInner}>
-          <div className={styles.copy}>
+          <div className={styles.copy} data-explorer-copy>
             <p className={styles.eyebrow} data-page-text="eyebrow"><span aria-hidden="true">/</span>{content.eyebrow}</p>
             <h1 className={styles.title} data-page-text="title">{content.title}</h1>
             <p className={styles.subtitle} data-page-text="subtitle">{content.subtitle}</p>
@@ -160,8 +170,8 @@ export function ProductExplorer({ content, categories, nodeId }: ProductExplorer
           </div>
 
           <div className={styles.machineStage} aria-live="polite">
-            <span className={styles.watermark} aria-hidden="true">{activeCategory.number}</span>
-            <div className={styles.machineImage}>
+            <span className={styles.watermark} data-explorer-number aria-hidden="true">{activeCategory.number}</span>
+            <div className={styles.machineImage} data-explorer-machine>
               <Image
                 key={activeCategory.heroImage}
                 src={activeCategory.heroImage}
@@ -172,7 +182,7 @@ export function ProductExplorer({ content, categories, nodeId }: ProductExplorer
                 unoptimized={mediaNeedsUnoptimized(activeCategory.heroImage)}
               />
             </div>
-            <div className={styles.seriesMeta}>
+            <div className={styles.seriesMeta} data-explorer-series>
               <strong data-page-text="seriesName"><span aria-hidden="true">/</span>{activeCategory.fullSeriesName}</strong>
               <Link
                 href={activeCategory.categoryHref}

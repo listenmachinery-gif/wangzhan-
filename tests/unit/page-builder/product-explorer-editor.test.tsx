@@ -55,12 +55,13 @@ describe("Product Explorer PageBuilder editor", () => {
     });
   });
 
-  it("exposes per-category media-library replacement and responsive machine controls", () => {
+  it("exposes the fixed background, per-category equipment replacement, and responsive machine controls", () => {
     render(<PageBuilder page={page} canPublish onPersist={vi.fn()} categoryOptions={categoryOptions} />);
 
-    expect(screen.getByRole("button", { name: "第 1 类从媒体库替换主机图" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "第 8 类从媒体库替换主机图" })).toBeInTheDocument();
-    expect(screen.getByRole("spinbutton", { name: "第 2 类桌面缩放" })).toHaveValue(1);
+    expect(screen.getByRole("button", { name: "从媒体资源库替换全幅背景图" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "第 1 类从媒体资源库替换设备图" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "第 8 类从媒体资源库替换设备图" })).toBeInTheDocument();
+    expect(screen.getByRole("spinbutton", { name: "第 2 类桌面缩放" })).toHaveValue(0.96);
     expect(screen.getByRole("spinbutton", { name: "第 2 类手机水平位置" })).toHaveValue(0);
   });
 });
