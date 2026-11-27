@@ -1,4 +1,4 @@
-.explorer { color: var(--explorer-text); background: var(--explorer-background); }
+.explorer { overflow-x: clip; color: var(--explorer-text); background: var(--explorer-background); }
 .hero { position: relative; min-height: var(--explorer-height); overflow: hidden; background: linear-gradient(112deg, #080b0e 0%, var(--explorer-panel) 52%, #11161a 100%); }
 .hero::after { content: ""; position: absolute; inset: auto 0 78px; height: 1px; background: rgba(255,255,255,.12); }
 .heroGlow { position: absolute; inset: 0; background: radial-gradient(circle at 52% 15%, rgba(255,255,255,.08), transparent 32%), linear-gradient(180deg, transparent 66%, rgba(0,0,0,.36)); pointer-events: none; }
