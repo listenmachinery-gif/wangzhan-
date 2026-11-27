@@ -27,6 +27,7 @@ import { MediaAssetPicker, type LibraryMediaKind } from "@/components/admin/page
 import {
   ProductExplorerEditor,
   type ProductExplorerCategoryOption,
+  type ProductExplorerProductOption,
 } from "@/components/admin/pages/ProductExplorerEditor";
 import { PageRenderer } from "@/components/page-builder/PageRenderer";
 import { INDUSTRIAL_PAGE_TEMPLATES } from "@/lib/page-builder/industrial-templates";
@@ -490,11 +491,13 @@ export function PageBuilder({
   canPublish,
   onPersist,
   categoryOptions = [],
+  productOptions = [],
 }: {
   page: BuilderPage;
   canPublish: boolean;
   onPersist?: Persist;
   categoryOptions?: ProductExplorerCategoryOption[];
+  productOptions?: ProductExplorerProductOption[];
 }) {
   const [document, setDocument] = useState(() => clone(page.document));
   const [templateChoice, setTemplateChoice] = useState("home");
@@ -1140,6 +1143,7 @@ export function PageBuilder({
                   <ProductExplorerEditor
                     content={productExplorerContentSchema.parse(selected.content)}
                     categoryOptions={categoryOptions}
+                    productOptions={productOptions}
                     onChange={(content) => {
                       const nodes = [...document.nodes];
                       nodes[selectedIndex] = { ...selected, content } as PageNode;

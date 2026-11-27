@@ -48,14 +48,15 @@
 .productImage { position: relative; display: block; aspect-ratio: 3 / 2; background: linear-gradient(145deg, #f2f3f4, #fff); }
 .productImage img { object-fit: contain; padding: 18px; transition: transform 350ms ease; }
 .productCard:hover .productImage img { transform: scale(1.025); }
-.productMeta { display: flex; min-height: 57px; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid var(--explorer-card-border); padding: 13px 17px; }
-.productName { position: relative; padding-left: 14px; font-size: 17px; line-height: 1.2; font-weight: 760; }
+.productMeta { display: flex; min-height: 82px; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid var(--explorer-card-border); padding: 13px 17px; }
+.productCopy { display: grid; min-width: 0; gap: 6px; }
+.productName { position: relative; padding-left: 14px; font-size: 17px; line-height: 1.2; font-weight: 760; white-space: pre-line; }
 .productName::before { content: ""; position: absolute; inset: 2px auto 2px 0; width: 3px; background: var(--explorer-accent); }
+.productSummary { display: -webkit-box; overflow: hidden; padding-left: 14px; color: #656a72; font-size: 13px; line-height: 1.35; white-space: pre-line; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .emptyState { display: flex; min-height: 210px; flex-direction: column; align-items: center; justify-content: center; gap: 18px; margin: 0 2.2%; border: 1px dashed #c8ccd0; border-radius: var(--explorer-card-radius); color: #595e66; text-align: center; }
 .emptyState a { display: inline-flex; align-items: center; gap: 9px; color: #111; font-weight: 700; }
 .progress { height: 2px; margin: 18px 2.2% 0; overflow: hidden; background: #dfe2e4; }
 .progress span { display: block; width: 100%; height: 100%; transform-origin: left; background: var(--explorer-accent); transition: transform 160ms linear; }
-.srOnly { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
 
 @media (max-width: 1023px) {
   .heroInner { grid-template-columns: 46fr 54fr; padding-right: 4%; padding-left: 4%; }

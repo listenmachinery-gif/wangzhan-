@@ -116,6 +116,16 @@ describe("product explorer configuration", () => {
     expect(parsed.title).toBe("A previously edited product title");
   });
 
+  it("upgrades legacy content without product card overrides to an empty override list", () => {
+    const legacyContent = Object.fromEntries(
+      Object.entries(DEFAULT_PRODUCT_EXPLORER_CONTENT).filter(([key]) => key !== "productCardOverrides"),
+    );
+
+    const parsed = productExplorerContentSchema.parse(legacyContent);
+
+    expect(parsed.productCardOverrides).toEqual([]);
+  });
+
   it("maps categories by real database id and keeps empty categories", () => {
     const content = {
       ...DEFAULT_PRODUCT_EXPLORER_CONTENT,

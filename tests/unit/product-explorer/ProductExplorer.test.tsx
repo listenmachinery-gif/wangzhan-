@@ -14,9 +14,9 @@ const categories: ProductExplorerViewCategory[] = DEFAULT_PRODUCT_EXPLORER_CONTE
   categoryName: `${slot.navLabel} Machines`,
   categoryHref: slot.seriesHref,
   products: slot.key === "bending"
-    ? [{ id: "p-1", slug: "servo-press-brake", name: "Servo Press Brake", summary: "Precision bending", image: "/products/catalog/electro-hydraulic-servo-cnc-press-brake.png" }]
+    ? [{ id: "p-1", slug: "servo-press-brake", name: "Servo Press Brake", summary: "Precision bending", image: "/products/catalog/electro-hydraulic-servo-cnc-press-brake.png", imageAlt: "Custom servo press brake card image" }]
     : slot.key === "shearing"
-      ? [{ id: "p-2", slug: "hydraulic-shear", name: "Hydraulic Shear", summary: "Clean cutting", image: "/products/catalog/hydraulic-guillotine-shear.png" }]
+      ? [{ id: "p-2", slug: "hydraulic-shear", name: "Hydraulic Shear", summary: "Clean cutting", image: "/products/catalog/hydraulic-guillotine-shear.png", imageAlt: "Hydraulic shear card image" }]
       : [],
 }));
 
@@ -34,8 +34,8 @@ describe("ProductExplorer", () => {
     vi.clearAllMocks();
   });
 
-  it("renders the Bending hero, all eight tabs, and real product links initially", () => {
-    render(<ProductExplorer content={DEFAULT_PRODUCT_EXPLORER_CONTENT} categories={categories} nodeId="products-explorer" />);
+  it("renders the Bending hero, all eight tabs, and editable product card copy initially", () => {
+    const { container } = render(<ProductExplorer content={DEFAULT_PRODUCT_EXPLORER_CONTENT} categories={categories} nodeId="products-explorer" />);
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Sheet Metal Fabrication");
     expect(screen.getAllByRole("tab")).toHaveLength(8);
@@ -43,6 +43,8 @@ describe("ProductExplorer", () => {
     expect(screen.getByText("PRESS BRAKES")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: "Explore Press Brakes" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Servo Press Brake/i })).toHaveAttribute("href", "/products/servo-press-brake");
+    expect(container.querySelector("[data-product-summary]")).toHaveTextContent("Precision bending");
+    expect(screen.getByRole("img", { name: "Custom servo press brake card image" })).toBeInTheDocument();
   });
 
   it("switches every dependent region together and resets the product scroller", () => {

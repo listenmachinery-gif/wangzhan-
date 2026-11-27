@@ -25,6 +25,7 @@ export type ProductExplorerViewProduct = {
   name: string;
   summary: string;
   image: string;
+  imageAlt: string;
 };
 
 export type ProductExplorerViewCategory = ProductExplorerContent["categories"][number] & {
@@ -256,17 +257,19 @@ export function ProductExplorer({ content, categories, nodeId }: ProductExplorer
                     <span className={styles.productImage}>
                       <Image
                         src={product.image}
-                        alt={product.name}
+                        alt={product.imageAlt}
                         fill
                         sizes="(min-width: 1200px) 25vw, (min-width: 640px) 40vw, 84vw"
                         unoptimized={mediaNeedsUnoptimized(product.image)}
                       />
                     </span>
                     <span className={styles.productMeta}>
-                      <span className={styles.productName}>{product.name}</span>
+                      <span className={styles.productCopy}>
+                        <span className={styles.productName}>{product.name}</span>
+                        {product.summary ? <span className={styles.productSummary} data-product-summary>{product.summary}</span> : null}
+                      </span>
                       <ArrowRight aria-hidden="true" size={22} />
                     </span>
-                    {product.summary ? <span className={styles.srOnly}>{product.summary}</span> : null}
                   </Link>
                 ))}
               </div>

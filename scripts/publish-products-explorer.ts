@@ -5,7 +5,7 @@ import type { PrismaClient } from "@prisma/client";
 import { ROLES, type Principal, type RoleKey } from "@/lib/auth/permissions";
 import { db } from "@/lib/db/client";
 import type { PageDocument, PageNode } from "@/lib/page-builder/schema";
-import { DEFAULT_PRODUCT_EXPLORER_CONTENT } from "@/lib/product-explorer/config";
+import { DEFAULT_PRODUCT_EXPLORER_CONTENT, productExplorerContentSchema } from "@/lib/product-explorer/config";
 import { parsePageDocument, PageService } from "@/lib/services/page-service";
 
 const RELEASE_APPROVAL = "APPROVED_2026_11_27";
@@ -49,11 +49,16 @@ export function buildProductsExplorerDocument(
     if (!categoryId) throw new Error(`Missing required product category: ${requiredSlug}`);
     return { ...slot, categoryId, seriesHref: `/products/series/${requiredSlug}` };
   });
+  const existingExplorer = existing.nodes.find((node) => node.type === "PRODUCT_EXPLORER");
+  const parsedExistingExplorer = productExplorerContentSchema.safeParse(existingExplorer?.content);
+  const productCardOverrides = parsedExistingExplorer.success
+    ? parsedExistingExplorer.data.productCardOverrides
+    : [];
   const explorer: PageNode = {
     id: "products-interactive-explorer",
     type: "PRODUCT_EXPLORER",
     placement: "REPLACE_LEGACY",
-    content: { ...DEFAULT_PRODUCT_EXPLORER_CONTENT, categories: mappedCategories },
+    content: { ...DEFAULT_PRODUCT_EXPLORER_CONTENT, productCardOverrides, categories: mappedCategories },
   };
   const preserved = existing.nodes.filter((node) => node.type !== "PRODUCT_EXPLORER");
   return { schemaVersion: 1, renderMode: "REPLACE_LEGACY", nodes: [explorer, ...preserved] };

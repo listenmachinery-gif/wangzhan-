@@ -9,6 +9,7 @@ import { ManagedPageSections } from "@/components/site/ManagedPageSections";
 import {
   DEFAULT_PRODUCT_EXPLORER_CONTENT,
   productExplorerContentSchema,
+  resolveProductExplorerCard,
   resolveProductExplorerData,
 } from "@/lib/product-explorer/config";
 import { listPublishedCategories } from "@/lib/repositories/category-repository";
@@ -52,13 +53,13 @@ export default async function ProductsPage() {
     const products = publicCategory
       ? publicProducts
           .filter((product) => product.categoryId === publicCategory.id)
-          .map((product) => ({
+          .map((product) => resolveProductExplorerCard({
             id: slot.products.find((candidate) => candidate.slug === product.id)?.id ?? product.id,
             slug: product.id,
             name: product.name,
             summary: product.tagline,
             image: product.image,
-          }))
+          }, content.productCardOverrides))
       : [];
     return {
       ...slot,
