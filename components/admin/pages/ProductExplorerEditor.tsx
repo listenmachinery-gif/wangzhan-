@@ -10,16 +10,27 @@ export type ProductExplorerCategoryOption = {
   status: string;
 };
 
+export type ProductExplorerProductOption = {
+  id: string;
+  categoryId: string;
+  name: string;
+  slug: string;
+  summary: string;
+  image: string;
+  imageAlt: string;
+};
+
 type Props = {
   content: ProductExplorerContent;
   categoryOptions: ProductExplorerCategoryOption[];
+  productOptions: ProductExplorerProductOption[];
   onChange(content: ProductExplorerContent): void;
 };
 
 const fieldClass = "mt-1 h-9 w-full rounded-md border border-neutral-300 bg-white px-2 text-xs outline-none focus:border-[#76B900] focus:ring-2 focus:ring-[#76B900]/15";
 const textAreaClass = "mt-1 w-full rounded-md border border-neutral-300 bg-white px-2 py-2 text-xs outline-none focus:border-[#76B900] focus:ring-2 focus:ring-[#76B900]/15";
 
-export function ProductExplorerEditor({ content, categoryOptions, onChange }: Props) {
+export function ProductExplorerEditor({ content, categoryOptions, productOptions, onChange }: Props) {
   function update<K extends keyof ProductExplorerContent>(key: K, value: ProductExplorerContent[K]) {
     onChange({ ...content, [key]: value });
   }
@@ -28,6 +39,27 @@ export function ProductExplorerEditor({ content, categoryOptions, onChange }: Pr
     update("categories", content.categories.map((category, categoryIndex) =>
       categoryIndex === index ? { ...category, ...changes } : category,
     ));
+  }
+
+  function updateProductOverride(product: ProductExplorerProductOption, changes: Partial<ProductExplorerContent["productCardOverrides"][number]>) {
+    const current = content.productCardOverrides.find((item) => item.productId === product.id);
+    const next = {
+      productId: product.id,
+      title: product.name,
+      summary: product.summary,
+      image: product.image,
+      imageAlt: product.imageAlt,
+      ...current,
+      ...changes,
+    };
+    update("productCardOverrides", [
+      ...content.productCardOverrides.filter((item) => item.productId !== product.id),
+      next,
+    ]);
+  }
+
+  function restoreProductDefaults(productId: string) {
+    update("productCardOverrides", content.productCardOverrides.filter((item) => item.productId !== productId));
   }
 
   const textFields: Array<[keyof ProductExplorerContent, string, number]> = [
@@ -171,6 +203,102 @@ export function ProductExplorerEditor({ content, categoryOptions, onChange }: Pr
                     <input type="number" step={step} aria-label={`第 ${index + 1} 类${label}`} value={Number(category[key])} onChange={(event) => updateCategory(index, { [key]: Number(event.target.value) })} className={fieldClass} />
                   </label>
                 ))}
+              </div>
+              <div className="border-t border-neutral-200 pt-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h5 className="text-xs font-bold text-neutral-900">具体产品卡片</h5>
+                    <p className="mt-1 text-[10px] leading-4 text-neutral-500">仅覆盖产品总页显示，不修改产品详情页及链接。</p>
+                  </div>
+                  <span className="rounded-full bg-neutral-100 px-2 py-1 text-[10px] font-semibold text-neutral-600">
+                    {productOptions.filter((product) => product.categoryId === category.categoryId).length} 个产品
+                  </span>
+                </div>
+                <div className="mt-3 space-y-3">
+                  {productOptions.filter((product) => product.categoryId === category.categoryId).map((product) => {
+                    const override = content.productCardOverrides.find((item) => item.productId === product.id);
+                    const values = override ?? {
+                      productId: product.id,
+                      title: product.name,
+                      summary: product.summary,
+                      image: product.image,
+                      imageAlt: product.imageAlt,
+                    };
+                    return (
+                      <article
+                        key={product.id}
+                        className="rounded-lg border border-neutral-200 bg-neutral-50 p-3"
+                        style={{ contentVisibility: "auto", containIntrinsicSize: "360px" }}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <strong className="block truncate text-xs text-neutral-900">{product.name}</strong>
+                            <span className="block truncate text-[10px] text-neutral-500">/products/{product.slug}</span>
+                          </div>
+                          <button
+                            type="button"
+                            disabled={!override}
+                            onClick={() => restoreProductDefaults(product.id)}
+                            className="shrink-0 rounded border border-neutral-300 bg-white px-2 py-1 text-[10px] font-semibold text-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            恢复 {product.name} 产品资料
+                          </button>
+                        </div>
+                        <div className="mt-3 space-y-3">
+                          <label className="block text-xs font-medium text-neutral-600">卡片标题
+                            <textarea
+                              aria-label={`产品「${product.name}」卡片标题`}
+                              rows={2}
+                              value={values.title}
+                              onChange={(event) => updateProductOverride(product, { title: event.target.value })}
+                              className={textAreaClass}
+                            />
+                          </label>
+                          <label className="block text-xs font-medium text-neutral-600">卡片摘要
+                            <textarea
+                              aria-label={`产品「${product.name}」卡片摘要`}
+                              rows={3}
+                              value={values.summary}
+                              onChange={(event) => updateProductOverride(product, { summary: event.target.value })}
+                              className={textAreaClass}
+                            />
+                          </label>
+                          <label className="block text-xs font-medium text-neutral-600">卡片图片地址
+                            <input
+                              aria-label={`产品「${product.name}」卡片图片地址`}
+                              value={values.image}
+                              onChange={(event) => updateProductOverride(product, { image: event.target.value })}
+                              className={fieldClass}
+                            />
+                          </label>
+                          <MediaAssetPicker
+                            label={`产品「${product.name}」从媒体资源库替换卡片图片`}
+                            kind="image"
+                            onSelect={(media) => updateProductOverride(product, {
+                              image: media.url,
+                              imageAlt: media.altText || values.imageAlt || product.name,
+                            })}
+                          />
+                          <label className="block text-xs font-medium text-neutral-600">图片替代文字（Alt）
+                            <textarea
+                              aria-label={`产品「${product.name}」图片替代文字`}
+                              rows={2}
+                              value={values.imageAlt}
+                              onChange={(event) => updateProductOverride(product, { imageAlt: event.target.value })}
+                              className={textAreaClass}
+                            />
+                          </label>
+                        </div>
+                      </article>
+                    );
+                  })}
+                  {category.categoryId && !productOptions.some((product) => product.categoryId === category.categoryId) ? (
+                    <p className="rounded border border-dashed border-neutral-300 p-3 text-center text-[11px] text-neutral-500">该分类暂无已发布产品。</p>
+                  ) : null}
+                  {!category.categoryId ? (
+                    <p className="rounded border border-dashed border-neutral-300 p-3 text-center text-[11px] text-neutral-500">选择真实产品分类后，可编辑该分类下的具体产品卡片。</p>
+                  ) : null}
+                </div>
               </div>
             </div>
           </article>
