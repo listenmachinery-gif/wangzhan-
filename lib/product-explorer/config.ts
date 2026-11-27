@@ -48,6 +48,14 @@ export const productExplorerCategorySchema = z.object({
   mobileY: z.number().int().min(-120).max(120),
 }).strict();
 
+export const productExplorerCardOverrideSchema = z.object({
+  productId: z.string().min(1).max(120),
+  title: shortText.min(1),
+  summary: text,
+  image: mediaPath,
+  imageAlt: shortText.min(1),
+}).strict();
+
 export const productExplorerContentSchema = z.object({
   enabled: z.boolean(),
   backgroundImage: mediaPath.default(defaultBackgroundImage),
@@ -78,6 +86,7 @@ export const productExplorerContentSchema = z.object({
   mobileCards: z.number().min(1).max(2),
   showArrows: z.boolean(),
   showProgress: z.boolean(),
+  productCardOverrides: z.array(productExplorerCardOverrideSchema).max(500).default([]),
   categories: z.array(productExplorerCategorySchema).length(8),
 }).strict().superRefine((content, context) => {
   content.categories.forEach((category, index) => {
@@ -136,8 +145,36 @@ export const DEFAULT_PRODUCT_EXPLORER_CONTENT: ProductExplorerContent = {
   mobileCards: 1.18,
   showArrows: true,
   showProgress: true,
+  productCardOverrides: [],
   categories: categoryDefaults,
 };
+
+export type ProductExplorerCardSource = {
+  id: string;
+  slug: string;
+  name: string;
+  summary: string;
+  image: string;
+};
+
+export type ResolvedProductExplorerCard = ProductExplorerCardSource & {
+  imageAlt: string;
+};
+
+export function resolveProductExplorerCard(
+  product: ProductExplorerCardSource,
+  overrides: ProductExplorerContent["productCardOverrides"],
+): ResolvedProductExplorerCard {
+  const override = overrides.find((item) => item.productId === product.id);
+  if (!override) return { ...product, imageAlt: product.name };
+  return {
+    ...product,
+    name: override.title,
+    summary: override.summary,
+    image: override.image,
+    imageAlt: override.imageAlt,
+  };
+}
 
 export type PublishedExplorerProduct = {
   id: string;
