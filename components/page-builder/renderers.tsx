@@ -26,6 +26,8 @@ import {
   type AboutQuoteContent,
 } from "@/components/company/cms/AboutReferenceSections";
 import { productCategories } from "@/data/products";
+import { ProductExplorer, type ProductExplorerViewCategory } from "@/components/products/ProductExplorer";
+import type { ProductExplorerContent } from "@/lib/product-explorer/config";
 
 type Content = Record<string, unknown>;
 type Item = { title: string; body?: string; description?: string; image?: string; href?: string };
@@ -60,6 +62,16 @@ function Advantages({ content }: { content: Content }) {
 
 export function renderNodeContent(type: PageComponentType, content: Content, children: ReactNode) {
   switch (type) {
+    case "PRODUCT_EXPLORER": {
+      const explorerContent = content as ProductExplorerContent;
+      const previewCategories: ProductExplorerViewCategory[] = explorerContent.categories.map((category) => ({
+        ...category,
+        categoryName: category.fullSeriesName,
+        categoryHref: category.seriesHref,
+        products: [],
+      }));
+      return <ProductExplorer content={explorerContent} categories={previewCategories} nodeId="product-explorer-preview" />;
+    }
     case "ABOUT_HERO": return <AboutHeroSection content={content as AboutHeroContent} />;
     case "ABOUT_COMPANY_OVERVIEW": return <AboutCompanyOverviewSection content={content as AboutCompanyOverviewContent} />;
     case "ABOUT_MANUFACTURING": return <AboutManufacturingSection content={content as AboutManufacturingContent} />;

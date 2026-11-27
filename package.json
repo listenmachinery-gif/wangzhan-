@@ -22,6 +22,7 @@
     "admin:bootstrap": "tsx scripts/bootstrap-admin.ts",
     "homepage:publish": "node --conditions=react-server --import tsx scripts/publish-homepage-redesign.ts",
     "about:publish": "node --conditions=react-server --import tsx scripts/publish-about-zyron.ts",
+    "products:publish": "node --conditions=react-server --import tsx scripts/publish-products-explorer.ts",
     "import:catalogue": "tsx scripts/import-legacy-catalogue.ts",
     "verify:catalogue": "tsx scripts/verify-catalogue-migration.ts",
     "verify:nc-press-brake": "node scripts/verify-nc-hydraulic-press-brake-page.mjs",

@@ -71,7 +71,12 @@ export const componentRegistry: ComponentDefinition[] = [
     description: "八大机械系列交互首屏与真实产品横向浏览（仅用于 Products 页面）",
     defaultContent: DEFAULT_PRODUCT_EXPLORER_CONTENT,
     contentSchema: productExplorerContentSchema,
-    editorFields: [],
+    editorFields: [
+      { key: "eyebrow", label: "品牌标签", kind: "text" },
+      { key: "title", label: "主标题", kind: "textarea" },
+      { key: "subtitle", label: "绿色副标题", kind: "text" },
+      { key: "description", label: "说明文字", kind: "textarea" },
+    ],
   }),
   define({ type: "SPECIFICATION_TABLE", label: "设备参数表", group: "外贸业务", description: "型号参数表", defaultContent: { heading: "Specifications", columns: ["Model", "Value"], rows: [["ZY-100", "Configured on request"]] }, contentSchema: z.object({ heading: shortText, columns: z.array(shortText).min(2).max(12), rows: z.array(z.array(shortText).min(1).max(12)).max(50) }).strict(), editorFields: [{ key: "heading", label: "标题", kind: "text" }, { key: "columns", label: "列", kind: "list" }, { key: "rows", label: "数据", kind: "json" }] }),
   define({ type: "MODEL_COMPARISON", label: "型号对比", group: "外贸业务", description: "对比不同型号", defaultContent: { heading: "Compare Models", columns: ["Feature", "Model A", "Model B"], rows: [["Application", "Light duty", "Production"]] }, contentSchema: z.object({ heading: shortText, columns: z.array(shortText).min(2).max(12), rows: z.array(z.array(shortText).min(1).max(12)).max(50) }).strict(), editorFields: [{ key: "heading", label: "标题", kind: "text" }, { key: "rows", label: "对比数据", kind: "json" }] }),

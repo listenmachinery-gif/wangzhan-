@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { PageRenderer } from "@/components/page-builder/PageRenderer";
@@ -59,6 +59,9 @@ describe("page builder component registry", () => {
       screen.getByText("Build better production lines."),
     ).toBeInTheDocument();
     expect(screen.getByText("Why choose ZYRON")).toBeInTheDocument();
+    const explorer = container.querySelector("[data-product-explorer]") as HTMLElement;
+    expect(explorer).toBeInTheDocument();
+    expect(within(explorer).getAllByRole("tab")).toHaveLength(8);
   });
 
   it("drops unknown or invalid nodes instead of rendering their content", () => {
