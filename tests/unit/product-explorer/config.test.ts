@@ -80,6 +80,15 @@ describe("product explorer configuration", () => {
     ]);
   });
 
+  it("keeps every machine left of the right-side series copy safety zone", () => {
+    for (const category of DEFAULT_PRODUCT_EXPLORER_CONTENT.categories) {
+      expect(category.desktopX).toBeLessThanOrEqual(-90);
+      expect(category.desktopScale).toBeLessThanOrEqual(0.94);
+      expect(category.mobileX).toBeLessThanOrEqual(-12);
+      expect(category.mobileScale).toBeLessThanOrEqual(0.9);
+    }
+  });
+
   it("accepts the complete default and rejects reordered or missing slots", () => {
     expect(productExplorerContentSchema.safeParse(DEFAULT_PRODUCT_EXPLORER_CONTENT).success).toBe(true);
     const invalid = {

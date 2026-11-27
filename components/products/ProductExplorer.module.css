@@ -76,7 +76,7 @@
   .actions a { min-height: 47px; flex: 1 1 190px; padding: 0 18px; }
   .machineStage { min-height: 380px; margin: 10px -20px 0; }
   .watermark { top: 38px; right: 3%; font-size: 165px; }
-  .machineImage { inset: 9% -11% 0 -11%; transform: translate(var(--machine-mobile-x), var(--machine-mobile-y)) scale(var(--machine-mobile-scale)); }
+  .machineImage { inset: 7% -8% 18% -8%; transform: translate(var(--machine-mobile-x), var(--machine-mobile-y)) scale(var(--machine-mobile-scale)); }
   .seriesMeta { right: 20px; bottom: 24px; }
   .tabsViewport { bottom: 0; }
   .tabs { grid-template-columns: repeat(8, minmax(148px, 1fr)); height: 70px; }
