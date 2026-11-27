@@ -17,9 +17,9 @@
 .secondaryAction { color: #fff; }
 .secondaryAction:hover { border-color: var(--explorer-accent); color: var(--explorer-accent); }
 .machineStage { position: relative; min-width: 0; }
-.watermark { position: absolute; z-index: 0; top: -9px; right: -2%; color: rgba(255,255,255,.12); font-size: clamp(170px, 18vw, 280px); line-height: .82; font-weight: 760; letter-spacing: -.08em; }
+.watermark { position: absolute; z-index: 3; top: -9px; right: -2%; color: rgba(255,255,255,.12); font-size: clamp(170px, 18vw, 280px); line-height: .82; font-weight: 760; letter-spacing: -.08em; pointer-events: none; }
 .machineImage { position: absolute; z-index: 2; inset: 2% -3% 0 -8%; transform: translate(var(--machine-x), var(--machine-y)) scale(var(--machine-scale)); transform-origin: center bottom; transition: transform var(--hero-duration) ease, opacity var(--hero-duration) ease; }
-.machineImage img { object-fit: contain; object-position: center bottom; filter: drop-shadow(0 22px 26px rgba(0,0,0,.42)); }
+.machineImage img { object-fit: cover; object-position: center bottom; filter: drop-shadow(0 22px 26px rgba(0,0,0,.42)); }
 .seriesMeta { position: absolute; z-index: 5; right: 0; bottom: 65px; display: grid; gap: 8px; min-width: 180px; }
 .seriesMeta strong { display: flex; gap: 10px; align-items: center; font-size: 17px; line-height: 1.2; }
 .seriesMeta a { display: flex; width: fit-content; align-items: center; gap: 17px; border-bottom: 2px solid var(--explorer-accent); padding: 0 0 7px 21px; color: #e2e4e5; font-size: 14px; }

@@ -4,6 +4,7 @@ import {
   ProductExplorer,
   type ProductExplorerViewCategory,
 } from "@/components/products/ProductExplorer";
+import { elementTypographyOverrides } from "@/components/page-builder/PageRenderer";
 import { ManagedPageSections } from "@/components/site/ManagedPageSections";
 import {
   DEFAULT_PRODUCT_EXPLORER_CONTENT,
@@ -73,6 +74,9 @@ export default async function ProductsPage() {
     name: product.name,
     url: `https://www.zyroncnc.com/products/${product.slug}`,
   }));
+  const explorerTypography = explorerNode
+    ? elementTypographyOverrides([explorerNode])
+    : "";
 
   return (
     <main>
@@ -99,6 +103,7 @@ export default async function ProductsPage() {
         }) }}
       />
       <ManagedPageSections slug="products" placement="BEFORE_LEGACY" />
+      {explorerTypography ? <style>{explorerTypography}</style> : null}
       <ProductExplorer
         content={content}
         categories={categories}
