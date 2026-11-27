@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 
 import { shouldRunProductionMigrations } from "@/lib/deployment/production-migration-gate";
 import { shouldRunProductionPasswordReset } from "@/lib/deployment/production-password-reset-gate";
+import { shouldRunProductionProductsPublication } from "@/lib/deployment/production-products-publication-gate";
 
 function run(command: string, args: string[]) {
   const result = spawnSync(command, args, { stdio: "inherit", env: process.env });
@@ -22,3 +23,8 @@ if (shouldRunProductionPasswordReset(process.env)) {
 }
 
 run("npm", ["run", "build"]);
+
+if (shouldRunProductionProductsPublication(process.env)) {
+  console.log("Approved one-time Products page publication gate is active.");
+  run("npm", ["run", "products:publish", "--", "--apply"]);
+}
