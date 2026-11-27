@@ -167,7 +167,7 @@ function typographyOverrides(nodes: PageNode[]): string {
   ].join("");
 }
 
-function elementTypographyOverrides(nodes: PageNode[]): string {
+export function elementTypographyOverrides(nodes: PageNode[]): string {
   const desktop: string[] = [];
   const tablet: string[] = [];
   const mobile: string[] = [];

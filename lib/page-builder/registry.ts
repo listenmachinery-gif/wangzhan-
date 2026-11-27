@@ -2,6 +2,10 @@ import { z } from "zod";
 
 import { homepageRedesignDocument } from "@/lib/homepage/homepage-content";
 import { aboutZyronDocument } from "@/lib/page-builder/about-zyron-content";
+import {
+  DEFAULT_PRODUCT_EXPLORER_CONTENT,
+  productExplorerContentSchema,
+} from "@/lib/product-explorer/config";
 import type { PageComponentType } from "@/lib/page-builder/schema";
 
 export type EditorFieldKind = "text" | "textarea" | "url" | "number" | "boolean" | "list" | "json";
@@ -60,6 +64,20 @@ export const componentRegistry: ComponentDefinition[] = [
   define({ type: "PRODUCT_CARDS", label: "产品卡片", group: "外贸业务", description: "产品卡片列表", defaultContent: { heading: "Featured Products", items: [{ title: "Shearing Machine", description: "Precision sheet cutting", image: "/products/home-categories/shearing.png", href: "/products" }] }, contentSchema: z.object({ heading: shortText, items: z.array(cardSchema).min(1).max(12) }).strict(), editorFields: [{ key: "heading", label: "标题", kind: "text" }, { key: "items", label: "产品", kind: "json" }] }),
   define({ type: "CATEGORY_CARDS", label: "产品分类", group: "外贸业务", description: "产品分类入口", defaultContent: { heading: "Product Categories", items: [{ title: "Sheet Metal Machinery", description: "Explore production equipment", image: "/products/product-center-hero.png", href: "/products" }] }, contentSchema: z.object({ heading: shortText, items: z.array(cardSchema).min(1).max(16) }).strict(), editorFields: [{ key: "heading", label: "标题", kind: "text" }, { key: "items", label: "分类", kind: "json" }] }),
   define({ type: "PRODUCT_CAROUSEL", label: "产品轮播", group: "外贸业务", description: "横向产品推荐", defaultContent: { heading: "Recommended Machines", items: [{ title: "Press Brake", description: "Bending solution", image: "/products/hydraulic-press-brake-hero.png", href: "/products" }] }, contentSchema: z.object({ heading: shortText, items: z.array(cardSchema).min(1).max(12) }).strict(), editorFields: [{ key: "heading", label: "标题", kind: "text" }, { key: "items", label: "产品", kind: "json" }] }),
+  define({
+    type: "PRODUCT_EXPLORER",
+    label: "产品总页交互探索器",
+    group: "外贸业务",
+    description: "八大机械系列交互首屏与真实产品横向浏览（仅用于 Products 页面）",
+    defaultContent: DEFAULT_PRODUCT_EXPLORER_CONTENT,
+    contentSchema: productExplorerContentSchema,
+    editorFields: [
+      { key: "eyebrow", label: "品牌标签", kind: "text" },
+      { key: "title", label: "主标题", kind: "textarea" },
+      { key: "subtitle", label: "绿色副标题", kind: "text" },
+      { key: "description", label: "说明文字", kind: "textarea" },
+    ],
+  }),
   define({ type: "SPECIFICATION_TABLE", label: "设备参数表", group: "外贸业务", description: "型号参数表", defaultContent: { heading: "Specifications", columns: ["Model", "Value"], rows: [["ZY-100", "Configured on request"]] }, contentSchema: z.object({ heading: shortText, columns: z.array(shortText).min(2).max(12), rows: z.array(z.array(shortText).min(1).max(12)).max(50) }).strict(), editorFields: [{ key: "heading", label: "标题", kind: "text" }, { key: "columns", label: "列", kind: "list" }, { key: "rows", label: "数据", kind: "json" }] }),
   define({ type: "MODEL_COMPARISON", label: "型号对比", group: "外贸业务", description: "对比不同型号", defaultContent: { heading: "Compare Models", columns: ["Feature", "Model A", "Model B"], rows: [["Application", "Light duty", "Production"]] }, contentSchema: z.object({ heading: shortText, columns: z.array(shortText).min(2).max(12), rows: z.array(z.array(shortText).min(1).max(12)).max(50) }).strict(), editorFields: [{ key: "heading", label: "标题", kind: "text" }, { key: "rows", label: "对比数据", kind: "json" }] }),
   define({ type: "PRODUCT_GALLERY", label: "产品图库", group: "外贸业务", description: "产品图片画廊", defaultContent: { heading: "Machine Gallery", images: [{ src: "/products/hydraulic-press-brake-hero.png", alt: "ZYRON machine" }] }, contentSchema: z.object({ heading: shortText, images: z.array(imageSchema).min(1).max(20) }).strict(), editorFields: [{ key: "heading", label: "标题", kind: "text" }, { key: "images", label: "图片", kind: "json" }] }),

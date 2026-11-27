@@ -107,7 +107,8 @@ test("keeps representative family slugs and source names unchanged", async ({ pa
 
 test("published listings come from the database and drafts return 404", async ({ page }) => {
   await page.goto("/products");
-  await expect(page.getByText("54", { exact: true }).first()).toBeVisible();
+  await expect(page.getByRole("tablist", { name: "Machine categories" }).getByRole("tab")).toHaveCount(8);
+  await expect(page.getByRole("tab", { name: "02 Bending" })).toHaveAttribute("aria-selected", "true");
   await page.goto("/products/series/shearing-machines");
   await expect(page.getByRole("link", { name: "View Details" })).toHaveCount(6);
 

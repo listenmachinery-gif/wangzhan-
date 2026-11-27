@@ -24,6 +24,10 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { MediaAssetPicker, type LibraryMediaKind } from "@/components/admin/pages/MediaAssetPicker";
+import {
+  ProductExplorerEditor,
+  type ProductExplorerCategoryOption,
+} from "@/components/admin/pages/ProductExplorerEditor";
 import { PageRenderer } from "@/components/page-builder/PageRenderer";
 import { INDUSTRIAL_PAGE_TEMPLATES } from "@/lib/page-builder/industrial-templates";
 import { HARSLE_LAYOUT_TEMPLATES } from "@/lib/page-builder/harsle-layout-templates";
@@ -40,6 +44,7 @@ import type {
   PageStyle,
   PageTextStyle,
 } from "@/lib/page-builder/schema";
+import { productExplorerContentSchema } from "@/lib/product-explorer/config";
 
 type Device = "desktop" | "tablet" | "mobile";
 type BuilderPage = {
@@ -484,10 +489,12 @@ export function PageBuilder({
   page,
   canPublish,
   onPersist,
+  categoryOptions = [],
 }: {
   page: BuilderPage;
   canPublish: boolean;
   onPersist?: Persist;
+  categoryOptions?: ProductExplorerCategoryOption[];
 }) {
   const [document, setDocument] = useState(() => clone(page.document));
   const [templateChoice, setTemplateChoice] = useState("home");
@@ -650,6 +657,7 @@ export function PageBuilder({
       id: createId(definition.type),
       type: definition.type,
       content: clone(definition.defaultContent),
+      ...(definition.type === "PRODUCT_EXPLORER" ? { placement: "REPLACE_LEGACY" as const } : {}),
     } as PageNode;
     commit({ ...document, nodes: [...document.nodes, node] }, node.id);
   }
@@ -1128,15 +1136,27 @@ export function PageBuilder({
                 <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-neutral-500">
                   内容
                 </h3>
-                <FieldEditor
-                  definition={selectedDefinition}
-                  node={selected}
-                  onChange={(content) => {
-                    const nodes = [...document.nodes];
-                    nodes[selectedIndex] = { ...selected, content } as PageNode;
-                    commit({ ...document, nodes });
-                  }}
-                />
+                {selected.type === "PRODUCT_EXPLORER" && productExplorerContentSchema.safeParse(selected.content).success ? (
+                  <ProductExplorerEditor
+                    content={productExplorerContentSchema.parse(selected.content)}
+                    categoryOptions={categoryOptions}
+                    onChange={(content) => {
+                      const nodes = [...document.nodes];
+                      nodes[selectedIndex] = { ...selected, content } as PageNode;
+                      commit({ ...document, nodes });
+                    }}
+                  />
+                ) : (
+                  <FieldEditor
+                    definition={selectedDefinition}
+                    node={selected}
+                    onChange={(content) => {
+                      const nodes = [...document.nodes];
+                      nodes[selectedIndex] = { ...selected, content } as PageNode;
+                      commit({ ...document, nodes });
+                    }}
+                  />
+                )}
               </div>
               <div className="mt-6 border-t pt-5">
                 <div className="flex items-center justify-between">
