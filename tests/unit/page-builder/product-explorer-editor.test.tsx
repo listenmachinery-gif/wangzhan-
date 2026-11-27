@@ -61,7 +61,7 @@ describe("Product Explorer PageBuilder editor", () => {
     expect(screen.getByRole("button", { name: "从媒体资源库替换全幅背景图" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "第 1 类从媒体资源库替换设备图" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "第 8 类从媒体资源库替换设备图" })).toBeInTheDocument();
-    expect(screen.getByRole("spinbutton", { name: "第 2 类桌面缩放" })).toHaveValue(0.9);
-    expect(screen.getByRole("spinbutton", { name: "第 2 类手机水平位置" })).toHaveValue(-24);
+    expect(screen.getByRole("spinbutton", { name: "第 2 类桌面缩放" })).toHaveValue(0.96);
+    expect(screen.getByRole("spinbutton", { name: "第 2 类手机水平位置" })).toHaveValue(0);
   });
 });

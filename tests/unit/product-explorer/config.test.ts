@@ -80,12 +80,17 @@ describe("product explorer configuration", () => {
     ]);
   });
 
-  it("keeps every machine left of the right-side series copy safety zone", () => {
+  it("fits every complete machine inside the dedicated safety frame without cropping", () => {
     for (const category of DEFAULT_PRODUCT_EXPLORER_CONTENT.categories) {
-      expect(category.desktopX).toBeLessThanOrEqual(-90);
-      expect(category.desktopScale).toBeLessThanOrEqual(0.94);
-      expect(category.mobileX).toBeLessThanOrEqual(-12);
-      expect(category.mobileScale).toBeLessThanOrEqual(0.9);
+      expect(category.desktopX).toBe(0);
+      expect(category.desktopY).toBe(0);
+      expect(category.tabletX).toBe(0);
+      expect(category.tabletY).toBe(0);
+      expect(category.mobileX).toBe(0);
+      expect(category.mobileY).toBe(0);
+      expect(category.desktopScale).toBeLessThanOrEqual(1);
+      expect(category.tabletScale).toBeLessThanOrEqual(1);
+      expect(category.mobileScale).toBeLessThanOrEqual(1);
     }
   });
 

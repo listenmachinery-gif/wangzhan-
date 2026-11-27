@@ -149,7 +149,7 @@ export function ProductExplorer({ content, categories, nodeId }: ProductExplorer
         </div>
         <div className={styles.heroGlow} aria-hidden="true" />
         <div className={styles.heroInner}>
-          <div className={styles.copy}>
+          <div className={styles.copy} data-explorer-copy>
             <p className={styles.eyebrow} data-page-text="eyebrow"><span aria-hidden="true">/</span>{content.eyebrow}</p>
             <h1 className={styles.title} data-page-text="title">{content.title}</h1>
             <p className={styles.subtitle} data-page-text="subtitle">{content.subtitle}</p>
@@ -182,7 +182,7 @@ export function ProductExplorer({ content, categories, nodeId }: ProductExplorer
                 unoptimized={mediaNeedsUnoptimized(activeCategory.heroImage)}
               />
             </div>
-            <div className={styles.seriesMeta}>
+            <div className={styles.seriesMeta} data-explorer-series>
               <strong data-page-text="seriesName"><span aria-hidden="true">/</span>{activeCategory.fullSeriesName}</strong>
               <Link
                 href={activeCategory.categoryHref}
