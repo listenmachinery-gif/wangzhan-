@@ -25,6 +25,7 @@ test("matches the interactive product explorer structure and preserves real link
   const background = page.locator("[data-explorer-background] img");
   const initialBackgroundSource = await background.getAttribute("src");
   await expect(background).toBeVisible();
+  expect(await page.locator("[data-explorer-machine]").evaluate((element) => getComputedStyle(element.parentElement!).overflow)).toBe("hidden");
   await expect(page.locator("[data-explorer-machine] img")).toHaveAttribute("alt", "ZYRON press brake series");
   expect(await page.locator("[data-explorer-machine]").evaluate((element) => getComputedStyle(element).zIndex)).toBe("3");
   expect(await page.locator("[data-explorer-number]").evaluate((element) => getComputedStyle(element).zIndex)).toBe("1");

@@ -18,7 +18,7 @@
 .primaryAction:hover { background: #94df00; }
 .secondaryAction { color: #fff; }
 .secondaryAction:hover { border-color: var(--explorer-accent); color: var(--explorer-accent); }
-.machineStage { position: relative; min-width: 0; }
+.machineStage { position: relative; min-width: 0; overflow: hidden; }
 .watermark { position: absolute; z-index: 1; top: 8px; right: -2%; color: rgba(255,255,255,.13); font-size: clamp(170px, 18vw, 280px); line-height: .82; font-weight: 760; letter-spacing: -.08em; pointer-events: none; }
 .machineImage { position: absolute; z-index: 3; inset: 3% -2% 4% -5%; transform: translate(var(--machine-x), var(--machine-y)) scale(var(--machine-scale)); transform-origin: center bottom; transition: transform var(--hero-duration) ease, opacity var(--hero-duration) ease; }
 .machineImage img { object-fit: contain; object-position: center bottom; filter: drop-shadow(0 22px 26px rgba(0,0,0,.48)); }
