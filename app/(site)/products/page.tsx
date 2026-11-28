@@ -20,6 +20,7 @@ import { getPublishedPageBySlug } from "@/lib/repositories/page-repository";
 import { buildPublicCatalogueView } from "@/lib/repositories/public-catalogue-view";
 import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
 import {
+  alignProductSearchTypography,
   buildProductSearchIndex,
   DEFAULT_PRODUCT_SEARCH_CONTENT,
   productSearchContentSchema,
@@ -58,7 +59,7 @@ export default async function ProductsPage() {
   const parsedContent = productExplorerContentSchema.safeParse(explorerNode?.content);
   const content = parsedContent.success ? parsedContent.data : DEFAULT_PRODUCT_EXPLORER_CONTENT;
   const parsedSearch = productSearchContentSchema.safeParse(searchNode?.content);
-  const searchContent = parsedSearch.success ? parsedSearch.data : DEFAULT_PRODUCT_SEARCH_CONTENT;
+  const searchContent = alignProductSearchTypography(parsedSearch.success ? parsedSearch.data : DEFAULT_PRODUCT_SEARCH_CONTENT);
   const parsedSelection = productSelectionContentSchema.safeParse(selectionNode?.content);
   const selectionContent = parsedSelection.success ? parsedSelection.data : DEFAULT_PRODUCT_SELECTION_CONTENT;
   const resolved = resolveProductExplorerData(content, publishedCategories);

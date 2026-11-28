@@ -7,7 +7,7 @@ import { db } from "@/lib/db/client";
 import type { PageDocument, PageNode } from "@/lib/page-builder/schema";
 import { DEFAULT_PRODUCT_EXPLORER_CONTENT, productExplorerContentSchema } from "@/lib/product-explorer/config";
 import { parsePageDocument, PageService } from "@/lib/services/page-service";
-import { DEFAULT_PRODUCT_SEARCH_CONTENT, productSearchContentSchema } from "@/lib/product-search/config";
+import { alignProductSearchTypography, DEFAULT_PRODUCT_SEARCH_CONTENT, productSearchContentSchema } from "@/lib/product-search/config";
 import { DEFAULT_PRODUCT_SELECTION_CONTENT, productSelectionContentSchema } from "@/lib/product-selection/config";
 
 const RELEASE_APPROVAL = "APPROVED_2026_11_27";
@@ -67,21 +67,7 @@ export function buildProductsExplorerDocument(
   };
   const existingSearch = existing.nodes.find((node) => node.type === "PRODUCT_SEARCH");
   const parsedSearch = productSearchContentSchema.safeParse(existingSearch?.content);
-  const searchContent = parsedSearch.success
-    ? {
-        ...parsedSearch.data,
-        typography: {
-          ...parsedSearch.data.typography,
-          eyebrowSize: DEFAULT_PRODUCT_SEARCH_CONTENT.typography.eyebrowSize,
-          titleSize: DEFAULT_PRODUCT_SEARCH_CONTENT.typography.titleSize,
-          descriptionSize: DEFAULT_PRODUCT_SEARCH_CONTENT.typography.descriptionSize,
-        },
-        responsive: {
-          ...parsedSearch.data.responsive,
-          tabletTitleSize: DEFAULT_PRODUCT_SEARCH_CONTENT.responsive.tabletTitleSize,
-        },
-      }
-    : DEFAULT_PRODUCT_SEARCH_CONTENT;
+  const searchContent = alignProductSearchTypography(parsedSearch.success ? parsedSearch.data : DEFAULT_PRODUCT_SEARCH_CONTENT);
   const search: PageNode = {
     id: existingSearch?.id ?? "products-premium-search",
     type: "PRODUCT_SEARCH",

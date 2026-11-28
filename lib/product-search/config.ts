@@ -187,6 +187,22 @@ export const DEFAULT_PRODUCT_SEARCH_CONTENT: ProductSearchContent = {
   ],
 };
 
+export function alignProductSearchTypography(content: ProductSearchContent): ProductSearchContent {
+  return {
+    ...content,
+    typography: {
+      ...content.typography,
+      eyebrowSize: DEFAULT_PRODUCT_SEARCH_CONTENT.typography.eyebrowSize,
+      titleSize: DEFAULT_PRODUCT_SEARCH_CONTENT.typography.titleSize,
+      descriptionSize: DEFAULT_PRODUCT_SEARCH_CONTENT.typography.descriptionSize,
+    },
+    responsive: {
+      ...content.responsive,
+      tabletTitleSize: DEFAULT_PRODUCT_SEARCH_CONTENT.responsive.tabletTitleSize,
+    },
+  };
+}
+
 export type ProductSearchIndexItem = {
   id: string;
   slug: string;
