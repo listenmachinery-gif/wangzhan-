@@ -126,6 +126,16 @@ describe("product explorer configuration", () => {
     expect(parsed.productCardOverrides).toEqual([]);
   });
 
+  it("upgrades legacy content without product card layouts to database ordering", () => {
+    const legacyContent = Object.fromEntries(
+      Object.entries(DEFAULT_PRODUCT_EXPLORER_CONTENT).filter(([key]) => key !== "productCardLayouts"),
+    );
+
+    const parsed = productExplorerContentSchema.parse(legacyContent);
+
+    expect(parsed.productCardLayouts).toEqual([]);
+  });
+
   it("maps categories by real database id and keeps empty categories", () => {
     const content = {
       ...DEFAULT_PRODUCT_EXPLORER_CONTENT,

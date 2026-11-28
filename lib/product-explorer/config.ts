@@ -56,6 +56,12 @@ export const productExplorerCardOverrideSchema = z.object({
   imageAlt: shortText.min(1),
 }).strict();
 
+export const productExplorerCardLayoutSchema = z.object({
+  categoryKey: z.enum(PRODUCT_EXPLORER_CATEGORY_KEYS),
+  orderedProductIds: z.array(z.string().min(1).max(120)).max(500),
+  hiddenProductIds: z.array(z.string().min(1).max(120)).max(500),
+}).strict();
+
 export const productExplorerContentSchema = z.object({
   enabled: z.boolean(),
   backgroundImage: mediaPath.default(defaultBackgroundImage),
@@ -87,6 +93,7 @@ export const productExplorerContentSchema = z.object({
   showArrows: z.boolean(),
   showProgress: z.boolean(),
   productCardOverrides: z.array(productExplorerCardOverrideSchema).max(500).default([]),
+  productCardLayouts: z.array(productExplorerCardLayoutSchema).max(8).default([]),
   categories: z.array(productExplorerCategorySchema).length(8),
 }).strict().superRefine((content, context) => {
   content.categories.forEach((category, index) => {
@@ -146,6 +153,7 @@ export const DEFAULT_PRODUCT_EXPLORER_CONTENT: ProductExplorerContent = {
   showArrows: true,
   showProgress: true,
   productCardOverrides: [],
+  productCardLayouts: [],
   categories: categoryDefaults,
 };
 
@@ -174,6 +182,33 @@ export function resolveProductExplorerCard(
     image: override.image,
     imageAlt: override.imageAlt,
   };
+}
+
+export function resolveProductExplorerCardLayout<T extends { id: string }>(
+  categoryKey: ProductExplorerCategoryKey,
+  products: T[],
+  layouts: ProductExplorerContent["productCardLayouts"],
+): T[] {
+  const layout = layouts.find((item) => item.categoryKey === categoryKey);
+  if (!layout) return products;
+
+  const hidden = new Set(layout.hiddenProductIds);
+  const available = new Map(products.map((product) => [product.id, product]));
+  const seen = new Set<string>();
+  const result: T[] = [];
+
+  for (const productId of layout.orderedProductIds) {
+    const product = available.get(productId);
+    if (!product || hidden.has(productId) || seen.has(productId)) continue;
+    seen.add(productId);
+    result.push(product);
+  }
+  for (const product of products) {
+    if (hidden.has(product.id) || seen.has(product.id)) continue;
+    seen.add(product.id);
+    result.push(product);
+  }
+  return result;
 }
 
 export type PublishedExplorerProduct = {

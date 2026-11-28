@@ -10,6 +10,7 @@ import {
   DEFAULT_PRODUCT_EXPLORER_CONTENT,
   productExplorerContentSchema,
   resolveProductExplorerCard,
+  resolveProductExplorerCardLayout,
   resolveProductExplorerData,
 } from "@/lib/product-explorer/config";
 import { listPublishedCategories } from "@/lib/repositories/category-repository";
@@ -50,7 +51,7 @@ export default async function ProductsPage() {
     const publicCategory = databaseCategory
       ? publicCategories.find((category) => category.id === databaseCategory.slug)
       : null;
-    const products = publicCategory
+    const sourceProducts = publicCategory
       ? publicProducts
           .filter((product) => product.categoryId === publicCategory.id)
           .map((product) => resolveProductExplorerCard({
@@ -61,6 +62,7 @@ export default async function ProductsPage() {
             image: product.image,
           }, content.productCardOverrides))
       : [];
+    const products = resolveProductExplorerCardLayout(slot.key, sourceProducts, content.productCardLayouts);
     return {
       ...slot,
       categoryName: databaseCategory?.name ?? slot.fullSeriesName,

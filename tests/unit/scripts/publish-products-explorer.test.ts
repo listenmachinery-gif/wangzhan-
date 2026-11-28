@@ -34,7 +34,7 @@ describe("Products explorer production publisher", () => {
     expect(() => buildProductsExplorerDocument(categories.slice(0, 7), { schemaVersion: 1, nodes: [] })).toThrow(/Missing required product category: shredders/);
   });
 
-  it("preserves manually edited product card overrides when rebuilding category mappings", () => {
+  it("preserves manually edited product cards and their layout when rebuilding category mappings", () => {
     const productCardOverrides = [{
       productId: "product-1",
       title: "Custom card title",
@@ -42,16 +42,22 @@ describe("Products explorer production publisher", () => {
       image: "/api/media/custom-card",
       imageAlt: "Custom card Alt text",
     }];
+    const productCardLayouts = [{
+      categoryKey: "bending" as const,
+      orderedProductIds: ["product-2", "product-1"],
+      hiddenProductIds: ["product-3"],
+    }];
     const document = buildProductsExplorerDocument(categories, {
       schemaVersion: 1,
       nodes: [{
         id: "existing-products-explorer",
         type: "PRODUCT_EXPLORER",
         placement: "REPLACE_LEGACY",
-        content: { ...DEFAULT_PRODUCT_EXPLORER_CONTENT, productCardOverrides },
+        content: { ...DEFAULT_PRODUCT_EXPLORER_CONTENT, productCardOverrides, productCardLayouts },
       }],
     });
 
     expect((document.nodes[0].content as { productCardOverrides: unknown }).productCardOverrides).toEqual(productCardOverrides);
+    expect((document.nodes[0].content as { productCardLayouts: unknown }).productCardLayouts).toEqual(productCardLayouts);
   });
 });

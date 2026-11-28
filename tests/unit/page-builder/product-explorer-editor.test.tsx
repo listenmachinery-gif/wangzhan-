@@ -32,15 +32,26 @@ const categoryOptions = [
   { id: "db-bend", name: "Bending Machine Series", slug: "bending-machines", status: "PUBLISHED" },
 ];
 
-const productOptions = [{
-  id: "product-1",
-  categoryId: "db-bend",
-  name: "Servo Press Brake",
-  slug: "servo-press-brake",
-  summary: "Precision bending",
-  image: "/products/catalog/servo-press-brake.webp",
-  imageAlt: "Servo Press Brake",
-}];
+const productOptions = [
+  {
+    id: "product-1",
+    categoryId: "db-bend",
+    name: "Servo Press Brake",
+    slug: "servo-press-brake",
+    summary: "Precision bending",
+    image: "/products/catalog/servo-press-brake.webp",
+    imageAlt: "Servo Press Brake",
+  },
+  {
+    id: "product-2",
+    categoryId: "db-bend",
+    name: "Panel Bender",
+    slug: "panel-bender",
+    summary: "Automated panel forming",
+    image: "/products/catalog/panel-bender.webp",
+    imageAlt: "Panel Bender",
+  },
+];
 
 describe("Product Explorer PageBuilder editor", () => {
   it("keeps fixed tab identity read-only and saves a real database category id", async () => {
@@ -56,6 +67,7 @@ describe("Product Explorer PageBuilder editor", () => {
     await user.selectOptions(screen.getByRole("combobox", { name: "第 2 类真实产品分类" }), "db-bend");
     const productTitle = screen.getByRole("textbox", { name: "产品「Servo Press Brake」卡片标题" });
     fireEvent.change(productTitle, { target: { value: "Custom Product Card" } });
+    await user.click(screen.getByRole("button", { name: "下移 Servo Press Brake" }));
     await user.click(screen.getByRole("button", { name: "保存草稿" }));
 
     await waitFor(() => expect(onPersist).toHaveBeenCalledTimes(1));
@@ -71,6 +83,11 @@ describe("Product Explorer PageBuilder editor", () => {
       summary: "Precision bending",
       image: "/products/catalog/servo-press-brake.webp",
       imageAlt: "Servo Press Brake",
+    }]);
+    expect(onPersist.mock.calls[0][0].document.nodes[0].content.productCardLayouts).toEqual([{
+      categoryKey: "bending",
+      orderedProductIds: ["product-2", "product-1"],
+      hiddenProductIds: [],
     }]);
   });
 
