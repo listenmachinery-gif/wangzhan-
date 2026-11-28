@@ -7,6 +7,7 @@ import { listPublishedCategories } from "@/lib/repositories/category-repository"
 import { buildPublicCatalogueView } from "@/lib/repositories/public-catalogue-view";
 import { parsePageDocument, PageNotFoundError, PageService } from "@/lib/services/page-service";
 import { ProductAdminService } from "@/lib/services/product-admin-service";
+import { DEFAULT_PRODUCT_SEARCH_CONTENT } from "@/lib/product-search/config";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +37,10 @@ export default async function PageEditorPage({ params }: { params: Promise<{ id:
         imageAlt: product.name,
       };
     }));
-    return <PageBuilder page={{ id: page.id, name: page.name, slug: page.slug, status: page.status, version: page.version, document: parsePageDocument(page.draftContent) }} canPublish={can(principal, "page.publish")} categoryOptions={categoryOptions} productOptions={productOptions} />;
+    const storedDocument = parsePageDocument(page.draftContent);
+    const document = page.slug === "products" && !storedDocument.nodes.some((node) => node.type === "PRODUCT_SEARCH")
+      ? { ...storedDocument, nodes: [...storedDocument.nodes, { id: "products-premium-search", type: "PRODUCT_SEARCH" as const, placement: "REPLACE_LEGACY" as const, content: DEFAULT_PRODUCT_SEARCH_CONTENT }] }
+      : storedDocument;
+    return <PageBuilder page={{ id: page.id, name: page.name, slug: page.slug, status: page.status, version: page.version, document }} canPublish={can(principal, "page.publish")} categoryOptions={categoryOptions} productOptions={productOptions} />;
   } catch (error) { if (error instanceof PageNotFoundError) notFound(); throw error; }
 }

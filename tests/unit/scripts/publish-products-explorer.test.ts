@@ -22,12 +22,13 @@ describe("Products explorer production publisher", () => {
     });
 
     expect(document.renderMode).toBe("REPLACE_LEGACY");
-    expect(document.nodes).toHaveLength(2);
+    expect(document.nodes).toHaveLength(3);
     expect(document.nodes[0]).toMatchObject({ id: "products-interactive-explorer", type: "PRODUCT_EXPLORER", placement: "REPLACE_LEGACY" });
     expect((document.nodes[0].content as { categories: Array<{ categoryId: string }> }).categories.map((item) => item.categoryId)).toEqual([
       "id-1", "id-2", "id-3", "id-4", "id-5", "id-6", "id-7", "id-8",
     ]);
-    expect(document.nodes[1].id).toBe("after-copy");
+    expect(document.nodes[1]).toMatchObject({ id: "products-premium-search", type: "PRODUCT_SEARCH", placement: "REPLACE_LEGACY" });
+    expect(document.nodes[2].id).toBe("after-copy");
   });
 
   it("refuses publication when any required real category is missing", () => {

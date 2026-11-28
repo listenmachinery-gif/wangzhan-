@@ -21,6 +21,11 @@ export type AnalyticsEventParams = {
   product_series_view: { category_id: string; series_href: string };
   product_card_click: { product_id: string; product_slug: string; category_id: string };
   find_my_machine_click: { link_path: string; placement: string };
+  product_search: { query_length: number; result_count: number };
+  product_search_no_results: { query_length: number };
+  product_search_suggestion_click: { product_slug: string; result_position: number };
+  product_search_result_click: { product_slug: string; result_position: number };
+  popular_search_click: { popular_label: string; linked_product_id?: string };
 };
 
 export type AnalyticsEventName = keyof AnalyticsEventParams;
@@ -43,6 +48,11 @@ const allowedKeys: { [K in AnalyticsEventName]: ReadonlySet<keyof AnalyticsEvent
   product_series_view: new Set(["category_id", "series_href"]),
   product_card_click: new Set(["product_id", "product_slug", "category_id"]),
   find_my_machine_click: new Set(["link_path", "placement"]),
+  product_search: new Set(["query_length", "result_count"]),
+  product_search_no_results: new Set(["query_length"]),
+  product_search_suggestion_click: new Set(["product_slug", "result_position"]),
+  product_search_result_click: new Set(["product_slug", "result_position"]),
+  popular_search_click: new Set(["popular_label", "linked_product_id"]),
 };
 
 const unsafeKey = /(?:^|_)(?:email|phone|message|lead|session|token|password)(?:_|$)/i;
@@ -106,7 +116,7 @@ function bridgeFirstPartyEvent(
   name: AnalyticsEventName,
   params: Record<string, string | number | boolean>,
 ) {
-  if (name === "page_view" || name === "product_category_select" || name === "product_series_view" || name === "product_card_click" || name === "find_my_machine_click") return null;
+  if (name === "page_view" || name === "product_category_select" || name === "product_series_view" || name === "product_card_click" || name === "find_my_machine_click" || name === "product_search" || name === "product_search_no_results" || name === "product_search_suggestion_click" || name === "product_search_result_click" || name === "popular_search_click") return null;
   const pendingKey = `${name}:${window.location.pathname}:${JSON.stringify(params)}`;
   if (pendingFirstPartyEvents.has(pendingKey)) return pendingKey;
   const input = firstPartyEvent(name, params);
@@ -136,6 +146,11 @@ function firstPartyEvent(
     product_series_view: null,
     product_card_click: null,
     find_my_machine_click: null,
+    product_search: null,
+    product_search_no_results: null,
+    product_search_suggestion_click: null,
+    product_search_result_click: null,
+    popular_search_click: null,
   } as const;
   if (eventTypes[name] === null) return null;
   const productSlug = typeof params.product_slug === "string" ? params.product_slug : undefined;

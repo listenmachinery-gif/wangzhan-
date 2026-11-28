@@ -4,6 +4,7 @@ import {
   ProductExplorer,
   type ProductExplorerViewCategory,
 } from "@/components/products/ProductExplorer";
+import { ProductSearch } from "@/components/products/ProductSearch";
 import { elementTypographyOverrides } from "@/components/page-builder/PageRenderer";
 import { ManagedPageSections } from "@/components/site/ManagedPageSections";
 import {
@@ -17,6 +18,11 @@ import { listPublishedCategories } from "@/lib/repositories/category-repository"
 import { getPublishedPageBySlug } from "@/lib/repositories/page-repository";
 import { buildPublicCatalogueView } from "@/lib/repositories/public-catalogue-view";
 import { overlayPublishedSeo } from "@/lib/repositories/seo-repository";
+import {
+  buildProductSearchIndex,
+  DEFAULT_PRODUCT_SEARCH_CONTENT,
+  productSearchContentSchema,
+} from "@/lib/product-search/config";
 
 export const dynamic = "force-dynamic";
 
@@ -41,10 +47,14 @@ export default async function ProductsPage() {
     getPublishedPageBySlug("products"),
   ]);
   const explorerNode = publishedPage?.nodes.find((node) => node.type === "PRODUCT_EXPLORER");
+  const searchNode = publishedPage?.nodes.find((node) => node.type === "PRODUCT_SEARCH");
   const parsedContent = productExplorerContentSchema.safeParse(explorerNode?.content);
   const content = parsedContent.success ? parsedContent.data : DEFAULT_PRODUCT_EXPLORER_CONTENT;
+  const parsedSearch = productSearchContentSchema.safeParse(searchNode?.content);
+  const searchContent = parsedSearch.success ? parsedSearch.data : DEFAULT_PRODUCT_SEARCH_CONTENT;
   const resolved = resolveProductExplorerData(content, publishedCategories);
   const { categories: publicCategories, products: publicProducts } = buildPublicCatalogueView(publishedCategories);
+  const searchIndex = buildProductSearchIndex(publishedCategories, publicProducts, searchContent);
 
   const categories: ProductExplorerViewCategory[] = resolved.map((slot) => {
     const databaseCategory = slot.databaseCategory;
@@ -111,6 +121,11 @@ export default async function ProductsPage() {
         content={content}
         categories={categories}
         nodeId={explorerNode?.id ?? "products-explorer-default"}
+      />
+      <ProductSearch
+        content={searchContent}
+        index={searchIndex}
+        nodeId={searchNode?.id ?? "products-premium-search"}
       />
       <ManagedPageSections slug="products" placement="AFTER_LEGACY" />
     </main>

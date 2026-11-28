@@ -53,6 +53,7 @@ export const PAGE_COMPONENT_TYPES = [
   "ABOUT_GLOBAL_DELIVERY",
   "ABOUT_QUOTE",
   "PRODUCT_EXPLORER",
+  "PRODUCT_SEARCH",
 ] as const;
 
 export type PageComponentType = (typeof PAGE_COMPONENT_TYPES)[number];
