@@ -41,6 +41,11 @@ describe("Product Search configuration and ranking", () => {
     expect(productSearchContentSchema.parse(DEFAULT_PRODUCT_SEARCH_CONTENT)).toEqual(DEFAULT_PRODUCT_SEARCH_CONTENT);
     expect(DEFAULT_PRODUCT_SEARCH_CONTENT.popularItems).toHaveLength(4);
     expect(DEFAULT_PRODUCT_SEARCH_CONTENT.features).toHaveLength(3);
+    expect(DEFAULT_PRODUCT_SEARCH_CONTENT.typography).toMatchObject({
+      eyebrowSize: 14,
+      titleSize: 52,
+      descriptionSize: 16,
+    });
   });
 
   it("normalizes multiplication signs, hyphens, punctuation, and whitespace", () => {

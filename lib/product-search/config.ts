@@ -137,16 +137,16 @@ export const DEFAULT_PRODUCT_SEARCH_CONTENT: ProductSearchContent = {
     gradientStop: 72,
   },
   typography: {
-    eyebrowSize: 19,
+    eyebrowSize: 14,
     eyebrowSpacing: 3,
-    titleSize: 68,
+    titleSize: 52,
     titleWeight: 650,
     titleLineHeight: 1.08,
     titleColor: "#FFFFFF",
     accentColor: "#80C900",
     accentItalic: true,
     suffixItalic: true,
-    descriptionSize: 23,
+    descriptionSize: 16,
     descriptionColor: "#C5CBD2",
   },
   appearance: {
@@ -166,7 +166,7 @@ export const DEFAULT_PRODUCT_SEARCH_CONTENT: ProductSearchContent = {
     dividerColor: "#69727C",
   },
   responsive: {
-    tabletTitleSize: 52,
+    tabletTitleSize: 48,
     tabletSearchHeight: 88,
     mobileTitleSize: 36,
     mobileSearchHeight: 62,

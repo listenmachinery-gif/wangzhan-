@@ -8,6 +8,7 @@ import type { PageDocument, PageNode } from "@/lib/page-builder/schema";
 import { DEFAULT_PRODUCT_EXPLORER_CONTENT, productExplorerContentSchema } from "@/lib/product-explorer/config";
 import { parsePageDocument, PageService } from "@/lib/services/page-service";
 import { DEFAULT_PRODUCT_SEARCH_CONTENT, productSearchContentSchema } from "@/lib/product-search/config";
+import { DEFAULT_PRODUCT_SELECTION_CONTENT, productSelectionContentSchema } from "@/lib/product-selection/config";
 
 const RELEASE_APPROVAL = "APPROVED_2026_11_27";
 
@@ -66,14 +67,37 @@ export function buildProductsExplorerDocument(
   };
   const existingSearch = existing.nodes.find((node) => node.type === "PRODUCT_SEARCH");
   const parsedSearch = productSearchContentSchema.safeParse(existingSearch?.content);
+  const searchContent = parsedSearch.success
+    ? {
+        ...parsedSearch.data,
+        typography: {
+          ...parsedSearch.data.typography,
+          eyebrowSize: DEFAULT_PRODUCT_SEARCH_CONTENT.typography.eyebrowSize,
+          titleSize: DEFAULT_PRODUCT_SEARCH_CONTENT.typography.titleSize,
+          descriptionSize: DEFAULT_PRODUCT_SEARCH_CONTENT.typography.descriptionSize,
+        },
+        responsive: {
+          ...parsedSearch.data.responsive,
+          tabletTitleSize: DEFAULT_PRODUCT_SEARCH_CONTENT.responsive.tabletTitleSize,
+        },
+      }
+    : DEFAULT_PRODUCT_SEARCH_CONTENT;
   const search: PageNode = {
     id: existingSearch?.id ?? "products-premium-search",
     type: "PRODUCT_SEARCH",
     placement: "REPLACE_LEGACY",
-    content: parsedSearch.success ? parsedSearch.data : DEFAULT_PRODUCT_SEARCH_CONTENT,
+    content: searchContent,
   };
-  const preserved = existing.nodes.filter((node) => node.type !== "PRODUCT_EXPLORER" && node.type !== "PRODUCT_SEARCH");
-  return { schemaVersion: 1, renderMode: "REPLACE_LEGACY", nodes: [explorer, search, ...preserved] };
+  const existingSelection = existing.nodes.find((node) => node.type === "PRODUCT_SELECTION_CENTER");
+  const parsedSelection = productSelectionContentSchema.safeParse(existingSelection?.content);
+  const selection: PageNode = {
+    id: existingSelection?.id ?? "product-selection-center",
+    type: "PRODUCT_SELECTION_CENTER",
+    placement: "REPLACE_LEGACY",
+    content: parsedSelection.success ? parsedSelection.data : DEFAULT_PRODUCT_SELECTION_CONTENT,
+  };
+  const preserved = existing.nodes.filter((node) => !["PRODUCT_EXPLORER", "PRODUCT_SEARCH", "PRODUCT_SELECTION_CENTER"].includes(node.type));
+  return { schemaVersion: 1, renderMode: "REPLACE_LEGACY", nodes: [explorer, search, selection, ...preserved] };
 }
 
 async function productionPrincipal(database: PrismaClient, email: string): Promise<Principal> {

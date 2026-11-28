@@ -133,7 +133,7 @@ describe("published catalogue repositories", () => {
       image: "/hero.webp",
     });
     expect(publishedCategories.find((item) => item.id === category.id)?.products[0]?.models).toEqual([
-      { name: "CMS-1000", sku: "CMS1000" },
+      expect.objectContaining({ name: "CMS-1000", sku: "CMS1000", values: [] }),
     ]);
     await expect(getPublishedProductBySlug("cms-only-test-machine", { database: db })).resolves.toMatchObject({
       source: "database",

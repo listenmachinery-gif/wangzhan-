@@ -11,6 +11,10 @@ import {
   DEFAULT_PRODUCT_SEARCH_CONTENT,
   productSearchContentSchema,
 } from "@/lib/product-search/config";
+import {
+  DEFAULT_PRODUCT_SELECTION_CONTENT,
+  productSelectionContentSchema,
+} from "@/lib/product-selection/config";
 
 export type EditorFieldKind = "text" | "textarea" | "url" | "number" | "boolean" | "list" | "json";
 
@@ -95,6 +99,20 @@ export const componentRegistry: ComponentDefinition[] = [
       { key: "titleAccent", label: "绿色强调标题", kind: "textarea" },
       { key: "titleSuffix", label: "标题后缀", kind: "textarea" },
       { key: "description", label: "说明文字", kind: "textarea" },
+    ],
+  }),
+  define({
+    type: "PRODUCT_SELECTION_CENTER",
+    label: "产品总页专业选型中心",
+    group: "外贸业务",
+    description: "基于真实已发布产品、型号与技术参数的搜索、筛选和对比模块",
+    defaultContent: DEFAULT_PRODUCT_SELECTION_CONTENT,
+    contentSchema: productSelectionContentSchema,
+    editorFields: [
+      { key: "eyebrow", label: "顶部小标题", kind: "text" },
+      { key: "title", label: "模块主标题", kind: "textarea" },
+      { key: "subtitle", label: "模块副标题", kind: "textarea" },
+      { key: "description", label: "模块介绍", kind: "textarea" },
     ],
   }),
   define({ type: "SPECIFICATION_TABLE", label: "设备参数表", group: "外贸业务", description: "型号参数表", defaultContent: { heading: "Specifications", columns: ["Model", "Value"], rows: [["ZY-100", "Configured on request"]] }, contentSchema: z.object({ heading: shortText, columns: z.array(shortText).min(2).max(12), rows: z.array(z.array(shortText).min(1).max(12)).max(50) }).strict(), editorFields: [{ key: "heading", label: "标题", kind: "text" }, { key: "columns", label: "列", kind: "list" }, { key: "rows", label: "数据", kind: "json" }] }),

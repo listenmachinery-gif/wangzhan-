@@ -54,7 +54,7 @@ describe("ProductSearch", () => {
 
     expect(screen.getByRole("option", { name: /CNC Press Brake/ })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /CNC Press Brake/ })).toHaveAttribute("href", "/products/cnc-press-brake");
-    expect(screen.getByRole("link", { name: "View All Results" })).toHaveAttribute("href", "/products/search?q=WE67K-160T3200");
+    expect(screen.getByRole("link", { name: "View All Results" })).toHaveAttribute("href", "/products?explorerQuery=WE67K-160T3200#product-selection-center");
   });
 
   it("supports popular search, keyboard selection, and full-result submission", async () => {
@@ -71,6 +71,6 @@ describe("ProductSearch", () => {
 
     fireEvent.change(input, { target: { value: "plate rolling" } });
     fireEvent.submit(input.closest("form")!);
-    expect(push).toHaveBeenLastCalledWith("/products/search?q=plate+rolling");
+    expect(push).toHaveBeenLastCalledWith("/products?explorerQuery=plate+rolling#product-selection-center");
   });
 });

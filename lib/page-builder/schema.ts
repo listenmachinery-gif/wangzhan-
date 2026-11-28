@@ -54,6 +54,7 @@ export const PAGE_COMPONENT_TYPES = [
   "ABOUT_QUOTE",
   "PRODUCT_EXPLORER",
   "PRODUCT_SEARCH",
+  "PRODUCT_SELECTION_CENTER",
 ] as const;
 
 export type PageComponentType = (typeof PAGE_COMPONENT_TYPES)[number];
