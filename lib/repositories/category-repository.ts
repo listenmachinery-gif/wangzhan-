@@ -30,6 +30,11 @@ export async function listPublishedCategories(options: RepositoryOptions = {}) {
           description: true,
           position: true,
           publishedAt: true,
+          models: {
+            where: { active: true },
+            select: { name: true, sku: true },
+            orderBy: [{ position: "asc" }, { name: "asc" }],
+          },
           sections: {
             where: { type: "HERO", visible: true },
             select: { content: true },
@@ -59,6 +64,11 @@ export async function getPublishedCategoryBySlug(slug: string, options: Reposito
           description: true,
           position: true,
           publishedAt: true,
+          models: {
+            where: { active: true },
+            select: { name: true, sku: true },
+            orderBy: [{ position: "asc" }, { name: "asc" }],
+          },
           sections: {
             where: { type: "HERO", visible: true },
             select: { content: true },

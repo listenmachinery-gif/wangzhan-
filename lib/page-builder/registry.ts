@@ -7,6 +7,10 @@ import {
   productExplorerContentSchema,
 } from "@/lib/product-explorer/config";
 import type { PageComponentType } from "@/lib/page-builder/schema";
+import {
+  DEFAULT_PRODUCT_SEARCH_CONTENT,
+  productSearchContentSchema,
+} from "@/lib/product-search/config";
 
 export type EditorFieldKind = "text" | "textarea" | "url" | "number" | "boolean" | "list" | "json";
 
@@ -75,6 +79,21 @@ export const componentRegistry: ComponentDefinition[] = [
       { key: "eyebrow", label: "品牌标签", kind: "text" },
       { key: "title", label: "主标题", kind: "textarea" },
       { key: "subtitle", label: "绿色副标题", kind: "text" },
+      { key: "description", label: "说明文字", kind: "textarea" },
+    ],
+  }),
+  define({
+    type: "PRODUCT_SEARCH",
+    label: "产品总页高级搜索",
+    group: "外贸业务",
+    description: "产品名称、型号和系列实时搜索（仅用于 Products 页面）",
+    defaultContent: DEFAULT_PRODUCT_SEARCH_CONTENT,
+    contentSchema: productSearchContentSchema,
+    editorFields: [
+      { key: "eyebrow", label: "品牌标签", kind: "text" },
+      { key: "titleLineOne", label: "标题第一行", kind: "textarea" },
+      { key: "titleAccent", label: "绿色强调标题", kind: "textarea" },
+      { key: "titleSuffix", label: "标题后缀", kind: "textarea" },
       { key: "description", label: "说明文字", kind: "textarea" },
     ],
   }),

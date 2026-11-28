@@ -7,6 +7,7 @@ import { db } from "@/lib/db/client";
 import type { PageDocument, PageNode } from "@/lib/page-builder/schema";
 import { DEFAULT_PRODUCT_EXPLORER_CONTENT, productExplorerContentSchema } from "@/lib/product-explorer/config";
 import { parsePageDocument, PageService } from "@/lib/services/page-service";
+import { DEFAULT_PRODUCT_SEARCH_CONTENT, productSearchContentSchema } from "@/lib/product-search/config";
 
 const RELEASE_APPROVAL = "APPROVED_2026_11_27";
 
@@ -63,8 +64,16 @@ export function buildProductsExplorerDocument(
     placement: "REPLACE_LEGACY",
     content: { ...DEFAULT_PRODUCT_EXPLORER_CONTENT, productCardOverrides, productCardLayouts, categories: mappedCategories },
   };
-  const preserved = existing.nodes.filter((node) => node.type !== "PRODUCT_EXPLORER");
-  return { schemaVersion: 1, renderMode: "REPLACE_LEGACY", nodes: [explorer, ...preserved] };
+  const existingSearch = existing.nodes.find((node) => node.type === "PRODUCT_SEARCH");
+  const parsedSearch = productSearchContentSchema.safeParse(existingSearch?.content);
+  const search: PageNode = {
+    id: existingSearch?.id ?? "products-premium-search",
+    type: "PRODUCT_SEARCH",
+    placement: "REPLACE_LEGACY",
+    content: parsedSearch.success ? parsedSearch.data : DEFAULT_PRODUCT_SEARCH_CONTENT,
+  };
+  const preserved = existing.nodes.filter((node) => node.type !== "PRODUCT_EXPLORER" && node.type !== "PRODUCT_SEARCH");
+  return { schemaVersion: 1, renderMode: "REPLACE_LEGACY", nodes: [explorer, search, ...preserved] };
 }
 
 async function productionPrincipal(database: PrismaClient, email: string): Promise<Principal> {

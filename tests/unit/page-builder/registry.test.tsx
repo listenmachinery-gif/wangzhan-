@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
 
 import { render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 import { PageRenderer } from "@/components/page-builder/PageRenderer";
 import {
@@ -62,6 +64,7 @@ describe("page builder component registry", () => {
     const explorer = container.querySelector("[data-product-explorer]") as HTMLElement;
     expect(explorer).toBeInTheDocument();
     expect(within(explorer).getAllByRole("tab")).toHaveLength(8);
+    expect(container.querySelector("[data-product-search]")).toBeInTheDocument();
   });
 
   it("drops unknown or invalid nodes instead of rendering their content", () => {

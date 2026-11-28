@@ -117,10 +117,14 @@ describe("published catalogue repositories", () => {
             content: validProductModuleData.HERO as Prisma.InputJsonValue,
           },
         },
+        models: {
+          create: { name: "CMS-1000", sku: "CMS1000", active: true },
+        },
       },
     });
 
-    const view = buildPublicCatalogueView(await listPublishedCategories({ database: db }));
+    const publishedCategories = await listPublishedCategories({ database: db });
+    const view = buildPublicCatalogueView(publishedCategories);
     expect(view.categories.find((item) => item.id === category.slug)).toMatchObject({
       name: "CMS Only Test Category",
     });
@@ -128,6 +132,9 @@ describe("published catalogue repositories", () => {
       name: "CMS Only Test Machine",
       image: "/hero.webp",
     });
+    expect(publishedCategories.find((item) => item.id === category.id)?.products[0]?.models).toEqual([
+      { name: "CMS-1000", sku: "CMS1000" },
+    ]);
     await expect(getPublishedProductBySlug("cms-only-test-machine", { database: db })).resolves.toMatchObject({
       source: "database",
       slug: "cms-only-test-machine",

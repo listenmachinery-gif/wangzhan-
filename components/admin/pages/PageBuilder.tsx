@@ -29,6 +29,7 @@ import {
   type ProductExplorerCategoryOption,
   type ProductExplorerProductOption,
 } from "@/components/admin/pages/ProductExplorerEditor";
+import { ProductSearchEditor } from "@/components/admin/pages/ProductSearchEditor";
 import { PageRenderer } from "@/components/page-builder/PageRenderer";
 import { INDUSTRIAL_PAGE_TEMPLATES } from "@/lib/page-builder/industrial-templates";
 import { HARSLE_LAYOUT_TEMPLATES } from "@/lib/page-builder/harsle-layout-templates";
@@ -46,6 +47,7 @@ import type {
   PageTextStyle,
 } from "@/lib/page-builder/schema";
 import { productExplorerContentSchema } from "@/lib/product-explorer/config";
+import { productSearchContentSchema } from "@/lib/product-search/config";
 
 type Device = "desktop" | "tablet" | "mobile";
 type BuilderPage = {
@@ -660,7 +662,7 @@ export function PageBuilder({
       id: createId(definition.type),
       type: definition.type,
       content: clone(definition.defaultContent),
-      ...(definition.type === "PRODUCT_EXPLORER" ? { placement: "REPLACE_LEGACY" as const } : {}),
+      ...(["PRODUCT_EXPLORER", "PRODUCT_SEARCH"].includes(definition.type) ? { placement: "REPLACE_LEGACY" as const } : {}),
     } as PageNode;
     commit({ ...document, nodes: [...document.nodes, node] }, node.id);
   }
@@ -1143,6 +1145,16 @@ export function PageBuilder({
                   <ProductExplorerEditor
                     content={productExplorerContentSchema.parse(selected.content)}
                     categoryOptions={categoryOptions}
+                    productOptions={productOptions}
+                    onChange={(content) => {
+                      const nodes = [...document.nodes];
+                      nodes[selectedIndex] = { ...selected, content } as PageNode;
+                      commit({ ...document, nodes });
+                    }}
+                  />
+                ) : selected.type === "PRODUCT_SEARCH" && productSearchContentSchema.safeParse(selected.content).success ? (
+                  <ProductSearchEditor
+                    content={productSearchContentSchema.parse(selected.content)}
                     productOptions={productOptions}
                     onChange={(content) => {
                       const nodes = [...document.nodes];
