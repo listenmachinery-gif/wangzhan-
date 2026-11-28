@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  alignProductSearchTypography,
   DEFAULT_PRODUCT_SEARCH_CONTENT,
   buildProductSearchIndex,
   normalizeProductSearchQuery,
@@ -46,6 +47,11 @@ describe("Product Search configuration and ranking", () => {
       titleSize: 52,
       descriptionSize: 16,
     });
+  });
+
+  it("aligns previously saved search typography with the homepage scale", () => {
+    const aligned = alignProductSearchTypography({ ...DEFAULT_PRODUCT_SEARCH_CONTENT, typography: { ...DEFAULT_PRODUCT_SEARCH_CONTENT.typography, titleSize: 68, eyebrowSize: 19, descriptionSize: 23 } });
+    expect(aligned.typography).toMatchObject({ titleSize: 52, eyebrowSize: 14, descriptionSize: 16 });
   });
 
   it("normalizes multiplication signs, hyphens, punctuation, and whitespace", () => {

@@ -7,7 +7,7 @@ import { listPublishedCategories } from "@/lib/repositories/category-repository"
 import { buildPublicCatalogueView } from "@/lib/repositories/public-catalogue-view";
 import { parsePageDocument, PageNotFoundError, PageService } from "@/lib/services/page-service";
 import { ProductAdminService } from "@/lib/services/product-admin-service";
-import { DEFAULT_PRODUCT_SEARCH_CONTENT } from "@/lib/product-search/config";
+import { alignProductSearchTypography, DEFAULT_PRODUCT_SEARCH_CONTENT, productSearchContentSchema } from "@/lib/product-search/config";
 import { DEFAULT_PRODUCT_SELECTION_CONTENT } from "@/lib/product-selection/config";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +38,15 @@ export default async function PageEditorPage({ params }: { params: Promise<{ id:
         imageAlt: product.name,
       };
     }));
-    const storedDocument = parsePageDocument(page.draftContent);
+    const parsedDocument = parsePageDocument(page.draftContent);
+    const storedDocument = {
+      ...parsedDocument,
+      nodes: parsedDocument.nodes.map((node) => {
+        if (node.type !== "PRODUCT_SEARCH") return node;
+        const parsed = productSearchContentSchema.safeParse(node.content);
+        return parsed.success ? { ...node, content: alignProductSearchTypography(parsed.data) } : node;
+      }),
+    };
     const document = page.slug === "products"
       ? {
           ...storedDocument,
