@@ -54,11 +54,14 @@ export function buildProductsExplorerDocument(
   const productCardOverrides = parsedExistingExplorer.success
     ? parsedExistingExplorer.data.productCardOverrides
     : [];
+  const productCardLayouts = parsedExistingExplorer.success
+    ? parsedExistingExplorer.data.productCardLayouts
+    : [];
   const explorer: PageNode = {
     id: "products-interactive-explorer",
     type: "PRODUCT_EXPLORER",
     placement: "REPLACE_LEGACY",
-    content: { ...DEFAULT_PRODUCT_EXPLORER_CONTENT, productCardOverrides, categories: mappedCategories },
+    content: { ...DEFAULT_PRODUCT_EXPLORER_CONTENT, productCardOverrides, productCardLayouts, categories: mappedCategories },
   };
   const preserved = existing.nodes.filter((node) => node.type !== "PRODUCT_EXPLORER");
   return { schemaVersion: 1, renderMode: "REPLACE_LEGACY", nodes: [explorer, ...preserved] };
