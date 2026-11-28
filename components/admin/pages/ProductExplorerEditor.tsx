@@ -1,7 +1,11 @@
 "use client";
 
 import { MediaAssetPicker } from "@/components/admin/pages/MediaAssetPicker";
-import type { ProductExplorerContent } from "@/lib/product-explorer/config";
+import {
+  resolveProductExplorerCardLayout,
+  type ProductExplorerCategoryKey,
+  type ProductExplorerContent,
+} from "@/lib/product-explorer/config";
 
 export type ProductExplorerCategoryOption = {
   id: string;
@@ -60,6 +64,62 @@ export function ProductExplorerEditor({ content, categoryOptions, productOptions
 
   function restoreProductDefaults(productId: string) {
     update("productCardOverrides", content.productCardOverrides.filter((item) => item.productId !== productId));
+  }
+
+  function updateProductLayout(
+    categoryKey: ProductExplorerCategoryKey,
+    orderedProductIds: string[],
+    hiddenProductIds: string[],
+  ) {
+    update("productCardLayouts", [
+      ...content.productCardLayouts.filter((item) => item.categoryKey !== categoryKey),
+      { categoryKey, orderedProductIds, hiddenProductIds },
+    ]);
+  }
+
+  function moveProduct(
+    categoryKey: ProductExplorerCategoryKey,
+    visibleProducts: ProductExplorerProductOption[],
+    productId: string,
+    direction: -1 | 1,
+  ) {
+    const orderedProductIds = visibleProducts.map((product) => product.id);
+    const currentIndex = orderedProductIds.indexOf(productId);
+    const nextIndex = currentIndex + direction;
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= orderedProductIds.length) return;
+    [orderedProductIds[currentIndex], orderedProductIds[nextIndex]] = [orderedProductIds[nextIndex], orderedProductIds[currentIndex]];
+    const layout = content.productCardLayouts.find((item) => item.categoryKey === categoryKey);
+    updateProductLayout(categoryKey, orderedProductIds, layout?.hiddenProductIds ?? []);
+  }
+
+  function removeProduct(
+    categoryKey: ProductExplorerCategoryKey,
+    visibleProducts: ProductExplorerProductOption[],
+    productId: string,
+  ) {
+    const layout = content.productCardLayouts.find((item) => item.categoryKey === categoryKey);
+    updateProductLayout(
+      categoryKey,
+      visibleProducts.filter((product) => product.id !== productId).map((product) => product.id),
+      Array.from(new Set([...(layout?.hiddenProductIds ?? []), productId])),
+    );
+  }
+
+  function addProduct(
+    categoryKey: ProductExplorerCategoryKey,
+    visibleProducts: ProductExplorerProductOption[],
+    productId: string,
+  ) {
+    const layout = content.productCardLayouts.find((item) => item.categoryKey === categoryKey);
+    updateProductLayout(
+      categoryKey,
+      [...visibleProducts.map((product) => product.id), productId],
+      (layout?.hiddenProductIds ?? []).filter((id) => id !== productId),
+    );
+  }
+
+  function restoreProductLayout(categoryKey: ProductExplorerCategoryKey) {
+    update("productCardLayouts", content.productCardLayouts.filter((item) => item.categoryKey !== categoryKey));
   }
 
   const textFields: Array<[keyof ProductExplorerContent, string, number]> = [
@@ -154,7 +214,13 @@ export function ProductExplorerEditor({ content, categoryOptions, productOptions
           <h4 className="text-xs font-bold text-neutral-900">八大固定产品分类</h4>
           <p className="mt-1 text-[11px] leading-5 text-neutral-500">序号、导航名称和顺序固定；请选择真实数据库分类。产品卡片会自动读取该分类下全部已发布产品。</p>
         </div>
-        {content.categories.map((category, index) => (
+        {content.categories.map((category, index) => {
+          const categoryProducts = productOptions.filter((product) => product.categoryId === category.categoryId);
+          const visibleProducts = resolveProductExplorerCardLayout(category.key, categoryProducts, content.productCardLayouts);
+          const layout = content.productCardLayouts.find((item) => item.categoryKey === category.key);
+          const hiddenProductIds = new Set(layout?.hiddenProductIds ?? []);
+          const hiddenProducts = categoryProducts.filter((product) => hiddenProductIds.has(product.id));
+          return (
           <article key={category.key} className="rounded-lg border border-neutral-200 bg-white p-3 shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <strong className="text-xs text-neutral-900">{category.number} · {category.navLabel}</strong>
@@ -210,12 +276,22 @@ export function ProductExplorerEditor({ content, categoryOptions, productOptions
                     <h5 className="text-xs font-bold text-neutral-900">具体产品卡片</h5>
                     <p className="mt-1 text-[10px] leading-4 text-neutral-500">仅覆盖产品总页显示，不修改产品详情页及链接。</p>
                   </div>
-                  <span className="rounded-full bg-neutral-100 px-2 py-1 text-[10px] font-semibold text-neutral-600">
-                    {productOptions.filter((product) => product.categoryId === category.categoryId).length} 个产品
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-neutral-100 px-2 py-1 text-[10px] font-semibold text-neutral-600">
+                      显示 {visibleProducts.length} / {categoryProducts.length}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={!layout}
+                      onClick={() => restoreProductLayout(category.key)}
+                      className="rounded border border-neutral-300 bg-white px-2 py-1 text-[10px] font-semibold text-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      第 {index + 1} 类恢复产品默认顺序
+                    </button>
+                  </div>
                 </div>
                 <div className="mt-3 space-y-3">
-                  {productOptions.filter((product) => product.categoryId === category.categoryId).map((product) => {
+                  {visibleProducts.map((product, productIndex) => {
                     const override = content.productCardOverrides.find((item) => item.productId === product.id);
                     const values = override ?? {
                       productId: product.id,
@@ -227,22 +303,46 @@ export function ProductExplorerEditor({ content, categoryOptions, productOptions
                     return (
                       <article
                         key={product.id}
+                        data-testid="product-card-editor"
+                        data-product-id={product.id}
                         className="rounded-lg border border-neutral-200 bg-neutral-50 p-3"
                         style={{ contentVisibility: "auto", containIntrinsicSize: "360px" }}
                       >
-                        <div className="flex items-center justify-between gap-3">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
                           <div className="min-w-0">
                             <strong className="block truncate text-xs text-neutral-900">{product.name}</strong>
                             <span className="block truncate text-[10px] text-neutral-500">/products/{product.slug}</span>
                           </div>
-                          <button
-                            type="button"
-                            disabled={!override}
-                            onClick={() => restoreProductDefaults(product.id)}
-                            className="shrink-0 rounded border border-neutral-300 bg-white px-2 py-1 text-[10px] font-semibold text-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
-                          >
-                            恢复 {product.name} 产品资料
-                          </button>
+                          <div className="flex flex-wrap justify-end gap-1.5">
+                            <button
+                              type="button"
+                              aria-label={`上移 ${product.name}`}
+                              disabled={productIndex === 0}
+                              onClick={() => moveProduct(category.key, visibleProducts, product.id, -1)}
+                              className="rounded border border-neutral-300 bg-white px-2 py-1 text-[10px] font-semibold text-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
+                            >上移</button>
+                            <button
+                              type="button"
+                              aria-label={`下移 ${product.name}`}
+                              disabled={productIndex === visibleProducts.length - 1}
+                              onClick={() => moveProduct(category.key, visibleProducts, product.id, 1)}
+                              className="rounded border border-neutral-300 bg-white px-2 py-1 text-[10px] font-semibold text-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
+                            >下移</button>
+                            <button
+                              type="button"
+                              aria-label={`从总页移除 ${product.name}`}
+                              onClick={() => removeProduct(category.key, visibleProducts, product.id)}
+                              className="rounded border border-red-200 bg-white px-2 py-1 text-[10px] font-semibold text-red-700"
+                            >移除</button>
+                            <button
+                              type="button"
+                              disabled={!override}
+                              onClick={() => restoreProductDefaults(product.id)}
+                              className="shrink-0 rounded border border-neutral-300 bg-white px-2 py-1 text-[10px] font-semibold text-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              恢复 {product.name} 产品资料
+                            </button>
+                          </div>
                         </div>
                         <div className="mt-3 space-y-3">
                           <label className="block text-xs font-medium text-neutral-600">卡片标题
@@ -292,7 +392,25 @@ export function ProductExplorerEditor({ content, categoryOptions, productOptions
                       </article>
                     );
                   })}
-                  {category.categoryId && !productOptions.some((product) => product.categoryId === category.categoryId) ? (
+                  {hiddenProducts.length ? (
+                    <div className="rounded-lg border border-dashed border-neutral-300 bg-neutral-50 p-3">
+                      <strong className="text-[11px] text-neutral-700">已从产品总页隐藏</strong>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {hiddenProducts.map((product) => (
+                          <button
+                            key={product.id}
+                            type="button"
+                            aria-label={`重新添加 ${product.name}`}
+                            onClick={() => addProduct(category.key, visibleProducts, product.id)}
+                            className="rounded border border-[#76B900]/40 bg-white px-2 py-1 text-[10px] font-semibold text-lime-800 hover:border-[#76B900]"
+                          >
+                            + {product.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                  {category.categoryId && categoryProducts.length === 0 ? (
                     <p className="rounded border border-dashed border-neutral-300 p-3 text-center text-[11px] text-neutral-500">该分类暂无已发布产品。</p>
                   ) : null}
                   {!category.categoryId ? (
@@ -302,7 +420,8 @@ export function ProductExplorerEditor({ content, categoryOptions, productOptions
               </div>
             </div>
           </article>
-        ))}
+          );
+        })}
       </section>
     </div>
   );
