@@ -8,6 +8,7 @@ import { buildPublicCatalogueView } from "@/lib/repositories/public-catalogue-vi
 import { parsePageDocument, PageNotFoundError, PageService } from "@/lib/services/page-service";
 import { ProductAdminService } from "@/lib/services/product-admin-service";
 import { DEFAULT_PRODUCT_SEARCH_CONTENT } from "@/lib/product-search/config";
+import { DEFAULT_PRODUCT_SELECTION_CONTENT } from "@/lib/product-selection/config";
 
 export const dynamic = "force-dynamic";
 
@@ -38,8 +39,19 @@ export default async function PageEditorPage({ params }: { params: Promise<{ id:
       };
     }));
     const storedDocument = parsePageDocument(page.draftContent);
-    const document = page.slug === "products" && !storedDocument.nodes.some((node) => node.type === "PRODUCT_SEARCH")
-      ? { ...storedDocument, nodes: [...storedDocument.nodes, { id: "products-premium-search", type: "PRODUCT_SEARCH" as const, placement: "REPLACE_LEGACY" as const, content: DEFAULT_PRODUCT_SEARCH_CONTENT }] }
+    const document = page.slug === "products"
+      ? {
+          ...storedDocument,
+          nodes: [
+            ...storedDocument.nodes,
+            ...(!storedDocument.nodes.some((node) => node.type === "PRODUCT_SEARCH")
+              ? [{ id: "products-premium-search", type: "PRODUCT_SEARCH" as const, placement: "REPLACE_LEGACY" as const, content: DEFAULT_PRODUCT_SEARCH_CONTENT }]
+              : []),
+            ...(!storedDocument.nodes.some((node) => node.type === "PRODUCT_SELECTION_CENTER")
+              ? [{ id: "product-selection-center", type: "PRODUCT_SELECTION_CENTER" as const, placement: "REPLACE_LEGACY" as const, content: DEFAULT_PRODUCT_SELECTION_CONTENT }]
+              : []),
+          ],
+        }
       : storedDocument;
     return <PageBuilder page={{ id: page.id, name: page.name, slug: page.slug, status: page.status, version: page.version, document }} canPublish={can(principal, "page.publish")} categoryOptions={categoryOptions} productOptions={productOptions} />;
   } catch (error) { if (error instanceof PageNotFoundError) notFound(); throw error; }

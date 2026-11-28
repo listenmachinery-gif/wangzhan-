@@ -38,8 +38,8 @@ function IconMask({ src, size, color, hoverColor }: { src: string; size: number;
 }
 
 function safeSearchHref(query: string) {
-  const params = new URLSearchParams({ q: query.trim() });
-  return `/products/search?${params.toString()}`;
+  const params = new URLSearchParams({ explorerQuery: query.trim() });
+  return `/products?${params.toString()}#product-selection-center`;
 }
 
 export function ProductSearch({ content, index, nodeId }: Props) {

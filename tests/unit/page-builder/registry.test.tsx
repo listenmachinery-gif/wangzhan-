@@ -65,6 +65,7 @@ describe("page builder component registry", () => {
     expect(explorer).toBeInTheDocument();
     expect(within(explorer).getAllByRole("tab")).toHaveLength(8);
     expect(container.querySelector("[data-product-search]")).toBeInTheDocument();
+    expect(container.querySelector("[data-product-selection-center]")).toBeInTheDocument();
   });
 
   it("drops unknown or invalid nodes instead of rendering their content", () => {

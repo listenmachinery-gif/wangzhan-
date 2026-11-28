@@ -30,6 +30,8 @@ import { ProductExplorer, type ProductExplorerViewCategory } from "@/components/
 import type { ProductExplorerContent } from "@/lib/product-explorer/config";
 import { ProductSearch } from "@/components/products/ProductSearch";
 import type { ProductSearchContent } from "@/lib/product-search/config";
+import { ProductSelectionCenter } from "@/components/products/ProductSelectionCenter";
+import type { ProductSelectionContent } from "@/lib/product-selection/config";
 
 type Content = Record<string, unknown>;
 type Item = { title: string; body?: string; description?: string; image?: string; href?: string };
@@ -76,6 +78,8 @@ export function renderNodeContent(type: PageComponentType, content: Content, chi
     }
     case "PRODUCT_SEARCH":
       return <ProductSearch content={content as ProductSearchContent} index={[]} nodeId="product-search-preview" />;
+    case "PRODUCT_SELECTION_CENTER":
+      return <ProductSelectionCenter content={content as ProductSelectionContent} items={[]} categories={[]} nodeId="product-selection-preview" />;
     case "ABOUT_HERO": return <AboutHeroSection content={content as AboutHeroContent} />;
     case "ABOUT_COMPANY_OVERVIEW": return <AboutCompanyOverviewSection content={content as AboutCompanyOverviewContent} />;
     case "ABOUT_MANUFACTURING": return <AboutManufacturingSection content={content as AboutManufacturingContent} />;

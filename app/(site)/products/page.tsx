@@ -5,6 +5,7 @@ import {
   type ProductExplorerViewCategory,
 } from "@/components/products/ProductExplorer";
 import { ProductSearch } from "@/components/products/ProductSearch";
+import { ProductSelectionCenter } from "@/components/products/ProductSelectionCenter";
 import { elementTypographyOverrides } from "@/components/page-builder/PageRenderer";
 import { ManagedPageSections } from "@/components/site/ManagedPageSections";
 import {
@@ -23,6 +24,11 @@ import {
   DEFAULT_PRODUCT_SEARCH_CONTENT,
   productSearchContentSchema,
 } from "@/lib/product-search/config";
+import {
+  buildProductSelectionIndex,
+  DEFAULT_PRODUCT_SELECTION_CONTENT,
+  productSelectionContentSchema,
+} from "@/lib/product-selection/config";
 
 export const dynamic = "force-dynamic";
 
@@ -48,13 +54,18 @@ export default async function ProductsPage() {
   ]);
   const explorerNode = publishedPage?.nodes.find((node) => node.type === "PRODUCT_EXPLORER");
   const searchNode = publishedPage?.nodes.find((node) => node.type === "PRODUCT_SEARCH");
+  const selectionNode = publishedPage?.nodes.find((node) => node.type === "PRODUCT_SELECTION_CENTER");
   const parsedContent = productExplorerContentSchema.safeParse(explorerNode?.content);
   const content = parsedContent.success ? parsedContent.data : DEFAULT_PRODUCT_EXPLORER_CONTENT;
   const parsedSearch = productSearchContentSchema.safeParse(searchNode?.content);
   const searchContent = parsedSearch.success ? parsedSearch.data : DEFAULT_PRODUCT_SEARCH_CONTENT;
+  const parsedSelection = productSelectionContentSchema.safeParse(selectionNode?.content);
+  const selectionContent = parsedSelection.success ? parsedSelection.data : DEFAULT_PRODUCT_SELECTION_CONTENT;
   const resolved = resolveProductExplorerData(content, publishedCategories);
   const { categories: publicCategories, products: publicProducts } = buildPublicCatalogueView(publishedCategories);
   const searchIndex = buildProductSearchIndex(publishedCategories, publicProducts, searchContent);
+  const selectionIndex = buildProductSelectionIndex(publishedCategories, publicProducts);
+  const selectionCategories = publicCategories.map((category) => ({ slug: category.id, name: category.name }));
 
   const categories: ProductExplorerViewCategory[] = resolved.map((slot) => {
     const databaseCategory = slot.databaseCategory;
@@ -126,6 +137,12 @@ export default async function ProductsPage() {
         content={searchContent}
         index={searchIndex}
         nodeId={searchNode?.id ?? "products-premium-search"}
+      />
+      <ProductSelectionCenter
+        content={selectionContent}
+        items={selectionIndex}
+        categories={selectionCategories}
+        nodeId={selectionNode?.id ?? "product-selection-center"}
       />
       <ManagedPageSections slug="products" placement="AFTER_LEGACY" />
     </main>
